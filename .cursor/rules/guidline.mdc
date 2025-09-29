@@ -41,3 +41,4 @@ alwaysApply: true
 - **Comments:** Add concise comments only for complex or non-obvious logic. The code must be self-descriptive without excessive, verbose commenting.
 - **Branch Strategy:** Adhere to: `main` (production), `develop` (integration), `feature/[feature-name]` (development).
 - Use a structured logger like **Pino** for all application logging.
+- for every module you create, you must create a readme file in the module folder, to highlight it's purpose and how it works(the flow). not when editing a module, only when creating.
