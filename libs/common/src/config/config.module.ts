@@ -1,5 +1,8 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule as NestConfigModule } from '@nestjs/config';
+import {
+  ConfigModule as NestConfigModule,
+  ConfigService,
+} from '@nestjs/config';
 import * as Joi from 'joi';
 import { ENV } from './env.config';
 
@@ -12,5 +15,7 @@ import { ENV } from './env.config';
       }),
     }),
   ],
+  providers: [ConfigService],
+  exports: [ConfigService],
 })
 export class ConfigModule {}

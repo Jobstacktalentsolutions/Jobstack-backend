@@ -72,7 +72,7 @@ The backend logic is organized into several distinct modules (`src/api/`).
 
     ```bash
     git clone [your-repo-link]
-    cd jobstack-backend
+    cd api
     ```
 
 2.  **Install dependencies:**
