@@ -1,98 +1,141 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# JobStack: The Pre-Vetted African Talent Platform
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+## 🌟 Project Overview
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+**JobStack** is a two-sided marketplace designed to simplify hiring for businesses in the Nigerian market, starting in Lagos. We connect employers with pre-vetted talent for both full-time **Roles** (jobs) and contract-based assignments. Our unique value proposition is handling the entire vetting, matching, and payment process, allowing businesses to focus purely on operations.
 
-## Description
+### Key Goals
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- Provide a seamless **Recruiter** experience for posting **Roles**.
+- Offer an intuitive platform for **Job Seekers** to find and apply for relevant work.
+- Centralize the agency's **vetting** and **matching** process.
 
-## Project setup
+---
 
-```bash
-$ pnpm install
-```
+## 🛠️ Technical Stack & Architecture
 
-## Compile and run the project
+JobStack is built on a modern, scalable, and fully typed stack.
 
-```bash
-# development
-$ pnpm run start
+| Component              | Technology                                   | Role                                                                                       |
+| :--------------------- | :------------------------------------------- | :----------------------------------------------------------------------------------------- |
+| **Backend API**        | **NestJS** (Node.js/TypeScript)              | Handles core business logic, API requests, and authentication.                             |
+| **Background Service** | **NestJS** (Node.js/TypeScript)              | Dedicated service for asynchronous tasks (e.g., Smart Matching Algorithm, sending emails). |
+| **Database**           | **PostgreSQL**                               | Primary data storage (User profiles, Roles, Payments).                                     |
+| **Caching**            | **Redis**                                    | High-speed cache for sessions, user data, and frequently accessed items.                   |
+| **Job Queue**          | **Bull** (with Redis)                        | Manages and processes background tasks reliably.                                           |
+| **Containerization**   | **Docker & Docker Compose**                  | Ensures environment consistency for all services.                                          |
+| **Frontend**           | **[Specify Framework: e.g., Next.js/React]** | User Interface for Recruiters and Job Seekers.                                             |
+| **Proxy/Gateway**      | **Nginx** (via Railway)                      | Routes traffic and provides security/load balancing.                                       |
 
-# watch mode
-$ pnpm run start:dev
+---
 
-# production mode
-$ pnpm run start:prod
-```
+## ☁️ Hosting & Infrastructure
 
-## Run tests
+We utilize a modular, cloud-native hosting setup for easy deployment and scalability.
 
-```bash
-# unit tests
-$ pnpm run test
+| Service              | Hosting Platform | Purpose                                                    |
+| :------------------- | :--------------- | :--------------------------------------------------------- |
+| **API & Background** | **Railway**      | Hosting for our NestJS applications.                       |
+| **Database**         | **Railway**      | Managed PostgreSQL instance.                               |
+| **Caching/Queue**    | **Railway**      | Managed Redis instance for caching and the Bull job queue. |
+| **Frontend**         | **Vercel**       | Hosting for the decoupled frontend application.            |
 
-# e2e tests
-$ pnpm run test:e2e
+---
 
-# test coverage
-$ pnpm run test:cov
-```
+## ⚙️ Core API Modules
 
-## Deployment
+The backend logic is organized into several distinct modules (`src/api/`).
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+| Module              | Purpose                                                        | Key Sub-Modules                                               |
+| :------------------ | :------------------------------------------------------------- | :------------------------------------------------------------ |
+| **`Auth`**          | Handles user identification and access control.                | `Recruiter`, `JobSeeker`, `Admin` (login/signup logic)        |
+| **`User`**          | Manages all user profiles and account settings once logged in. | `Recruiter`, `JobSeeker`, `Admin` (profile updates, settings) |
+| **`Roles`**         | Manages all job postings and contract listings.                | `Listing` (Creation, Editing), `Application` (Apply, Status)  |
+| **`Vetting`**       | Manages the verification process for Job Seekers.              | `Status` (Updates), `Documents` (Approval)                    |
+| **`Payment`**       | Handles financial transactions through the platform.           | `Paystack`, `Transaction` (Recording payments)                |
+| **`Storage`**       | Manages file uploads (CVs, portfolios) securely.               | Integration with **Drive e2** (S3 compatible storage)         |
+| **`Notifications`** | Manages communication triggers (emails, in-app alerts).        | Integration with **Brevo** (Email Provider)                   |
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+---
 
-```bash
-$ pnpm install -g @nestjs/mau
-$ mau deploy
-```
+## 🚀 Getting Started
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+### Prerequisites
 
-## Resources
+1.  Node.js (v18+) for local script execution.
+2.  **Docker and Docker Compose** (Essential for running all services consistently).
+3.  Access to the Railway dashboard (for production environment variables).
 
-Check out a few resources that may come in handy when working with NestJS:
+### Setup & Installation
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+1.  **Clone the repository:**
 
-## Support
+    ```bash
+    git clone [your-repo-link]
+    cd jobstack-backend
+    ```
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+2.  **Install dependencies:**
 
-## Stay in touch
+    ```bash
+    npm install
+    # or yarn install
+    ```
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+3.  **Environment Variables (`.env`):**
+    Create a `.env` file in the root directory and populate it with the necessary credentials.
+    _(**Note:** For Docker Compose, your DB and Redis URLs should reference the service names defined in your `docker-compose.yml`.)_
 
-## License
+    ```ini
+    # Database
+    DATABASE_URL="postgresql://user:password@host:port/db_name"
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+    # Caching & Job Queue
+    REDIS_HOST="redis-host"
+    REDIS_PORT=6379
+
+    # External Services
+    PAYSTACK_SECRET="sk_live_xxxx"
+    BREVO_API_KEY="xkeysib-xxxx"
+    STORAGE_S3_ENDPOINT="s3.endpoint.com"
+    STORAGE_ACCESS_KEY="xxxx"
+    STORAGE_SECRET_KEY="xxxx"
+
+    # Application Config
+    JWT_SECRET="YOUR_STRONG_SECRET_KEY"
+    ```
+
+### Running the Services with Docker Compose
+
+All services (API, Background, PostgreSQL, Redis) are managed via `docker-compose`.
+
+1.  **Build and Run All Services:**
+    This command will build the images for both the `api` and `background` apps and start all required containers.
+
+    ```bash
+    docker-compose up --build
+    ```
+
+2.  **Run Migrations:**
+    You will need to run database migrations against the running container.
+
+    ```bash
+    # Run a command inside the API container to execute migrations
+    docker-compose exec api npm run [your_migration_command]
+    ```
+
+3.  **Stopping Services:**
+
+    ```bash
+    docker-compose down
+    ```
+
+---
+
+## 🤝 Contribution Guidelines
+
+All contributions should follow the established Git Flow and Architectural Guidelines.
+
+1.  Create a feature branch from `main`: `git checkout -b feature/module-name`
+2.  Ensure all new code is covered by unit and integration tests.
+3.  The Definition of Done requires passing all tests and successful deployment to the staging environment.
