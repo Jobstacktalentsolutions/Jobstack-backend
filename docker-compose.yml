@@ -9,32 +9,23 @@ services:
     env_file:
       - .env
     ports:
-      - '3002:3002'
-    volumes:
-      - .:/usr/src/app
-      # - /usr/src/app/node_modules
-  background:
-    build:
-      context: . # This is the root of the project
-      dockerfile: ./apps/background/DockerFile
-      target: development
-    command: pnpm run dev background # This is the command to run the background service
-    # This is the environment file for the background service
-    env_file:
-      - .env
-      # This is the port mapping for the background service
-    ports:
       - '3001:3001'
-    # This is the volume mapping for the background service (This maps the root of the project to the /usr/src/app directory in the container)
     volumes:
       - .:/usr/src/app
       # - /usr/src/app/node_modules
-  mongo:
-    image: mongo
-    ports:
-      - '27017:27017'
-    volumes:
-      - mongo_data:/data/db
-
-volumes:
-  mongo_data:
+  # background:
+  #   build:
+  #     context: . # This is the root of the project
+  #     dockerfile: ./apps/background/DockerFile
+  #     target: development
+  #   command: pnpm run dev background # This is the command to run the background service
+  #   # This is the environment file for the background service
+  #   env_file:
+  #     - .env
+  #     # This is the port mapping for the background service
+  #   ports:
+  #     - '3001:3001'
+  #   # This is the volume mapping for the background service (This maps the root of the project to the /usr/src/app directory in the container)
+  #   volumes:
+  #     - .:/usr/src/app
+  #     # - /usr/src/app/node_modules
