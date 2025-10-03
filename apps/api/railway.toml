@@ -1,0 +1,11 @@
+[build]
+buildCommand = "pnpm run build api"
+
+
+
+[deploy]
+healthcheckPath = "http://localhost:3001/health"
+# restartPolicy = "ON_FAILURE"
+restartPolicyMaxRetries = 2
+# restartPolicyMaxDelay = 10
+startCommand = "node dist/apps/api/main.js"
