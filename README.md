@@ -117,11 +117,23 @@ All services (API, Background, PostgreSQL, Redis) are managed via `docker-compos
     ```
 
 2.  **Run Migrations:**
-    You will need to run database migrations against the running container.
+    Use the shared TypeORM configuration located at `typeorm.config.ts`.
 
     ```bash
-    # Run a command inside the API container to execute migrations
-    docker-compose exec api npm run [your_migration_command]
+    # Generate a new migration
+    pnpm typeorm migration:generate ./migrations/<migration-name> -d typeorm.config.ts
+
+    # Run migrations locally
+    pnpm typeorm migration:run -d typeorm.config.ts
+
+    # Revert the last migration
+    pnpm typeorm migration:revert -d typeorm.config.ts
+    ```
+
+    When running inside Docker, execute the same commands through the API container:
+
+    ```bash
+    docker-compose exec api pnpm typeorm migration:run -d typeorm.config.ts
     ```
 
 3.  **Stopping Services:**

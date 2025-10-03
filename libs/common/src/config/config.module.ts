@@ -11,7 +11,11 @@ import { ENV } from './env.config';
     NestConfigModule.forRoot({
       isGlobal: true,
       validationSchema: Joi.object({
+        [ENV.NODE_ENV]: Joi.string()
+          .valid('development', 'production', 'test')
+          .default('development'),
         [ENV.PORT]: Joi.number().required(),
+        [ENV.DATABASE_URL]: Joi.string().uri().required(),
       }),
     }),
   ],

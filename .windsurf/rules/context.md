@@ -1,0 +1,27 @@
+---
+trigger: always_on
+---
+
+---
+
+## alwaysApply: true
+
+# Project Context: JobStack Platform
+
+## What We Are Building
+
+JobStack is a two-sided marketplace designed to simplify the hiring process for businesses by acting as a high-touch recruitment agency platform. We are building the Minimum Viable Product (MVP) to launch in the Nigerian market, starting with Lagos.
+
+## Core Value Proposition
+
+We remove the burden of sourcing, vetting, and payment administration from businesses. Recruiters submit a role, the agency handles the full vetting process (for both low-skilled and high-skilled jobs), and the business is presented with the top matched candidate.
+
+## Key Business Logic
+
+1.  **Two-Sided Roles:** The system must clearly distinguish between **Recruiters** (Businesses) and **Job Seekers** (Talent), although there is an extra role for admins.
+2.  **Agency Vetting:** The platform enables agency admins to manage the detailed vetting status and documentation of all Job Seekers.
+3.  **Payment Flow:** The system facilitates payments from Recruiters to the Agency, and then from the Agency to the Talent (handling both contract and employment payments).
+
+## Scope Focus
+
+The MVP focuses on the core user journeys: Recruiter job posting, Job Seeker profile creation/application, and the Agency's internal vetting/matching/admin dashboard workflow.
