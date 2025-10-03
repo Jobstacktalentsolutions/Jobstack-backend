@@ -4,6 +4,7 @@ import {
   UpdateDateColumn,
   Column,
 } from 'typeorm';
+import { UserRole } from '@app/common/shared/enums/user-roles.enum';
 
 export abstract class BaseEntity {
   @PrimaryGeneratedColumn('uuid')
@@ -29,6 +30,13 @@ export abstract class AuthBase extends BaseEntity {
 }
 
 export abstract class UserProfileBase extends BaseEntity {
+  @Column({
+    type: 'enum',
+    enum: UserRole,
+    nullable: false,
+  })
+  role: UserRole;
+
   @Column()
   firstName: string;
 

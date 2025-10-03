@@ -1,6 +1,7 @@
 import { Entity, Column, OneToOne, JoinColumn } from 'typeorm';
 import { UserProfileBase } from './base.entity';
 import { JobseekerAuth } from './JobseekerAuth.entity';
+import { UserRole } from '@app/common/shared/enums/user-roles.enum';
 
 export enum ApprovalStatus {
   PENDING = 'Pending',
@@ -10,6 +11,10 @@ export enum ApprovalStatus {
 
 @Entity('job_seeker_profiles')
 export class JobSeekerProfile extends UserProfileBase {
+  constructor() {
+    super();
+    this.role = UserRole.JOB_SEEKER;
+  }
   @Column({ type: 'text', array: true, default: [] })
   skills: string[];
 
