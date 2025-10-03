@@ -1,9 +1,11 @@
 [build]
+builder = "NIXPACKS"
 buildCommand = "npm run build background"
 
 
 
 [deploy]
+runtime = "V2"
 healthcheckPath = "http://localhost:3002/health"
 # restartPolicy = "ON_FAILURE"
 restartPolicyMaxRetries = 2
