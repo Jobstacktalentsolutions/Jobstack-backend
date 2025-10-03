@@ -20,6 +20,34 @@ export abstract class BaseEntity {
   updatedAt: Date;
 }
 
+export abstract class AuthBase extends BaseEntity {
+  @Column({ unique: true })
+  email: string;
+
+  @Column()
+  password: string;
+}
+
+export abstract class UserProfileBase extends BaseEntity {
+  @Column()
+  firstName: string;
+
+  @Column()
+  lastName: string;
+
+  @Column()
+  email: string;
+
+  @Column()
+  phoneNumber: string;
+
+  @Column({ nullable: true })
+  profilePictureUrl?: string;
+
+  @Column({ nullable: true })
+  address?: string;
+}
+
 export abstract class UserSession extends BaseEntity {
   @Column({ default: true })
   isActive: boolean;

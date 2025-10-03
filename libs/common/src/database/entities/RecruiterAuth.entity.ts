@@ -1,5 +1,5 @@
 import { Entity, OneToMany, OneToOne, JoinColumn, Column } from 'typeorm';
-import { AuthBase } from './AuthBase.entity';
+import { AuthBase } from './base.entity';
 import { RecruiterSession } from './RecruiterSession.entity';
 import { RecruiterProfile } from './RecruiterProfile.entity';
 

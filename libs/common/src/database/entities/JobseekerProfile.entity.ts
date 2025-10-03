@@ -1,5 +1,5 @@
 import { Entity, Column, OneToOne, JoinColumn } from 'typeorm';
-import { UserProfileBase } from '@app/common/database/entities/UserProfileBase.entity';
+import { UserProfileBase } from './base.entity';
 import { JobseekerAuth } from './JobseekerAuth.entity';
 
 export enum ApprovalStatus {

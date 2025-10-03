@@ -1,5 +1,5 @@
 import { Entity, OneToMany } from 'typeorm';
-import { AuthBase } from './AuthBase.entity';
+import { AuthBase } from './base.entity';
 import { AdminSession } from './AdminSession.entity';
 
 @Entity('admin_auth')

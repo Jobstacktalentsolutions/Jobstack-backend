@@ -1,5 +1,5 @@
 import { Entity, Column, OneToOne, JoinColumn } from 'typeorm';
-import { UserProfileBase } from './UserProfileBase.entity';
+import { UserProfileBase } from './base.entity';
 import { RecruiterAuth } from './RecruiterAuth.entity';
 
 export enum RecruiterType {
