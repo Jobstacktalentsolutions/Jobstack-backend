@@ -3,7 +3,6 @@
  */
 export const NotificationType = {
   EMAIL: 'email',
-  APP: 'app',
 } as const;
 
 export enum NotificationPriority {
