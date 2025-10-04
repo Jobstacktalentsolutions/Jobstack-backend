@@ -20,8 +20,8 @@ import { NotificationType } from './notification.enum';
 /**
  * Notification module - handles email notifications with queue processing
  * - EMAIL notifications are processed via queues with database persistence
+ * - APP notifications are persisted to database for in-app display
  * - Uses unified transporter service with provider fallback for email delivery
- * - Internal service for use by other modules (no external API endpoints)
  */
 @Module({
   imports: [
@@ -41,7 +41,6 @@ import { NotificationType } from './notification.enum';
     }),
     ConfigModule,
   ],
-  controllers: [],
   providers: [
     // Core Services
     NotificationService,

@@ -5,11 +5,11 @@ This module provides email notification functionality with Bull queue processing
 ## Features
 
 - **Email Notifications**: Send templated emails via Brevo
+- **App Notifications**: Store in-app notifications in database
 - **Queue Processing**: Uses Bull/Redis for reliable email delivery
 - **Provider Fallback**: Extensible provider system with retry logic
 - **Template System**: EJS-based email templates
 - **Database Persistence**: Track notification status and history
-- **Internal Service**: Designed for use by other modules (no external API endpoints)
 
 ## Setup
 

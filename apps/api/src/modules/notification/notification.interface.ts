@@ -11,3 +11,13 @@ export interface NotificationResponse {
 export interface INotificationTransporter<T> {
   send(payload: T): Promise<void>;
 }
+
+/**
+ * Query parameters for fetching app notifications
+ */
+export interface AppNotificationQuery {
+  page?: number;
+  limit?: number;
+  isRead?: boolean;
+  search?: string;
+}
