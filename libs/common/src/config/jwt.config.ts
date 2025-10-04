@@ -4,73 +4,42 @@ import { ENV } from './env.config';
 
 /**
  * JWT configuration for the API service
- * Uses RS256 (asymmetric) for production security
- * Falls back to HS256 (symmetric) for development
+ * Uses RS256 (asymmetric) for all environments for consistent security
  */
 export const createJwtConfig = (
   configService: ConfigService,
 ): JwtModuleOptions => {
-  const environment = configService.get(ENV.NODE_ENV, 'development');
+  const privateKey = configService.get(ENV.JWT_PRIVATE_KEY);
+  const publicKey = configService.get(ENV.JWT_PUBLIC_KEY);
 
-  // Always use RS256 for production
-  if (environment === 'production') {
-    const privateKey = configService.get(ENV.JWT_PRIVATE_KEY);
-    const publicKey = configService.get(ENV.JWT_PUBLIC_KEY);
-
-    if (!privateKey || !publicKey) {
-      throw new Error(
-        'JWT_PRIVATE_KEY and JWT_PUBLIC_KEY must be set in production',
-      );
-    }
-
-    const config = {
-      privateKey: privateKey.replace(/\\n/g, '\n'), // Handle escaped newlines
-      publicKey: publicKey.replace(/\\n/g, '\n'),
-      signOptions: {
-        algorithm: 'RS256',
-        expiresIn: configService.get(ENV.JWT_ACCESS_TOKEN_EXPIRES_IN, '15m'),
-        issuer: configService.get(ENV.JWT_ISSUER, 'jobstack-platform'),
-        audience: configService.get(ENV.JWT_AUDIENCE, 'jobstack-users'),
-      },
-      verifyOptions: {
-        algorithms: ['RS256'],
-        issuer: configService.get(ENV.JWT_ISSUER, 'jobstack-platform'),
-        audience: configService.get(ENV.JWT_AUDIENCE, 'jobstack-users'),
-      },
-    };
-
-    return {
-      privateKey: config.privateKey,
-      publicKey: config.publicKey,
-      signOptions: config.signOptions as JwtSignOptions,
-      verifyOptions: config.verifyOptions as any,
-    };
-  } else {
-    // Development: Use HMAC for simplicity
-    const config = {
-      secret: configService.get(
-        ENV.JWT_SECRET,
-        'development-secret-key-change-in-production',
-      ),
-      signOptions: {
-        algorithm: 'HS256',
-        expiresIn: configService.get(ENV.JWT_ACCESS_TOKEN_EXPIRES_IN, '15m'),
-        issuer: configService.get(ENV.JWT_ISSUER, 'jobstack-platform'),
-        audience: configService.get(ENV.JWT_AUDIENCE, 'jobstack-users'),
-      },
-      verifyOptions: {
-        algorithms: ['HS256'],
-        issuer: configService.get(ENV.JWT_ISSUER, 'jobstack-platform'),
-        audience: configService.get(ENV.JWT_AUDIENCE, 'jobstack-users'),
-      },
-    };
-
-    return {
-      secret: config.secret,
-      signOptions: config.signOptions as JwtSignOptions,
-      verifyOptions: config.verifyOptions as any,
-    };
+  if (!privateKey || !publicKey) {
+    throw new Error(
+      'JWT_PRIVATE_KEY and JWT_PUBLIC_KEY must be set in all environments',
+    );
   }
+
+  const config = {
+    privateKey: privateKey.replace(/\\n/g, '\n'), // Handle escaped newlines
+    publicKey: publicKey.replace(/\\n/g, '\n'),
+    signOptions: {
+      algorithm: 'RS256',
+      expiresIn: configService.get(ENV.JWT_ACCESS_TOKEN_EXPIRES_IN, '15m'),
+      issuer: configService.get(ENV.JWT_ISSUER, 'jobstack-platform'),
+      audience: configService.get(ENV.JWT_AUDIENCE, 'jobstack-users'),
+    },
+    verifyOptions: {
+      algorithms: ['RS256'],
+      issuer: configService.get(ENV.JWT_ISSUER, 'jobstack-platform'),
+      audience: configService.get(ENV.JWT_AUDIENCE, 'jobstack-users'),
+    },
+  };
+
+  return {
+    privateKey: config.privateKey,
+    publicKey: config.publicKey,
+    signOptions: config.signOptions as JwtSignOptions,
+    verifyOptions: config.verifyOptions as any,
+  };
 };
 
 /**

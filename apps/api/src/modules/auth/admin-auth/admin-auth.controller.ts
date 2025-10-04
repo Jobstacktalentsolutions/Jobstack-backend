@@ -8,7 +8,7 @@ import {
   UseGuards,
   Delete,
 } from '@nestjs/common';
-import { Request } from 'express';
+import type { Request } from 'express';
 import { AdminAuthService } from './admin-auth.service';
 import {
   LoginDto,
@@ -19,7 +19,7 @@ import {
   PasswordResetConfirmCodeDto,
   PasswordResetDto,
 } from './dto/admin-auth.dto';
-import { AdminJwtGuard } from './guards/admin-jwt.guard';
+import { AdminJwtGuard } from 'apps/api/src/guards';
 
 @Controller('auth/admin')
 export class AdminAuthController {
@@ -68,9 +68,7 @@ export class AdminAuthController {
   async sendVerificationEmail(
     @Body() requestData: EmailVerificationRequestDto,
   ) {
-    return await this.adminAuthService.sendVerificationEmail(
-      requestData.email,
-    );
+    return await this.adminAuthService.sendVerificationEmail(requestData.email);
   }
 
   @Post('verify-email')

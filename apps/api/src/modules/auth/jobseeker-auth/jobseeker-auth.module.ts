@@ -9,7 +9,7 @@ import { RedisModule } from '@app/common/redis/redis.module';
 import { createJwtConfig } from '@app/common/config/jwt.config';
 import { JobSeekerAuthService } from './jobseeker-auth.service';
 import { JobSeekerAuthController } from './jobseeker-auth.controller';
-import { JobSeekerJwtGuard } from './guards/jobseeker-jwt.guard';
+import { JobSeekerJwtGuard } from '../../guards';
 import { NotificationModule } from '../../notification/notification.module';
 
 @Module({

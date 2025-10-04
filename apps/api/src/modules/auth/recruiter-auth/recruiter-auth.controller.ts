@@ -8,7 +8,6 @@ import {
   UseGuards,
   Delete,
 } from '@nestjs/common';
-import { Request } from 'express';
 import { RecruiterAuthService } from './recruiter-auth.service';
 import {
   RecruiterRegistrationDto,
@@ -20,7 +19,8 @@ import {
   PasswordResetConfirmCodeDto,
   PasswordResetDto,
 } from './dto/recruiter-auth.dto';
-import { RecruiterJwtGuard } from './guards/recruiter-jwt.guard';
+import type { Request } from 'express';
+import { RecruiterJwtGuard } from 'apps/api/src/guards';
 
 @Controller('auth/recruiter')
 export class RecruiterAuthController {
@@ -38,7 +38,10 @@ export class RecruiterAuthController {
       platform: req.headers['sec-ch-ua-platform'],
       language: req.headers['accept-language'],
     };
-    return await this.recruiterAuthService.register(registrationData, deviceInfo);
+    return await this.recruiterAuthService.register(
+      registrationData,
+      deviceInfo,
+    );
   }
 
   @Post('login')

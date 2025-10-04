@@ -10,14 +10,14 @@ import { AccessTokenPayload } from '@app/common/shared/interfaces/jwt-payload.in
 import { UserRole } from '@app/common/shared/enums/user-roles.enum';
 import { RedisService } from '@app/common/redis/redis.service';
 import { REDIS_KEYS } from '@app/common/redis/redis.config';
-import { RecruiterAuthService } from '../recruiter-auth.service';
+import { AdminAuthService } from '../modules/auth/admin-auth/admin-auth.service';
 
 @Injectable()
-export class RecruiterJwtGuard implements CanActivate {
+export class AdminJwtGuard implements CanActivate {
   constructor(
     private jwtService: JwtService,
     private reflector: Reflector,
-    private recruiterAuthService: RecruiterAuthService,
+    private adminAuthService: AdminAuthService,
     private redisService: RedisService,
   ) {}
 
@@ -31,12 +31,15 @@ export class RecruiterJwtGuard implements CanActivate {
 
     try {
       // Verify JWT token
-      const payload = await this.jwtService.verifyAsync<AccessTokenPayload>(
-        token,
-      );
+      const payload =
+        await this.jwtService.verifyAsync<AccessTokenPayload>(token);
 
       // Validate token type and role
-      if (payload.type !== 'access' || payload.role !== UserRole.RECRUITER) {
+      if (
+        payload.type !== 'access' ||
+        (payload.role !== UserRole.ADMIN &&
+          payload.role !== UserRole.SUPER_ADMIN)
+      ) {
         throw new UnauthorizedException('Invalid token');
       }
 
@@ -49,7 +52,7 @@ export class RecruiterJwtGuard implements CanActivate {
       }
 
       // Validate session
-      const sessionValidation = await this.recruiterAuthService.validateSession(
+      const sessionValidation = await this.adminAuthService.validateSession(
         payload.sessionId,
       );
 

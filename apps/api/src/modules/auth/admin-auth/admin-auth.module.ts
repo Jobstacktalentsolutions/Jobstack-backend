@@ -8,7 +8,7 @@ import { RedisModule } from '@app/common/redis/redis.module';
 import { createJwtConfig } from '@app/common/config/jwt.config';
 import { AdminAuthService } from './admin-auth.service';
 import { AdminAuthController } from './admin-auth.controller';
-import { AdminJwtGuard } from './guards/admin-jwt.guard';
+import { AdminJwtGuard } from '../../guards';
 import { NotificationModule } from '../../notification/notification.module';
 
 @Module({

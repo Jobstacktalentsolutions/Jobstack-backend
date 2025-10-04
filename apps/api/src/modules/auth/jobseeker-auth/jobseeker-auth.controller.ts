@@ -8,7 +8,7 @@ import {
   UseGuards,
   Delete,
 } from '@nestjs/common';
-import { Request } from 'express';
+import type { Request } from 'express';
 import { JobSeekerAuthService } from './jobseeker-auth.service';
 import {
   JobSeekerRegistrationDto,
@@ -20,7 +20,7 @@ import {
   PasswordResetConfirmCodeDto,
   PasswordResetDto,
 } from './dto/jobseeker-auth.dto';
-import { JobSeekerJwtGuard } from './guards/jobseeker-jwt.guard';
+import { JobSeekerJwtGuard } from 'apps/api/src/guards';
 
 @Controller('auth/jobseeker')
 export class JobSeekerAuthController {
@@ -38,7 +38,10 @@ export class JobSeekerAuthController {
       platform: req.headers['sec-ch-ua-platform'],
       language: req.headers['accept-language'],
     };
-    return await this.jobseekerAuthService.register(registrationData, deviceInfo);
+    return await this.jobseekerAuthService.register(
+      registrationData,
+      deviceInfo,
+    );
   }
 
   @Post('login')

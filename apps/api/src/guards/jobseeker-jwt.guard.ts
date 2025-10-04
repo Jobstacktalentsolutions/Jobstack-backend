@@ -10,7 +10,7 @@ import { AccessTokenPayload } from '@app/common/shared/interfaces/jwt-payload.in
 import { UserRole } from '@app/common/shared/enums/user-roles.enum';
 import { RedisService } from '@app/common/redis/redis.service';
 import { REDIS_KEYS } from '@app/common/redis/redis.config';
-import { JobSeekerAuthService } from '../jobseeker-auth.service';
+import { JobSeekerAuthService } from '../modules/auth/jobseeker-auth/jobseeker-auth.service';
 
 @Injectable()
 export class JobSeekerJwtGuard implements CanActivate {
@@ -31,9 +31,8 @@ export class JobSeekerJwtGuard implements CanActivate {
 
     try {
       // Verify JWT token
-      const payload = await this.jwtService.verifyAsync<AccessTokenPayload>(
-        token,
-      );
+      const payload =
+        await this.jwtService.verifyAsync<AccessTokenPayload>(token);
 
       // Validate token type and role
       if (payload.type !== 'access' || payload.role !== UserRole.JOB_SEEKER) {
