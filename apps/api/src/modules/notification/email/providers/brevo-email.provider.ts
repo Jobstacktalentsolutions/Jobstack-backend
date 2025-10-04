@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
+import { ENV } from '@app/common';
 import { INotificationTransporter } from '../../notification.interface';
 import { EmailPayloadDto } from '../email-notification.dto';
 
@@ -14,14 +15,16 @@ export class BrevoEmailProvider
   private readonly baseUrl: string = 'https://api.brevo.com/v3';
 
   constructor(private readonly configService: ConfigService) {
-    this.apiKey = this.configService.get<string>('BREVO_API_KEY') || '';
+    this.apiKey = this.configService.get<string>(ENV.BREVO_API_KEY) || '';
     this.fromEmail =
-      this.configService.get<string>('BREVO_FROM_EMAIL') || 'noreply@jobstack.ng';
-    this.fromName = this.configService.get<string>('BREVO_FROM_NAME') || 'JobStack';
+      this.configService.get<string>(ENV.BREVO_FROM_EMAIL) ||
+      'noreply@jobstack.ng';
+    this.fromName =
+      this.configService.get<string>(ENV.BREVO_FROM_NAME) || 'JobStack';
   }
 
   async send(
-    payload: EmailPayloadDto & { htmlContent?: string }
+    payload: EmailPayloadDto & { htmlContent?: string },
   ): Promise<void> {
     const { recipient, subject, htmlContent } = payload;
 
@@ -47,7 +50,7 @@ export class BrevoEmailProvider
             'api-key': this.apiKey,
           },
           timeout: 10000,
-        }
+        },
       );
 
       console.log('Email sent successfully via Brevo', {
@@ -60,7 +63,7 @@ export class BrevoEmailProvider
       throw new Error(
         `Failed to send email via Brevo: ${
           error?.response?.data?.message || error.message
-        }`
+        }`,
       );
     }
   }

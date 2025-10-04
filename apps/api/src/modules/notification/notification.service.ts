@@ -286,4 +286,40 @@ export class NotificationService {
 
     await this.notificationRepository.update(notificationId, updateData);
   }
+
+  /**
+   * Simple email sending wrapper for authentication flows
+   * This method doesn't require userId and creates a simplified notification
+   */
+  async sendEmail(data: {
+    to: string;
+    subject: string;
+    template: string;
+    context: Record<string, any>;
+  }): Promise<void> {
+    try {
+      // Queue email directly without creating notification record
+      await this.emailQueue.add('send_email', {
+        recipient: data.to,
+        subject: data.subject,
+        templateType: data.template,
+        context: data.context,
+      }, { 
+        priority: NotificationPriority.HIGH,
+        attempts: 3,
+        backoff: {
+          type: 'exponential',
+          delay: 2000,
+        },
+      });
+
+      this.logger.log(`Email queued for ${data.to}: ${data.subject}`);
+    } catch (error) {
+      this.logger.error('Failed to queue email', error.stack, {
+        recipient: data.to,
+        subject: data.subject,
+      });
+      throw error;
+    }
+  }
 }

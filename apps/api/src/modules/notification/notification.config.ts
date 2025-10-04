@@ -1,6 +1,7 @@
 import { Provider } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { BrevoEmailProvider } from './email/providers/brevo-email.provider';
+import { ResendEmailProvider } from './email/providers/resend-email.provider';
 import { EmailConfig } from './email/email-notification.dto';
 
 export const NOTIFICATION_PROVIDERS = {
@@ -9,12 +10,15 @@ export const NOTIFICATION_PROVIDERS = {
 
 export const EMAIL_CONFIG = 'EMAIL_CONFIG';
 
-// Email providers configuration - Only Brevo for now
+// Email providers configuration - Brevo and Resend
 export const EMAIL_PROVIDERS_CONFIG: Provider[] = [
   {
     provide: NOTIFICATION_PROVIDERS.EMAIL,
-    useFactory: (brevoEmail: BrevoEmailProvider) => [brevoEmail],
-    inject: [BrevoEmailProvider],
+    useFactory: (
+      brevoEmail: BrevoEmailProvider,
+      resendEmail: ResendEmailProvider,
+    ) => [brevoEmail, resendEmail],
+    inject: [BrevoEmailProvider, ResendEmailProvider],
   },
   {
     provide: EMAIL_CONFIG,
@@ -30,5 +34,6 @@ export const EMAIL_PROVIDERS_CONFIG: Provider[] = [
 // All notification providers combined
 export const ALL_NOTIFICATION_PROVIDERS: Provider[] = [
   BrevoEmailProvider,
+  ResendEmailProvider,
   ...EMAIL_PROVIDERS_CONFIG,
 ];
