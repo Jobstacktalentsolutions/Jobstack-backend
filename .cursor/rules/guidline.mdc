@@ -32,7 +32,7 @@ alwaysApply: true
 
 ## Environment Setup
 
-- The development environment must be consistent across all machines using **Docker and Docker Compose**. All service containers (API, Background, DB, Redis) must be configured in `docker-compose.yml`.
+- Ensure to use the ENV variables already defined in env.config when trying to access environement variables.
 
 ## General Code Standards
 

@@ -9,7 +9,7 @@ import { RedisModule } from '@app/common/redis/redis.module';
 import { createJwtConfig } from '@app/common/config/jwt.config';
 import { RecruiterAuthService } from './recruiter-auth.service';
 import { RecruiterAuthController } from './recruiter-auth.controller';
-import { RecruiterJwtGuard } from '../../guards';
+import { RecruiterJwtGuard } from 'apps/api/src/guards';
 import { NotificationModule } from '../../notification/notification.module';
 
 @Module({

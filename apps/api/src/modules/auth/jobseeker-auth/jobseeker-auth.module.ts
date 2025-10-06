@@ -9,8 +9,9 @@ import { RedisModule } from '@app/common/redis/redis.module';
 import { createJwtConfig } from '@app/common/config/jwt.config';
 import { JobSeekerAuthService } from './jobseeker-auth.service';
 import { JobSeekerAuthController } from './jobseeker-auth.controller';
-import { JobSeekerJwtGuard } from '../../guards';
+import { JobSeekerJwtGuard } from 'apps/api/src/guards';
 import { NotificationModule } from '../../notification/notification.module';
+import { SkillsModule } from '../../skills/skills.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { NotificationModule } from '../../notification/notification.module';
     }),
     RedisModule,
     NotificationModule,
+    SkillsModule,
   ],
   controllers: [JobSeekerAuthController],
   providers: [JobSeekerAuthService, JobSeekerJwtGuard],

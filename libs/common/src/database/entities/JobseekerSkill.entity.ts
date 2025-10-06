@@ -1,0 +1,54 @@
+import {
+  Entity,
+  Column,
+  ManyToOne,
+  Unique,
+  PrimaryGeneratedColumn,
+  JoinColumn,
+} from 'typeorm';
+import { JobSeekerProfile } from './JobseekerProfile.entity';
+import { Skill } from './Skill.entity';
+
+export enum Proficiency {
+  BEGINNER = 'BEGINNER',
+  INTERMEDIATE = 'INTERMEDIATE',
+  ADVANCED = 'ADVANCED',
+  EXPERT = 'EXPERT',
+}
+
+@Entity('jobseeker_skills')
+@Unique(['profileId', 'skillId'])
+export class JobseekerSkill {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column('uuid')
+  profileId: string;
+
+  @ManyToOne(() => JobSeekerProfile, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'profileId' })
+  profile: JobSeekerProfile;
+
+  @Column('uuid')
+  skillId: string;
+
+  @ManyToOne(() => Skill, { onDelete: 'CASCADE', eager: true })
+  @JoinColumn({ name: 'skillId' })
+  skill: Skill;
+
+  @Column({
+    type: 'enum',
+    enum: Proficiency,
+    default: Proficiency.INTERMEDIATE,
+  })
+  proficiency: Proficiency;
+
+  @Column({ type: 'int', default: 0 })
+  yearsExperience: number;
+
+  @Column({ default: false })
+  verified: boolean;
+
+  @Column({ type: 'timestamp', nullable: true })
+  verifiedAt?: Date;
+}

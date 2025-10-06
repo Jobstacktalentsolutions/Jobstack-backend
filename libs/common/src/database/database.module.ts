@@ -13,6 +13,7 @@ import { ENV } from '../config/env.config';
           type: 'postgres',
           url: configService.getOrThrow<string>(ENV.DATABASE_URL),
           autoLoadEntities: true,
+
           synchronize: nodeEnv !== 'production',
           logging: nodeEnv === 'development',
         };

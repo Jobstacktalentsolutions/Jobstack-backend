@@ -13,8 +13,8 @@ export const typeOrmConfig: DataSourceOptions = {
   entities: ['dist/**/*.entity.js'],
   migrations: ['migrations/**/*{.ts,.js}'],
   migrationsTableName: 'migrations',
-  synchronize: false,
-  logging: nodeEnv === 'development',
+  synchronize: true,
+  logging: false, // disable verbose TypeORM logs
 };
 
 const dataSource = new DataSource(typeOrmConfig);

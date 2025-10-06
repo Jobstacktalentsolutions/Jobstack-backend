@@ -1,13 +1,36 @@
-import { IsString, IsArray, IsOptional } from 'class-validator';
+import {
+  IsString,
+  IsArray,
+  IsOptional,
+  IsUUID,
+  IsEnum,
+  IsInt,
+  Min,
+} from 'class-validator';
 import { BaseRegistrationDto } from '@app/common/shared/dto/auth.dto';
+import { Proficiency } from '@app/common/database/entities/JobseekerSkill.entity';
 
 /**
  * JobSeeker Registration DTO
  */
 export class JobSeekerRegistrationDto extends BaseRegistrationDto {
+  @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  skills: string[];
+  skills?: string[]; // free-text names
+
+  @IsOptional()
+  @IsArray()
+  @IsUUID('4', { each: true })
+  skillIds?: string[]; // normalized ids
+
+  @IsOptional()
+  @IsArray()
+  skillDetails?: Array<{
+    skillId: string;
+    proficiency?: Proficiency;
+    yearsExperience?: number;
+  }>;
 
   @IsString()
   brief: string;

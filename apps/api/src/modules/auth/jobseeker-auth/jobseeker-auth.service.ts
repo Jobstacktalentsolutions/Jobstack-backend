@@ -40,6 +40,8 @@ import {
   PasswordResetConfirmCodeDto,
   PasswordResetDto,
 } from './dto/jobseeker-auth.dto';
+import { SkillsService } from '../../skills/skills.service';
+import { Proficiency } from '@app/common/database/entities/JobseekerSkill.entity';
 
 @Injectable()
 export class JobSeekerAuthService {
@@ -56,6 +58,7 @@ export class JobSeekerAuthService {
     private redisService: RedisService,
     private notificationService: NotificationService,
     private dataSource: DataSource,
+    private skillsService: SkillsService,
   ) {}
 
   /**
@@ -100,7 +103,6 @@ export class JobSeekerAuthService {
         firstName,
         lastName,
         phoneNumber,
-        skills,
         brief,
         cvUrl,
         role: UserRole.JOB_SEEKER,
@@ -125,6 +127,40 @@ export class JobSeekerAuthService {
       const authResult = await this.generateTokens(auth, profile, deviceInfo);
 
       this.logger.log(`JobSeeker registered: ${auth.id} (${email})`);
+
+      // Normalize and attach skills via SkillsService (non-transactional, best-effort)
+      const detailMap = new Map<
+        string,
+        { proficiency?: Proficiency; yearsExperience?: number }
+      >();
+      for (const d of registrationData.skillDetails ?? []) {
+        if (d?.skillId)
+          detailMap.set(d.skillId, {
+            proficiency: d.proficiency,
+            yearsExperience: d.yearsExperience,
+          });
+      }
+
+      const normalizedIds = new Set<string>();
+      for (const id of registrationData.skillIds ?? []) normalizedIds.add(id);
+
+      // For free-text names, try to find an ACTIVE/SUGGESTED skill by name/synonym; if not, create SUGGESTED
+      for (const name of registrationData.skills ?? []) {
+        const found = (await this.skillsService.searchSkills(name)).find(
+          (s) => s.name.toLowerCase() === name.toLowerCase(),
+        );
+        const skill = found ?? (await this.skillsService.suggestSkill(name));
+        normalizedIds.add(skill.id);
+      }
+
+      await this.skillsService.attachSkillsToProfile(
+        profile.id,
+        Array.from(normalizedIds).map((skillId) => ({
+          skillId,
+          proficiency: detailMap.get(skillId)?.proficiency,
+          yearsExperience: detailMap.get(skillId)?.yearsExperience,
+        })),
+      );
 
       return authResult;
     } catch (error) {

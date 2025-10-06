@@ -1,7 +1,8 @@
-import { Entity, Column, OneToOne, JoinColumn } from 'typeorm';
+import { Entity, Column, OneToOne, JoinColumn, OneToMany } from 'typeorm';
 import { UserProfileBase } from './base.entity';
 import { JobseekerAuth } from './JobseekerAuth.entity';
 import { UserRole } from '@app/common/shared/enums/user-roles.enum';
+import { JobseekerSkill } from './JobseekerSkill.entity';
 
 export enum ApprovalStatus {
   PENDING = 'Pending',
@@ -15,8 +16,8 @@ export class JobSeekerProfile extends UserProfileBase {
     super();
     this.role = UserRole.JOB_SEEKER;
   }
-  @Column({ type: 'text', array: true, default: [] })
-  skills: string[];
+  @OneToMany(() => JobseekerSkill, (js) => js.profile, { cascade: true })
+  userSkills: JobseekerSkill[];
 
   @Column({ type: 'text' })
   brief: string;
@@ -31,7 +32,9 @@ export class JobSeekerProfile extends UserProfileBase {
   })
   approvalStatus: ApprovalStatus;
 
-  @OneToOne(() => JobseekerAuth, (auth) => auth.profile, { onDelete: 'CASCADE' })
+  @OneToOne(() => JobseekerAuth, (auth) => auth.profile, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn()
   auth: JobseekerAuth;
 }

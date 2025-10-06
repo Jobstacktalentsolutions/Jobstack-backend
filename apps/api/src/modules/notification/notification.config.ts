@@ -3,12 +3,16 @@ import { ConfigService } from '@nestjs/config';
 import { BrevoEmailProvider } from './email/providers/brevo-email.provider';
 import { ResendEmailProvider } from './email/providers/resend-email.provider';
 import { EmailConfig } from './email/email-notification.dto';
+import { TwilioSmsProvider } from './sms/providers/twilio-sms.provider';
+import type { SmsConfig } from './sms/sms-notification.dto';
 
 export const NOTIFICATION_PROVIDERS = {
   EMAIL: 'EMAIL_PROVIDERS',
+  SMS: 'SMS_PROVIDERS',
 } as const;
 
 export const EMAIL_CONFIG = 'EMAIL_CONFIG';
+export const SMS_CONFIG = 'SMS_CONFIG';
 
 // Email providers configuration - Brevo and Resend
 export const EMAIL_PROVIDERS_CONFIG: Provider[] = [
@@ -31,9 +35,27 @@ export const EMAIL_PROVIDERS_CONFIG: Provider[] = [
   },
 ];
 
+// SMS providers configuration - Twilio
+export const SMS_PROVIDERS_CONFIG: Provider[] = [
+  {
+    provide: NOTIFICATION_PROVIDERS.SMS,
+    useFactory: (twilioSms: TwilioSmsProvider) => [twilioSms],
+    inject: [TwilioSmsProvider],
+  },
+  {
+    provide: SMS_CONFIG,
+    useFactory: (configService: ConfigService): SmsConfig => ({
+      fromNumber: configService.get('TWILIO_FROM_NUMBER') as string,
+    }),
+    inject: [ConfigService],
+  },
+];
+
 // All notification providers combined
 export const ALL_NOTIFICATION_PROVIDERS: Provider[] = [
   BrevoEmailProvider,
   ResendEmailProvider,
+  TwilioSmsProvider,
   ...EMAIL_PROVIDERS_CONFIG,
+  ...SMS_PROVIDERS_CONFIG,
 ];

@@ -12,3 +12,4 @@ export * from './shared/interfaces/jwt-payload.interface';
 export * from './shared/interfaces/auth-result.interface';
 export * from './shared/dto/auth.dto';
 export * from './database';
+export * from './storage';
