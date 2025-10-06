@@ -1,5 +1,6 @@
 import { ConfigService } from '@nestjs/config';
 import { StorageProviderType } from '../interfaces/storage.interface';
+import { ENV } from '../../config/env.config';
 
 export type StorageConfig = {
   provider: StorageProviderType;
@@ -26,13 +27,14 @@ export const createStorageConfig = (
 ): StorageConfig => {
   return {
     provider:
-      (configService.get<string>('STORAGE_PROVIDER') as StorageProviderType) ||
-      'idrive',
+      (configService.get<string>(
+        ENV.STORAGE_PROVIDER,
+      ) as StorageProviderType) || 'idrive',
     maxFileSize: Number(
-      configService.get<string>('STORAGE_MAX_FILE_SIZE') || 10 * 1024 * 1024,
+      configService.get<string>(ENV.STORAGE_MAX_FILE_SIZE) || 10 * 1024 * 1024,
     ),
     allowedMimeTypes: (configService
-      .get<string>('STORAGE_ALLOWED_MIME')
+      .get<string>(ENV.STORAGE_ALLOWED_MIME)
       ?.split(',') || [
       'image/jpeg',
       'image/png',
@@ -40,19 +42,23 @@ export const createStorageConfig = (
       'text/markdown',
     ]) as string[],
     idrive: {
-      endpoint: configService.get<string>('IDRIVE_ENDPOINT') as string,
+      endpoint: configService.get<string>(ENV.IDRIVE_ENDPOINT) as string,
       region:
-        (configService.get<string>('IDRIVE_REGION') as string) || 'us-east-1',
-      accessKeyId: configService.get<string>('IDRIVE_ACCESS_KEY_ID') as string,
-      secretAccessKey: configService.get<string>(
-        'IDRIVE_SECRET_ACCESS_KEY',
+        (configService.get<string>(ENV.IDRIVE_REGION) as string) || 'us-east-1',
+      accessKeyId: configService.get<string>(
+        ENV.IDRIVE_ACCESS_KEY_ID,
       ) as string,
-      publicBucket: configService.get<string>('IDRIVE_PUBLIC_BUCKET') as string,
+      secretAccessKey: configService.get<string>(
+        ENV.IDRIVE_SECRET_ACCESS_KEY,
+      ) as string,
+      publicBucket: configService.get<string>(
+        ENV.IDRIVE_PUBLIC_BUCKET,
+      ) as string,
       privateBucket: configService.get<string>(
-        'IDRIVE_PRIVATE_BUCKET',
+        ENV.IDRIVE_PRIVATE_BUCKET,
       ) as string,
       publicBaseUrl:
-        configService.get<string>('IDRIVE_PUBLIC_BASE_URL') || undefined,
+        configService.get<string>(ENV.IDRIVE_PUBLIC_BASE_URL) || undefined,
     },
     cloudinary: {
       cloudName: configService.get<string>('CLOUDINARY_CLOUD_NAME') as string,

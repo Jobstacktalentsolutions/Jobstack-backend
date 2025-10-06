@@ -32,7 +32,8 @@ alwaysApply: true
 
 ## Environment Setup
 
-- Ensure to use the ENV variables already defined in env.config when trying to access environement variables.
+- Ensure to use the ENV variables already defined in `env.config` when trying to access environment variables.
+- For storage, always reference ENV via the `ENV` enum from `libs/common/src/config/env.config.ts` (e.g., `ENV.IDRIVE_ENDPOINT`, `ENV.STORAGE_PROVIDER`). Do not use local credential profiles; providers must be configured from ENV only.
 
 ## General Code Standards
 

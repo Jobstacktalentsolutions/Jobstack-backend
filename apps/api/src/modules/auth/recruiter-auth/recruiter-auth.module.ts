@@ -11,6 +11,7 @@ import { RecruiterAuthService } from './recruiter-auth.service';
 import { RecruiterAuthController } from './recruiter-auth.controller';
 import { RecruiterJwtGuard } from 'apps/api/src/guards';
 import { NotificationModule } from '../../notification/notification.module';
+import { ContactChangeService } from '../submodules/contact-change.service';
 
 @Module({
   imports: [
@@ -28,7 +29,7 @@ import { NotificationModule } from '../../notification/notification.module';
     NotificationModule,
   ],
   controllers: [RecruiterAuthController],
-  providers: [RecruiterAuthService, RecruiterJwtGuard],
-  exports: [RecruiterAuthService, RecruiterJwtGuard],
+  providers: [RecruiterAuthService, RecruiterJwtGuard, ContactChangeService],
+  exports: [RecruiterAuthService, RecruiterJwtGuard, ContactChangeService],
 })
 export class RecruiterAuthModule {}

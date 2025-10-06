@@ -3,6 +3,7 @@ import { ApiController } from './api.controller';
 import { ApiService } from './api.service';
 import { CommonModule, ConfigModule, LoggerModule } from '@app/common';
 import { AuthModule } from './modules/auth/auth.module';
+import { JobseekerProfileModule } from './modules/jobseeker-profile/jobseeker-profile.module';
 import { NotificationModule } from './modules/notification/notification.module';
 import { SkillsModule } from './modules/skills/skills.module';
 
@@ -14,6 +15,7 @@ import { SkillsModule } from './modules/skills/skills.module';
     NotificationModule,
     SkillsModule,
     AuthModule,
+    JobseekerProfileModule,
   ],
   controllers: [ApiController],
   providers: [ApiService],

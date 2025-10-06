@@ -21,10 +21,20 @@ import {
   PasswordResetDto,
 } from './dto/jobseeker-auth.dto';
 import { JobSeekerJwtGuard } from 'apps/api/src/guards';
+import { ContactChangeService } from '../submodules/contact-change.service';
+import {
+  ConfirmEmailChangeDto,
+  ConfirmPhoneChangeDto,
+  RequestEmailChangeDto,
+  RequestPhoneChangeDto,
+} from '../submodules/contact-change.dto';
 
 @Controller('auth/jobseeker')
 export class JobSeekerAuthController {
-  constructor(private jobseekerAuthService: JobSeekerAuthService) {}
+  constructor(
+    private jobseekerAuthService: JobSeekerAuthService,
+    private contactChangeService: ContactChangeService,
+  ) {}
 
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
@@ -121,5 +131,66 @@ export class JobSeekerAuthController {
   @HttpCode(HttpStatus.OK)
   async resetPassword(@Body() resetData: PasswordResetDto) {
     return await this.jobseekerAuthService.resetPassword(resetData);
+  }
+
+  // Contact change flows
+  @UseGuards(JobSeekerJwtGuard)
+  @Post('contact/request-email-change')
+  @HttpCode(HttpStatus.OK)
+  async requestEmailChange(
+    @Req() req: any,
+    @Body() body: RequestEmailChangeDto,
+  ) {
+    await this.contactChangeService.requestEmailChange(
+      'jobseeker',
+      req.user.sub,
+      body,
+    );
+    return { success: true };
+  }
+
+  @UseGuards(JobSeekerJwtGuard)
+  @Post('contact/confirm-email-change')
+  @HttpCode(HttpStatus.OK)
+  async confirmEmailChange(
+    @Req() req: any,
+    @Body() body: ConfirmEmailChangeDto,
+  ) {
+    await this.contactChangeService.confirmEmailChange(
+      'jobseeker',
+      req.user.sub,
+      body,
+    );
+    return { success: true };
+  }
+
+  @UseGuards(JobSeekerJwtGuard)
+  @Post('contact/request-phone-change')
+  @HttpCode(HttpStatus.OK)
+  async requestPhoneChange(
+    @Req() req: any,
+    @Body() body: RequestPhoneChangeDto,
+  ) {
+    await this.contactChangeService.requestPhoneChange(
+      'jobseeker',
+      req.user.sub,
+      body,
+    );
+    return { success: true };
+  }
+
+  @UseGuards(JobSeekerJwtGuard)
+  @Post('contact/confirm-phone-change')
+  @HttpCode(HttpStatus.OK)
+  async confirmPhoneChange(
+    @Req() req: any,
+    @Body() body: ConfirmPhoneChangeDto,
+  ) {
+    await this.contactChangeService.confirmPhoneChange(
+      'jobseeker',
+      req.user.sub,
+      body,
+    );
+    return { success: true };
   }
 }

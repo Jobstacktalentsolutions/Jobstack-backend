@@ -12,6 +12,7 @@ import { JobSeekerAuthController } from './jobseeker-auth.controller';
 import { JobSeekerJwtGuard } from 'apps/api/src/guards';
 import { NotificationModule } from '../../notification/notification.module';
 import { SkillsModule } from '../../skills/skills.module';
+import { ContactChangeService } from '../submodules/contact-change.service';
 
 @Module({
   imports: [
@@ -30,7 +31,7 @@ import { SkillsModule } from '../../skills/skills.module';
     SkillsModule,
   ],
   controllers: [JobSeekerAuthController],
-  providers: [JobSeekerAuthService, JobSeekerJwtGuard],
-  exports: [JobSeekerAuthService, JobSeekerJwtGuard],
+  providers: [JobSeekerAuthService, JobSeekerJwtGuard, ContactChangeService],
+  exports: [JobSeekerAuthService, JobSeekerJwtGuard, ContactChangeService],
 })
 export class JobSeekerAuthModule {}

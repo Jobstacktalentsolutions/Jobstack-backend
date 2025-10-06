@@ -21,10 +21,20 @@ import {
 } from './dto/recruiter-auth.dto';
 import type { Request } from 'express';
 import { RecruiterJwtGuard } from 'apps/api/src/guards';
+import { ContactChangeService } from '../submodules/contact-change.service';
+import {
+  ConfirmEmailChangeDto,
+  ConfirmPhoneChangeDto,
+  RequestEmailChangeDto,
+  RequestPhoneChangeDto,
+} from '../submodules/contact-change.dto';
 
 @Controller('auth/recruiter')
 export class RecruiterAuthController {
-  constructor(private recruiterAuthService: RecruiterAuthService) {}
+  constructor(
+    private recruiterAuthService: RecruiterAuthService,
+    private contactChangeService: ContactChangeService,
+  ) {}
 
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
@@ -121,5 +131,66 @@ export class RecruiterAuthController {
   @HttpCode(HttpStatus.OK)
   async resetPassword(@Body() resetData: PasswordResetDto) {
     return await this.recruiterAuthService.resetPassword(resetData);
+  }
+
+  // Contact change flows
+  @UseGuards(RecruiterJwtGuard)
+  @Post('contact/request-email-change')
+  @HttpCode(HttpStatus.OK)
+  async requestEmailChange(
+    @Req() req: any,
+    @Body() body: RequestEmailChangeDto,
+  ) {
+    await this.contactChangeService.requestEmailChange(
+      'recruiter',
+      req.user.sub,
+      body,
+    );
+    return { success: true };
+  }
+
+  @UseGuards(RecruiterJwtGuard)
+  @Post('contact/confirm-email-change')
+  @HttpCode(HttpStatus.OK)
+  async confirmEmailChange(
+    @Req() req: any,
+    @Body() body: ConfirmEmailChangeDto,
+  ) {
+    await this.contactChangeService.confirmEmailChange(
+      'recruiter',
+      req.user.sub,
+      body,
+    );
+    return { success: true };
+  }
+
+  @UseGuards(RecruiterJwtGuard)
+  @Post('contact/request-phone-change')
+  @HttpCode(HttpStatus.OK)
+  async requestPhoneChange(
+    @Req() req: any,
+    @Body() body: RequestPhoneChangeDto,
+  ) {
+    await this.contactChangeService.requestPhoneChange(
+      'recruiter',
+      req.user.sub,
+      body,
+    );
+    return { success: true };
+  }
+
+  @UseGuards(RecruiterJwtGuard)
+  @Post('contact/confirm-phone-change')
+  @HttpCode(HttpStatus.OK)
+  async confirmPhoneChange(
+    @Req() req: any,
+    @Body() body: ConfirmPhoneChangeDto,
+  ) {
+    await this.contactChangeService.confirmPhoneChange(
+      'recruiter',
+      req.user.sub,
+      body,
+    );
+    return { success: true };
   }
 }

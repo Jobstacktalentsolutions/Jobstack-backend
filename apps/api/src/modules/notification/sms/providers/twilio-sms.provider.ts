@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import type { INotificationTransporter } from '../../notification.interface';
 import type { SmsPayloadDto } from '../sms-notification.dto';
 import twilio from 'twilio';
+import { ENV } from '@app/common/config/env.config';
 
 @Injectable()
 export class TwilioSmsProvider
@@ -12,10 +13,10 @@ export class TwilioSmsProvider
   private readonly fromNumber: string;
 
   constructor(private readonly configService: ConfigService) {
-    const accountSid = this.configService.get<string>('TWILIO_ACCOUNT_SID');
-    const authToken = this.configService.get<string>('TWILIO_AUTH_TOKEN');
+    const accountSid = this.configService.get<string>(ENV.TWILIO_ACCOUNT_SID);
+    const authToken = this.configService.get<string>(ENV.TWILIO_AUTH_TOKEN);
     this.fromNumber = this.configService.get<string>(
-      'TWILIO_FROM_NUMBER',
+      ENV.TWILIO_FROM_NUMBER,
     ) as string;
 
     if (!accountSid || !authToken || !this.fromNumber) {

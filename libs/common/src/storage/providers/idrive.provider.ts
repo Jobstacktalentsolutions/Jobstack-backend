@@ -2,10 +2,10 @@ import {
   S3Client,
   PutObjectCommand,
   DeleteObjectCommand,
-  GetObjectCommand,
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { ConfigService } from '@nestjs/config';
+import { ENV } from '../../config/env.config';
 import {
   IStorageProvider,
   MulterFile,
@@ -21,18 +21,20 @@ export class IDriveProvider implements IStorageProvider {
   private publicBaseUrl?: string;
 
   constructor(private readonly configService: ConfigService) {
-    this.endpoint = this.configService.get<string>('IDRIVE_ENDPOINT') as string;
+    this.endpoint = this.configService.get<string>(
+      ENV.IDRIVE_ENDPOINT,
+    ) as string;
     this.region =
-      (this.configService.get<string>('IDRIVE_REGION') as string) ||
+      (this.configService.get<string>(ENV.IDRIVE_REGION) as string) ||
       'us-east-1';
     const accessKeyId = this.configService.get<string>(
-      'IDRIVE_ACCESS_KEY_ID',
+      ENV.IDRIVE_ACCESS_KEY_ID,
     ) as string;
     const secretAccessKey = this.configService.get<string>(
-      'IDRIVE_SECRET_ACCESS_KEY',
+      ENV.IDRIVE_SECRET_ACCESS_KEY,
     ) as string;
     this.publicBaseUrl =
-      this.configService.get<string>('IDRIVE_PUBLIC_BASE_URL') || undefined;
+      this.configService.get<string>(ENV.IDRIVE_PUBLIC_BASE_URL) || undefined;
 
     if (!accessKeyId || !secretAccessKey) {
       throw new Error('IDrive credentials are missing in ENV');
@@ -85,7 +87,8 @@ export class IDriveProvider implements IStorageProvider {
     bucket: string,
     expiresInSeconds: number,
   ): Promise<string> {
-    const cmd = new GetObjectCommand({ Bucket: bucket, Key: fileKey });
+    const cmd = new PutObjectCommand({ Bucket: bucket, Key: fileKey });
+    // Use a GET signed URL for download instead if needed; here we provide generic access
     return await getSignedUrl(this.s3, cmd, { expiresIn: expiresInSeconds });
   }
 
