@@ -27,10 +27,4 @@ export const REDIS_KEYS = {
   VERIFICATION_TTL: 10 * 60, // 10 minutes
   PASSWORD_RESET_TTL: 15 * 60, // 15 minutes
   RATE_LIMIT_TTL: 60, // 1 minute
-
-  // Contact Change Flows
-  PENDING_EMAIL_CHANGE: (userId: string) => `change:email:target:${userId}`,
-  EMAIL_CHANGE_CODE: (userId: string) => `change:email:code:${userId}`,
-  PENDING_PHONE_CHANGE: (userId: string) => `change:phone:target:${userId}`,
-  PHONE_CHANGE_CODE: (userId: string) => `change:phone:code:${userId}`,
 } as const;

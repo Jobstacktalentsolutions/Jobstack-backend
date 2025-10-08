@@ -6,6 +6,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { JobseekerProfileModule } from './modules/jobseeker-profile/jobseeker-profile.module';
 import { NotificationModule } from './modules/notification/notification.module';
 import { SkillsModule } from './modules/skills/skills.module';
+import { appProviders } from '@app/common/shared/utils/app.providers';
 
 @Module({
   imports: [
@@ -18,6 +19,6 @@ import { SkillsModule } from './modules/skills/skills.module';
     JobseekerProfileModule,
   ],
   controllers: [ApiController],
-  providers: [ApiService],
+  providers: [ApiService, ...appProviders('api')],
 })
 export class ApiModule {}

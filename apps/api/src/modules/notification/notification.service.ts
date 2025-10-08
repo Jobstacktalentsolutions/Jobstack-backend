@@ -10,7 +10,6 @@ import {
 } from '@app/common/database/entities/Notification.entity';
 import { NotificationType } from './notification.enum';
 import { EmailPayloadDto } from './email/email-notification.dto';
-import { SmsPayloadDto } from './sms/sms-notification.dto';
 import {
   NotificationResponse,
   AppNotificationQuery,
@@ -22,7 +21,6 @@ export class NotificationService {
 
   constructor(
     @InjectQueue(NotificationType.EMAIL) private readonly emailQueue: Queue,
-    @InjectQueue(NotificationType.SMS) private readonly smsQueue: Queue,
     @InjectRepository(Notification)
     private readonly notificationRepository: Repository<Notification>,
   ) {}
@@ -189,6 +187,34 @@ export class NotificationService {
   }
 
   /**
+   * Create an app notification for a specific user
+   */
+  async createAppNotification(
+    userId: string,
+    userType: 'jobseeker' | 'recruiter' | 'admin',
+    data: {
+      title: string;
+      message: string;
+      metadata?: Record<string, any>;
+      priority?: NotificationPriority;
+    },
+  ): Promise<Notification> {
+    const notification = this.notificationRepository.create({
+      title: data.title,
+      message: data.message,
+      type: NotificationType.APP,
+      status: NotificationStatus.PENDING,
+      priority: data.priority ?? NotificationPriority.MEDIUM,
+      metadata: data.metadata,
+      ...(userType === 'jobseeker' && { jobseekerId: userId }),
+      ...(userType === 'recruiter' && { recruiterId: userId }),
+      ...(userType === 'admin' && { adminId: userId }),
+    });
+
+    return await this.notificationRepository.save(notification);
+  }
+
+  /**
    * Simple email sending wrapper for authentication flows
    * This method doesn't require userId and creates a simplified notification
    */
@@ -223,34 +249,6 @@ export class NotificationService {
       this.logger.error('Failed to queue email', error.stack, {
         recipient: data.to,
         subject: data.subject,
-      });
-      throw error;
-    }
-  }
-
-  /**
-   * Simple SMS sending wrapper similar to sendEmail
-   */
-  async sendSMS(data: { to: string; body: string }): Promise<void> {
-    try {
-      const payload: SmsPayloadDto = {
-        recipient: data.to,
-        body: data.body,
-      };
-
-      await this.smsQueue.add('send_sms', payload, {
-        priority: NotificationPriority.HIGH,
-        attempts: 3,
-        backoff: {
-          type: 'exponential',
-          delay: 2000,
-        },
-      });
-
-      this.logger.log(`SMS queued for ${data.to}`);
-    } catch (error) {
-      this.logger.error('Failed to queue SMS', error.stack, {
-        recipient: data.to,
       });
       throw error;
     }

@@ -33,14 +33,19 @@ export const createStorageConfig = (
     maxFileSize: Number(
       configService.get<string>(ENV.STORAGE_MAX_FILE_SIZE) || 10 * 1024 * 1024,
     ),
-    allowedMimeTypes: (configService
-      .get<string>(ENV.STORAGE_ALLOWED_MIME)
-      ?.split(',') || [
+    allowedMimeTypes: [
       'image/jpeg',
       'image/png',
+      'image/gif',
+      'image/webp',
       'application/pdf',
       'text/markdown',
-    ]) as string[],
+      'text/plain',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/vnd.ms-excel',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    ],
     idrive: {
       endpoint: configService.get<string>(ENV.IDRIVE_ENDPOINT) as string,
       region:

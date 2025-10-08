@@ -10,7 +10,7 @@ import { AccessTokenPayload } from '@app/common/shared/interfaces/jwt-payload.in
 import { UserRole } from '@app/common/shared/enums/user-roles.enum';
 import { RedisService } from '@app/common/redis/redis.service';
 import { REDIS_KEYS } from '@app/common/redis/redis.config';
-import { AdminAuthService } from '../modules/auth/admin-auth/admin-auth.service';
+import { AdminAuthService } from 'apps/api/src/modules/auth/submodules/admin/admin-auth.service';
 
 @Injectable()
 export class AdminJwtGuard implements CanActivate {

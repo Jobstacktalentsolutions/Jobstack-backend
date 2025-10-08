@@ -14,20 +14,18 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import type { Request } from 'express';
 import { JobSeekerJwtGuard } from 'apps/api/src/guards';
 import { JobseekerProfileService } from './jobseeker-profile.service';
+import type { MulterFile } from '@app/common/shared/types';
 
 @Controller('jobseeker/profile/cv')
 export class JobseekerProfileController {
-  constructor(private readonly profileService: JobseekerProfileService) {}
+  constructor(protected readonly profileService: JobseekerProfileService) {}
 
   // Upload CV PDF for authenticated jobseeker
   @Post('upload')
   @UseGuards(JobSeekerJwtGuard)
   @UseInterceptors(FileInterceptor('file'))
   @HttpCode(HttpStatus.OK)
-  async uploadCv(
-    @UploadedFile() file: Express.Multer.File,
-    @Req() req: Request,
-  ) {
+  async uploadCv(@UploadedFile() file: MulterFile, @Req() req: Request) {
     if (!file) {
       throw new BadRequestException('No file uploaded');
     }

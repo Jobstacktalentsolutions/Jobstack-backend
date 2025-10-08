@@ -3,7 +3,6 @@
  */
 export const NotificationType = {
   EMAIL: 'email',
-  SMS: 'sms',
   APP: 'app',
 } as const;
 

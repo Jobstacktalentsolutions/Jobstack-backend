@@ -8,22 +8,20 @@ import { Repository } from 'typeorm';
 import { JobSeekerProfile } from '@app/common/database/entities/JobseekerProfile.entity';
 import { JobseekerAuth } from '@app/common/database/entities/JobseekerAuth.entity';
 import { StorageService } from '@app/common/storage/storage.service';
+import type { MulterFile } from '@app/common/shared/types';
 
 @Injectable()
 export class JobseekerProfileService {
   constructor(
     @InjectRepository(JobSeekerProfile)
-    private readonly profileRepo: Repository<JobSeekerProfile>,
+    protected readonly profileRepo: Repository<JobSeekerProfile>,
     @InjectRepository(JobseekerAuth)
-    private readonly authRepo: Repository<JobseekerAuth>,
-    private readonly storageService: StorageService,
+    protected readonly authRepo: Repository<JobseekerAuth>,
+    protected readonly storageService: StorageService,
   ) {}
 
   // Upload and set CV url (PDF-only)
-  async uploadCv(
-    userId: string,
-    file: Express.Multer.File,
-  ): Promise<{ cvUrl: string }> {
+  async uploadCv(userId: string, file: MulterFile): Promise<{ cvUrl: string }> {
     const auth = await this.authRepo.findOne({
       where: { id: userId },
       relations: ['profile'],

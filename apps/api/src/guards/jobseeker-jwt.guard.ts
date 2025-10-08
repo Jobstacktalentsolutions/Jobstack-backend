@@ -10,7 +10,7 @@ import { AccessTokenPayload } from '@app/common/shared/interfaces/jwt-payload.in
 import { UserRole } from '@app/common/shared/enums/user-roles.enum';
 import { RedisService } from '@app/common/redis/redis.service';
 import { REDIS_KEYS } from '@app/common/redis/redis.config';
-import { JobSeekerAuthService } from '../modules/auth/jobseeker-auth/jobseeker-auth.service';
+import { JobSeekerAuthService } from '../modules/auth/submodules/jobseeker/jobseeker-auth.service';
 
 @Injectable()
 export class JobSeekerJwtGuard implements CanActivate {

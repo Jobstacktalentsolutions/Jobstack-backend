@@ -1,6 +1,6 @@
 import { Injectable, BadRequestException, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { createStorageConfig } from './config/storage.config';
+import { createStorageConfig, StorageConfig } from './config/storage.config';
 import { IDriveProvider } from './providers/idrive.provider';
 import {
   IStorageProvider,
@@ -10,11 +10,12 @@ import {
 
 @Injectable()
 export class StorageService {
-  private readonly storageConfig = createStorageConfig(this.configService);
+  private readonly storageConfig: StorageConfig;
   private readonly logger = new Logger(StorageService.name);
   private readonly providers: Record<StorageProviderType, IStorageProvider>;
 
   constructor(private readonly configService: ConfigService) {
+    this.storageConfig = createStorageConfig(this.configService);
     this.providers = {
       idrive: new IDriveProvider(this.configService),
       // cloudinary provider intentionally omitted for now

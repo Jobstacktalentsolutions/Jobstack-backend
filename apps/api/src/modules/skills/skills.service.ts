@@ -10,21 +10,20 @@ import {
   JobseekerSkill,
   Proficiency,
 } from '@app/common/database/entities/JobseekerSkill.entity';
-import { InjectRepository } from '@nestjs/typeorm';
-import { NotificationService } from '../../notification/notification.service';
+import { NotificationService } from '../notification/notification.service';
 import {
   NotificationType,
   NotificationPriority,
   NotificationStatus,
-} from '../../notification/notification.enum';
+} from '@app/common/database/entities/Notification.entity';
 
 @Injectable()
 export class SkillsService {
   constructor(
     @InjectRepository(Skill) private skillRepo: Repository<Skill>,
     @InjectRepository(JobseekerSkill)
-    private jsSkillRepo: Repository<JobseekerSkill>,
-    private notificationService: NotificationService,
+    protected jsSkillRepo: Repository<JobseekerSkill>,
+    protected notificationService: NotificationService,
   ) {}
 
   // Admin: create skill
@@ -97,15 +96,30 @@ export class SkillsService {
       synonyms: [],
     });
     const saved = await this.skillRepo.save(skill);
-    // Notify admins via app notification record (no email here)
-    await this.notificationService['notificationRepository'].save({
-      title: 'New skill suggested',
-      message: `A new skill was suggested: ${saved.name}`,
-      type: NotificationType.APP,
-      status: NotificationStatus.PENDING,
-      priority: NotificationPriority.MEDIUM,
-      metadata: { skillId: saved.id, name: saved.name },
-    });
+
+    // Notify admins via app notification
+    // Note: In a real implementation, you'd need to get admin user IDs
+    // For now, we'll create a notification without a specific admin ID
+    // This would typically be handled by a background job that finds all admins
+    try {
+      await this.notificationService.createAppNotification(
+        'system', // Placeholder - in real implementation, get actual admin IDs
+        'admin',
+        {
+          title: 'New skill suggested',
+          message: `A new skill was suggested: ${saved.name}`,
+          metadata: { skillId: saved.id, name: saved.name },
+          priority: NotificationPriority.MEDIUM,
+        },
+      );
+    } catch (error) {
+      // Log error but don't fail the skill creation
+      console.error(
+        'Failed to create notification for skill suggestion:',
+        error,
+      );
+    }
+
     return saved;
   }
 
