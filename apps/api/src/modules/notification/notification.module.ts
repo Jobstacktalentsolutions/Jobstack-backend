@@ -4,7 +4,10 @@ import { BullModule } from '@nestjs/bull';
 import { ConfigModule } from '@nestjs/config';
 
 // Entities
-import { Notification } from '@app/common/database/entities/Notification.entity';
+import {
+  Notification,
+  NotificationType,
+} from '@app/common/database/entities/Notification.entity';
 
 // Core Services
 import { NotificationService } from './notification.service';
@@ -15,7 +18,6 @@ import { EmailNotificationProcessor } from './email/email.processor';
 
 // Provider Configuration
 import { ALL_NOTIFICATION_PROVIDERS } from './notification.config';
-import { NotificationType } from './notification.enum';
 
 /**
  * Notification module - handles email notifications with queue processing

@@ -7,8 +7,8 @@ import {
   Notification,
   NotificationStatus,
   NotificationPriority,
+  NotificationType,
 } from '@app/common/database/entities/Notification.entity';
-import { NotificationType } from './notification.enum';
 import { EmailPayloadDto } from './email/email-notification.dto';
 import {
   NotificationResponse,
