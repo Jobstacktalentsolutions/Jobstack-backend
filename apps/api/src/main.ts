@@ -6,7 +6,8 @@ import { ENV } from '@app/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(ApiModule);
-  await app.listen(app.get(ConfigService).get(ENV.PORT) ?? 3000);
+  app.setGlobalPrefix('api');
   app.useLogger(app.get(Logger));
+  await app.listen(app.get(ConfigService).get(ENV.PORT) ?? 3000);
 }
 bootstrap();

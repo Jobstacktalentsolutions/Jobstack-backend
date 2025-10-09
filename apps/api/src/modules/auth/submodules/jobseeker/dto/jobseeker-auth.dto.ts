@@ -34,10 +34,6 @@ export class JobSeekerRegistrationDto extends BaseRegistrationDto {
 
   @IsString()
   brief: string;
-
-  @IsOptional()
-  @IsString()
-  cvUrl?: string;
 }
 
 /**

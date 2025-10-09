@@ -9,3 +9,5 @@ export * from './redis/redis.config';
 export * from './config/jwt.config';
 export * from './database';
 export * from './storage';
+export * from './database/entities/Role.entity';
+export * from './database/entities/Permission.entity';
