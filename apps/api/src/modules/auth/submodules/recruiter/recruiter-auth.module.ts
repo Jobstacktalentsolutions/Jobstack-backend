@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { RecruiterAuth } from '@app/common/database/entities/RecruiterAuth.entity';
 import { RecruiterProfile } from '@app/common/database/entities/RecruiterProfile.entity';
@@ -19,11 +18,6 @@ import { NotificationModule } from '../../../notification/notification.module';
       RecruiterProfile,
       RecruiterSession,
     ]),
-    JwtModule.registerAsync({
-      imports: [ConfigModule],
-      useFactory: createJwtConfig,
-      inject: [ConfigService],
-    }),
     RedisModule,
     NotificationModule,
   ],

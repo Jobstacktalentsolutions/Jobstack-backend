@@ -1,7 +1,5 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { JwtModule } from '@nestjs/jwt';
-import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JobseekerAuth } from '@app/common/database/entities/JobseekerAuth.entity';
 import { JobSeekerProfile } from '@app/common/database/entities/JobseekerProfile.entity';
 import { JobseekerSession } from '@app/common/database/entities/JobseekerSession.entity';
@@ -20,14 +18,9 @@ import { SkillsModule } from '../../../skills/skills.module';
       JobSeekerProfile,
       JobseekerSession,
     ]),
-    JwtModule.registerAsync({
-      imports: [ConfigModule],
-      useFactory: createJwtConfig,
-      inject: [ConfigService],
-    }),
     RedisModule,
     NotificationModule,
-    SkillsModule,
+    forwardRef(() => SkillsModule),
   ],
   controllers: [JobSeekerAuthController],
   providers: [JobSeekerAuthService, JobSeekerJwtGuard],

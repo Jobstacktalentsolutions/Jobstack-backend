@@ -1,6 +1,8 @@
 import { Global, Module } from '@nestjs/common';
+import { JwtModule } from '@nestjs/jwt';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { createJwtConfig } from './config/jwt.config';
 import { BullModule } from '@nestjs/bull';
-import { ConfigService } from '@nestjs/config';
 import { CommonService } from './common.service';
 import { DatabaseModule } from './database/database.module';
 import { ENV } from './config/env.config';
@@ -9,6 +11,12 @@ import { ENV } from './config/env.config';
 @Module({
   imports: [
     DatabaseModule,
+    JwtModule.registerAsync({
+      global: true,
+      imports: [ConfigModule],
+      useFactory: createJwtConfig,
+      inject: [ConfigService],
+    }),
     BullModule.forRootAsync({
       useFactory: (configService: ConfigService) => ({
         redis: configService.get<string>(ENV.REDIS_URL),
@@ -17,6 +25,6 @@ import { ENV } from './config/env.config';
     }),
   ],
   providers: [CommonService],
-  exports: [CommonService, DatabaseModule, BullModule],
+  exports: [CommonService, DatabaseModule, BullModule, JwtModule],
 })
 export class CommonModule {}

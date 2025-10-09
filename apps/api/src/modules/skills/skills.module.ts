@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Skill } from '@app/common/database/entities/Skill.entity';
 import { JobseekerSkill } from '@app/common/database/entities/JobseekerSkill.entity';
@@ -6,11 +6,15 @@ import { SkillsService } from './skills.service';
 import { SkillsController } from './skills.controller';
 import { AdminJwtGuard, JobSeekerJwtGuard } from 'apps/api/src/guards';
 import { NotificationModule } from '../notification/notification.module';
+import { AdminAuthModule } from '../auth/submodules/admin/admin-auth.module';
+import { JobSeekerAuthModule } from '../auth/submodules/jobseeker/jobseeker-auth.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Skill, JobseekerSkill]),
     NotificationModule,
+    forwardRef(() => AdminAuthModule),
+    forwardRef(() => JobSeekerAuthModule),
   ],
   controllers: [SkillsController],
   providers: [SkillsService, AdminJwtGuard, JobSeekerJwtGuard],
