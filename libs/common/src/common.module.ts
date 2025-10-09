@@ -11,22 +11,7 @@ import { ENV } from './config/env.config';
     DatabaseModule,
     BullModule.forRootAsync({
       useFactory: (configService: ConfigService) => ({
-        redis: {
-          host:
-            configService
-              .get<string>(ENV.REDIS_URL)
-              ?.split('://')[1]
-              ?.split(':')[0] || 'localhost',
-          port: parseInt(
-            configService.get<string>(ENV.REDIS_URL)?.split(':')[2] || '6379',
-          ),
-          password: configService.get<string>(ENV.REDIS_URL)?.includes('@')
-            ? configService
-                .get<string>(ENV.REDIS_URL)
-                ?.split('@')[0]
-                ?.split('://')[1]
-            : undefined,
-        },
+        redis: configService.get<string>(ENV.REDIS_URL),
       }),
       inject: [ConfigService],
     }),
