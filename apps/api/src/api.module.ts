@@ -3,11 +3,11 @@ import { ApiController } from './api.controller';
 import { ApiService } from './api.service';
 import { CommonModule, ConfigModule, LoggerModule } from '@app/common';
 import { AuthModule } from './modules/auth/auth.module';
-import { JobseekerProfileModule } from './modules/jobseeker-profile/jobseeker-profile.module';
+import { JobseekerModule } from './modules/user/submodules/jobseeker/jobseeker.module';
 import { NotificationModule } from './modules/notification/notification.module';
 import { SkillsModule } from './modules/skills/skills.module';
 import { appProviders } from '@app/common/shared/utils/app.providers';
-
+import { UserModule } from './modules/user/user.module';
 @Module({
   imports: [
     ConfigModule,
@@ -16,7 +16,8 @@ import { appProviders } from '@app/common/shared/utils/app.providers';
     NotificationModule,
     SkillsModule,
     AuthModule,
-    JobseekerProfileModule,
+    JobseekerModule,
+    UserModule,
   ],
   controllers: [ApiController],
   providers: [ApiService, ...appProviders('api')],

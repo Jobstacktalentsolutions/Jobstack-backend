@@ -11,7 +11,7 @@ import { StorageService } from '@app/common/storage/storage.service';
 import type { MulterFile } from '@app/common/shared/types';
 
 @Injectable()
-export class JobseekerProfileService {
+export class JobseekerService {
   constructor(
     @InjectRepository(JobSeekerProfile)
     protected readonly profileRepo: Repository<JobSeekerProfile>,
