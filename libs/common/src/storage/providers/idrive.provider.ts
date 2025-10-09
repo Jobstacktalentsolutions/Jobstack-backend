@@ -18,7 +18,6 @@ export class IDriveProvider implements IStorageProvider {
   private s3: S3Client;
   private endpoint: string;
   private region: string;
-  private publicBaseUrl?: string;
 
   constructor(private readonly configService: ConfigService) {
     this.endpoint = this.configService.get<string>(
@@ -33,12 +32,6 @@ export class IDriveProvider implements IStorageProvider {
     const secretAccessKey = this.configService.get<string>(
       ENV.IDRIVE_SECRET_ACCESS_KEY,
     ) as string;
-    this.publicBaseUrl =
-      this.configService.get<string>(ENV.IDRIVE_PUBLIC_BASE_URL) || undefined;
-
-    if (!accessKeyId || !secretAccessKey) {
-      throw new Error('IDrive credentials are missing in ENV');
-    }
 
     this.s3 = new S3Client({
       region: this.region,
@@ -93,9 +86,6 @@ export class IDriveProvider implements IStorageProvider {
   }
 
   getPublicFileUrl(fileKey: string, bucket: string): string {
-    if (this.publicBaseUrl) {
-      return `${this.publicBaseUrl.replace(/\/$/, '')}/${fileKey}`;
-    }
     const endpoint = this.endpoint.replace(/\/$/, '');
     return `${endpoint}/${bucket}/${fileKey}`;
   }

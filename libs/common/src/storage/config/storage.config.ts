@@ -1,10 +1,7 @@
 import { ConfigService } from '@nestjs/config';
-import { StorageProviderType } from '../interfaces/storage.interface';
 import { ENV } from '../../config/env.config';
 
 export type StorageConfig = {
-  provider: StorageProviderType;
-  maxFileSize: number;
   allowedMimeTypes: string[];
   idrive: {
     endpoint: string;
@@ -13,7 +10,6 @@ export type StorageConfig = {
     secretAccessKey: string;
     publicBucket: string;
     privateBucket: string;
-    publicBaseUrl?: string; // optional CDN/public base url
   };
   cloudinary: {
     cloudName: string;
@@ -26,13 +22,6 @@ export const createStorageConfig = (
   configService: ConfigService,
 ): StorageConfig => {
   return {
-    provider:
-      (configService.get<string>(
-        ENV.STORAGE_PROVIDER,
-      ) as StorageProviderType) || 'idrive',
-    maxFileSize: Number(
-      configService.get<string>(ENV.STORAGE_MAX_FILE_SIZE) || 10 * 1024 * 1024,
-    ),
     allowedMimeTypes: [
       'image/jpeg',
       'image/png',
@@ -62,8 +51,6 @@ export const createStorageConfig = (
       privateBucket: configService.get<string>(
         ENV.IDRIVE_PRIVATE_BUCKET,
       ) as string,
-      publicBaseUrl:
-        configService.get<string>(ENV.IDRIVE_PUBLIC_BASE_URL) || undefined,
     },
     cloudinary: {
       cloudName: configService.get<string>('CLOUDINARY_CLOUD_NAME') as string,

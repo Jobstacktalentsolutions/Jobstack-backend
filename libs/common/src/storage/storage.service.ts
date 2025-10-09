@@ -12,22 +12,20 @@ import {
 export class StorageService {
   private readonly storageConfig: StorageConfig;
   private readonly logger = new Logger(StorageService.name);
-  private readonly providers: Record<StorageProviderType, IStorageProvider>;
+  private readonly providers: Record<'idrive', IStorageProvider>;
+  private static readonly DEFAULT_PROVIDER: StorageProviderType = 'idrive';
+  private static readonly MAX_FILE_SIZE_BYTES: number = 10 * 1024 * 1024; // 10 MB
 
   constructor(private readonly configService: ConfigService) {
     this.storageConfig = createStorageConfig(this.configService);
     this.providers = {
       idrive: new IDriveProvider(this.configService),
-      // cloudinary provider intentionally omitted for now
-      cloudinary: new IDriveProvider(
-        this.configService,
-      ) as unknown as IStorageProvider,
     };
   }
 
   // Select active provider
   private getProvider(provider?: StorageProviderType): IStorageProvider {
-    const key = provider || this.storageConfig.provider;
+    const key = provider || StorageService.DEFAULT_PROVIDER;
     return this.providers[key];
   }
 
@@ -53,7 +51,7 @@ export class StorageService {
       fileSize: file?.size,
       mimeType: file?.mimetype,
       bucketType: options.bucketType || 'private',
-      provider: options.provider || this.storageConfig.provider,
+      provider: options.provider || StorageService.DEFAULT_PROVIDER,
     });
 
     this.validateFile(file);
@@ -117,9 +115,9 @@ export class StorageService {
     if (!file) {
       throw new BadRequestException('No file provided');
     }
-    if (file.size > this.storageConfig.maxFileSize) {
+    if (file.size > StorageService.MAX_FILE_SIZE_BYTES) {
       throw new BadRequestException(
-        `File size exceeds maximum allowed size of ${this.storageConfig.maxFileSize} bytes`,
+        `File size exceeds maximum allowed size of ${StorageService.MAX_FILE_SIZE_BYTES} bytes`,
       );
     }
     const allowedTypes = this.storageConfig.allowedMimeTypes;
@@ -142,14 +140,12 @@ export class StorageService {
     bucketType: 'public' | 'private',
     provider?: StorageProviderType,
   ): string {
-    const currentProvider = provider || this.storageConfig.provider;
+    const currentProvider = provider || StorageService.DEFAULT_PROVIDER;
     switch (currentProvider) {
       case 'idrive':
         return bucketType === 'public'
           ? this.storageConfig.idrive.publicBucket
           : this.storageConfig.idrive.privateBucket;
-      case 'cloudinary':
-        return 'cloudinary';
       default:
         return bucketType === 'public'
           ? this.storageConfig.idrive.publicBucket
