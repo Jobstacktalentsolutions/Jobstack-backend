@@ -1,6 +1,12 @@
-import { Entity, Column, OneToOne, JoinColumn } from 'typeorm';
-import { UserProfileBase } from './base.entity';
-import { RecruiterAuth } from './RecruiterAuth.entity';
+import {
+  Entity,
+  Column,
+  OneToOne,
+  JoinColumn,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { UserRole } from '@app/common/shared/enums/user-roles.enum';
 
 export enum RecruiterType {
@@ -8,11 +14,38 @@ export enum RecruiterType {
   ORGANIZATION = 'Organization',
 }
 @Entity('recruiter')
-export class RecruiterProfile extends UserProfileBase {
-  constructor() {
-    super();
-    this.role = UserRole.RECRUITER;
-  }
+export class RecruiterProfile {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdAt: Date;
+
+  @UpdateDateColumn({
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP',
+    onUpdate: 'CURRENT_TIMESTAMP',
+  })
+  updatedAt: Date;
+
+  @Column()
+  firstName: string;
+
+  @Column()
+  lastName: string;
+
+  @Column()
+  email: string;
+
+  @Column()
+  phoneNumber: string;
+
+  @Column({ nullable: true })
+  profilePictureUrl?: string;
+
+  @Column({ nullable: true })
+  address?: string;
+
   @Column({ type: 'enum', enum: RecruiterType })
   type: RecruiterType;
 
@@ -25,7 +58,9 @@ export class RecruiterProfile extends UserProfileBase {
   @Column({ nullable: true })
   website?: string;
 
-  @OneToOne(() => RecruiterAuth, (auth) => auth.profile, { onDelete: 'CASCADE' })
+  @OneToOne('RecruiterAuth', 'profile', {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn()
-  auth: RecruiterAuth;
+  auth: any;
 }

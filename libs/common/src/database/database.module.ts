@@ -9,11 +9,15 @@ import { ENV } from '../config/env.config';
       useFactory: (configService: ConfigService) => {
         const nodeEnv = configService.get<string>(ENV.NODE_ENV, 'development');
 
+        console.log(
+          'database url',
+          configService.getOrThrow<string>(ENV.DATABASE_URL),
+        );
         return {
           type: 'postgres',
           url: configService.getOrThrow<string>(ENV.DATABASE_URL),
+          entities: [__dirname + '/entities/**/*.entity{.ts,.js}'],
           autoLoadEntities: true,
-
           synchronize: nodeEnv !== 'production',
           logging: nodeEnv === 'development',
         };

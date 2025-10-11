@@ -1,16 +1,19 @@
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { DataSource, DataSourceOptions } from 'typeorm';
-import { ENV } from '../config/env.config';
+import { DataSource } from 'typeorm';
+import type { DataSourceOptions } from 'typeorm';
 
 ConfigModule.forRoot({ isGlobal: true });
 
 const configService = new ConfigService();
-const nodeEnv = configService.get<string>(ENV.NODE_ENV, 'development');
+const nodeEnv = configService.get<string>('NODE_ENV', 'development');
 
 export const typeOrmConfig: DataSourceOptions = {
   type: 'postgres',
-  url: configService.getOrThrow<string>(ENV.DATABASE_URL),
-  entities: ['dist/**/*.entity.js'],
+  url: configService.getOrThrow<string>('DATABASE_URL'),
+  entities: [
+    'libs/common/src/database/entities/*.entity.ts',
+    'dist/libs/common/src/database/entities/*.entity.js',
+  ],
   migrations: ['migrations/**/*{.ts,.js}'],
   migrationsTableName: 'migrations',
   synchronize: true,

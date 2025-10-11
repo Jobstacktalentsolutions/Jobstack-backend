@@ -1,9 +1,47 @@
-import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { AdminAuth } from './AdminAuth.entity';
-import { UserSession } from './base.entity';
 
 @Entity('admin_sessions')
-export class AdminSession extends UserSession {
+export class AdminSession {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdAt: Date;
+
+  @UpdateDateColumn({
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP',
+    onUpdate: 'CURRENT_TIMESTAMP',
+  })
+  updatedAt: Date;
+
+  @Column({ default: true })
+  isActive: boolean;
+
+  @Column('jsonb', { nullable: true })
+  deviceInfo?: Record<string, any>;
+
+  @Column('inet', { nullable: true })
+  ipAddress?: string;
+
+  @Column('jsonb', { nullable: true })
+  lastActivity?: Record<string, any>;
+
+  @Column('timestamp', { nullable: true })
+  lastActivityAt?: Date;
+
+  @Column('timestamp')
+  expiresAt: Date;
+
   @Column('uuid')
   adminId: string;
 
@@ -11,7 +49,16 @@ export class AdminSession extends UserSession {
   @JoinColumn({ name: 'adminId' })
   admin: AdminAuth;
 
+  // Helper methods
+  isExpired(): boolean {
+    return new Date() > this.expiresAt;
+  }
+
   isValid(): boolean {
     return !this.isExpired() && this.isActive;
+  }
+
+  getRemainingTime(): number {
+    return Math.max(0, this.expiresAt.getTime() - new Date().getTime());
   }
 }

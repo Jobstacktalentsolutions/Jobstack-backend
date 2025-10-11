@@ -1,6 +1,13 @@
-import { Entity, Column, OneToOne, JoinColumn, OneToMany } from 'typeorm';
-import { UserProfileBase } from './base.entity';
-import { JobseekerAuth } from './JobseekerAuth.entity';
+import {
+  Entity,
+  Column,
+  OneToOne,
+  JoinColumn,
+  OneToMany,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { UserRole } from '@app/common/shared/enums/user-roles.enum';
 import { JobseekerSkill } from './JobseekerSkill.entity';
 
@@ -11,11 +18,38 @@ export enum ApprovalStatus {
 }
 
 @Entity('job_seeker_profiles')
-export class JobSeekerProfile extends UserProfileBase {
-  constructor() {
-    super();
-    this.role = UserRole.JOB_SEEKER;
-  }
+export class JobSeekerProfile {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdAt: Date;
+
+  @UpdateDateColumn({
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP',
+    onUpdate: 'CURRENT_TIMESTAMP',
+  })
+  updatedAt: Date;
+
+  @Column()
+  firstName: string;
+
+  @Column()
+  lastName: string;
+
+  @Column()
+  email: string;
+
+  @Column()
+  phoneNumber: string;
+
+  @Column({ nullable: true })
+  profilePictureUrl?: string;
+
+  @Column({ nullable: true })
+  address?: string;
+
   @OneToMany(() => JobseekerSkill, (js) => js.profile, { cascade: true })
   userSkills: JobseekerSkill[];
 
@@ -32,9 +66,9 @@ export class JobSeekerProfile extends UserProfileBase {
   })
   approvalStatus: ApprovalStatus;
 
-  @OneToOne(() => JobseekerAuth, (auth) => auth.profile, {
+  @OneToOne('JobseekerAuth', 'profile', {
     onDelete: 'CASCADE',
   })
   @JoinColumn()
-  auth: JobseekerAuth;
+  auth: any;
 }

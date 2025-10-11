@@ -1,5 +1,12 @@
-import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
-import { BaseEntity } from './base.entity';
+import {
+  Entity,
+  Column,
+  ManyToOne,
+  JoinColumn,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { JobseekerAuth } from './JobseekerAuth.entity';
 import { RecruiterAuth } from './RecruiterAuth.entity';
 import { AdminAuth } from './AdminAuth.entity';
@@ -23,7 +30,19 @@ export enum NotificationPriority {
 }
 
 @Entity('notifications')
-export class Notification extends BaseEntity {
+export class Notification {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdAt: Date;
+
+  @UpdateDateColumn({
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP',
+    onUpdate: 'CURRENT_TIMESTAMP',
+  })
+  updatedAt: Date;
   @Column()
   title: string;
 

@@ -1,11 +1,31 @@
-import { Column, Entity, ManyToMany, Unique } from 'typeorm';
-import { BaseEntity } from './base.entity';
+import {
+  Column,
+  Entity,
+  ManyToMany,
+  Unique,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { Role } from './Role.entity';
-import { PermissionKey } from '@app/common/shared/enums/permissions.enum';
+import type { PermissionKey } from '@app/common/shared/enums/permissions.enum';
 
 @Entity('permissions')
 @Unique(['key'])
-export class Permission extends BaseEntity {
+export class Permission {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdAt: Date;
+
+  @UpdateDateColumn({
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP',
+    onUpdate: 'CURRENT_TIMESTAMP',
+  })
+  updatedAt: Date;
+
   @Column({ type: 'varchar', length: 128 })
   name: string;
 

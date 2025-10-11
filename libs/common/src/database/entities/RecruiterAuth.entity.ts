@@ -1,16 +1,42 @@
-import { Entity, OneToMany, OneToOne, JoinColumn, Column } from 'typeorm';
-import { AuthBase } from './base.entity';
+import {
+  Entity,
+  OneToMany,
+  OneToOne,
+  JoinColumn,
+  Column,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { RecruiterSession } from './RecruiterSession.entity';
-import { RecruiterProfile } from './RecruiterProfile.entity';
 
 @Entity('recruiter_auth')
-export class RecruiterAuth extends AuthBase {
+export class RecruiterAuth {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdAt: Date;
+
+  @UpdateDateColumn({
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP',
+    onUpdate: 'CURRENT_TIMESTAMP',
+  })
+  updatedAt: Date;
+
+  @Column({ unique: true })
+  email: string;
+
+  @Column()
+  password: string;
+
   @OneToMany(() => RecruiterSession, (session) => session.recruiter)
   sessions: RecruiterSession[];
 
-  @OneToOne(() => RecruiterProfile, { cascade: true, onDelete: 'CASCADE' })
+  @OneToOne('RecruiterProfile', 'auth', { cascade: true, onDelete: 'CASCADE' })
   @JoinColumn()
-  profile: RecruiterProfile;
+  profile: any;
 
   @Column('uuid', { nullable: true })
   profileId?: string;

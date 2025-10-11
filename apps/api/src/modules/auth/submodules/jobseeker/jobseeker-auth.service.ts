@@ -42,7 +42,7 @@ import {
 } from './dto/jobseeker-auth.dto';
 import { SkillsService } from '../../../skills/skills.service';
 import { Proficiency } from '@app/common/database/entities/JobseekerSkill.entity';
-
+import { EmailTemplateType } from 'apps/api/src/modules/notification/email/email-notification.enum';
 @Injectable()
 export class JobSeekerAuthService {
   private readonly logger = new Logger(JobSeekerAuthService.name);
@@ -68,16 +68,8 @@ export class JobSeekerAuthService {
     registrationData: JobSeekerRegistrationDto,
     deviceInfo?: any,
   ): Promise<AuthResult> {
-    const {
-      email,
-      password,
-      firstName,
-      lastName,
-      phoneNumber,
-      skills,
-      brief,
-      cvUrl,
-    } = registrationData;
+    const { email, password, firstName, lastName, phoneNumber, skills, brief } =
+      registrationData;
 
     // Check if email already exists
     const existingAuth = await this.jobseekerAuthRepository.findOne({
@@ -104,7 +96,6 @@ export class JobSeekerAuthService {
         lastName,
         phoneNumber,
         brief,
-        cvUrl,
         role: UserRole.JOB_SEEKER,
         approvalStatus: ApprovalStatus.PENDING,
       });
@@ -122,6 +113,17 @@ export class JobSeekerAuthService {
 
       // Send verification email
       await this.sendVerificationEmail(email.toLowerCase());
+
+      // Send welcome email
+      await this.notificationService.sendEmail({
+        to: email.toLowerCase(),
+        subject: 'Welcome to JobStack',
+        template: EmailTemplateType.WELCOME,
+        context: {
+          firstName,
+          userType: UserRole.JOB_SEEKER,
+        },
+      });
 
       // Generate tokens
       const authResult = await this.generateTokens(auth, profile, deviceInfo);
@@ -377,7 +379,7 @@ export class JobSeekerAuthService {
       await this.notificationService.sendEmail({
         to: email,
         subject: 'Email Verification - JobStack',
-        template: 'email-verification',
+        template: EmailTemplateType.EMAIL_VERIFICATION,
         context: {
           code,
           expiryMinutes: 10,
@@ -479,7 +481,7 @@ export class JobSeekerAuthService {
       await this.notificationService.sendEmail({
         to: email,
         subject: 'Password Reset - JobStack',
-        template: 'password-reset',
+        template: EmailTemplateType.PASSWORD_RESET,
         context: {
           code,
           expiryMinutes: 15,
