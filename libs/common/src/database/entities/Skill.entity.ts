@@ -1,4 +1,5 @@
-import { Entity, Column, PrimaryGeneratedColumn, Index } from 'typeorm';
+import { Entity, Column, Index } from 'typeorm';
+import { BaseEntity } from './base.entity';
 
 export enum SkillStatus {
   ACTIVE = 'ACTIVE',
@@ -7,10 +8,7 @@ export enum SkillStatus {
 }
 
 @Entity('skills')
-export class Skill {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
-
+export class Skill extends BaseEntity {
   @Index({ unique: true })
   @Column()
   name: string;

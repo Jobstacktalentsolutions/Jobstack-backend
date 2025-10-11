@@ -4,12 +4,11 @@ import {
   OneToOne,
   JoinColumn,
   OneToMany,
-  PrimaryGeneratedColumn,
-  CreateDateColumn,
-  UpdateDateColumn,
 } from 'typeorm';
+import { BaseEntity } from './base.entity';
 import { UserRole } from '@app/common/shared/enums/user-roles.enum';
 import { JobseekerSkill } from './JobseekerSkill.entity';
+import { JobseekerAuth } from './JobseekerAuth.entity';
 
 export enum ApprovalStatus {
   PENDING = 'Pending',
@@ -18,19 +17,7 @@ export enum ApprovalStatus {
 }
 
 @Entity('job_seeker_profiles')
-export class JobSeekerProfile {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
-
-  @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-  createdAt: Date;
-
-  @UpdateDateColumn({
-    type: 'timestamp',
-    default: () => 'CURRENT_TIMESTAMP',
-    onUpdate: 'CURRENT_TIMESTAMP',
-  })
-  updatedAt: Date;
+export class JobSeekerProfile extends BaseEntity {
 
   @Column()
   firstName: string;
@@ -66,9 +53,9 @@ export class JobSeekerProfile {
   })
   approvalStatus: ApprovalStatus;
 
-  @OneToOne('JobseekerAuth', 'profile', {
+  @OneToOne(() => JobseekerAuth, (auth) => auth.profile, {
     onDelete: 'CASCADE',
   })
   @JoinColumn()
-  auth: any;
+  auth: JobseekerAuth;
 }

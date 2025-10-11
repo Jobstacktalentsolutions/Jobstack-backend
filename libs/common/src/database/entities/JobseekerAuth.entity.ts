@@ -4,26 +4,13 @@ import {
   OneToOne,
   JoinColumn,
   Column,
-  PrimaryGeneratedColumn,
-  CreateDateColumn,
-  UpdateDateColumn,
 } from 'typeorm';
+import { BaseEntity } from './base.entity';
 import { JobseekerSession } from './JobseekerSession.entity';
+import { JobSeekerProfile } from './JobseekerProfile.entity';
 
 @Entity('jobseeker_auth')
-export class JobseekerAuth {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
-
-  @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-  createdAt: Date;
-
-  @UpdateDateColumn({
-    type: 'timestamp',
-    default: () => 'CURRENT_TIMESTAMP',
-    onUpdate: 'CURRENT_TIMESTAMP',
-  })
-  updatedAt: Date;
+export class JobseekerAuth extends BaseEntity {
 
   @Column({ unique: true })
   email: string;
@@ -34,10 +21,7 @@ export class JobseekerAuth {
   @OneToMany(() => JobseekerSession, (session) => session.jobseeker)
   sessions: JobseekerSession[];
 
-  @OneToOne('JobSeekerProfile', 'auth', { cascade: true, onDelete: 'CASCADE' })
+  @OneToOne(() => JobSeekerProfile, (profile) => profile.auth, { cascade: true, onDelete: 'CASCADE' })
   @JoinColumn()
-  profile: any;
-
-  @Column('uuid', { nullable: true })
-  profileId?: string;
+  profile: JobSeekerProfile;
 }

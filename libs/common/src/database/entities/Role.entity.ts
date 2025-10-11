@@ -5,28 +5,14 @@ import {
   JoinTable,
   Unique,
   OneToMany,
-  PrimaryGeneratedColumn,
-  CreateDateColumn,
-  UpdateDateColumn,
 } from 'typeorm';
+import { BaseEntity } from './base.entity';
 import { Permission } from './Permission.entity';
 import { AdminProfile } from './AdminProfile.entity';
 
 @Entity('roles')
 @Unique(['name'])
-export class Role {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
-
-  @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-  createdAt: Date;
-
-  @UpdateDateColumn({
-    type: 'timestamp',
-    default: () => 'CURRENT_TIMESTAMP',
-    onUpdate: 'CURRENT_TIMESTAMP',
-  })
-  updatedAt: Date;
+export class Role extends BaseEntity {
 
   @Column({ type: 'varchar', length: 64 })
   name: string;

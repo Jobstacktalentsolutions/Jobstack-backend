@@ -1,30 +1,10 @@
-import {
-  Column,
-  Entity,
-  OneToMany,
-  OneToOne,
-  JoinColumn,
-  PrimaryGeneratedColumn,
-  CreateDateColumn,
-  UpdateDateColumn,
-} from 'typeorm';
+import { Column, Entity, OneToMany, OneToOne, JoinColumn } from 'typeorm';
+import { BaseEntity } from './base.entity';
 import { AdminSession } from './AdminSession.entity';
+import { AdminProfile } from './AdminProfile.entity';
 
 @Entity('admin_auth')
-export class AdminAuth {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
-
-  @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-  createdAt: Date;
-
-  @UpdateDateColumn({
-    type: 'timestamp',
-    default: () => 'CURRENT_TIMESTAMP',
-    onUpdate: 'CURRENT_TIMESTAMP',
-  })
-  updatedAt: Date;
-
+export class AdminAuth extends BaseEntity {
   @Column({ unique: true })
   email: string;
 
@@ -34,10 +14,10 @@ export class AdminAuth {
   @OneToMany(() => AdminSession, (session) => session.admin)
   sessions: AdminSession[];
 
-  @OneToOne('AdminProfile', 'account', { cascade: true, onDelete: 'CASCADE' })
+  @OneToOne(() => AdminProfile, (profile) => profile.auth, {
+    cascade: true,
+    onDelete: 'CASCADE',
+  })
   @JoinColumn()
-  profile?: any;
-
-  @Column('uuid', { nullable: true })
-  profileId?: string;
+  profile?: AdminProfile;
 }

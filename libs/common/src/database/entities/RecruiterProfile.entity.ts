@@ -3,30 +3,17 @@ import {
   Column,
   OneToOne,
   JoinColumn,
-  PrimaryGeneratedColumn,
-  CreateDateColumn,
-  UpdateDateColumn,
 } from 'typeorm';
+import { BaseEntity } from './base.entity';
 import { UserRole } from '@app/common/shared/enums/user-roles.enum';
+import { RecruiterAuth } from './RecruiterAuth.entity';
 
 export enum RecruiterType {
   INDIVIDUAL = 'Individual',
   ORGANIZATION = 'Organization',
 }
 @Entity('recruiter')
-export class RecruiterProfile {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
-
-  @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-  createdAt: Date;
-
-  @UpdateDateColumn({
-    type: 'timestamp',
-    default: () => 'CURRENT_TIMESTAMP',
-    onUpdate: 'CURRENT_TIMESTAMP',
-  })
-  updatedAt: Date;
+export class RecruiterProfile extends BaseEntity {
 
   @Column()
   firstName: string;
@@ -58,9 +45,9 @@ export class RecruiterProfile {
   @Column({ nullable: true })
   website?: string;
 
-  @OneToOne('RecruiterAuth', 'profile', {
+  @OneToOne(() => RecruiterAuth, (auth) => auth.profile, {
     onDelete: 'CASCADE',
   })
   @JoinColumn()
-  auth: any;
+  auth: RecruiterAuth;
 }

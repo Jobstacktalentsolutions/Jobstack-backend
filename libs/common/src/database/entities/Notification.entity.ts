@@ -3,10 +3,8 @@ import {
   Column,
   ManyToOne,
   JoinColumn,
-  PrimaryGeneratedColumn,
-  CreateDateColumn,
-  UpdateDateColumn,
 } from 'typeorm';
+import { BaseEntity } from './base.entity';
 import { JobseekerAuth } from './JobseekerAuth.entity';
 import { RecruiterAuth } from './RecruiterAuth.entity';
 import { AdminAuth } from './AdminAuth.entity';
@@ -30,19 +28,7 @@ export enum NotificationPriority {
 }
 
 @Entity('notifications')
-export class Notification {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
-
-  @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-  createdAt: Date;
-
-  @UpdateDateColumn({
-    type: 'timestamp',
-    default: () => 'CURRENT_TIMESTAMP',
-    onUpdate: 'CURRENT_TIMESTAMP',
-  })
-  updatedAt: Date;
+export class Notification extends BaseEntity {
   @Column()
   title: string;
 

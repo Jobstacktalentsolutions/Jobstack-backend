@@ -1,30 +1,10 @@
-import {
-  Column,
-  Entity,
-  JoinColumn,
-  ManyToOne,
-  OneToOne,
-  PrimaryGeneratedColumn,
-  CreateDateColumn,
-  UpdateDateColumn,
-} from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToOne } from 'typeorm';
+import { BaseEntity } from './base.entity';
 import { Role } from './Role.entity';
+import { AdminAuth } from '@app/common/database/entities/AdminAuth.entity';
 
 @Entity('admin_profiles')
-export class AdminProfile {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
-
-  @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-  createdAt: Date;
-
-  @UpdateDateColumn({
-    type: 'timestamp',
-    default: () => 'CURRENT_TIMESTAMP',
-    onUpdate: 'CURRENT_TIMESTAMP',
-  })
-  updatedAt: Date;
-
+export class AdminProfile extends BaseEntity {
   @Column()
   firstName: string;
 
@@ -43,14 +23,15 @@ export class AdminProfile {
   @Column({ nullable: true })
   address?: string;
 
-  @OneToOne('AdminAuth', 'profile')
+  @OneToOne(() => AdminAuth, (auth) => auth.profile, {
+    cascade: true,
+    onDelete: 'CASCADE',
+  })
   @JoinColumn()
-  account: any;
-
-  @Column('uuid', { nullable: true })
-  accountId?: string;
+  auth: AdminAuth;
 
   @ManyToOne(() => Role, (role) => role.adminProfiles, { nullable: true })
+  @JoinColumn({ name: 'roleId' })
   role?: Role;
 
   @Column('uuid', { nullable: true })

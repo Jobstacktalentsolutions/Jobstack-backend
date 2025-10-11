@@ -1,11 +1,5 @@
-import {
-  Entity,
-  Column,
-  ManyToOne,
-  Unique,
-  PrimaryGeneratedColumn,
-  JoinColumn,
-} from 'typeorm';
+import { Entity, Column, ManyToOne, Unique, JoinColumn } from 'typeorm';
+import { BaseEntity } from './base.entity';
 import { JobSeekerProfile } from './JobseekerProfile.entity';
 import { Skill } from './Skill.entity';
 
@@ -18,10 +12,7 @@ export enum Proficiency {
 
 @Entity('jobseeker_skills')
 @Unique(['profileId', 'skillId'])
-export class JobseekerSkill {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
-
+export class JobseekerSkill extends BaseEntity {
   @Column('uuid')
   profileId: string;
 
