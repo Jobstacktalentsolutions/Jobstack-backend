@@ -536,17 +536,32 @@ export class JobSeekerAuthService {
     resetData: PasswordResetDto,
   ): Promise<{ success: boolean }> {
     const { resetToken, newPassword } = resetData;
-
     try {
+      this.logger.log(
+        `Attempting to verify reset token for password reset`,
+        newPassword,
+      );
+
       // Verify token
       const payload =
         await this.jwtService.verifyAsync<PasswordResetTokenPayload>(
           resetToken,
         );
 
+      this.logger.log(
+        `Reset token verified successfully for userId: ${payload.userId}`,
+      );
+
       if (payload.type !== 'password_reset') {
+        this.logger.warn(
+          `Invalid token type: ${payload.type}, expected: password_reset`,
+        );
         throw new UnauthorizedException('Invalid reset token');
       }
+
+      this.logger.log(
+        `Token type validation passed for userId: ${payload.userId}`,
+      );
 
       // Find user
       const auth = await this.jobseekerAuthRepository.findOne({
@@ -554,17 +569,23 @@ export class JobSeekerAuthService {
       });
 
       if (!auth) {
+        this.logger.warn(`User not found for userId: ${payload.userId}`);
         throw new NotFoundException('User not found');
       }
 
+      this.logger.log(`User found for password reset: ${auth.email}`);
+
       // Hash new password
+      this.logger.log(`Hashing new password for user: ${auth.email}`);
       const hashedPassword = await bcrypt.hash(newPassword, 12);
 
       // Update password
+      this.logger.log(`Updating password in database for user: ${auth.email}`);
       auth.password = hashedPassword;
       await this.jobseekerAuthRepository.save(auth);
 
       // Invalidate all sessions
+      this.logger.log(`Invalidating all sessions for user: ${auth.email}`);
       await this.jobseekerSessionRepository.update(
         { jobseeker: { id: auth.id } },
         { isActive: false },
