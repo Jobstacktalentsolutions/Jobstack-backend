@@ -4,7 +4,7 @@ import { JobseekerAuth } from '@app/common/database/entities/JobseekerAuth.entit
 import { JobSeekerProfile } from '@app/common/database/entities/JobseekerProfile.entity';
 import { JobseekerSession } from '@app/common/database/entities/JobseekerSession.entity';
 import { RedisModule } from '@app/common/redis/redis.module';
-import { createJwtConfig } from '@app/common/config/jwt.config';
+import { createJwtConfig } from 'apps/api/src/modules/config/jwt.config';
 import { JobSeekerAuthService } from './jobseeker-auth.service';
 import { JobSeekerAuthController } from './jobseeker-auth.controller';
 import { JobSeekerJwtGuard } from 'apps/api/src/guards';

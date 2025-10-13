@@ -2,7 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { ApiModule } from './api.module';
 import { ConfigService } from '@nestjs/config';
 import { Logger } from 'nestjs-pino';
-import { ENV } from '@app/common';
+import { ENV } from 'apps/api/src/modules/config';
 
 async function bootstrap() {
   const app = await NestFactory.create(ApiModule);

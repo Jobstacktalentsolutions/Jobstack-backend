@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { Resend } from 'resend';
 import { INotificationTransporter } from '../../notification.interface';
 import { EmailPayloadDto } from '../email-notification.dto';
+import { ENV } from 'apps/api/src/modules/config';
 
 @Injectable()
 export class ResendEmailProvider
@@ -13,7 +14,7 @@ export class ResendEmailProvider
   private readonly fromName: string;
 
   constructor(private readonly configService: ConfigService) {
-    const apiKey = this.configService.get<string>('RESEND_API_KEY');
+    const apiKey = this.configService.get<string>(ENV.RESEND_API_KEY);
 
     if (!apiKey) {
       throw new Error('RESEND_API_KEY is required but not configured');
@@ -21,14 +22,14 @@ export class ResendEmailProvider
 
     this.resend = new Resend(apiKey);
     this.fromEmail =
-      this.configService.get<string>('RESEND_FROM_EMAIL') ||
+      this.configService.get<string>(ENV.RESEND_FROM_EMAIL) ||
       'noreply@jobstack.ng';
     this.fromName =
-      this.configService.get<string>('RESEND_FROM_NAME') || 'JobStack';
+      this.configService.get<string>(ENV.RESEND_FROM_NAME) || 'JobStack';
   }
 
   async send(
-    payload: EmailPayloadDto & { htmlContent?: string },
+    payload: EmailPayloadDto & { htmlContent: string },
   ): Promise<void> {
     const { recipient, subject, htmlContent } = payload;
 
@@ -37,7 +38,7 @@ export class ResendEmailProvider
         from: `${this.fromName} <${this.fromEmail}>`,
         to: [recipient],
         subject: subject || 'Notification from JobStack',
-        html: htmlContent || this.generateFallbackHtml(payload),
+        html: htmlContent,
       });
 
       console.log('Email sent successfully via Resend', {
@@ -53,27 +54,6 @@ export class ResendEmailProvider
         }`,
       );
     }
-  }
-
-  // Generate fallback HTML content when no template is provided
-  private generateFallbackHtml(payload: EmailPayloadDto): string {
-    return `
-      <html>
-        <head>
-          <meta charset="utf-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>${payload.subject || 'Notification from JobStack'}</title>
-        </head>
-        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0;">
-          <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
-            <h2 style="color: #2c3e50; margin-bottom: 20px;">${payload.subject || 'Notification from JobStack'}</h2>
-            <p>Hello,</p>
-            <p>You have received a notification from JobStack.</p>
-            <p>Best regards,<br>JobStack Team</p>
-          </div>
-        </body>
-      </html>
-    `;
   }
 
   // Health check method to verify configuration

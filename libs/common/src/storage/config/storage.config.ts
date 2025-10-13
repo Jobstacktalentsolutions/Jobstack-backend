@@ -1,5 +1,5 @@
 import { ConfigService } from '@nestjs/config';
-import { ENV } from '../../config/env.config';
+import { ENV } from '../../../../../apps/api/src/modules/config/env.config';
 
 export type StorageConfig = {
   allowedMimeTypes: string[];

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
-import { ENV } from '@app/common';
+import { ENV } from 'apps/api/src/modules/config';
 import { INotificationTransporter } from '../../notification.interface';
 import { EmailPayloadDto } from '../email-notification.dto';
 
@@ -36,7 +36,7 @@ export class BrevoEmailProvider
       sender: { email: this.fromEmail, name: this.fromName },
       to: [{ email: recipient }],
       subject: subject || 'Notification from JobStack',
-      htmlContent: htmlContent || this.generateFallbackHtml(payload),
+      htmlContent: htmlContent,
     };
 
     try {
@@ -66,19 +66,6 @@ export class BrevoEmailProvider
         }`,
       );
     }
-  }
-
-  private generateFallbackHtml(payload: EmailPayloadDto): string {
-    return `
-      <html>
-        <body>
-          <h2>${payload.subject || 'Notification from JobStack'}</h2>
-          <p>Hello,</p>
-          <p>You have received a notification from JobStack.</p>
-          <p>Best regards,<br>JobStack Team</p>
-        </body>
-      </html>
-    `;
   }
 
   async healthCheck(): Promise<void> {

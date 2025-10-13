@@ -5,7 +5,7 @@ import {
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { ConfigService } from '@nestjs/config';
-import { ENV } from '../../config/env.config';
+import { ENV } from '../../../../../apps/api/src/modules/config/env.config';
 import {
   IStorageProvider,
   MulterFile,

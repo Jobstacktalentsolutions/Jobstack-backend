@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { BrevoEmailProvider } from './email/providers/brevo-email.provider';
 import { ResendEmailProvider } from './email/providers/resend-email.provider';
 import { EmailConfig } from './email/email-notification.dto';
+import { ENV } from 'apps/api/src/modules/config';
 
 export const NOTIFICATION_PROVIDERS = {
   EMAIL: 'EMAIL_PROVIDERS',
@@ -17,15 +18,16 @@ export const EMAIL_PROVIDERS_CONFIG: Provider[] = [
     useFactory: (
       brevoEmail: BrevoEmailProvider,
       resendEmail: ResendEmailProvider,
-    ) => [brevoEmail, resendEmail],
-    inject: [BrevoEmailProvider, ResendEmailProvider],
+    ) => [resendEmail, brevoEmail],
+    inject: [ResendEmailProvider, BrevoEmailProvider],
   },
   {
     provide: EMAIL_CONFIG,
     useFactory: (configService: ConfigService): EmailConfig => ({
-      companyName: configService.get('COMPANY_NAME') || 'JobStack',
-      supportEmail: configService.get('SUPPORT_EMAIL') || 'support@jobstack.ng',
-      websiteUrl: configService.get('WEBSITE_URL') || 'https://jobstack.ng',
+      companyName: configService.get(ENV.COMPANY_NAME) || 'JobStack',
+      supportEmail:
+        configService.get(ENV.SUPPORT_EMAIL) || 'support@jobstack.ng',
+      websiteUrl: configService.get(ENV.WEBSITE_URL) || 'https://jobstack.ng',
     }),
     inject: [ConfigService],
   },

@@ -1,7 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ApiController } from './api.controller';
 import { ApiService } from './api.service';
-import { CommonModule, ConfigModule, LoggerModule } from '@app/common';
+import { CommonModule, LoggerModule } from '@app/common';
+import { ConfigModule } from './modules/config/config.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { JobseekerModule } from './modules/user/submodules/jobseeker/jobseeker.module';
 import { NotificationModule } from './modules/notification/notification.module';
