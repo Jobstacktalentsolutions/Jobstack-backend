@@ -35,11 +35,7 @@ export class AdminJwtGuard implements CanActivate {
         await this.jwtService.verifyAsync<AccessTokenPayload>(token);
 
       // Validate token type and role
-      if (
-        payload.type !== 'access' ||
-        (payload.role !== UserRole.ADMIN &&
-          payload.role !== UserRole.SUPER_ADMIN)
-      ) {
+      if (payload.type !== 'access' || payload.role !== UserRole.ADMIN) {
         throw new UnauthorizedException('Invalid token');
       }
 

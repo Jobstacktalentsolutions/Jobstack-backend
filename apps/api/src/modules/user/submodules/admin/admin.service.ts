@@ -93,7 +93,7 @@ export class AdminService {
       'view_analytics',
     ];
 
-    if (role === UserRole.SUPER_ADMIN) {
+    if (role === UserRole.ADMIN) {
       return [
         ...basePermissions,
         'manage_users',

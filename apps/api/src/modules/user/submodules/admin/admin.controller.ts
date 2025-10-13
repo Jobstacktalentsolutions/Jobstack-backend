@@ -42,10 +42,6 @@ export class AdminController {
   async getAllAdmins(@Req() req: Request) {
     const user = (req as any).user as { sub: string; role: UserRole };
 
-    if (user.role !== UserRole.SUPER_ADMIN) {
-      throw new ForbiddenException('Only super admins can view all admins');
-    }
-
     return this.adminService.getAllAdmins(user.sub);
   }
 
@@ -55,12 +51,6 @@ export class AdminController {
   @Get('system-overview')
   async getSystemOverview(@Req() req: Request) {
     const user = (req as any).user as { sub: string; role: UserRole };
-
-    if (user.role !== UserRole.SUPER_ADMIN) {
-      throw new ForbiddenException(
-        'Only super admins can view system overview',
-      );
-    }
 
     return this.adminService.getSystemOverview(user.sub);
   }

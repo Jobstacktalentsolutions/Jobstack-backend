@@ -18,7 +18,7 @@ export const EMAIL_PROVIDERS_CONFIG: Provider[] = [
     useFactory: (
       brevoEmail: BrevoEmailProvider,
       resendEmail: ResendEmailProvider,
-    ) => [resendEmail, brevoEmail],
+    ) => [resendEmail],
     inject: [ResendEmailProvider, BrevoEmailProvider],
   },
   {

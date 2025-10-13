@@ -63,7 +63,7 @@ export class EmailService extends BaseNotificationService<EmailPayloadDto> {
 
   async renderTemplate<T extends EmailTemplateType>(
     templateType: T,
-    context: any,
+    context: Record<string, string>,
   ): Promise<string> {
     const templateConfig = EMAIL_TYPE_CONFIG[templateType];
     if (!templateConfig) {

@@ -59,7 +59,7 @@ export class BrevoEmailProvider
         messageId: response.data.messageId,
       });
     } catch (error: any) {
-      console.error('Failed to send email via Brevo', error);
+      console.error('Failed to send email via Brevo', error.message);
       throw new Error(
         `Failed to send email via Brevo: ${
           error?.response?.data?.message || error.message
