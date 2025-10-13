@@ -1,7 +1,7 @@
 import { Column, Entity, JoinColumn, ManyToOne, OneToOne } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { Role } from './Role.entity';
-import { AdminAuth } from '@app/common/database/entities/AdminAuth.entity';
+import { AdminAuth } from './AdminAuth.entity';
 
 @Entity('admin_profiles')
 export class AdminProfile extends BaseEntity {
@@ -27,7 +27,6 @@ export class AdminProfile extends BaseEntity {
     cascade: true,
     onDelete: 'CASCADE',
   })
-  @JoinColumn()
   auth: AdminAuth;
 
   @ManyToOne(() => Role, (role) => role.adminProfiles, { nullable: true })

@@ -111,7 +111,7 @@ export class RecruiterAuthService {
       const auth = queryRunner.manager.create(RecruiterAuth, {
         email: email.toLowerCase(),
         password: hashedPassword,
-        profileId: profile.id,
+        profile: profile,
       });
       await queryRunner.manager.save(auth);
 
@@ -224,7 +224,7 @@ export class RecruiterAuthService {
       const accessPayload: AccessTokenPayload = {
         sub: auth.id,
         role: UserRole.RECRUITER,
-        profileId: auth.profileId,
+        profileId: auth.profile.id,
         sessionId: session.id,
         type: 'access',
         jti: accessTokenId,
@@ -239,7 +239,7 @@ export class RecruiterAuthService {
       const redisSessionData: RedisSessionData = {
         userId: auth.id,
         role: UserRole.RECRUITER,
-        profileId: auth.profileId,
+        profileId: auth.profile.id,
         sessionId: session.id,
         deviceFingerprint: this.generateDeviceFingerprint(deviceInfo),
         lastActivity: Date.now(),
@@ -258,7 +258,7 @@ export class RecruiterAuthService {
           id: auth.id,
           email: auth.email,
           role: UserRole.RECRUITER,
-          profileId: auth.profileId,
+          profileId: auth.profile.id,
           firstName: auth.profile?.firstName,
           lastName: auth.profile?.lastName,
         },
