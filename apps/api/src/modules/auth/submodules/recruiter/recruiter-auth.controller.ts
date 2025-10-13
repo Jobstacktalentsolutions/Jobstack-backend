@@ -20,6 +20,7 @@ import {
   PasswordResetDto,
 } from './dto/recruiter-auth.dto';
 import type { Request } from 'express';
+import { ReqDeviceInfo, type RequestDeviceInfo } from 'libs/common/src/shared';
 import { RecruiterJwtGuard } from 'apps/api/src/guards';
 
 @Controller('auth/recruiter')
@@ -30,14 +31,8 @@ export class RecruiterAuthController {
   @HttpCode(HttpStatus.CREATED)
   async register(
     @Body() registrationData: RecruiterRegistrationDto,
-    @Req() req: Request,
+    @ReqDeviceInfo() deviceInfo: RequestDeviceInfo,
   ) {
-    const deviceInfo = {
-      ip: req.ip || req.socket.remoteAddress,
-      userAgent: req.headers['user-agent'],
-      platform: req.headers['sec-ch-ua-platform'],
-      language: req.headers['accept-language'],
-    };
     return await this.recruiterAuthService.register(
       registrationData,
       deviceInfo,
@@ -46,13 +41,10 @@ export class RecruiterAuthController {
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  async login(@Body() loginData: LoginDto, @Req() req: Request) {
-    const deviceInfo = {
-      ip: req.ip || req.socket.remoteAddress,
-      userAgent: req.headers['user-agent'],
-      platform: req.headers['sec-ch-ua-platform'],
-      language: req.headers['accept-language'],
-    };
+  async login(
+    @Body() loginData: LoginDto,
+    @ReqDeviceInfo() deviceInfo: RequestDeviceInfo,
+  ) {
     return await this.recruiterAuthService.login(loginData, deviceInfo);
   }
 
@@ -60,14 +52,8 @@ export class RecruiterAuthController {
   @HttpCode(HttpStatus.OK)
   async refreshToken(
     @Body() refreshTokenDto: RefreshTokenDto,
-    @Req() req: Request,
+    @ReqDeviceInfo() deviceInfo: RequestDeviceInfo,
   ) {
-    const deviceInfo = {
-      ip: req.ip || req.socket.remoteAddress,
-      userAgent: req.headers['user-agent'],
-      platform: req.headers['sec-ch-ua-platform'],
-      language: req.headers['accept-language'],
-    };
     return await this.recruiterAuthService.refreshToken(
       refreshTokenDto.refreshToken,
       deviceInfo,

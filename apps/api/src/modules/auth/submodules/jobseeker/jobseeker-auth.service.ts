@@ -20,13 +20,13 @@ import { JobseekerSession } from '@app/common/database/entities/JobseekerSession
 import { RedisService } from '@app/common/redis/redis.service';
 import { REDIS_KEYS } from '@app/common/redis/redis.config';
 import { NotificationService } from '../../../notification/notification.service';
-import { UserRole } from '@app/common/shared/enums/user-roles.enum';
+import { UserRole } from 'libs/common/src/shared/enums/user-roles.enum';
 import {
   AccessTokenPayload,
   RefreshTokenPayload,
   RedisSessionData,
   PasswordResetTokenPayload,
-} from '@app/common/shared/interfaces/jwt-payload.interface';
+} from 'libs/common/src/shared/interfaces/jwt-payload.interface';
 import {
   AuthResult,
   EmailVerificationResult,
@@ -96,7 +96,6 @@ export class JobSeekerAuthService {
         lastName,
         phoneNumber,
         brief,
-        role: UserRole.JOB_SEEKER,
         approvalStatus: ApprovalStatus.PENDING,
       });
       await queryRunner.manager.save(profile);
@@ -131,27 +130,12 @@ export class JobSeekerAuthService {
       this.logger.log(`JobSeeker registered: ${auth.id} (${email})`);
 
       // Normalize and attach skills via SkillsService (non-transactional, best-effort)
-      const detailMap = new Map<
-        string,
-        { proficiency?: Proficiency; yearsExperience?: number }
-      >();
-      for (const d of registrationData.skillDetails ?? []) {
-        if (d?.skillId)
-          detailMap.set(d.skillId, {
-            proficiency: d.proficiency,
-            yearsExperience: d.yearsExperience,
-          });
-      }
+      const normalizedIds = new Set<string>(registrationData.skillIds ?? []);
 
-      const normalizedIds = new Set<string>();
-      for (const id of registrationData.skillIds ?? []) normalizedIds.add(id);
-
-      // For free-text names, try to find an ACTIVE/SUGGESTED skill by name/synonym; if not, create SUGGESTED
+      // For free-text names, always insert a SUGGESTED skill
       for (const name of registrationData.skills ?? []) {
-        const found = (await this.skillsService.searchSkills(name)).find(
-          (s) => s.name.toLowerCase() === name.toLowerCase(),
-        );
-        const skill = found ?? (await this.skillsService.suggestSkill(name));
+        const skill =
+          await this.skillsService.insertSuggestedSkillNoCheck(name);
         normalizedIds.add(skill.id);
       }
 
@@ -159,8 +143,6 @@ export class JobSeekerAuthService {
         profile.id,
         Array.from(normalizedIds).map((skillId) => ({
           skillId,
-          proficiency: detailMap.get(skillId)?.proficiency,
-          yearsExperience: detailMap.get(skillId)?.yearsExperience,
         })),
       );
 

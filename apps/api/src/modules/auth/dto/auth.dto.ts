@@ -21,35 +21,6 @@ export class LoginDto {
   password: string;
 }
 
-/**
- * Base Registration DTO
- */
-export class BaseRegistrationDto {
-  @IsEmail()
-  email: string;
-
-  @IsString()
-  @MinLength(8, { message: 'Password must be at least 8 characters long' })
-  @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, {
-    message:
-      'Password must contain at least one uppercase letter, one lowercase letter, and one number',
-  })
-  password: string;
-
-  @IsString()
-  @MinLength(2)
-  firstName: string;
-
-  @IsString()
-  @MinLength(2)
-  lastName: string;
-
-  @IsString()
-  @Matches(/^\+?[1-9]\d{1,14}$/, {
-    message: 'Phone number must be a valid international format',
-  })
-  phoneNumber: string;
-}
 
 /**
  * Refresh Token DTO

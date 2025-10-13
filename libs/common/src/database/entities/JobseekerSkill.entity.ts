@@ -30,12 +30,12 @@ export class JobseekerSkill extends BaseEntity {
   @Column({
     type: 'enum',
     enum: Proficiency,
-    default: Proficiency.INTERMEDIATE,
+    nullable: true,
   })
-  proficiency: Proficiency;
+  proficiency?: Proficiency;
 
-  @Column({ type: 'int', default: 0 })
-  yearsExperience: number;
+  @Column({ type: 'int', nullable: true })
+  yearsExperience?: number;
 
   @Column({ default: false })
   verified: boolean;

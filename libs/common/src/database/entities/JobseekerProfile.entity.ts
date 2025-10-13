@@ -1,6 +1,5 @@
 import { Entity, Column, OneToOne, JoinColumn, OneToMany } from 'typeorm';
 import { BaseEntity } from './base.entity';
-import { UserRole } from '@app/common/shared/enums/user-roles.enum';
 import { JobseekerSkill } from './JobseekerSkill.entity';
 import { JobseekerAuth } from './JobseekerAuth.entity';
 

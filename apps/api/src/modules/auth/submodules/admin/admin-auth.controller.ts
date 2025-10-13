@@ -9,6 +9,7 @@ import {
   Delete,
 } from '@nestjs/common';
 import type { Request } from 'express';
+import { ReqDeviceInfo, type RequestDeviceInfo } from 'libs/common/src/shared';
 import { AdminAuthService } from './admin-auth.service';
 import {
   LoginDto,
@@ -27,13 +28,10 @@ export class AdminAuthController {
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  async login(@Body() loginData: LoginDto, @Req() req: Request) {
-    const deviceInfo = {
-      ip: req.ip || req.socket.remoteAddress,
-      userAgent: req.headers['user-agent'],
-      platform: req.headers['sec-ch-ua-platform'],
-      language: req.headers['accept-language'],
-    };
+  async login(
+    @Body() loginData: LoginDto,
+    @ReqDeviceInfo() deviceInfo: RequestDeviceInfo,
+  ) {
     return await this.adminAuthService.login(loginData, deviceInfo);
   }
 
@@ -41,14 +39,8 @@ export class AdminAuthController {
   @HttpCode(HttpStatus.OK)
   async refreshToken(
     @Body() refreshTokenDto: RefreshTokenDto,
-    @Req() req: Request,
+    @ReqDeviceInfo() deviceInfo: RequestDeviceInfo,
   ) {
-    const deviceInfo = {
-      ip: req.ip || req.socket.remoteAddress,
-      userAgent: req.headers['user-agent'],
-      platform: req.headers['sec-ch-ua-platform'],
-      language: req.headers['accept-language'],
-    };
     return await this.adminAuthService.refreshToken(
       refreshTokenDto.refreshToken,
       deviceInfo,

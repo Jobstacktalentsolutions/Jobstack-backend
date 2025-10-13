@@ -9,6 +9,7 @@ import {
   Delete,
 } from '@nestjs/common';
 import type { Request } from 'express';
+import { ReqDeviceInfo, type RequestDeviceInfo } from 'libs/common/src/shared';
 import { JobSeekerAuthService } from './jobseeker-auth.service';
 import {
   JobSeekerRegistrationDto,
@@ -30,14 +31,8 @@ export class JobSeekerAuthController {
   @HttpCode(HttpStatus.CREATED)
   async register(
     @Body() registrationData: JobSeekerRegistrationDto,
-    @Req() req: Request,
+    @ReqDeviceInfo() deviceInfo: RequestDeviceInfo,
   ) {
-    const deviceInfo = {
-      ip: req.ip || req.socket.remoteAddress,
-      userAgent: req.headers['user-agent'],
-      platform: req.headers['sec-ch-ua-platform'],
-      language: req.headers['accept-language'],
-    };
     return await this.jobseekerAuthService.register(
       registrationData,
       deviceInfo,
@@ -46,13 +41,10 @@ export class JobSeekerAuthController {
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  async login(@Body() loginData: LoginDto, @Req() req: Request) {
-    const deviceInfo = {
-      ip: req.ip || req.socket.remoteAddress,
-      userAgent: req.headers['user-agent'],
-      platform: req.headers['sec-ch-ua-platform'],
-      language: req.headers['accept-language'],
-    };
+  async login(
+    @Body() loginData: LoginDto,
+    @ReqDeviceInfo() deviceInfo: RequestDeviceInfo,
+  ) {
     return await this.jobseekerAuthService.login(loginData, deviceInfo);
   }
 
@@ -60,14 +52,8 @@ export class JobSeekerAuthController {
   @HttpCode(HttpStatus.OK)
   async refreshToken(
     @Body() refreshTokenDto: RefreshTokenDto,
-    @Req() req: Request,
+    @ReqDeviceInfo() deviceInfo: RequestDeviceInfo,
   ) {
-    const deviceInfo = {
-      ip: req.ip || req.socket.remoteAddress,
-      userAgent: req.headers['user-agent'],
-      platform: req.headers['sec-ch-ua-platform'],
-      language: req.headers['accept-language'],
-    };
     return await this.jobseekerAuthService.refreshToken(
       refreshTokenDto.refreshToken,
       deviceInfo,
