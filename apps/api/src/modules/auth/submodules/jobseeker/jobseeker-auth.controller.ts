@@ -4,12 +4,15 @@ import {
   Body,
   HttpCode,
   HttpStatus,
-  Req,
   UseGuards,
   Delete,
 } from '@nestjs/common';
-import type { Request } from 'express';
-import { ReqDeviceInfo, type RequestDeviceInfo } from 'libs/common/src/shared';
+import {
+  ReqDeviceInfo,
+  CurrentUser,
+  type RequestDeviceInfo,
+  type CurrentUserPayload,
+} from 'libs/common/src/shared';
 import { JobSeekerAuthService } from './jobseeker-auth.service';
 import {
   JobSeekerRegistrationDto,
@@ -33,10 +36,15 @@ export class JobSeekerAuthController {
     @Body() registrationData: JobSeekerRegistrationDto,
     @ReqDeviceInfo() deviceInfo: RequestDeviceInfo,
   ) {
-    return await this.jobseekerAuthService.register(
+    const data = await this.jobseekerAuthService.register(
       registrationData,
       deviceInfo,
     );
+    return {
+      message:
+        'JobSeeker registered successfully, a code has been sent to your email to verify email',
+      data,
+    };
   }
 
   @Post('login')
@@ -63,9 +71,12 @@ export class JobSeekerAuthController {
   @UseGuards(JobSeekerJwtGuard)
   @Delete('logout')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async logout(@Req() req: any) {
-    const { sessionId, jti, refreshTokenId } = req.user;
-    await this.jobseekerAuthService.logout(sessionId, jti, refreshTokenId);
+  async logout(@CurrentUser() user: CurrentUserPayload) {
+    await this.jobseekerAuthService.logout(
+      user.sessionId,
+      user.jti,
+      user.refreshTokenId!,
+    );
   }
 
   @Post('send-verification-email')

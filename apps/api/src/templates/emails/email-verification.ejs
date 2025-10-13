@@ -1,76 +1,157 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title><%= subject %></title>
-</head>
-<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f4f4f4;">
-    <div style="max-width: 600px; margin: 0 auto; background-color: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-        <!-- Header -->
-        <div style="text-align: center; border-bottom: 2px solid #007bff; padding-bottom: 20px; margin-bottom: 30px;">
-            <h1 style="color: #007bff; margin: 0; font-size: 28px;"><%= companyName %></h1>
+  </head>
+  <body
+    style="
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f4;
+    "
+  >
+    <div
+      style="
+        max-width: 600px;
+        margin: 0 auto;
+        background-color: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      "
+    >
+      <!-- Header -->
+      <div
+        style="
+          text-align: center;
+          border-bottom: 2px solid #007bff;
+          padding-bottom: 20px;
+          margin-bottom: 30px;
+        "
+      >
+        <h1 style="color: #007bff; margin: 0; font-size: 28px">
+          <%= companyName %>
+        </h1>
+      </div>
+
+      <!-- Content -->
+      <div style="margin-bottom: 30px">
+        <h2 style="color: #2c3e50; margin-bottom: 20px"><%= subject %></h2>
+
+        <p style="margin-bottom: 20px">
+          Thank you for signing up with <%= companyName %>! To complete your
+          registration and start using your account, please verify your email
+          address using the code below.
+        </p>
+
+        <div
+          style="
+            background-color: #e8f5e8;
+            padding: 20px;
+            border-left: 4px solid #28a745;
+            margin: 20px 0;
+          "
+        >
+          <p style="margin: 0; color: #155724; font-weight: bold">
+            Verification Required: Please verify your email to activate your
+            account.
+          </p>
         </div>
 
-        <!-- Content -->
-        <div style="margin-bottom: 30px;">
-            <h2 style="color: #2c3e50; margin-bottom: 20px;"><%= subject %></h2>
-            
-            <p style="margin-bottom: 20px;">Hello <%= firstName || name || 'there' %>,</p>
-
-            <p style="margin-bottom: 20px;">
-                Thank you for signing up with <%= companyName %>! To complete your registration and start using your account, please verify your email address by clicking the button below.
+        <div style="text-align: center; margin: 30px 0">
+          <div
+            style="
+              background-color: #f8f9fa;
+              padding: 20px;
+              border-radius: 8px;
+              border: 2px solid #007bff;
+              display: inline-block;
+            "
+          >
+            <p
+              style="
+                margin: 0;
+                font-size: 24px;
+                font-weight: bold;
+                color: #007bff;
+                letter-spacing: 3px;
+                font-family: monospace;
+              "
+            >
+              <%= code %>
             </p>
-
-            <div style="background-color: #e8f5e8; padding: 20px; border-left: 4px solid #28a745; margin: 20px 0;">
-                <p style="margin: 0; color: #155724; font-weight: bold;">
-                    Verification Required: Please verify your email to activate your account.
-                </p>
-            </div>
-
-            <% if (verificationUrl) { %>
-            <div style="text-align: center; margin: 30px 0;">
-                <a href="<%= verificationUrl %>" style="display: inline-block; background-color: #007bff; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold;">Verify Email Address</a>
-            </div>
-            <% } %>
-
-            <p style="margin-bottom: 20px;">
-                If the button doesn't work, you can copy and paste this link into your browser:
-            </p>
-
-            <% if (verificationUrl) { %>
-            <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; word-break: break-all; font-family: monospace; font-size: 12px; color: #666;">
-                <%= verificationUrl %>
-            </div>
-            <% } %>
-
-            <div style="background-color: #fff3cd; padding: 15px; border-left: 4px solid #ffc107; margin: 20px 0;">
-                <p style="margin: 0; color: #856404;">
-                    <strong>Note:</strong> This verification link will expire in 24 hours. If you didn't create an account with us, please ignore this email.
-                </p>
-            </div>
+          </div>
         </div>
 
-        <!-- Footer -->
-        <div style="border-top: 1px solid #eee; padding-top: 20px; text-align: center; color: #666; font-size: 14px;">
-            <p style="margin-bottom: 10px;">
-                Best regards,<br>
-                The <%= companyName %> Team
-            </p>
-            
-            <p style="margin-bottom: 10px;">
-                <a href="<%= websiteUrl %>" style="color: #007bff; text-decoration: none;"><%= websiteUrl %></a>
-            </p>
-            
-            <p style="margin-bottom: 0; font-size: 12px;">
-                If you have any questions, please contact us at 
-                <a href="mailto:<%= supportEmail %>" style="color: #007bff; text-decoration: none;"><%= supportEmail %></a>
-            </p>
-            
-            <p style="margin-top: 20px; margin-bottom: 0; font-size: 11px; color: #999;">
-                © <%= currentYear %> <%= companyName %>. All rights reserved.
-            </p>
+        <p style="margin-bottom: 20px">
+          Enter this verification code in the app or website to complete your
+          email verification.
+        </p>
+
+        <div
+          style="
+            background-color: #fff3cd;
+            padding: 15px;
+            border-left: 4px solid #ffc107;
+            margin: 20px 0;
+          "
+        >
+          <p style="margin: 0; color: #856404">
+            <strong>Note:</strong> This verification code will expire in <%=
+            expiryMinutes || 10 %> minutes. If you didn't create an account with
+            us, please ignore this email.
+          </p>
         </div>
+      </div>
+
+      <!-- Footer -->
+      <div
+        style="
+          border-top: 1px solid #eee;
+          padding-top: 20px;
+          text-align: center;
+          color: #666;
+          font-size: 14px;
+        "
+      >
+        <p style="margin-bottom: 10px">
+          Best regards,<br />
+          The <%= companyName %> Team
+        </p>
+
+        <p style="margin-bottom: 10px">
+          <a
+            href="<%= websiteUrl %>"
+            style="color: #007bff; text-decoration: none"
+            ><%= websiteUrl %></a
+          >
+        </p>
+
+        <p style="margin-bottom: 0; font-size: 12px">
+          If you have any questions, please contact us at
+          <a
+            href="mailto:<%= supportEmail %>"
+            style="color: #007bff; text-decoration: none"
+            ><%= supportEmail %></a
+          >
+        </p>
+
+        <p
+          style="
+            margin-top: 20px;
+            margin-bottom: 0;
+            font-size: 11px;
+            color: #999;
+          "
+        >
+          © <%= currentYear %> <%= companyName %>. All rights reserved.
+        </p>
+      </div>
     </div>
-</body>
+  </body>
 </html>

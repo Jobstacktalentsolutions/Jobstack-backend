@@ -134,8 +134,7 @@ export class JobSeekerAuthService {
 
       // For free-text names, always insert a SUGGESTED skill
       for (const name of registrationData.skills ?? []) {
-        const skill =
-          await this.skillsService.insertSuggestedSkillNoCheck(name);
+        const skill = await this.skillsService.insertSuggestedSkill(name);
         normalizedIds.add(skill.id);
       }
 

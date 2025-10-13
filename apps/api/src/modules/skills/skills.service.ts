@@ -123,27 +123,20 @@ export class SkillsService {
     return saved;
   }
 
-  // Public: insert SUGGESTED skill without pre-checks; handle unique collisions
-  async insertSuggestedSkillNoCheck(name: string): Promise<Skill> {
-    const trimmed = name.trim();
-    if (!trimmed) throw new BadRequestException('Name required');
+  async insertSuggestedSkill(name: string): Promise<Skill> {
+    if (!name) throw new BadRequestException('Name required');
+
+    const existing = await this.skillRepo.findOne({
+      where: { name: name.trim() },
+    });
+    if (existing) return existing;
+
     const skill = this.skillRepo.create({
-      name: trimmed,
+      name: name.trim(),
       status: SkillStatus.SUGGESTED,
       synonyms: [],
     });
-    try {
-      return await this.skillRepo.save(skill);
-    } catch (error: any) {
-      // If unique violation on name, fallback to returning the existing row
-      if (error?.driverError?.code === '23505') {
-        const existing = await this.skillRepo.findOne({
-          where: { name: ILike(trimmed) },
-        });
-        if (existing) return existing;
-      }
-      throw error;
-    }
+    return await this.skillRepo.save(skill);
   }
 
   // Attach skills to a profile with metadata

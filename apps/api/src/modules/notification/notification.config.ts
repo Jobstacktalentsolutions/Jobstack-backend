@@ -15,11 +15,8 @@ export const EMAIL_CONFIG = 'EMAIL_CONFIG';
 export const EMAIL_PROVIDERS_CONFIG: Provider[] = [
   {
     provide: NOTIFICATION_PROVIDERS.EMAIL,
-    useFactory: (
-      brevoEmail: BrevoEmailProvider,
-      resendEmail: ResendEmailProvider,
-    ) => [resendEmail],
-    inject: [ResendEmailProvider, BrevoEmailProvider],
+    useFactory: (resendEmail: ResendEmailProvider) => [resendEmail],
+    inject: [ResendEmailProvider],
   },
   {
     provide: EMAIL_CONFIG,
