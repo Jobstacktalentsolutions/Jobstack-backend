@@ -23,10 +23,11 @@ export class AdminProfile extends BaseEntity {
   @Column({ nullable: true })
   address?: string;
 
-  @OneToOne(() => AdminAuth, (auth) => auth.profile, {
-    cascade: true,
-    onDelete: 'CASCADE',
-  })
+  @Column('uuid', { nullable: true })
+  authId?: string;
+
+  @OneToOne(() => AdminAuth, (auth) => auth.profile)
+  @JoinColumn({ name: 'authId' })
   auth: AdminAuth;
 
   @ManyToOne(() => Role, (role) => role.adminProfiles, { nullable: true })
