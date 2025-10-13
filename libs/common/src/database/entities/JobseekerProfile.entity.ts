@@ -1,10 +1,4 @@
-import {
-  Entity,
-  Column,
-  OneToOne,
-  JoinColumn,
-  OneToMany,
-} from 'typeorm';
+import { Entity, Column, OneToOne, JoinColumn, OneToMany } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { UserRole } from '@app/common/shared/enums/user-roles.enum';
 import { JobseekerSkill } from './JobseekerSkill.entity';
@@ -18,7 +12,6 @@ export enum ApprovalStatus {
 
 @Entity('job_seeker_profiles')
 export class JobSeekerProfile extends BaseEntity {
-
   @Column()
   firstName: string;
 
@@ -53,9 +46,12 @@ export class JobSeekerProfile extends BaseEntity {
   })
   approvalStatus: ApprovalStatus;
 
+  @Column('uuid', { nullable: true })
+  authId?: string;
+
   @OneToOne(() => JobseekerAuth, (auth) => auth.profile, {
     onDelete: 'CASCADE',
   })
-  @JoinColumn()
+  @JoinColumn({ name: 'authId' })
   auth: JobseekerAuth;
 }

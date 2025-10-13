@@ -1,9 +1,4 @@
-import {
-  Entity,
-  Column,
-  OneToOne,
-  JoinColumn,
-} from 'typeorm';
+import { Entity, Column, OneToOne, JoinColumn } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { UserRole } from '@app/common/shared/enums/user-roles.enum';
 import { RecruiterAuth } from './RecruiterAuth.entity';
@@ -14,7 +9,6 @@ export enum RecruiterType {
 }
 @Entity('recruiter')
 export class RecruiterProfile extends BaseEntity {
-
   @Column()
   firstName: string;
 
@@ -45,9 +39,12 @@ export class RecruiterProfile extends BaseEntity {
   @Column({ nullable: true })
   website?: string;
 
+  @Column('uuid', { nullable: true })
+  authId?: string;
+
   @OneToOne(() => RecruiterAuth, (auth) => auth.profile, {
     onDelete: 'CASCADE',
   })
-  @JoinColumn()
+  @JoinColumn({ name: 'authId' })
   auth: RecruiterAuth;
 }

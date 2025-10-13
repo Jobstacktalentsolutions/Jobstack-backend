@@ -14,10 +14,6 @@ export class RecruiterAuth extends BaseEntity {
   @OneToMany(() => RecruiterSession, (session) => session.recruiter)
   sessions: RecruiterSession[];
 
-  @OneToOne(() => RecruiterProfile, (profile) => profile.auth, {
-    cascade: true,
-    onDelete: 'CASCADE',
-  })
-  @JoinColumn()
+  @OneToOne(() => RecruiterProfile, (profile) => profile.auth)
   profile: RecruiterProfile;
 }
