@@ -8,7 +8,9 @@ import { ValidationPipe } from '@nestjs/common';
 async function bootstrap() {
   const app = await NestFactory.create(ApiModule);
 
-  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalPipes(
+    new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }),
+  );
   app.setGlobalPrefix('api');
   app.useLogger(app.get(Logger));
   await app.listen(app.get(ConfigService).get(ENV.PORT) ?? 3000);

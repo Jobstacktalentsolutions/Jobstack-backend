@@ -7,6 +7,11 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AdminAuth } from '@app/common/database/entities/AdminAuth.entity';
+import {
+  RecruiterVerification,
+  RecruiterProfile,
+} from '@app/common/database/entities';
+import { VerificationStatus } from '@app/common/shared/enums/recruiter-docs.enum';
 import { UserRole } from '@app/common/shared/enums';
 
 @Injectable()
@@ -14,6 +19,10 @@ export class AdminService {
   constructor(
     @InjectRepository(AdminAuth)
     private readonly adminAuthRepo: Repository<AdminAuth>,
+    @InjectRepository(RecruiterVerification)
+    private readonly verificationRepo: Repository<RecruiterVerification>,
+    @InjectRepository(RecruiterProfile)
+    private readonly profileRepo: Repository<RecruiterProfile>,
   ) {}
 
   /**
@@ -35,6 +44,36 @@ export class AdminService {
       createdAt: admin.createdAt,
       updatedAt: admin.updatedAt,
     };
+  }
+
+  /**
+   * Approve/Reject recruiter verification and toggle profile.verified
+   */
+  async updateRecruiterVerification(
+    recruiterId: string,
+    status: VerificationStatus,
+    rejectionReason?: string,
+  ) {
+    const verification = await this.verificationRepo.findOne({
+      where: { recruiterId },
+    });
+    if (!verification) throw new NotFoundException('Verification not found');
+
+    verification.status = status;
+    verification.reviewedAt = new Date();
+    verification.rejectionReason =
+      status === VerificationStatus.REJECTED ? rejectionReason : undefined;
+    await this.verificationRepo.save(verification);
+
+    const profile = await this.profileRepo.findOne({
+      where: { id: recruiterId },
+    });
+    if (profile) {
+      profile.verified = status === VerificationStatus.APPROVED;
+      await this.profileRepo.save(profile);
+    }
+
+    return { recruiterId, status };
   }
 
   /**

@@ -5,11 +5,13 @@ import {
   Body,
   Req,
   UseGuards,
-  ForbiddenException,
+  Patch,
+  Param,
 } from '@nestjs/common';
 import type { Request } from 'express';
 import { AdminJwtGuard } from 'apps/api/src/guards';
 import { AdminService } from './admin.service';
+import { VerificationStatus } from '@app/common/shared/enums/recruiter-docs.enum';
 import { UserRole } from '@app/common/shared/enums';
 
 @Controller('admin')
@@ -66,5 +68,31 @@ export class AdminController {
       permissions: admin.permissions,
       role: admin.role,
     };
+  }
+
+  /**
+   * Approve recruiter verification
+   */
+  @Patch('recruiters/:id/verification/approve')
+  async approveRecruiter(@Param('id') recruiterId: string) {
+    return this.adminService.updateRecruiterVerification(
+      recruiterId,
+      VerificationStatus.APPROVED,
+    );
+  }
+
+  /**
+   * Reject recruiter verification
+   */
+  @Patch('recruiters/:id/verification/reject')
+  async rejectRecruiter(
+    @Param('id') recruiterId: string,
+    @Body('reason') reason: string,
+  ) {
+    return this.adminService.updateRecruiterVerification(
+      recruiterId,
+      VerificationStatus.REJECTED,
+      reason,
+    );
   }
 }

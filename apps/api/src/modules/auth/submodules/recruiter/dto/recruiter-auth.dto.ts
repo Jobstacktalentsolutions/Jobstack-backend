@@ -6,6 +6,7 @@ import {
   MinLength,
   IsStrongPassword,
   IsPhoneNumber,
+  ValidateIf,
 } from 'class-validator';
 
 export enum RecruiterType {
@@ -44,13 +45,8 @@ export class RecruiterRegistrationDto {
   @IsString()
   companyName?: string;
 
-  @IsOptional()
   @IsString()
-  contactName?: string;
-
-  @IsOptional()
-  @IsString()
-  website?: string;
+  socialOrWebsiteUrl: string;
 }
 
 /**

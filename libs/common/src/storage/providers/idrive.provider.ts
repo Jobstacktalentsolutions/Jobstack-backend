@@ -8,12 +8,11 @@ import { ConfigService } from '@nestjs/config';
 import { ENV } from '../../../../../apps/api/src/modules/config/env.config';
 import {
   IStorageProvider,
-  MulterFile,
   UploadOptions,
   UploadResult,
 } from '../interfaces/storage.interface';
 import { lookup as lookupMime } from 'mime-types';
-
+import { MulterFile } from '@app/common/shared/types';
 export class IDriveProvider implements IStorageProvider {
   private s3: S3Client;
   private endpoint: string;

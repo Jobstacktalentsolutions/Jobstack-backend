@@ -4,6 +4,7 @@ import {
   UnauthorizedException,
   ConflictException,
   NotFoundException,
+  BadRequestException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -17,6 +18,7 @@ import { RecruiterSession } from '@app/common/database/entities/RecruiterSession
 import { RedisService } from '@app/common/redis/redis.service';
 import { REDIS_KEYS } from '@app/common/redis/redis.config';
 import { NotificationService } from '../../../notification/notification.service';
+import { EmailTemplateType } from '../../../notification/email/email-notification.enum';
 import { UserRole } from '@app/common/shared/enums/user-roles.enum';
 import {
   AccessTokenPayload,
@@ -37,7 +39,9 @@ import {
   PasswordResetRequestDto,
   PasswordResetConfirmCodeDto,
   PasswordResetDto,
+  RecruiterType,
 } from './dto/recruiter-auth.dto';
+import { ENV } from 'apps/api/src/modules/config';
 
 @Injectable()
 export class RecruiterAuthService {
@@ -71,9 +75,18 @@ export class RecruiterAuthService {
       phoneNumber,
       type,
       companyName,
-      contactName,
-      website,
+      socialOrWebsiteUrl,
     } = registrationData;
+
+    if (type === RecruiterType.ORGANIZATION && !companyName) {
+      throw new BadRequestException(
+        'Company name is required for organization',
+      );
+    } else if (type === RecruiterType.INDIVIDUAL && companyName) {
+      throw new BadRequestException(
+        'Company name is not allowed for individual',
+      );
+    }
 
     // Check if email already exists
     const existingAuth = await this.recruiterAuthRepository.findOne({
@@ -101,8 +114,7 @@ export class RecruiterAuthService {
         phoneNumber,
         type,
         companyName,
-        contactName,
-        website,
+        socialOrWebsiteUrl,
         role: UserRole.RECRUITER,
       });
       await queryRunner.manager.save(profile);
@@ -117,8 +129,21 @@ export class RecruiterAuthService {
 
       await queryRunner.commitTransaction();
 
-      // Send verification email
       await this.sendVerificationEmail(email.toLowerCase());
+
+      await this.notificationService.sendEmail({
+        to: email.toLowerCase(),
+        subject: 'Complete your recruiter verification',
+        template: EmailTemplateType.GENERAL_NOTIFICATION,
+        context: {
+          subject: 'Complete your recruiter verification',
+          firstName,
+          message:
+            'Please complete your verification to unlock full access. Visit your dashboard to upload your documents.',
+          actionText: 'Complete Verification',
+          actionUrl: `${ENV.FRONTEND_URL || ''}/recruiter/verification`,
+        },
+      });
 
       // Generate tokens
       const authResult = await this.generateTokens(auth, profile, deviceInfo);

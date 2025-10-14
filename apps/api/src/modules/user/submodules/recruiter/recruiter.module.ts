@@ -4,17 +4,29 @@ import { RecruiterProfile } from '@app/common/database/entities/RecruiterProfile
 import { RecruiterAuth } from '@app/common/database/entities/RecruiterAuth.entity';
 import { RecruiterController } from './recruiter.controller';
 import { RecruiterService } from './recruiter.service';
+import { RecruiterVerification } from '@app/common/database/entities/RecruiterVerification.entity';
+import { RecruiterVerificationService } from './recruiter-verification.service';
+import { RecruiterVerificationController } from './recruiter-verification.controller';
 import { StorageService } from '@app/common/storage/storage.service';
 import { RecruiterJwtGuard } from 'apps/api/src/guards';
 import { RecruiterAuthModule } from 'apps/api/src/modules/auth/submodules/recruiter/recruiter-auth.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([RecruiterProfile, RecruiterAuth]),
+    TypeOrmModule.forFeature([
+      RecruiterProfile,
+      RecruiterAuth,
+      RecruiterVerification,
+    ]),
     RecruiterAuthModule,
   ],
-  controllers: [RecruiterController],
-  providers: [RecruiterService, StorageService, RecruiterJwtGuard],
+  controllers: [RecruiterController, RecruiterVerificationController],
+  providers: [
+    RecruiterService,
+    RecruiterVerificationService,
+    StorageService,
+    RecruiterJwtGuard,
+  ],
   exports: [RecruiterService],
 })
 export class RecruiterModule {}

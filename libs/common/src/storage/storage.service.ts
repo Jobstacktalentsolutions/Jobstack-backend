@@ -4,10 +4,9 @@ import { createStorageConfig, StorageConfig } from './config/storage.config';
 import { IDriveProvider } from './providers/idrive.provider';
 import {
   IStorageProvider,
-  MulterFile,
   StorageProviderType,
 } from './interfaces/storage.interface';
-
+import { MulterFile } from '@app/common/shared/types';
 @Injectable()
 export class StorageService {
   private readonly storageConfig: StorageConfig;

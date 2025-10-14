@@ -1,20 +1,5 @@
-import { Readable } from 'stream';
-
 export type StorageProviderType = 'idrive' | 'cloudinary';
-
-export type MulterFile = {
-  fieldname: string;
-  originalname: string;
-  encoding: string;
-  mimetype: string;
-  size: number;
-  destination: string;
-  filename: string;
-  path: string;
-  buffer: Buffer;
-  stream?: Readable;
-};
-
+import { MulterFile } from '@app/common/shared/types';
 export interface UploadOptions {
   fileName: string;
   folder: string;

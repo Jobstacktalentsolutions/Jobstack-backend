@@ -2,6 +2,7 @@ import { Entity, Column, OneToOne, JoinColumn } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { UserRole } from '@app/common/shared/enums/user-roles.enum';
 import { RecruiterAuth } from './RecruiterAuth.entity';
+import { RecruiterVerification } from './RecruiterVerification.entity';
 
 export enum RecruiterType {
   INDIVIDUAL = 'Individual',
@@ -34,10 +35,10 @@ export class RecruiterProfile extends BaseEntity {
   companyName?: string;
 
   @Column({ nullable: true })
-  contactName?: string;
+  socialOrWebsiteUrl?: string;
 
-  @Column({ nullable: true })
-  website?: string;
+  @Column({ default: false })
+  verified: boolean; // verification will be done manually by the admin
 
   @Column('uuid', { nullable: true })
   authId?: string;
@@ -47,4 +48,7 @@ export class RecruiterProfile extends BaseEntity {
   })
   @JoinColumn({ name: 'authId' })
   auth: RecruiterAuth;
+
+  @OneToOne(() => RecruiterVerification, (v) => v.recruiter)
+  verification?: RecruiterVerification;
 }
