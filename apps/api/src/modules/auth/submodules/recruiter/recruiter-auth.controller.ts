@@ -19,7 +19,6 @@ import {
   PasswordResetConfirmCodeDto,
   PasswordResetDto,
 } from './dto/recruiter-auth.dto';
-import type { Request } from 'express';
 import { ReqDeviceInfo, type RequestDeviceInfo } from 'libs/common/src/shared';
 import { RecruiterJwtGuard } from 'apps/api/src/guards';
 
