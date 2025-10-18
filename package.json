@@ -109,7 +109,8 @@
       "<rootDir>/apps/"
     ],
     "moduleNameMapper": {
-      "^@app/common(|/.*)$": "<rootDir>/libs/common/src/$1"
+      "^@app/common(|/.*)$": "<rootDir>/libs/common/src/$1",
+      "^@app/seeding(|/.*)$": "<rootDir>/libs/seeding/src/$1"
     }
   }
 }

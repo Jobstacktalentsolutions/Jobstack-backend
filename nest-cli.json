@@ -34,6 +34,15 @@
       "compilerOptions": {
         "tsConfigPath": "libs/common/tsconfig.lib.json"
       }
+    },
+    "seeding": {
+      "type": "library",
+      "root": "libs/seeding",
+      "entryFile": "index",
+      "sourceRoot": "libs/seeding/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/seeding/tsconfig.lib.json"
+      }
     }
   },
   "monorepo": true,

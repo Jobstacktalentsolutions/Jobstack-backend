@@ -13,7 +13,8 @@ import {
 } from '@nestjs/common';
 import { SkillsService } from './skills.service';
 import { AdminJwtGuard, JobSeekerJwtGuard } from 'apps/api/src/guards';
-import { Skill, SkillStatus } from '@app/common/database/entities/Skill.entity';
+import { Skill } from '@app/common/database/entities/Skill.entity';
+import { CreateSkillDto, UpdateSkillDto, SuggestSkillDto } from './dto';
 
 @Controller('skills')
 export class SkillsController {
@@ -29,7 +30,7 @@ export class SkillsController {
   @UseGuards(JobSeekerJwtGuard)
   @Post('suggest')
   @HttpCode(HttpStatus.CREATED)
-  async suggest(@Body() body: { name: string }): Promise<Skill> {
+  async suggest(@Body() body: SuggestSkillDto): Promise<Skill> {
     return this.skillsService.suggestSkill(body.name);
   }
 
@@ -37,15 +38,7 @@ export class SkillsController {
   @UseGuards(AdminJwtGuard)
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  async create(
-    @Body()
-    body: {
-      name: string;
-      description?: string;
-      synonyms?: string[];
-      status?: SkillStatus;
-    },
-  ): Promise<Skill> {
+  async create(@Body() body: CreateSkillDto): Promise<Skill> {
     return this.skillsService.createSkill(body);
   }
 
@@ -54,13 +47,7 @@ export class SkillsController {
   @Patch(':id')
   async update(
     @Param('id') id: string,
-    @Body()
-    body: Partial<{
-      name: string;
-      description?: string;
-      synonyms?: string[];
-      status?: SkillStatus;
-    }>,
+    @Body() body: UpdateSkillDto,
   ): Promise<Skill> {
     return this.skillsService.updateSkill(id, body);
   }

@@ -6,13 +6,8 @@ alwaysApply: true
 
 ---
 
-## alwaysApply: true
-
 ## Architecture & Design
 
-- The entire backend is built using a **NestJS Modular Architecture** (two apps: `api` and `background`).
-- Services contain the core business logic (DRY principle is paramount).
-- Controllers handle HTTP requests, input validation (DTOs), and consistent responses.
 - **Modularity:** Ensure all business concerns (Auth, Vetting, Roles, Payment) are cleanly isolated in their own modules.
 
 ## Database & Data
@@ -33,7 +28,6 @@ alwaysApply: true
 ## Environment Setup
 
 - Ensure to use the ENV variables already defined in `env.config` when trying to access environment variables.
-- For storage, always reference ENV via the `ENV` enum from `libs/common/src/config/env.config.ts` (e.g., `ENV.IDRIVE_ENDPOINT`, `ENV.STORAGE_PROVIDER`). Do not use local credential profiles; providers must be configured from ENV only.
 
 ## General Code Standards
 
