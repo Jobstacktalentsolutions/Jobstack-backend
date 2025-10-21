@@ -13,6 +13,8 @@ async function bootstrap() {
   );
   app.setGlobalPrefix('api');
   app.useLogger(app.get(Logger));
-  await app.listen(app.get(ConfigService).get(ENV.PORT) ?? 3000);
+  // Bind to 0.0.0.0 for Railway deployment compatibility
+  const port = process.env.PORT || app.get(ConfigService).get(ENV.PORT) || 3000;
+  await app.listen(port, '0.0.0.0');
 }
 bootstrap();
