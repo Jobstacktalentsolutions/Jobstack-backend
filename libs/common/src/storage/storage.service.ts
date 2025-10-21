@@ -154,19 +154,28 @@ export class StorageService {
 
   // Extract file key from a storage URL
   public extractFileKeyFromUrl(url: string): string | null {
+    if (!url) {
+      this.logger.warn('extractFileKeyFromUrl called with empty URL');
+      return null;
+    }
+
     try {
       const parsed = new URL(url);
       const pathname = parsed.pathname || '';
       const key = pathname.startsWith('/') ? pathname.slice(1) : pathname;
       return key || null;
-    } catch {
+    } catch (error) {
+      this.logger.warn(`Failed to parse URL: ${url}. Error: ${error.message}`);
       try {
         const parts = url.split('/');
         if (parts.length >= 4) {
           return parts.slice(3).join('/');
         }
         return null;
-      } catch {
+      } catch (fallbackError) {
+        this.logger.warn(
+          `Fallback URL parsing also failed: ${fallbackError.message}`,
+        );
         return null;
       }
     }

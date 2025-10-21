@@ -63,7 +63,11 @@ export class IDriveProvider implements IStorageProvider {
 
     await this.s3.send(put);
 
-    const url = this.getPublicFileUrl(key, options.bucket);
+    const url = await this.getSignedFileUrl(
+      key,
+      options.bucket,
+      60 * 60 * 24 * 7,
+    );
 
     return {
       fileKey: key,
@@ -85,6 +89,16 @@ export class IDriveProvider implements IStorageProvider {
   }
 
   getPublicFileUrl(fileKey: string, bucket: string): string {
+    if (!this.endpoint) {
+      throw new Error('IDrive endpoint is not configured');
+    }
+    if (!bucket) {
+      throw new Error('Bucket name is required');
+    }
+    if (!fileKey) {
+      throw new Error('File key is required');
+    }
+
     const endpoint = this.endpoint.replace(/\/$/, '');
     return `${endpoint}/${bucket}/${fileKey}`;
   }

@@ -19,7 +19,7 @@ import { JobseekerService } from './jobseeker.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import type { MulterFile } from '@app/common/shared/types';
 
-@Controller('jobseeker')
+@Controller('/user/jobseeker')
 export class JobseekerController {
   constructor(protected readonly jobseekerService: JobseekerService) {}
 
