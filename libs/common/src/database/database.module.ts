@@ -18,7 +18,8 @@ import { ENV } from '../../../../apps/api/src/modules/config/env.config';
           url: configService.getOrThrow<string>(ENV.DATABASE_URL),
           entities: [__dirname + '/entities/**/*.entity{.ts,.js}'],
           autoLoadEntities: true,
-          synchronize: nodeEnv !== 'production',
+          // synchronize: nodeEnv !== 'production',
+          synchronize: true,
           logging: nodeEnv === 'development',
         };
       },

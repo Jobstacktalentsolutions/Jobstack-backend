@@ -32,21 +32,6 @@ export class JobSeekerRegistrationDto {
   @IsString()
   @IsPhoneNumber('NG')
   phoneNumber: string;
-
-  @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  skills?: string[]; // free-text names
-
-  @IsOptional()
-  @IsArray()
-  @IsUUID('4', { each: true })
-  skillIds?: string[]; // normalized ids
-
-  @IsOptional()
-  @IsArray()
-  @IsString()
-  brief: string;
 }
 
 /**

@@ -32,8 +32,14 @@ export class JobSeekerProfile extends BaseEntity {
   @OneToMany(() => JobseekerSkill, (js) => js.profile, { cascade: true })
   userSkills: JobseekerSkill[];
 
+  @Column({ type: 'text', nullable: true })
+  jobTitle?: string;
+
   @Column({ type: 'text' })
   brief: string;
+
+  @Column({ type: 'text', nullable: true })
+  preferredLocation?: string;
 
   @Column({ nullable: true })
   cvUrl?: string;

@@ -68,7 +68,7 @@ export class JobSeekerAuthService {
     registrationData: JobSeekerRegistrationDto,
     deviceInfo?: any,
   ): Promise<AuthResult> {
-    const { email, password, firstName, lastName, phoneNumber, skills, brief } =
+    const { email, password, firstName, lastName, phoneNumber } =
       registrationData;
 
     // Check if email already exists
@@ -95,7 +95,6 @@ export class JobSeekerAuthService {
         firstName,
         lastName,
         phoneNumber,
-        brief,
         approvalStatus: ApprovalStatus.PENDING,
       });
       await queryRunner.manager.save(profile);
@@ -128,22 +127,6 @@ export class JobSeekerAuthService {
       const authResult = await this.generateTokens(auth, profile, deviceInfo);
 
       this.logger.log(`JobSeeker registered: ${auth.id} (${email})`);
-
-      // Normalize and attach skills via SkillsService (non-transactional, best-effort)
-      const normalizedIds = new Set<string>(registrationData.skillIds ?? []);
-
-      // For free-text names, always insert a SUGGESTED skill
-      for (const name of registrationData.skills ?? []) {
-        const skill = await this.skillsService.insertSuggestedSkill(name);
-        normalizedIds.add(skill.id);
-      }
-
-      await this.skillsService.attachSkillsToProfile(
-        profile.id,
-        Array.from(normalizedIds).map((skillId) => ({
-          skillId,
-        })),
-      );
 
       return authResult;
     } catch (error) {
