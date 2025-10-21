@@ -1,9 +1,9 @@
-export type StorageProviderType = 'idrive' | 'cloudinary';
 import { MulterFile } from '@app/common/shared/types';
 export interface UploadOptions {
   fileName: string;
   folder: string;
   bucket: string;
+  sanitizedOriginalName?: string;
 }
 
 export interface UploadResult {

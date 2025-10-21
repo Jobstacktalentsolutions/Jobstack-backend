@@ -13,3 +13,4 @@ export * from './Role.entity';
 export * from './Permission.entity';
 export * from './Skill.entity';
 export * from './Notification.entity';
+export * from './Document.entity';

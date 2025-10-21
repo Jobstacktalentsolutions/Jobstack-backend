@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { JobSeekerProfile } from '@app/common/database/entities/JobseekerProfile.entity';
 import { JobseekerAuth } from '@app/common/database/entities/JobseekerAuth.entity';
 import { JobseekerSkill } from '@app/common/database/entities/JobseekerSkill.entity';
+import { Document } from '@app/common/database/entities';
 import { JobseekerController } from './jobseeker.controller';
 import { JobseekerService } from './jobseeker.service';
 import { StorageService } from '@app/common/storage/storage.service';
@@ -12,7 +13,12 @@ import { SkillsModule } from 'apps/api/src/modules/skills/skills.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([JobSeekerProfile, JobseekerAuth, JobseekerSkill]),
+    TypeOrmModule.forFeature([
+      JobSeekerProfile,
+      JobseekerAuth,
+      JobseekerSkill,
+      Document,
+    ]),
     JobSeekerAuthModule,
     SkillsModule,
   ],

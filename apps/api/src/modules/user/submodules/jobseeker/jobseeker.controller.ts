@@ -3,6 +3,7 @@ import {
   Post,
   Delete,
   Put,
+  Get,
   UseGuards,
   UseInterceptors,
   UploadedFile,
@@ -34,7 +35,11 @@ export class JobseekerController {
     }
     const user = (req as any).user as { sub: string };
     const result = await this.jobseekerService.uploadCv(user.sub, file);
-    return { success: true, cvUrl: result.cvUrl };
+    return {
+      success: true,
+      cvUrl: result.cvUrl,
+      documentId: result.documentId,
+    };
   }
 
   // Delete CV for authenticated jobseeker
@@ -45,6 +50,32 @@ export class JobseekerController {
     const user = (req as any).user as { sub: string };
     await this.jobseekerService.deleteCv(user.sub);
     return;
+  }
+
+  // Get CV document with signed URL
+  @Get('profile/cv')
+  @UseGuards(JobSeekerJwtGuard)
+  @HttpCode(HttpStatus.OK)
+  async getCvDocument(@Req() req: Request) {
+    const user = (req as any).user as { sub: string };
+    const result = await this.jobseekerService.getCvDocument(user.sub);
+    if (!result) {
+      throw new BadRequestException('No CV document found');
+    }
+    return {
+      success: true,
+      document: {
+        id: result.document.id,
+        fileName: result.document.fileName,
+        originalName: result.document.originalName,
+        mimeType: result.document.mimeType,
+        size: result.document.size,
+        type: result.document.type,
+        description: result.document.description,
+        createdAt: result.document.createdAt,
+      },
+      signedUrl: result.signedUrl,
+    };
   }
 
   // Update jobseeker profile

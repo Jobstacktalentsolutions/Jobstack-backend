@@ -2,6 +2,7 @@ import { Entity, Column, OneToOne, JoinColumn, OneToMany } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { JobseekerSkill } from './JobseekerSkill.entity';
 import { JobseekerAuth } from './JobseekerAuth.entity';
+import { Document } from './Document.entity';
 
 export enum ApprovalStatus {
   PENDING = 'Pending',
@@ -41,8 +42,12 @@ export class JobSeekerProfile extends BaseEntity {
   @Column({ type: 'text', nullable: true })
   preferredLocation?: string;
 
-  @Column({ nullable: true })
-  cvUrl?: string;
+  @Column('uuid', { nullable: true })
+  cvDocumentId?: string;
+
+  @OneToOne(() => Document, { nullable: true })
+  @JoinColumn({ name: 'cvDocumentId' })
+  cvDocument?: Document;
 
   @Column({
     type: 'enum',

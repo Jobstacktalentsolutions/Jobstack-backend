@@ -8,6 +8,7 @@ import { Repository } from 'typeorm';
 import { JobSeekerProfile } from '@app/common/database/entities/JobseekerProfile.entity';
 import { JobseekerAuth } from '@app/common/database/entities/JobseekerAuth.entity';
 import { JobseekerSkill } from '@app/common/database/entities/JobseekerSkill.entity';
+import { Document, DocumentType } from '@app/common/database/entities';
 import { StorageService } from '@app/common/storage/storage.service';
 import { SkillsService } from 'apps/api/src/modules/skills/skills.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
@@ -22,12 +23,17 @@ export class JobseekerService {
     protected readonly authRepo: Repository<JobseekerAuth>,
     @InjectRepository(JobseekerSkill)
     protected readonly jobseekerSkillRepo: Repository<JobseekerSkill>,
+    @InjectRepository(Document)
+    protected readonly documentRepo: Repository<Document>,
     protected readonly storageService: StorageService,
     protected readonly skillsService: SkillsService,
   ) {}
 
-  // Upload and set CV url (PDF-only)
-  async uploadCv(userId: string, file: MulterFile): Promise<{ cvUrl: string }> {
+  // Upload and set CV document (PDF-only)
+  async uploadCv(
+    userId: string,
+    file: MulterFile,
+  ): Promise<{ cvUrl: string; documentId: string }> {
     const auth = await this.authRepo.findOne({
       where: { id: userId },
       relations: ['profile'],
@@ -41,17 +47,29 @@ export class JobseekerService {
       throw new BadRequestException('Only PDF files are allowed');
     }
 
+    // Delete existing CV if it exists
+    if (auth.profile.cvDocumentId) {
+      await this.deleteCv(userId);
+    }
+
     const upload = await this.storageService.uploadFile(file as any, {
       folder: `jobseekers/${auth.profile.id}/cv`,
       bucketType: 'private',
+      documentType: DocumentType.CV,
+      uploadedBy: userId,
+      description: 'Job seeker CV',
     });
 
-    auth.profile.cvUrl = upload.url;
+    auth.profile.cvDocumentId = upload.document.id;
     await this.profileRepo.save(auth.profile);
-    return { cvUrl: upload.url };
+
+    return {
+      cvUrl: upload.url,
+      documentId: upload.document.id,
+    };
   }
 
-  // Delete CV and clear cvUrl
+  // Delete CV document and clear cvDocumentId
   async deleteCv(userId: string): Promise<void> {
     const auth = await this.authRepo.findOne({
       where: { id: userId },
@@ -59,16 +77,39 @@ export class JobseekerService {
     });
     if (!auth || !auth.profile)
       throw new NotFoundException('Jobseeker not found');
-    const currentUrl = auth.profile.cvUrl;
-    if (!currentUrl) return;
 
-    const fileKey = this.storageService.extractFileKeyFromUrl(currentUrl);
-    if (fileKey) {
-      await this.storageService.deleteFile(fileKey, 'private');
+    const currentDocumentId = auth.profile.cvDocumentId;
+    if (!currentDocumentId) return;
+
+    // Delete the document permanently from storage and database
+    await this.storageService.deleteDocument(currentDocumentId);
+
+    // Clear the document reference
+    auth.profile.cvDocumentId = undefined;
+    await this.profileRepo.save(auth.profile);
+  }
+
+  // Get CV document with signed URL
+  async getCvDocument(
+    userId: string,
+  ): Promise<{ document: Document; signedUrl: string } | null> {
+    const auth = await this.authRepo.findOne({
+      where: { id: userId },
+      relations: ['profile', 'profile.cvDocument'],
+    });
+    if (!auth || !auth.profile || !auth.profile.cvDocument) {
+      return null;
     }
 
-    auth.profile.cvUrl = null as any;
-    await this.profileRepo.save(auth.profile);
+    const document = auth.profile.cvDocument;
+    const signedUrl = await this.storageService.getSignedUrl(
+      document.fileKey,
+      3600, // 1 hour expiry
+      true, // for download
+      document.bucketType,
+    );
+
+    return { document, signedUrl };
   }
 
   // Update jobseeker profile with smart skills handling

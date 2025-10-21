@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { RecruiterProfile } from '@app/common/database/entities/RecruiterProfile.entity';
 import { RecruiterAuth } from '@app/common/database/entities/RecruiterAuth.entity';
+import { Document } from '@app/common/database/entities/Document.entity';
 import { RecruiterController } from './recruiter.controller';
 import { RecruiterService } from './recruiter.service';
 import { RecruiterVerification } from '@app/common/database/entities/RecruiterVerification.entity';
@@ -17,6 +18,7 @@ import { RecruiterAuthModule } from 'apps/api/src/modules/auth/submodules/recrui
       RecruiterProfile,
       RecruiterAuth,
       RecruiterVerification,
+      Document,
     ]),
     RecruiterAuthModule,
   ],

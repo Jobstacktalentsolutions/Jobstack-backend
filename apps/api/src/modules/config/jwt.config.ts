@@ -46,7 +46,7 @@ export const createJwtConfig = (
  * JWT constants for use across the application
  */
 export const JWT_CONSTANTS = {
-  ACCESS_TOKEN_EXPIRY: '15m', // 15 minutes
+  ACCESS_TOKEN_EXPIRY: '1d', // 15 minutes
   REFRESH_TOKEN_EXPIRY: '7d', // 7 days
   EMAIL_VERIFICATION_TOKEN_EXPIRY: '24h', // 24 hours
   PASSWORD_RESET_TOKEN_EXPIRY: '15m', // 15 minutes

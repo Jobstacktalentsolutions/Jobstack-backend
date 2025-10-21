@@ -1,6 +1,7 @@
 import {
   S3Client,
   PutObjectCommand,
+  GetObjectCommand,
   DeleteObjectCommand,
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
@@ -32,6 +33,13 @@ export class IDriveProvider implements IStorageProvider {
       ENV.IDRIVE_SECRET_ACCESS_KEY,
     ) as string;
 
+    // Ensure endpoint has proper protocol
+    if (
+      !this.endpoint.startsWith('http://') &&
+      !this.endpoint.startsWith('https://')
+    ) {
+      this.endpoint = `https://${this.endpoint}`;
+    }
     this.s3 = new S3Client({
       region: this.region,
       endpoint: this.endpoint,
@@ -44,38 +52,52 @@ export class IDriveProvider implements IStorageProvider {
     file: MulterFile,
     options: UploadOptions,
   ): Promise<UploadResult> {
-    const contentType =
-      file.mimetype ||
-      lookupMime(options.fileName) ||
-      'application/octet-stream';
+    try {
+      const contentType =
+        file.mimetype ||
+        lookupMime(options.fileName) ||
+        'application/octet-stream';
 
-    const key = `${options.folder}/${options.fileName}`.replace(/\\/g, '/');
+      const key = `${options.folder}/${options.fileName}`.replace(/\\/g, '/');
 
-    const put = new PutObjectCommand({
-      Bucket: options.bucket,
-      Key: key,
-      Body: file.buffer,
-      ContentType: contentType as string,
-      Metadata: {
+      // Use sanitized filename from service or fallback to original
+      const sanitizedOriginalName =
+        options.sanitizedOriginalName || file.originalname;
+
+      const put = new PutObjectCommand({
+        Bucket: options.bucket,
+        Key: key,
+        Body: file.buffer,
+        ContentType: contentType as string,
+        Metadata: {
+          originalName: sanitizedOriginalName,
+        },
+      });
+
+      await this.s3.send(put);
+
+      const url = await this.getSignedFileUrl(
+        key,
+        options.bucket,
+        60 * 60 * 24 * 7,
+      );
+
+      return {
+        fileKey: key,
+        url,
+        size: file.size,
+        mimeType: contentType as string,
         originalName: file.originalname,
-      },
-    });
-
-    await this.s3.send(put);
-
-    const url = await this.getSignedFileUrl(
-      key,
-      options.bucket,
-      60 * 60 * 24 * 7,
-    );
-
-    return {
-      fileKey: key,
-      url,
-      size: file.size,
-      mimeType: contentType as string,
-      originalName: file.originalname,
-    };
+      };
+    } catch (error) {
+      console.error('Upload failed:', {
+        error: error.message,
+        stack: error.stack,
+        originalName: file.originalname,
+        bucket: options.bucket,
+      });
+      throw error;
+    }
   }
 
   async getSignedFileUrl(
@@ -83,8 +105,7 @@ export class IDriveProvider implements IStorageProvider {
     bucket: string,
     expiresInSeconds: number,
   ): Promise<string> {
-    const cmd = new PutObjectCommand({ Bucket: bucket, Key: fileKey });
-    // Use a GET signed URL for download instead if needed; here we provide generic access
+    const cmd = new GetObjectCommand({ Bucket: bucket, Key: fileKey });
     return await getSignedUrl(this.s3, cmd, { expiresIn: expiresInSeconds });
   }
 

@@ -1,29 +1,35 @@
 import { Injectable, BadRequestException, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { createStorageConfig, StorageConfig } from './config/storage.config';
 import { IDriveProvider } from './providers/idrive.provider';
-import {
-  IStorageProvider,
-  StorageProviderType,
-} from './interfaces/storage.interface';
+import { IStorageProvider } from './interfaces/storage.interface';
 import { MulterFile } from '@app/common/shared/types';
+import { Document, DocumentType } from '../database/entities';
+import { StorageProviders } from './config/storage.config';
 @Injectable()
 export class StorageService {
   private readonly storageConfig: StorageConfig;
   private readonly logger = new Logger(StorageService.name);
-  private readonly providers: Record<'idrive', IStorageProvider>;
-  private static readonly DEFAULT_PROVIDER: StorageProviderType = 'idrive';
+  private readonly providers: Record<StorageProviders, IStorageProvider>;
+  private static readonly DEFAULT_PROVIDER: StorageProviders =
+    StorageProviders.IDRIVE;
   private static readonly MAX_FILE_SIZE_BYTES: number = 10 * 1024 * 1024; // 10 MB
 
-  constructor(private readonly configService: ConfigService) {
+  constructor(
+    private readonly configService: ConfigService,
+    @InjectRepository(Document)
+    private readonly documentRepository: Repository<Document>,
+  ) {
     this.storageConfig = createStorageConfig(this.configService);
     this.providers = {
-      idrive: new IDriveProvider(this.configService),
+      [StorageProviders.IDRIVE]: new IDriveProvider(this.configService),
     };
   }
 
   // Select active provider
-  private getProvider(provider?: StorageProviderType): IStorageProvider {
+  private getProvider(provider?: StorageProviders): IStorageProvider {
     const key = provider || StorageService.DEFAULT_PROVIDER;
     return this.providers[key];
   }
@@ -35,9 +41,13 @@ export class StorageService {
       fileName?: string;
       folder?: string;
       bucketType?: 'public' | 'private';
-      provider?: StorageProviderType;
+      provider?: StorageProviders;
+      documentType?: DocumentType;
+      uploadedBy?: string;
+      description?: string;
     } = {},
   ): Promise<{
+    document: Document;
     fileKey: string;
     url: string;
     size: number;
@@ -64,13 +74,38 @@ export class StorageService {
     const bucket = this.getBucketForType(bucketType, options.provider);
     const providerInstance = this.getProvider(options.provider);
 
+    // Sanitize filename for metadata headers
+    const sanitizedOriginalName = this.sanitizeFilename(file.originalname);
+
     const uploadResult = await providerInstance.uploadFile(file, {
       fileName,
       folder,
       bucket,
+      sanitizedOriginalName,
     });
 
+    // Create document record in database
+    const document = this.documentRepository.create({
+      fileKey: uploadResult.fileKey,
+      fileName,
+      originalName: uploadResult.originalName,
+      mimeType: uploadResult.mimeType,
+      size: uploadResult.size,
+      url: uploadResult.url,
+      type: options.documentType || DocumentType.OTHER,
+      description: options.description,
+      bucketType,
+      provider:
+        (options.provider || StorageService.DEFAULT_PROVIDER) === 'idrive'
+          ? StorageProviders.IDRIVE
+          : StorageProviders.IDRIVE,
+      uploadedBy: options.uploadedBy,
+    });
+
+    const savedDocument = await this.documentRepository.save(document);
+
     return {
+      document: savedDocument,
       fileKey: uploadResult.fileKey,
       url: uploadResult.url,
       size: uploadResult.size,
@@ -86,7 +121,7 @@ export class StorageService {
     expiry: number,
     forDownload: boolean = false,
     bucketType: 'public' | 'private' = 'public',
-    provider?: StorageProviderType,
+    provider?: StorageProviders,
   ): Promise<string> {
     const bucket = this.getBucketForType(bucketType, provider);
     const providerInstance = this.getProvider(provider);
@@ -100,13 +135,95 @@ export class StorageService {
   async deleteFile(
     fileKey: string,
     bucketType: 'public' | 'private' = 'private',
-    provider?: StorageProviderType,
+    provider?: StorageProviders,
   ): Promise<boolean> {
     if (!fileKey) return true;
     const bucket = this.getBucketForType(bucketType, provider);
     const providerInstance = this.getProvider(provider);
     await providerInstance.deleteFile(fileKey, bucket);
     return true;
+  }
+
+  // Delete document by ID (permanently removes from storage and database)
+  async deleteDocument(documentId: string): Promise<boolean> {
+    try {
+      const document = await this.documentRepository.findOne({
+        where: { id: documentId, isActive: true },
+      });
+
+      if (!document) {
+        this.logger.warn(
+          `Document with ID ${documentId} not found or already deleted`,
+        );
+        return false;
+      }
+
+      // Delete from storage
+      await this.deleteFile(
+        document.fileKey,
+        document.bucketType,
+        document.provider,
+      );
+
+      // Permanently delete from database
+      await this.documentRepository.remove(document);
+
+      this.logger.log(`Document ${documentId} permanently deleted`);
+      return true;
+    } catch (error) {
+      this.logger.error(`Failed to delete document ${documentId}:`, error);
+      throw new BadRequestException(
+        `Failed to delete document: ${error.message}`,
+      );
+    }
+  }
+
+  // Soft delete document (mark as inactive)
+  async softDeleteDocument(documentId: string): Promise<boolean> {
+    try {
+      const result = await this.documentRepository.update(
+        { id: documentId, isActive: true },
+        { isActive: false },
+      );
+
+      if (result.affected === 0) {
+        this.logger.warn(
+          `Document with ID ${documentId} not found or already deleted`,
+        );
+        return false;
+      }
+
+      this.logger.log(`Document ${documentId} soft deleted`);
+      return true;
+    } catch (error) {
+      this.logger.error(`Failed to soft delete document ${documentId}:`, error);
+      throw new BadRequestException(
+        `Failed to soft delete document: ${error.message}`,
+      );
+    }
+  }
+
+  // Get document by ID
+  async getDocument(documentId: string): Promise<Document | null> {
+    return await this.documentRepository.findOne({
+      where: { id: documentId, isActive: true },
+    });
+  }
+
+  // Get documents by type
+  async getDocumentsByType(
+    type: DocumentType,
+    uploadedBy?: string,
+  ): Promise<Document[]> {
+    const whereCondition: any = { type, isActive: true };
+    if (uploadedBy) {
+      whereCondition.uploadedBy = uploadedBy;
+    }
+
+    return await this.documentRepository.find({
+      where: whereCondition,
+      order: { createdAt: 'DESC' },
+    });
   }
 
   // Private helper methods
@@ -137,11 +254,11 @@ export class StorageService {
   // Determine bucket based on bucket type and provider
   private getBucketForType(
     bucketType: 'public' | 'private',
-    provider?: StorageProviderType,
+    provider?: StorageProviders,
   ): string {
     const currentProvider = provider || StorageService.DEFAULT_PROVIDER;
     switch (currentProvider) {
-      case 'idrive':
+      case StorageProviders.IDRIVE:
         return bucketType === 'public'
           ? this.storageConfig.idrive.publicBucket
           : this.storageConfig.idrive.privateBucket;
@@ -150,6 +267,14 @@ export class StorageService {
           ? this.storageConfig.idrive.publicBucket
           : this.storageConfig.idrive.privateBucket;
     }
+  }
+
+  // Sanitize filename for metadata headers
+  private sanitizeFilename(filename: string): string {
+    return filename
+      .replace(/[^\x20-\x7E]/g, '') // Remove non-ASCII characters
+      .replace(/[^\w\s.-]/g, '_') // Replace special characters with underscore
+      .substring(0, 100); // Limit length
   }
 
   // Extract file key from a storage URL
