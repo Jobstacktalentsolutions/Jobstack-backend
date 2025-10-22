@@ -11,6 +11,7 @@ import { RecruiterVerificationController } from './recruiter-verification.contro
 import { StorageService } from '@app/common/storage/storage.service';
 import { RecruiterJwtGuard } from 'apps/api/src/guards';
 import { RecruiterAuthModule } from 'apps/api/src/modules/auth/submodules/recruiter/recruiter-auth.module';
+import { AuthModule } from 'apps/api/src/modules/auth/auth.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { RecruiterAuthModule } from 'apps/api/src/modules/auth/submodules/recrui
       Document,
     ]),
     RecruiterAuthModule,
+    AuthModule,
   ],
   controllers: [RecruiterController, RecruiterVerificationController],
   providers: [

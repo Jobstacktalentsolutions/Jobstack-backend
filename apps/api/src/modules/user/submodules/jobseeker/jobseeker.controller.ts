@@ -12,10 +12,11 @@ import {
   Req,
   Body,
   BadRequestException,
+  Param,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import type { Request } from 'express';
-import { JobSeekerJwtGuard } from 'apps/api/src/guards';
+import { JobSeekerJwtGuard, AdminJwtGuard } from 'apps/api/src/guards';
 import { JobseekerService } from './jobseeker.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import type { MulterFile } from '@app/common/shared/types';
@@ -92,5 +93,40 @@ export class JobseekerController {
       updateProfileDto,
     );
     return { success: true, profile: result };
+  }
+
+  // Get current user's profile (me route)
+  @Get('me')
+  @UseGuards(JobSeekerJwtGuard)
+  @HttpCode(HttpStatus.OK)
+  async getMyProfile(@Req() req: Request) {
+    const user = (req as any).user as { sub: string };
+    const result = await this.jobseekerService.getProfile(user.sub);
+    return { success: true, profile: result };
+  }
+
+  // Admin routes for managing job seekers
+  @Get('admin/all')
+  @UseGuards(AdminJwtGuard)
+  @HttpCode(HttpStatus.OK)
+  async getAllJobSeekers(@Req() req: Request) {
+    const admin = (req as any).user as { sub: string };
+    const result = await this.jobseekerService.getAllJobSeekers(admin.sub);
+    return { success: true, jobSeekers: result };
+  }
+
+  @Get('admin/:id')
+  @UseGuards(AdminJwtGuard)
+  @HttpCode(HttpStatus.OK)
+  async getJobSeekerById(
+    @Param('id') jobSeekerId: string,
+    @Req() req: Request,
+  ) {
+    const admin = (req as any).user as { sub: string };
+    const result = await this.jobseekerService.getJobSeekerById(
+      jobSeekerId,
+      admin.sub,
+    );
+    return { success: true, jobSeeker: result };
   }
 }

@@ -10,6 +10,7 @@ import { StorageService } from '@app/common/storage/storage.service';
 import { JobSeekerJwtGuard } from 'apps/api/src/guards';
 import { JobSeekerAuthModule } from 'apps/api/src/modules/auth/submodules/jobseeker/jobseeker-auth.module';
 import { SkillsModule } from 'apps/api/src/modules/skills/skills.module';
+import { AuthModule } from 'apps/api/src/modules/auth/auth.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { SkillsModule } from 'apps/api/src/modules/skills/skills.module';
     ]),
     JobSeekerAuthModule,
     SkillsModule,
+    AuthModule,
   ],
   controllers: [JobseekerController],
   providers: [JobseekerService, StorageService, JobSeekerJwtGuard],

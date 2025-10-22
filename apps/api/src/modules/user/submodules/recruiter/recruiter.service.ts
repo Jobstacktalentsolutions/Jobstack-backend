@@ -130,4 +130,41 @@ export class RecruiterService {
 
     return this.getRecruiterProfile(userId);
   }
+
+  // Admin methods for managing recruiters
+  async getAllRecruiters(adminId: string): Promise<any[]> {
+    // Verify admin has permission (you can add admin verification logic here)
+    const recruiters = await this.profileRepo.find({
+      relations: ['auth'],
+      order: { createdAt: 'DESC' },
+    });
+
+    return recruiters.map((profile) => ({
+      id: profile.id,
+      email: profile.auth?.email,
+      profile: profile,
+      createdAt: profile.createdAt,
+      updatedAt: profile.updatedAt,
+    }));
+  }
+
+  async getRecruiterById(recruiterId: string, adminId: string): Promise<any> {
+    // Verify admin has permission (you can add admin verification logic here)
+    const recruiter = await this.profileRepo.findOne({
+      where: { id: recruiterId },
+      relations: ['auth'],
+    });
+
+    if (!recruiter) {
+      throw new NotFoundException('Recruiter not found');
+    }
+
+    return {
+      id: recruiter.id,
+      email: recruiter.auth?.email,
+      profile: recruiter,
+      createdAt: recruiter.createdAt,
+      updatedAt: recruiter.updatedAt,
+    };
+  }
 }

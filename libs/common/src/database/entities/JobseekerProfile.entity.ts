@@ -36,8 +36,8 @@ export class JobSeekerProfile extends BaseEntity {
   @Column({ type: 'text', nullable: true })
   jobTitle?: string;
 
-  @Column({ type: 'text' })
-  brief: string;
+  @Column({ type: 'text', nullable: true })
+  brief?: string;
 
   @Column({ type: 'text', nullable: true })
   preferredLocation?: string;
@@ -45,7 +45,7 @@ export class JobSeekerProfile extends BaseEntity {
   @Column('uuid', { nullable: true })
   cvDocumentId?: string;
 
-  @OneToOne(() => Document, { nullable: true })
+  @OneToOne(() => Document, { nullable: true, onDelete: 'SET NULL' })
   @JoinColumn({ name: 'cvDocumentId' })
   cvDocument?: Document;
 

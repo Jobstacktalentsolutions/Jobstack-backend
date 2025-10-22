@@ -20,6 +20,16 @@ export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 
   /**
+   * Get current user's profile (me route)
+   */
+  @Get('me')
+  async getMyProfile(@Req() req: Request) {
+    const user = (req as any).user as { sub: string };
+    const result = await this.adminService.getAdminProfile(user.sub);
+    return { success: true, profile: result };
+  }
+
+  /**
    * Get admin profile
    */
   @Get('profile')

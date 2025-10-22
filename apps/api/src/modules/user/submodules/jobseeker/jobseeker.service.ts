@@ -69,7 +69,7 @@ export class JobseekerService {
     };
   }
 
-  // Delete CV document and clear cvDocumentId
+  // Delete CV document (cvDocumentId will be automatically set to null by database)
   async deleteCv(userId: string): Promise<void> {
     const auth = await this.authRepo.findOne({
       where: { id: userId },
@@ -81,12 +81,16 @@ export class JobseekerService {
     const currentDocumentId = auth.profile.cvDocumentId;
     if (!currentDocumentId) return;
 
-    // Delete the document permanently from storage and database
+    // auth.profile.cvDocumentId = undefined;
+    await this.profileRepo.update(
+      {
+        id: auth.profile.id,
+      },
+      {
+        cvDocumentId: undefined,
+      },
+    );
     await this.storageService.deleteDocument(currentDocumentId);
-
-    // Clear the document reference
-    auth.profile.cvDocumentId = undefined;
-    await this.profileRepo.save(auth.profile);
   }
 
   // Get CV document with signed URL
@@ -176,5 +180,54 @@ export class JobseekerService {
     }
 
     return profileWithRelations;
+  }
+
+  // Get jobseeker profile by user ID
+  async getProfile(userId: string): Promise<JobSeekerProfile> {
+    const auth = await this.authRepo.findOne({
+      where: { id: userId },
+      relations: ['profile', 'profile.userSkills', 'profile.userSkills.skill'],
+    });
+    if (!auth || !auth.profile)
+      throw new NotFoundException('Jobseeker not found');
+
+    return auth.profile;
+  }
+
+  // Admin methods for managing job seekers
+  async getAllJobSeekers(adminId: string): Promise<any[]> {
+    // Verify admin has permission (you can add admin verification logic here)
+    const jobSeekers = await this.authRepo.find({
+      relations: ['profile', 'profile.userSkills', 'profile.userSkills.skill'],
+      order: { createdAt: 'DESC' },
+    });
+
+    return jobSeekers.map((auth) => ({
+      id: auth.id,
+      email: auth.email,
+      profile: auth.profile,
+      createdAt: auth.createdAt,
+      updatedAt: auth.updatedAt,
+    }));
+  }
+
+  async getJobSeekerById(jobSeekerId: string, adminId: string): Promise<any> {
+    // Verify admin has permission (you can add admin verification logic here)
+    const jobSeeker = await this.authRepo.findOne({
+      where: { id: jobSeekerId },
+      relations: ['profile', 'profile.userSkills', 'profile.userSkills.skill'],
+    });
+
+    if (!jobSeeker) {
+      throw new NotFoundException('Job seeker not found');
+    }
+
+    return {
+      id: jobSeeker.id,
+      email: jobSeeker.email,
+      profile: jobSeeker.profile,
+      createdAt: jobSeeker.createdAt,
+      updatedAt: jobSeeker.updatedAt,
+    };
   }
 }
