@@ -47,7 +47,7 @@ export class AdminService {
   }
 
   /**
-   * Approve/Reject recruiter verification and toggle profile.verified
+   * Approve/Reject recruiter verification
    */
   async updateRecruiterVerification(
     recruiterId: string,
@@ -56,6 +56,7 @@ export class AdminService {
   ) {
     const verification = await this.verificationRepo.findOne({
       where: { recruiterId },
+      relations: ['documents', 'documents.document'],
     });
     if (!verification) throw new NotFoundException('Verification not found');
 
@@ -64,14 +65,6 @@ export class AdminService {
     verification.rejectionReason =
       status === VerificationStatus.REJECTED ? rejectionReason : undefined;
     await this.verificationRepo.save(verification);
-
-    const profile = await this.profileRepo.findOne({
-      where: { id: recruiterId },
-    });
-    if (profile) {
-      profile.verified = status === VerificationStatus.APPROVED;
-      await this.profileRepo.save(profile);
-    }
 
     return { recruiterId, status };
   }

@@ -40,13 +40,6 @@ export class RecruiterRegistrationDto {
 
   @IsEnum(RecruiterType)
   type: RecruiterType;
-
-  @IsOptional()
-  @IsString()
-  companyName?: string;
-
-  @IsString()
-  socialOrWebsiteUrl: string;
 }
 
 /**

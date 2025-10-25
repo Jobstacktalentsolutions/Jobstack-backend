@@ -8,17 +8,22 @@ import {
   UseInterceptors,
   UploadedFile,
   Body,
-  Req,
   HttpCode,
   HttpStatus,
   BadRequestException,
   Param,
+  Query,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import type { Request } from 'express';
 import { RecruiterJwtGuard, AdminJwtGuard } from 'apps/api/src/guards';
 import { RecruiterService } from './recruiter.service';
 import type { MulterFile } from '@app/common/shared/types';
+import { CurrentUser, type CurrentUserPayload } from '@app/common/shared';
+import {
+  UpdateRecruiterProfileDto,
+  GetAllRecruitersQueryDto,
+  UuidParamDto,
+} from './dto';
 
 @Controller('recruiter')
 @UseGuards(RecruiterJwtGuard)
@@ -29,9 +34,8 @@ export class RecruiterController {
    * Get current user's profile (me route)
    */
   @Get('me')
-  async getMyProfile(@Req() req: Request) {
-    const user = (req as any).user as { sub: string };
-    const result = await this.recruiterService.getRecruiterProfile(user.sub);
+  async getMyProfile(@CurrentUser() user: CurrentUserPayload) {
+    const result = await this.recruiterService.getRecruiterProfile(user.id);
     return { success: true, profile: result };
   }
 
@@ -39,18 +43,19 @@ export class RecruiterController {
    * Get recruiter profile
    */
   @Get('profile')
-  async getProfile(@Req() req: Request) {
-    const user = (req as any).user as { sub: string };
-    return this.recruiterService.getRecruiterProfile(user.sub);
+  async getProfile(@CurrentUser() user: CurrentUserPayload) {
+    return this.recruiterService.getRecruiterProfile(user.id);
   }
 
   /**
    * Update recruiter profile
    */
   @Put('profile')
-  async updateProfile(@Body() updateData: any, @Req() req: Request) {
-    const user = (req as any).user as { sub: string };
-    return this.recruiterService.updateRecruiterProfile(user.sub, updateData);
+  async updateProfile(
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() updateData: UpdateRecruiterProfileDto,
+  ) {
+    return this.recruiterService.updateRecruiterProfile(user.id, updateData);
   }
 
   /**
@@ -60,15 +65,14 @@ export class RecruiterController {
   @UseInterceptors(FileInterceptor('file'))
   @HttpCode(HttpStatus.OK)
   async uploadCompanyLogo(
+    @CurrentUser() user: CurrentUserPayload,
     @UploadedFile() file: MulterFile,
-    @Req() req: Request,
   ) {
     if (!file) {
       throw new BadRequestException('No file uploaded');
     }
-    const user = (req as any).user as { sub: string };
     const result = await this.recruiterService.uploadCompanyLogo(
-      user.sub,
+      user.id,
       file,
     );
     return { success: true, logoUrl: result.logoUrl };
@@ -79,9 +83,8 @@ export class RecruiterController {
    */
   @Delete('profile/company-logo')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async deleteCompanyLogo(@Req() req: Request) {
-    const user = (req as any).user as { sub: string };
-    await this.recruiterService.deleteCompanyLogo(user.sub);
+  async deleteCompanyLogo(@CurrentUser() user: CurrentUserPayload) {
+    await this.recruiterService.deleteCompanyLogo(user.id);
     return;
   }
 
@@ -89,23 +92,27 @@ export class RecruiterController {
   @Get('admin/all')
   @UseGuards(AdminJwtGuard)
   @HttpCode(HttpStatus.OK)
-  async getAllRecruiters(@Req() req: Request) {
-    const admin = (req as any).user as { sub: string };
-    const result = await this.recruiterService.getAllRecruiters(admin.sub);
-    return { success: true, recruiters: result };
+  async getAllRecruiters(
+    @CurrentUser() admin: CurrentUserPayload,
+    @Query() query: GetAllRecruitersQueryDto,
+  ) {
+    const result = await this.recruiterService.getAllRecruiters(
+      admin.id,
+      query,
+    );
+    return { success: true, ...result };
   }
 
   @Get('admin/:id')
   @UseGuards(AdminJwtGuard)
   @HttpCode(HttpStatus.OK)
   async getRecruiterById(
-    @Param('id') recruiterId: string,
-    @Req() req: Request,
+    @CurrentUser() admin: CurrentUserPayload,
+    @Param() params: UuidParamDto,
   ) {
-    const admin = (req as any).user as { sub: string };
     const result = await this.recruiterService.getRecruiterById(
-      recruiterId,
-      admin.sub,
+      params.id,
+      admin.id,
     );
     return { success: true, recruiter: result };
   }

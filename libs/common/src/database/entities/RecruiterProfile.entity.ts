@@ -1,8 +1,8 @@
-import { Entity, Column, OneToOne, JoinColumn } from 'typeorm';
+import { Entity, Column, OneToOne, JoinColumn, ManyToOne } from 'typeorm';
 import { BaseEntity } from './base.entity';
-import { UserRole } from '@app/common/shared/enums/user-roles.enum';
 import { RecruiterAuth } from './RecruiterAuth.entity';
 import { RecruiterVerification } from './RecruiterVerification.entity';
+import { Document } from './Document.entity';
 
 export enum RecruiterType {
   INDIVIDUAL = 'Individual',
@@ -22,23 +22,18 @@ export class RecruiterProfile extends BaseEntity {
   @Column()
   phoneNumber: string;
 
-  @Column({ nullable: true })
-  profilePictureUrl?: string;
+  @ManyToOne(() => Document, { onDelete: 'SET NULL', nullable: true })
+  @JoinColumn({ name: 'profilePictureId' })
+  profilePicture?: Document;
+
+  @Column('uuid', { nullable: true })
+  profilePictureId?: string;
 
   @Column({ nullable: true })
   address?: string;
 
   @Column({ type: 'enum', enum: RecruiterType })
   type: RecruiterType;
-
-  @Column({ nullable: true })
-  companyName?: string;
-
-  @Column({ nullable: true })
-  socialOrWebsiteUrl?: string;
-
-  @Column({ default: false })
-  verified: boolean; // verification will be done manually by the admin
 
   @Column('uuid', { nullable: true })
   authId?: string;

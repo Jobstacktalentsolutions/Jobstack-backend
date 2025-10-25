@@ -4,11 +4,14 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, Like, FindOptionsWhere } from 'typeorm';
 import { RecruiterProfile } from '@app/common/database/entities/RecruiterProfile.entity';
 import { RecruiterAuth } from '@app/common/database/entities/RecruiterAuth.entity';
+import { RecruiterVerification } from '@app/common/database/entities/RecruiterVerification.entity';
 import { StorageService } from '@app/common/storage/storage.service';
 import type { MulterFile } from '@app/common/shared/types';
+import { DocumentType } from '@app/common/database/entities/Document.entity';
+import { UpdateRecruiterProfileDto, GetAllRecruitersQueryDto } from './dto';
 
 @Injectable()
 export class RecruiterService {
@@ -17,6 +20,8 @@ export class RecruiterService {
     protected readonly profileRepo: Repository<RecruiterProfile>,
     @InjectRepository(RecruiterAuth)
     protected readonly authRepo: Repository<RecruiterAuth>,
+    @InjectRepository(RecruiterVerification)
+    protected readonly verificationRepo: Repository<RecruiterVerification>,
     protected readonly storageService: StorageService,
   ) {}
 
@@ -47,16 +52,19 @@ export class RecruiterService {
     }
 
     // Delete old logo if exists
-    if (auth.profile.profilePictureUrl) {
+    if (auth.profile.profilePictureId) {
       await this.deleteCompanyLogo(userId);
     }
 
     const upload = await this.storageService.uploadFile(file as any, {
       folder: `recruiters/${auth.profile.id}/company-logo`,
       bucketType: 'public',
+      documentType: DocumentType.PROFILE_PICTURE,
+      uploadedBy: userId,
+      description: 'Company logo',
     });
 
-    auth.profile.profilePictureUrl = upload.url;
+    auth.profile.profilePicture = upload.document;
     await this.profileRepo.save(auth.profile);
     return { logoUrl: upload.url };
   }
@@ -73,15 +81,14 @@ export class RecruiterService {
       throw new NotFoundException('Recruiter not found');
     }
 
-    const currentUrl = auth.profile.profilePictureUrl;
-    if (!currentUrl) return;
+    const currentDocumentId = auth.profile.profilePictureId;
+    if (!currentDocumentId) return;
 
-    const fileKey = this.storageService.extractFileKeyFromUrl(currentUrl);
-    if (fileKey) {
-      await this.storageService.deleteFile(fileKey, 'public');
-    }
+    // Delete document using StorageService
+    await this.storageService.deleteDocument(currentDocumentId);
 
-    auth.profile.profilePictureUrl = null as any;
+    auth.profile.profilePicture = undefined;
+    auth.profile.profilePictureId = undefined;
     await this.profileRepo.save(auth.profile);
   }
 
@@ -91,7 +98,7 @@ export class RecruiterService {
   async getRecruiterProfile(userId: string): Promise<any> {
     const auth = await this.authRepo.findOne({
       where: { id: userId },
-      relations: ['profile'],
+      relations: ['profile', 'profile.profilePicture'],
     });
     if (!auth || !auth.profile) {
       throw new NotFoundException('Recruiter not found');
@@ -109,10 +116,13 @@ export class RecruiterService {
   /**
    * Update recruiter profile
    */
-  async updateRecruiterProfile(userId: string, updateData: any): Promise<any> {
+  async updateRecruiterProfile(
+    userId: string,
+    updateData: UpdateRecruiterProfileDto,
+  ): Promise<any> {
     const auth = await this.authRepo.findOne({
       where: { id: userId },
-      relations: ['profile'],
+      relations: ['profile', 'profile.profilePicture'],
     });
     if (!auth || !auth.profile) {
       throw new NotFoundException('Recruiter not found');
@@ -132,27 +142,91 @@ export class RecruiterService {
   }
 
   // Admin methods for managing recruiters
-  async getAllRecruiters(adminId: string): Promise<any[]> {
+  async getAllRecruiters(
+    adminId: string,
+    query: GetAllRecruitersQueryDto,
+  ): Promise<{
+    recruiters: any[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }> {
     // Verify admin has permission (you can add admin verification logic here)
-    const recruiters = await this.profileRepo.find({
-      relations: ['auth'],
-      order: { createdAt: 'DESC' },
-    });
+    const { page = 1, limit = 10, type, verificationStatus, search, sortBy = 'createdAt', sortOrder = 'DESC' } = query;
+    
+    const skip = (page - 1) * limit;
+    
+    // Build where clause
+    const where: FindOptionsWhere<RecruiterProfile> = {};
+    
+    if (type) {
+      where.type = type;
+    }
+    
+    // Build query builder for complex queries
+    const queryBuilder = this.profileRepo
+      .createQueryBuilder('recruiter')
+      .leftJoinAndSelect('recruiter.auth', 'auth')
+      .leftJoinAndSelect('recruiter.profilePicture', 'profilePicture')
+      .leftJoinAndSelect('recruiter.verification', 'verification');
+    
+    // Apply type filter
+    if (type) {
+      queryBuilder.andWhere('recruiter.type = :type', { type });
+    }
+    
+    // Apply verification status filter
+    if (verificationStatus) {
+      queryBuilder.andWhere('verification.status = :status', { status: verificationStatus });
+    }
+    
+    // Apply search filter
+    if (search) {
+      queryBuilder.andWhere(
+        '(recruiter.firstName LIKE :search OR recruiter.lastName LIKE :search OR recruiter.email LIKE :search OR verification.companyName LIKE :search)',
+        { search: `%${search}%` },
+      );
+    }
+    
+    // Apply sorting
+    const orderField = sortBy === 'createdAt' || sortBy === 'updatedAt' 
+      ? `recruiter.${sortBy}` 
+      : `recruiter.${sortBy}`;
+    queryBuilder.orderBy(orderField, sortOrder);
+    
+    // Get total count
+    const total = await queryBuilder.getCount();
+    
+    // Apply pagination
+    queryBuilder.skip(skip).take(limit);
+    
+    // Execute query
+    const recruiters = await queryBuilder.getMany();
+    
+    const totalPages = Math.ceil(total / limit);
 
-    return recruiters.map((profile) => ({
-      id: profile.id,
-      email: profile.auth?.email,
-      profile: profile,
-      createdAt: profile.createdAt,
-      updatedAt: profile.updatedAt,
-    }));
+    return {
+      recruiters: recruiters.map((profile) => ({
+        id: profile.id,
+        email: profile.auth?.email,
+        profile: profile,
+        verification: profile.verification,
+        createdAt: profile.createdAt,
+        updatedAt: profile.updatedAt,
+      })),
+      total,
+      page,
+      limit,
+      totalPages,
+    };
   }
 
   async getRecruiterById(recruiterId: string, adminId: string): Promise<any> {
     // Verify admin has permission (you can add admin verification logic here)
     const recruiter = await this.profileRepo.findOne({
       where: { id: recruiterId },
-      relations: ['auth'],
+      relations: ['auth', 'profilePicture'],
     });
 
     if (!recruiter) {

@@ -2,59 +2,100 @@ import {
   Controller,
   Get,
   Post,
-  Patch,
+  Put,
+  Delete,
   UseGuards,
-  UploadedFiles,
+  UploadedFile,
   UseInterceptors,
   Body,
-  Req,
+  Param,
 } from '@nestjs/common';
-import { AnyFilesInterceptor } from '@nestjs/platform-express';
-import type { Request } from 'express';
-import { RecruiterJwtGuard } from 'apps/api/src/guards';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { RecruiterJwtGuard, AdminJwtGuard } from 'apps/api/src/guards';
 import { RecruiterVerificationService } from './recruiter-verification.service';
-import { RecruiterVerificationDto } from './dto/recruiter-verification.dto';
-import { MulterFile } from '@app/common/shared/types';
-@Controller('recruiters/me/verification')
+import { CurrentUser, type CurrentUserPayload } from '@app/common/shared';
+import {
+  UploadVerificationDocumentDto,
+  UpdateVerificationInfoDto,
+  UuidParamDto,
+} from './dto';
+import type { MulterFile } from '@app/common/shared/types';
+
+@Controller('recruiters/verification')
 @UseGuards(RecruiterJwtGuard)
 export class RecruiterVerificationController {
   constructor(
     private readonly verificationService: RecruiterVerificationService,
   ) {}
 
+  // Get verification status
   @Get()
-  async getMine(@Req() req: Request) {
-    const user = (req as any).user as { sub: string };
-    return this.verificationService.getMyVerification(user.sub);
+  async getMine(@CurrentUser() user: CurrentUserPayload) {
+    return this.verificationService.getMyVerification(user.id);
   }
 
-  @Post()
-  @UseInterceptors(AnyFilesInterceptor())
-  async submit(
-    @Req() req: Request,
-    @UploadedFiles() files: Array<MulterFile>,
-    @Body() dto: RecruiterVerificationDto,
+  // Update verification information
+  @Put()
+  async updateInfo(
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() dto: UpdateVerificationInfoDto,
   ) {
-    const user = (req as any).user as { sub: string };
-    const fileMap = this.extractFiles(files);
-    return this.verificationService.submitVerification(user.sub, dto, fileMap);
+    return this.verificationService.updateVerificationInfo(user.id, dto);
   }
 
-  @Patch()
-  @UseInterceptors(AnyFilesInterceptor())
-  async resubmit(
-    @Req() req: Request,
-    @UploadedFiles() files: Array<MulterFile>,
-    @Body() dto: RecruiterVerificationDto,
+  // Get all verification documents
+  @Get('documents')
+  async getMyDocuments(@CurrentUser() user: CurrentUserPayload) {
+    return this.verificationService.getMyVerificationDocuments(user.id);
+  }
+
+  // Upload a single verification document
+  @Post('documents')
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadDocument(
+    @CurrentUser() user: CurrentUserPayload,
+    @UploadedFile() file: MulterFile,
+    @Body() dto: UploadVerificationDocumentDto,
   ) {
-    const user = (req as any).user as { sub: string };
-    const fileMap = this.extractFiles(files);
-    return this.verificationService.submitVerification(user.sub, dto, fileMap);
+    return this.verificationService.uploadVerificationDocument(
+      user.id,
+      dto,
+      file,
+    );
   }
 
-  private extractFiles(files: Array<MulterFile>) {
-    const doc = files?.find((f) => f.fieldname === 'documentFile');
-    const proof = files?.find((f) => f.fieldname === 'proofOfAddressFile');
-    return { documentFile: doc as any, proofOfAddressFile: proof as any };
+  // Delete a verification document
+  @Delete('documents/:id')
+  async deleteDocument(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param() params: UuidParamDto,
+  ) {
+    return this.verificationService.deleteVerificationDocument(
+      user.id,
+      params.id,
+    );
+  }
+}
+
+// Admin routes for managing recruiter verification documents
+@Controller('admin/recruiters/:recruiterId/verification')
+@UseGuards(AdminJwtGuard)
+export class AdminRecruiterVerificationController {
+  constructor(
+    private readonly verificationService: RecruiterVerificationService,
+  ) {}
+
+  // Get all verification documents for a recruiter
+  @Get('documents')
+  async getRecruiterDocuments(@Param('recruiterId') recruiterId: string) {
+    return this.verificationService.getRecruiterVerificationDocuments(
+      recruiterId,
+    );
+  }
+
+  // Delete a verification document
+  @Delete('documents/:id')
+  async deleteDocument(@Param() params: UuidParamDto) {
+    return this.verificationService.adminDeleteVerificationDocument(params.id);
   }
 }

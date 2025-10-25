@@ -74,19 +74,7 @@ export class RecruiterAuthService {
       lastName,
       phoneNumber,
       type,
-      companyName,
-      socialOrWebsiteUrl,
     } = registrationData;
-
-    if (type === RecruiterType.ORGANIZATION && !companyName) {
-      throw new BadRequestException(
-        'Company name is required for organization',
-      );
-    } else if (type === RecruiterType.INDIVIDUAL && companyName) {
-      throw new BadRequestException(
-        'Company name is not allowed for individual',
-      );
-    }
 
     // Check if email already exists
     const existingAuth = await this.recruiterAuthRepository.findOne({
@@ -113,8 +101,6 @@ export class RecruiterAuthService {
         lastName,
         phoneNumber,
         type,
-        companyName,
-        socialOrWebsiteUrl,
         role: UserRole.RECRUITER,
       });
       await queryRunner.manager.save(profile);

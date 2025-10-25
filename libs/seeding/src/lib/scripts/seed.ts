@@ -2,7 +2,7 @@
 
 import { DataSource } from 'typeorm';
 import { SeedingService } from '../seeding.service';
-import { typeormConfig } from '@app/common/database/typeorm.config';
+import { typeormConfig } from 'typeorm.config';
 
 /**
  * Seeding script for JobStack

@@ -19,12 +19,12 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./apps/api/test/jest-e2e.json",
     "typeorm": "typeorm-ts-node-esm",
-    "db:migrate": "typeorm migration:run -- -dataSource typeorm.config.ts",
-    "db:revert": "typeorm migration:revert -- -dataSource typeorm.config.ts",
-    "db:show": "typeorm migration:show -- -dataSource typeorm.config.ts",
-    "db:generate": "typeorm migration:generate -- -dataSource typeorm.config.ts",
+    "db:migrate": "typeorm migration:run ./migrations/${MIGRATION_NAME} -- -dataSource typeorm.config.ts",
+    "db:revert": "typeorm migration:revert ./migrations/${MIGRATION_NAME} -- -dataSource typeorm.config.ts",
+    "db:show": "typeorm migration:show ./migrations/${MIGRATION_NAME} -- -dataSource typeorm.config.ts",
+    "db:generate": "typeorm migration:generate ./migrations/${MIGRATION_NAME} -d typeorm.config.ts",
     "db:create": "typeorm migration:create ./migrations/${MIGRATION_NAME} -- -dataSource typeorm.config.ts",
-    "db:sync": "typeorm schema:sync -- -dataSource typeorm.config.ts"
+    "db:sync": "typeorm schema:sync ./migrations/${MIGRATION_NAME} -- -dataSource typeorm.config.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.908.0",
