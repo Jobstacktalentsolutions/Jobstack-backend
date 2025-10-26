@@ -10,7 +10,7 @@ import { RecruiterAuth } from '@app/common/database/entities/RecruiterAuth.entit
 import { RecruiterVerification } from '@app/common/database/entities/RecruiterVerification.entity';
 import { StorageService } from '@app/common/storage/storage.service';
 import type { MulterFile } from '@app/common/shared/types';
-import { DocumentType } from '@app/common/database/entities/Document.entity';
+import { DocumentType } from '@app/common/database/entities/schema.enum';
 import { UpdateRecruiterProfileDto, GetAllRecruitersQueryDto } from './dto';
 
 @Injectable()
@@ -153,34 +153,44 @@ export class RecruiterService {
     totalPages: number;
   }> {
     // Verify admin has permission (you can add admin verification logic here)
-    const { page = 1, limit = 10, type, verificationStatus, search, sortBy = 'createdAt', sortOrder = 'DESC' } = query;
-    
+    const {
+      page = 1,
+      limit = 10,
+      type,
+      verificationStatus,
+      search,
+      sortBy = 'createdAt',
+      sortOrder = 'DESC',
+    } = query;
+
     const skip = (page - 1) * limit;
-    
+
     // Build where clause
     const where: FindOptionsWhere<RecruiterProfile> = {};
-    
+
     if (type) {
       where.type = type;
     }
-    
+
     // Build query builder for complex queries
     const queryBuilder = this.profileRepo
       .createQueryBuilder('recruiter')
       .leftJoinAndSelect('recruiter.auth', 'auth')
       .leftJoinAndSelect('recruiter.profilePicture', 'profilePicture')
       .leftJoinAndSelect('recruiter.verification', 'verification');
-    
+
     // Apply type filter
     if (type) {
       queryBuilder.andWhere('recruiter.type = :type', { type });
     }
-    
+
     // Apply verification status filter
     if (verificationStatus) {
-      queryBuilder.andWhere('verification.status = :status', { status: verificationStatus });
+      queryBuilder.andWhere('verification.status = :status', {
+        status: verificationStatus,
+      });
     }
-    
+
     // Apply search filter
     if (search) {
       queryBuilder.andWhere(
@@ -188,22 +198,23 @@ export class RecruiterService {
         { search: `%${search}%` },
       );
     }
-    
+
     // Apply sorting
-    const orderField = sortBy === 'createdAt' || sortBy === 'updatedAt' 
-      ? `recruiter.${sortBy}` 
-      : `recruiter.${sortBy}`;
+    const orderField =
+      sortBy === 'createdAt' || sortBy === 'updatedAt'
+        ? `recruiter.${sortBy}`
+        : `recruiter.${sortBy}`;
     queryBuilder.orderBy(orderField, sortOrder);
-    
+
     // Get total count
     const total = await queryBuilder.getCount();
-    
+
     // Apply pagination
     queryBuilder.skip(skip).take(limit);
-    
+
     // Execute query
     const recruiters = await queryBuilder.getMany();
-    
+
     const totalPages = Math.ceil(total / limit);
 
     return {

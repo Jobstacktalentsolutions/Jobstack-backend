@@ -2,13 +2,7 @@ import { Entity, Column, ManyToOne, Unique, JoinColumn } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { JobSeekerProfile } from './JobseekerProfile.entity';
 import { Skill } from './Skill.entity';
-
-export enum Proficiency {
-  BEGINNER = 'BEGINNER',
-  INTERMEDIATE = 'INTERMEDIATE',
-  ADVANCED = 'ADVANCED',
-  EXPERT = 'EXPERT',
-}
+import { Proficiency } from './schema.enum';
 
 @Entity('jobseeker_skills')
 @Unique(['profileId', 'skillId'])

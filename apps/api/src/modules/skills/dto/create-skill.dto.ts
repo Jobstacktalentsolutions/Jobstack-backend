@@ -6,7 +6,7 @@ import {
   IsNotEmpty,
   MaxLength,
 } from 'class-validator';
-import { SkillStatus } from '@app/common/database/entities/Skill.entity';
+import { SkillStatus } from '@app/common/database/entities/schema.enum';
 
 export class CreateSkillDto {
   @IsString()

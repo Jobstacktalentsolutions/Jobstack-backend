@@ -1,14 +1,7 @@
 import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { StorageProviders } from '../../storage/config/storage.config';
-export enum DocumentType {
-  CV = 'CV',
-  PORTFOLIO = 'PORTFOLIO',
-  CERTIFICATE = 'CERTIFICATE',
-  ID_DOCUMENT = 'ID_DOCUMENT',
-  PROFILE_PICTURE = 'PROFILE_PICTURE',
-  OTHER = 'OTHER',
-}
+import { DocumentType } from './schema.enum';
 @Entity('documents')
 export class Document extends BaseEntity {
   @Column()

@@ -6,7 +6,8 @@ import { createStorageConfig, StorageConfig } from './config/storage.config';
 import { IDriveProvider } from './providers/idrive.provider';
 import { IStorageProvider } from './interfaces/storage.interface';
 import { MulterFile } from '@app/common/shared/types';
-import { Document, DocumentType } from '../database/entities';
+import { Document } from '../database/entities';
+import { DocumentType } from '../database/entities/schema.enum';
 import { StorageProviders } from './config/storage.config';
 @Injectable()
 export class StorageService {

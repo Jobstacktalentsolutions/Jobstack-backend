@@ -1,7 +1,7 @@
 import { Processor, Process } from '@nestjs/bull';
 import { Injectable, Logger } from '@nestjs/common';
 import type { Job } from 'bull';
-import { NotificationType } from '@app/common/database/entities/Notification.entity';
+import { NotificationType } from '@app/common/database/entities/schema.enum';
 import { EmailPayloadDto } from './email-notification.dto';
 import { EmailService } from './email.service';
 

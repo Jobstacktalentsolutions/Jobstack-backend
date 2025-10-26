@@ -18,13 +18,13 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./apps/api/test/jest-e2e.json",
-    "typeorm": "typeorm-ts-node-esm",
-    "db:migrate": "typeorm migration:run ./migrations/${MIGRATION_NAME} -- -dataSource typeorm.config.ts",
-    "db:revert": "typeorm migration:revert ./migrations/${MIGRATION_NAME} -- -dataSource typeorm.config.ts",
-    "db:show": "typeorm migration:show ./migrations/${MIGRATION_NAME} -- -dataSource typeorm.config.ts",
-    "db:generate": "typeorm migration:generate ./migrations/${MIGRATION_NAME} -d typeorm.config.ts",
-    "db:create": "typeorm migration:create ./migrations/${MIGRATION_NAME} -- -dataSource typeorm.config.ts",
-    "db:sync": "typeorm schema:sync ./migrations/${MIGRATION_NAME} -- -dataSource typeorm.config.ts"
+    "typeorm": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js",
+    "db:migrate": "pnpm typeorm migration:run -d typeorm.config.ts",
+    "db:revert": "pnpm typeorm migration:revert -d typeorm.config.ts",
+    "db:show": "pnpm typeorm migration:show -d typeorm.config.ts",
+    "db:generate": "pnpm typeorm migration:generate ./migrations/ -d typeorm.config.ts",
+    "db:create": "pnpm typeorm migration:create ./migrations/",
+    "db:sync": "pnpm typeorm schema:sync -d typeorm.config.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.908.0",
@@ -44,6 +44,7 @@
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.2",
     "commander": "^14.0.1",
+    "dotenv": "^17.2.3",
     "ejs": "^3.1.10",
     "express": "^5.1.0",
     "ioredis": "^5.8.1",

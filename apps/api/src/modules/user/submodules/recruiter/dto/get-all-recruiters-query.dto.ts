@@ -8,7 +8,7 @@ import {
   IsIn,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { RecruiterType } from '@app/common/database/entities/RecruiterProfile.entity';
+import { RecruiterType } from '@app/common/database/entities/schema.enum';
 import { VerificationStatus } from '@app/common/shared/enums/recruiter-docs.enum';
 
 export class GetAllRecruitersQueryDto {

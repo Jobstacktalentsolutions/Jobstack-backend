@@ -8,24 +8,11 @@ import { BaseEntity } from './base.entity';
 import { JobseekerAuth } from './JobseekerAuth.entity';
 import { RecruiterAuth } from './RecruiterAuth.entity';
 import { AdminAuth } from './AdminAuth.entity';
-
-export enum NotificationStatus {
-  PENDING = 'pending',
-  SENT = 'sent',
-  FAILED = 'failed',
-  READ = 'read',
-}
-
-export enum NotificationType {
-  EMAIL = 'email',
-  APP = 'app',
-}
-
-export enum NotificationPriority {
-  LOW = 4,
-  MEDIUM = 3,
-  HIGH = 2,
-}
+import { 
+  NotificationStatus, 
+  NotificationType, 
+  NotificationPriority 
+} from './schema.enum';
 
 @Entity('notifications')
 export class Notification extends BaseEntity {

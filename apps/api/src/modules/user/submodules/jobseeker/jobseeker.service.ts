@@ -8,11 +8,12 @@ import { Repository } from 'typeorm';
 import { JobSeekerProfile } from '@app/common/database/entities/JobseekerProfile.entity';
 import { JobseekerAuth } from '@app/common/database/entities/JobseekerAuth.entity';
 import { JobseekerSkill } from '@app/common/database/entities/JobseekerSkill.entity';
-import { Document, DocumentType } from '@app/common/database/entities';
+import { Document } from '@app/common/database/entities';
 import { StorageService } from '@app/common/storage/storage.service';
 import { SkillsService } from 'apps/api/src/modules/skills/skills.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import type { MulterFile } from '@app/common/shared/types';
+import { DocumentType } from '@app/common/database/entities/schema.enum';
 
 @Injectable()
 export class JobseekerService {

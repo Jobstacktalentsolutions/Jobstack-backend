@@ -3,12 +3,7 @@ import { BaseEntity } from './base.entity';
 import { JobseekerSkill } from './JobseekerSkill.entity';
 import { JobseekerAuth } from './JobseekerAuth.entity';
 import { Document } from './Document.entity';
-
-export enum ApprovalStatus {
-  PENDING = 'Pending',
-  APPROVED = 'Approved',
-  REJECTED = 'Rejected',
-}
+import { ApprovalStatus } from './schema.enum';
 
 @Entity('job_seeker_profiles')
 export class JobSeekerProfile extends BaseEntity {

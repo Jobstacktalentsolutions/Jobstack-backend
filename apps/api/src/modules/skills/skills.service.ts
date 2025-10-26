@@ -5,17 +5,14 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, ILike } from 'typeorm';
-import { Skill, SkillStatus } from '@app/common/database/entities/Skill.entity';
-import {
-  JobseekerSkill,
-  Proficiency,
-} from '@app/common/database/entities/JobseekerSkill.entity';
+import { Skill } from '@app/common/database/entities/Skill.entity';
+import { JobseekerSkill } from '@app/common/database/entities/JobseekerSkill.entity';
 import { NotificationService } from '../notification/notification.service';
 import {
-  NotificationType,
   NotificationPriority,
-  NotificationStatus,
-} from '@app/common/database/entities/Notification.entity';
+  Proficiency,
+  SkillStatus,
+} from '@app/common/database/entities/schema.enum';
 
 @Injectable()
 export class SkillsService {

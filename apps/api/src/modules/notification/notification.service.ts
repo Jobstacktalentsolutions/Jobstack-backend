@@ -3,13 +3,12 @@ import { InjectQueue } from '@nestjs/bull';
 import { InjectRepository } from '@nestjs/typeorm';
 import type { Queue } from 'bull';
 import { Repository } from 'typeorm';
+import { Notification } from '@app/common/database/entities/Notification.entity';
 import {
-  Notification,
   NotificationStatus,
   NotificationPriority,
   NotificationType,
-} from '@app/common/database/entities/Notification.entity';
-import { EmailPayloadDto } from './email/email-notification.dto';
+} from '@app/common/database/entities/schema.enum';
 import {
   NotificationResponse,
   AppNotificationQuery,

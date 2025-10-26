@@ -7,7 +7,7 @@ import {
   MaxLength,
   MinLength,
 } from 'class-validator';
-import { RecruiterType } from '@app/common/database/entities/RecruiterProfile.entity';
+import { RecruiterType } from '@app/common/database/entities/schema.enum';
 
 export class UpdateRecruiterProfileDto {
   @IsOptional()

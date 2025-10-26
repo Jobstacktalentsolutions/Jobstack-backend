@@ -13,7 +13,7 @@ import { StorageService } from '@app/common/storage/storage.service';
 import { UploadVerificationDocumentDto } from './dto/upload-verification-document.dto';
 import { UpdateVerificationInfoDto } from './dto/update-verification.dto';
 import { MulterFile } from '@app/common/shared/types';
-import { DocumentType } from '@app/common/database/entities/Document.entity';
+import { DocumentType } from '@app/common/database/entities/schema.enum';
 @Injectable()
 export class RecruiterVerificationService {
   constructor(

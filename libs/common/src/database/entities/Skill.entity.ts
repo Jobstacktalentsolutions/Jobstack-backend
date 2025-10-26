@@ -1,11 +1,6 @@
 import { Entity, Column, Index } from 'typeorm';
 import { BaseEntity } from './base.entity';
-
-export enum SkillStatus {
-  ACTIVE = 'ACTIVE',
-  DISABLED = 'DISABLED',
-  SUGGESTED = 'SUGGESTED',
-}
+import { SkillStatus } from './schema.enum';
 
 @Entity('skills')
 export class Skill extends BaseEntity {

@@ -3,11 +3,8 @@ import { BaseEntity } from './base.entity';
 import { RecruiterAuth } from './RecruiterAuth.entity';
 import { RecruiterVerification } from './RecruiterVerification.entity';
 import { Document } from './Document.entity';
+import { RecruiterType } from './schema.enum';
 
-export enum RecruiterType {
-  INDIVIDUAL = 'Individual',
-  ORGANIZATION = 'Organization',
-}
 @Entity('recruiter')
 export class RecruiterProfile extends BaseEntity {
   @Column()

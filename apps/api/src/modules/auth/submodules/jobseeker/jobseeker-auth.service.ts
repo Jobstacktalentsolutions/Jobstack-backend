@@ -12,10 +12,8 @@ import * as bcrypt from 'bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
 
 import { JobseekerAuth } from '@app/common/database/entities/JobseekerAuth.entity';
-import {
-  JobSeekerProfile,
-  ApprovalStatus,
-} from '@app/common/database/entities/JobseekerProfile.entity';
+import { JobSeekerProfile } from '@app/common/database/entities/JobseekerProfile.entity';
+import { ApprovalStatus } from '@app/common/database/entities/schema.enum';
 import { JobseekerSession } from '@app/common/database/entities/JobseekerSession.entity';
 import { RedisService } from '@app/common/redis/redis.service';
 import { REDIS_KEYS } from '@app/common/redis/redis.config';
@@ -41,7 +39,6 @@ import {
   PasswordResetDto,
 } from './dto/jobseeker-auth.dto';
 import { SkillsService } from '../../../skills/skills.service';
-import { Proficiency } from '@app/common/database/entities/JobseekerSkill.entity';
 import { EmailTemplateType } from 'apps/api/src/modules/notification/email/email-notification.enum';
 @Injectable()
 export class JobSeekerAuthService {

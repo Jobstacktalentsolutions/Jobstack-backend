@@ -4,11 +4,9 @@ import { BullModule } from '@nestjs/bull';
 import { ConfigModule } from '@nestjs/config';
 
 // Entities
-import {
-  Notification,
-  NotificationType,
-} from '@app/common/database/entities/Notification.entity';
+import { Notification } from '@app/common/database/entities/Notification.entity';
 
+import { NotificationType } from '@app/common/database/entities/schema.enum';
 // Core Services
 import { NotificationService } from './notification.service';
 
