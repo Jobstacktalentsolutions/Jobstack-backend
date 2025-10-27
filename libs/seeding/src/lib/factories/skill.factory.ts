@@ -28,7 +28,7 @@ export class SkillFactory extends BaseFactory<Skill> {
   async createAll(): Promise<Skill[]> {
     console.log('🔄 Upserting skill records...');
 
-    const skills = [];
+    const skills: Skill[] = [];
     for (const skillData of SYSTEM_SKILLS) {
       try {
         const skill = await this.smartUpsertSkill(skillData);

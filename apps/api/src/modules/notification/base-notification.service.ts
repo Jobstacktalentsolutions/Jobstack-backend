@@ -20,9 +20,9 @@ export abstract class BaseNotificationService<TPayload>
   protected async sendWithProviderFallback(
     providers: INotificationTransporter<TPayload>[],
     sendFunction: (
-      provider: INotificationTransporter<TPayload>
+      provider: INotificationTransporter<TPayload>,
     ) => Promise<void>,
-    logContext: Record<string, any> = {}
+    logContext: Record<string, any> = {},
   ): Promise<void> {
     const providerErrors: Error[] = [];
 
@@ -42,7 +42,7 @@ export abstract class BaseNotificationService<TPayload>
             providerName,
             providerAttempt: i + 1,
             totalProviders: providers.length,
-          }
+          },
         );
         await sendFunction(provider);
         this.logger.log(
@@ -52,12 +52,12 @@ export abstract class BaseNotificationService<TPayload>
             providerName,
             providerAttempt: i + 1,
             totalProviders: providers.length,
-          }
+          },
         );
         return;
       } catch (error) {
         const providerError = new Error(
-          `Provider ${providerName} failed: ${error.message}`
+          `Provider ${providerName} failed: ${error.message}`,
         );
         providerErrors.push(providerError);
 
@@ -70,14 +70,14 @@ export abstract class BaseNotificationService<TPayload>
             totalProviders: providers.length,
             error: error.message,
             errorStack: error.stack,
-          }
+          },
         );
       }
     }
 
     // All providers failed
     const deliveryError = new Error(
-      `All ${providers.length} providers failed for ${logContext.notificationType}`
+      `All ${providers.length} providers failed for ${logContext.notificationType}`,
     );
 
     this.logger.error(
@@ -89,7 +89,7 @@ export abstract class BaseNotificationService<TPayload>
         providerErrors: providerErrors.map((e) => ({
           error: e.message,
         })),
-      }
+      },
     );
 
     throw deliveryError;

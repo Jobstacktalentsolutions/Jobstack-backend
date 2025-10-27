@@ -9,9 +9,13 @@ export class RecruiterVerificationDocument extends BaseEntity {
   @Column('uuid')
   verificationId: string;
 
-  @ManyToOne(() => RecruiterVerification, (verification) => verification.documents, {
-    onDelete: 'CASCADE',
-  })
+  @ManyToOne(
+    () => RecruiterVerification,
+    (verification) => verification.documents,
+    {
+      onDelete: 'CASCADE',
+    },
+  )
   @JoinColumn({ name: 'verificationId' })
   verification: RecruiterVerification;
 

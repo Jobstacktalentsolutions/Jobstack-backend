@@ -67,14 +67,8 @@ export class RecruiterAuthService {
     registrationData: RecruiterRegistrationDto,
     deviceInfo?: any,
   ): Promise<AuthResult> {
-    const {
-      email,
-      password,
-      firstName,
-      lastName,
-      phoneNumber,
-      type,
-    } = registrationData;
+    const { email, password, firstName, lastName, phoneNumber, type } =
+      registrationData;
 
     // Check if email already exists
     const existingAuth = await this.recruiterAuthRepository.findOne({
@@ -166,6 +160,13 @@ export class RecruiterAuthService {
     const isPasswordValid = await bcrypt.compare(password, auth.password);
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid credentials');
+    }
+
+    // Check if email is verified
+    if (!auth.emailVerified) {
+      throw new UnauthorizedException(
+        'Please verify your email before logging in',
+      );
     }
 
     // Generate tokens
@@ -393,6 +394,10 @@ export class RecruiterAuthService {
     if (!auth) {
       throw new NotFoundException('User not found');
     }
+
+    // Update emailVerified field
+    auth.emailVerified = true;
+    await this.recruiterAuthRepository.save(auth);
 
     // Clean up code
     await this.redisService.del(codeKey);

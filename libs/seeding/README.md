@@ -8,23 +8,23 @@ A comprehensive seeding system for JobStack backend that handles permissions, ro
 
 ```bash
 # Seed individual entities
-pnpm tsx libs/seeding/src/lib/scripts/seed.ts permissions
-pnpm tsx libs/seeding/src/lib/scripts/seed.ts roles
-pnpm tsx libs/seeding/src/lib/scripts/seed.ts admins
-pnpm tsx libs/seeding/src/lib/scripts/seed.ts skills
+pnpm db:seed -- permissions
+pnpm db:seed -- roles
+pnpm db:seed -- admins
+pnpm db:seed -- skills
 
 # Seed multiple entities
-pnpm tsx libs/seeding/src/lib/scripts/seed.ts permissions roles admins
+pnpm db:seed -- permissions roles admins
 ```
 
 ### Run full system initialization (recommended):
 
 ```bash
 # Seed all system essentials (permissions → roles → admins)
-pnpm tsx libs/seeding/src/lib/scripts/seed.ts permissions roles admins
+pnpm db:seed -- permissions roles admins
 
 # Seed everything including skills
-pnpm tsx libs/seeding/src/lib/scripts/seed.ts
+pnpm db:seed
 ```
 
 ### Available Entities:

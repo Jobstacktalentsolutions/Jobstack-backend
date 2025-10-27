@@ -1,13 +1,10 @@
 import {
   IsString,
   IsOptional,
-  IsEnum,
   IsEmail,
-  IsPhoneNumber,
   MaxLength,
   MinLength,
 } from 'class-validator';
-import { RecruiterType } from '@app/common/database/entities/schema.enum';
 
 export class UpdateRecruiterProfileDto {
   @IsOptional()
@@ -36,8 +33,4 @@ export class UpdateRecruiterProfileDto {
   @IsString()
   @MaxLength(200)
   address?: string;
-
-  @IsOptional()
-  @IsEnum(RecruiterType)
-  type?: RecruiterType;
 }

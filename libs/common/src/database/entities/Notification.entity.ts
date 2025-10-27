@@ -1,17 +1,12 @@
-import {
-  Entity,
-  Column,
-  ManyToOne,
-  JoinColumn,
-} from 'typeorm';
+import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { JobseekerAuth } from './JobseekerAuth.entity';
 import { RecruiterAuth } from './RecruiterAuth.entity';
 import { AdminAuth } from './AdminAuth.entity';
-import { 
-  NotificationStatus, 
-  NotificationType, 
-  NotificationPriority 
+import {
+  NotificationStatus,
+  NotificationType,
+  NotificationPriority,
 } from './schema.enum';
 
 @Entity('notifications')

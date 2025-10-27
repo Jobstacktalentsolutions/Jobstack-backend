@@ -1,15 +1,9 @@
-import {
-  Column,
-  Entity,
-  JoinColumn,
-  ManyToOne,
-} from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { RecruiterAuth } from './RecruiterAuth.entity';
 
 @Entity('recruiter_sessions')
 export class RecruiterSession extends BaseEntity {
-
   @Column({ default: true })
   isActive: boolean;
 

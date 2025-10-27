@@ -27,7 +27,6 @@ export class SkillsController {
   }
 
   // Public / Jobseeker: suggest a new skill (creates SUGGESTED)
-  @UseGuards(JobSeekerJwtGuard)
   @Post('suggest')
   @HttpCode(HttpStatus.CREATED)
   async suggest(@Body() body: SuggestSkillDto): Promise<Skill> {

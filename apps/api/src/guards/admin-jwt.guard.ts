@@ -3,6 +3,7 @@ import {
   CanActivate,
   ExecutionContext,
   UnauthorizedException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Reflector } from '@nestjs/core';
@@ -11,6 +12,11 @@ import { UserRole } from '@app/common/shared/enums/user-roles.enum';
 import { RedisService } from '@app/common/redis/redis.service';
 import { REDIS_KEYS } from '@app/common/redis/redis.config';
 import { AdminAuthService } from 'apps/api/src/modules/auth/submodules/admin/admin-auth.service';
+import { DataSource } from 'typeorm';
+import { AdminAuth } from '@app/common/database/entities/AdminAuth.entity';
+import { AdminRole } from '@app/common/shared/enums/roles.enum';
+
+export const ADMIN_REQUIRED_ROLE = 'admin_required_role';
 
 @Injectable()
 export class AdminJwtGuard implements CanActivate {
@@ -19,6 +25,7 @@ export class AdminJwtGuard implements CanActivate {
     private reflector: Reflector,
     private adminAuthService: AdminAuthService,
     private redisService: RedisService,
+    private dataSource: DataSource,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -56,12 +63,39 @@ export class AdminJwtGuard implements CanActivate {
         throw new UnauthorizedException('Session expired or invalid');
       }
 
-      // Attach user data to request
+      // Attach user data to request for downstream use
       request.user = payload;
+
+      // Optional role requirement check
+      const requiredRoleKey = this.reflector.getAllAndOverride<
+        string | undefined
+      >(ADMIN_REQUIRED_ROLE, [context.getHandler(), context.getClass()]);
+
+      if (requiredRoleKey) {
+        const adminRepo = this.dataSource.getRepository(AdminAuth);
+        const admin = await adminRepo.findOne({ where: { id: payload.sub } });
+        if (!admin) {
+          throw new UnauthorizedException('Admin not found');
+        }
+
+        const target = (AdminRole as Record<string, { privilegeLevel: number; role: string }>)[requiredRoleKey];
+        if (!target) {
+          throw new ForbiddenException('Invalid role requirement');
+        }
+
+        const hasRole = admin.roleKey === requiredRoleKey;
+        const hasHigherPrivilege = admin.privilegeLevel > target.privilegeLevel;
+        if (!hasRole && !hasHigherPrivilege) {
+          throw new ForbiddenException('Insufficient role or privilege');
+        }
+      }
 
       return true;
     } catch (error) {
-      if (error instanceof UnauthorizedException) {
+      if (
+        error instanceof UnauthorizedException ||
+        error instanceof ForbiddenException
+      ) {
         throw error;
       }
       throw new UnauthorizedException('Authentication failed');

@@ -5,10 +5,9 @@ import { AdminController } from './admin.controller';
 import { AdminService } from './admin.service';
 import { AdminJwtGuard } from 'apps/api/src/guards';
 import { AdminAuthModule } from 'apps/api/src/modules/auth/submodules/admin/admin-auth.module';
+import { NotificationModule } from 'apps/api/src/modules/notification/notification.module';
 import {
   AdminProfile,
-  Permission,
-  Role,
   RecruiterVerification,
   RecruiterProfile,
 } from '@app/common/database/entities';
@@ -18,12 +17,11 @@ import {
     TypeOrmModule.forFeature([
       AdminAuth,
       AdminProfile,
-      Role,
-      Permission,
       RecruiterVerification,
       RecruiterProfile,
     ]),
     AdminAuthModule,
+    NotificationModule,
   ],
   controllers: [AdminController],
   providers: [AdminService, AdminJwtGuard],

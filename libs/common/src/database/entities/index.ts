@@ -10,8 +10,6 @@ export * from './RecruiterProfile.entity';
 export * from './RecruiterSession.entity';
 export * from './RecruiterVerification.entity';
 export * from './RecruiterVerificationDocument.entity';
-export * from './Role.entity';
-export * from './Permission.entity';
 export * from './Skill.entity';
 export * from './Notification.entity';
 export * from './Document.entity';

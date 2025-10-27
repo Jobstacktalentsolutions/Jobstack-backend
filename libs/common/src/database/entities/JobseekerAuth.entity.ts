@@ -11,6 +11,9 @@ export class JobseekerAuth extends BaseEntity {
   @Column()
   password: string;
 
+  @Column({ default: false })
+  emailVerified: boolean;
+
   @OneToMany(() => JobseekerSession, (session) => session.jobseeker)
   sessions: JobseekerSession[];
 

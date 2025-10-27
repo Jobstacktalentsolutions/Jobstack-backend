@@ -11,6 +11,9 @@ export class RecruiterAuth extends BaseEntity {
   @Column()
   password: string;
 
+  @Column({ default: false })
+  emailVerified: boolean;
+
   @OneToMany(() => RecruiterSession, (session) => session.recruiter)
   sessions: RecruiterSession[];
 

@@ -157,6 +157,13 @@ export class JobSeekerAuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
+    // Check if email is verified
+    if (!auth.emailVerified) {
+      throw new UnauthorizedException(
+        'Please verify your email before logging in',
+      );
+    }
+
     // Generate tokens
     const authResult = await this.generateTokens(
       auth,
@@ -381,6 +388,10 @@ export class JobSeekerAuthService {
     if (!auth) {
       throw new NotFoundException('User not found');
     }
+
+    // Update emailVerified field
+    auth.emailVerified = true;
+    await this.jobseekerAuthRepository.save(auth);
 
     // Clean up code
     await this.redisService.del(codeKey);

@@ -1,3 +1,15 @@
 {
-  "cSpell.words": ["jobseeker"]
+  "cSpell.words": [
+    "jobseeker"
+  ],
+  "sqltools.connections": [
+    {
+      "ssh": "Disabled",
+      "previewLimit": 50,
+      "server": "localhost",
+      "driver": "PostgreSQL",
+      "connectString": "postgresql://postgres:fmveGheDPjYWvYfVlylelxTRtnvIfBem@trolley.proxy.rlwy.net:53827/railway",
+      "name": "Jobstack DB"
+    }
+  ]
 }

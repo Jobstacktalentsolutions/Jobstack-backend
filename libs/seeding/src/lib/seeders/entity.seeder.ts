@@ -1,27 +1,26 @@
 import { DataSource } from 'typeorm';
 import { BaseSeeder } from './base.seeder';
 import { SeedResult } from '../interfaces/seeder.interface';
-import { PermissionFactory } from '../factories/permission.factory';
-import { RoleFactory } from '../factories/role.factory';
 import { AdminFactory } from '../factories/admin.factory';
 import { SkillFactory } from '../factories/skill.factory';
 
 /**
  * Entity seeder that handles seeding of different entities
  */
+interface IFactory {
+  createAll(): Promise<any[]>;
+}
+
 export class EntitySeeder extends BaseSeeder {
-  private readonly entityFactories: Map<string, any>;
+  private readonly entityFactories: Map<string, IFactory>;
 
   constructor(dataSource: DataSource) {
     super(dataSource);
 
     // Initialize factories
-    this.entityFactories = new Map([
-      ['permissions', new PermissionFactory(dataSource)],
-      ['roles', new RoleFactory(dataSource)],
-      ['admins', new AdminFactory(dataSource)],
-      ['skills', new SkillFactory(dataSource)],
-    ]);
+    this.entityFactories = new Map<string, IFactory>();
+    this.entityFactories.set('admins', new AdminFactory(dataSource));
+    this.entityFactories.set('skills', new SkillFactory(dataSource));
   }
 
   /**
@@ -55,7 +54,7 @@ export class EntitySeeder extends BaseSeeder {
     }
 
     // Define seeding order to handle dependencies
-    const seedingOrder = ['permissions', 'roles', 'admins', 'skills'];
+    const seedingOrder = ['admins', 'skills'];
     const orderedEntities = seedingOrder.filter((entity) =>
       entityNames.includes(entity),
     );
@@ -71,6 +70,9 @@ export class EntitySeeder extends BaseSeeder {
       try {
         console.log(`\n📦 Seeding ${entityName}...`);
         const factory = this.entityFactories.get(entityName);
+        if (!factory) {
+          throw new Error(`Factory not found for entity: ${entityName}`);
+        }
         const entities = await factory.createAll();
         totalCount += entities.length;
         console.log(`✅ Successfully seeded ${entities.length} ${entityName}`);

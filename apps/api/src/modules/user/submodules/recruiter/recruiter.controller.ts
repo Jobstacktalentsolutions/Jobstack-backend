@@ -25,7 +25,7 @@ import {
   UuidParamDto,
 } from './dto';
 
-@Controller('recruiter')
+@Controller('user/recruiter')
 @UseGuards(RecruiterJwtGuard)
 export class RecruiterController {
   constructor(private readonly recruiterService: RecruiterService) {}
@@ -71,10 +71,7 @@ export class RecruiterController {
     if (!file) {
       throw new BadRequestException('No file uploaded');
     }
-    const result = await this.recruiterService.uploadCompanyLogo(
-      user.id,
-      file,
-    );
+    const result = await this.recruiterService.uploadCompanyLogo(user.id, file);
     return { success: true, logoUrl: result.logoUrl };
   }
 

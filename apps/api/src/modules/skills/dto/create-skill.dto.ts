@@ -23,8 +23,4 @@ export class CreateSkillDto {
   @IsArray()
   @IsString({ each: true })
   synonyms?: string[];
-
-  @IsOptional()
-  @IsEnum(SkillStatus)
-  status?: SkillStatus;
 }

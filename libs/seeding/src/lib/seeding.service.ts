@@ -43,7 +43,7 @@ export class SeedingService {
    */
   async seedSystemEssentials(): Promise<SeedResult> {
     console.log('🔧 Seeding system essentials...');
-    return await this.runEntities(['permissions', 'roles', 'admins']);
+    return await this.runEntities(['admins']);
   }
 
   /**

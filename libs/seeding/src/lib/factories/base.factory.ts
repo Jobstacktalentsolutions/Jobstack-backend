@@ -57,7 +57,7 @@ export abstract class BaseFactory<T extends ObjectLiteral> {
    * Smart upsert that checks multiple unique fields using OR conditions
    */
   async smartUpsert(
-    data: DeepPartial<T> & { id: string },
+    data: DeepPartial<T> & { id?: string },
     uniqueFields: string[],
   ): Promise<T> {
     // Merge default attributes with provided data
@@ -67,10 +67,12 @@ export abstract class BaseFactory<T extends ObjectLiteral> {
     };
 
     // Build OR conditions for unique fields
-    const orConditions = [];
+    const orConditions: any[] = [];
 
-    // Always check by ID first
-    orConditions.push({ id: data.id });
+    // Check by ID first if provided
+    if (data.id) {
+      orConditions.push({ id: data.id });
+    }
 
     // Add conditions for other unique fields if they exist in data
     for (const field of uniqueFields) {
@@ -80,9 +82,12 @@ export abstract class BaseFactory<T extends ObjectLiteral> {
     }
 
     // Check if entity exists by any of the unique fields
-    const existingEntity = await this.repository.findOne({
-      where: orConditions as any,
-    });
+    let existingEntity: T | null = null;
+    if (orConditions.length > 0) {
+      existingEntity = await this.repository.findOne({
+        where: orConditions as any,
+      });
+    }
 
     if (existingEntity) {
       // Update existing entity
@@ -104,7 +109,7 @@ export abstract class BaseFactory<T extends ObjectLiteral> {
    * Create multiple entities
    */
   async createMany(entities: DeepPartial<T>[]): Promise<T[]> {
-    const createdEntities = [];
+    const createdEntities: T[] = [];
     for (const entityData of entities) {
       const entity = await this.create(entityData);
       createdEntities.push(entity);
@@ -118,7 +123,7 @@ export abstract class BaseFactory<T extends ObjectLiteral> {
   async upsertMany(
     entities: (DeepPartial<T> & { id: string })[],
   ): Promise<T[]> {
-    const upsertedEntities = [];
+    const upsertedEntities: T[] = [];
     for (const entityData of entities) {
       const entity = await this.upsert(entityData);
       upsertedEntities.push(entity);

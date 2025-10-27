@@ -15,5 +15,5 @@ export function getRepositoryByName<T extends ObjectLiteral>(
     throw new Error(`Entity '${entityName}' not found in data source`);
   }
 
-  return dataSource.getRepository(metadata.target) as Repository<T>;
+  return dataSource.getRepository(metadata.target);
 }

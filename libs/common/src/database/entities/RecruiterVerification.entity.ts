@@ -13,11 +13,9 @@ export class RecruiterVerification extends BaseEntity {
   @JoinColumn({ name: 'recruiterId' })
   recruiter: RecruiterProfile;
 
-  @OneToMany(
-    () => RecruiterVerificationDocument,
-    (doc) => doc.verification,
-    { cascade: true },
-  )
+  @OneToMany(() => RecruiterVerificationDocument, (doc) => doc.verification, {
+    cascade: true,
+  })
   documents: RecruiterVerificationDocument[];
 
   @Column({ nullable: true })

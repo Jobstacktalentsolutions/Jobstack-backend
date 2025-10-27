@@ -1,16 +1,12 @@
 #!/usr/bin/env node
 
-// Ensure reflect-metadata is imported before any entity is loaded so
-// TypeORM can read emitted decorator metadata (required for column types)
-import 'reflect-metadata';
-
 import { DataSource } from 'typeorm';
-import { SeedingService } from '../seeding.service';
-import { typeormConfig } from '@app/common/database/typeorm.config';
+import { SeedingService } from '@app/seeding';
+import { typeOrmConfig } from '../typeorm.config';
 
 /**
  * Seeding script for JobStack
- * Usage: node seed.js [entity1] [entity2] ...
+ * Usage: pnpm db:seed -- [entity1] [entity2] ...
  * Available entities: admins, skills
  */
 async function runSeeding() {
@@ -26,12 +22,12 @@ async function runSeeding() {
     console.log('📋 Seeding all available entities');
   }
 
-  let dataSource: DataSource;
+  let dataSource: DataSource | undefined;
 
   try {
     // Initialize database connection
     console.log('\n🔌 Connecting to database...');
-    dataSource = new DataSource(typeormConfig);
+    dataSource = new DataSource(typeOrmConfig);
     await dataSource.initialize();
     console.log('✅ Database connected successfully');
 

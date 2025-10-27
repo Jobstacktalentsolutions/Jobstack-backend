@@ -1,6 +1,5 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToOne } from 'typeorm';
+import { Column, Entity, JoinColumn, OneToOne } from 'typeorm';
 import { BaseEntity } from './base.entity';
-import { Role } from './Role.entity';
 import { AdminAuth } from './AdminAuth.entity';
 
 @Entity('admin_profiles')
@@ -29,11 +28,4 @@ export class AdminProfile extends BaseEntity {
   @OneToOne(() => AdminAuth, (auth) => auth.profile)
   @JoinColumn({ name: 'authId' })
   auth: AdminAuth;
-
-  @ManyToOne(() => Role, (role) => role.adminProfiles, { nullable: true })
-  @JoinColumn({ name: 'roleId' })
-  role?: Role;
-
-  @Column('uuid', { nullable: true })
-  roleId?: string;
 }

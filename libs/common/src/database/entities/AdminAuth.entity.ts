@@ -11,6 +11,20 @@ export class AdminAuth extends BaseEntity {
   @Column()
   password: string;
 
+  @Column({ default: false })
+  emailVerified: boolean;
+
+  // New simplified authorization fields
+  @Column({ type: 'varchar', length: 64 })
+  roleKey: string; // keyof typeof AdminRole (stored as string)
+
+  @Column({ type: 'int' })
+  privilegeLevel: number;
+
+  // Manager relationship (admin who created this admin)
+  @Column('uuid', { nullable: true })
+  managerId?: string;
+
   @OneToMany(() => AdminSession, (session) => session.admin)
   sessions: AdminSession[];
 

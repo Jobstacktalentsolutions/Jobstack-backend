@@ -24,7 +24,8 @@
     "db:show": "pnpm typeorm migration:show -d typeorm.config.ts",
     "db:generate": "pnpm typeorm migration:generate ./migrations/ -d typeorm.config.ts",
     "db:create": "pnpm typeorm migration:create ./migrations/",
-    "db:sync": "pnpm typeorm schema:sync -d typeorm.config.ts"
+    "db:sync": "pnpm typeorm schema:sync -d typeorm.config.ts",
+    "db:seed": "ts-node -r tsconfig-paths/register scripts/seed.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.908.0",

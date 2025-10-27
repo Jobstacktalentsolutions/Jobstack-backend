@@ -71,6 +71,13 @@ export class AdminAuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
+    // Check if email is verified
+    if (!auth.emailVerified) {
+      throw new UnauthorizedException(
+        'Please verify your email before logging in',
+      );
+    }
+
     // Generate tokens
     const authResult = await this.generateTokens(auth, deviceInfo);
 
@@ -137,6 +144,7 @@ export class AdminAuthService {
         type: 'access',
         jti: accessTokenId,
         iat: Math.floor(Date.now() / 1000),
+        // Note: Specific admin roleKey/privilegeLevel are checked server-side as needed
       };
 
       const accessToken = await this.jwtService.signAsync(accessPayload, {
@@ -285,6 +293,10 @@ export class AdminAuthService {
     if (!auth) {
       throw new NotFoundException('User not found');
     }
+
+    // Update emailVerified field
+    auth.emailVerified = true;
+    await this.adminAuthRepository.save(auth);
 
     // Clean up code
     await this.redisService.del(codeKey);

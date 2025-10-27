@@ -1,58 +1,79 @@
 import { DataSource } from 'typeorm';
 import { BaseFactory } from './base.factory';
+import { AdminAuth } from '@app/common/database/entities/AdminAuth.entity';
 import { AdminProfile } from '@app/common/database/entities/AdminProfile.entity';
 import { getRepositoryByName } from '../utils/repository.utils';
 import { ADMINS_DATA } from '../data/admins.data';
-import { RoleFactory } from './role.factory';
 
 /**
- * Admin factory for seeding admin profiles
+ * Admin factory for seeding admins (auth + profile)
  */
-export class AdminFactory extends BaseFactory<AdminProfile> {
-  private roleFactory: RoleFactory;
+export class AdminFactory extends BaseFactory<AdminAuth> {
+  private profileRepository: any;
 
   constructor(dataSource: DataSource) {
-    super(dataSource, getRepositoryByName(dataSource, 'AdminProfile'), {
-      defaultAttributes: () => ({}),
+    super(dataSource, getRepositoryByName(dataSource, 'AdminAuth'), {
+      defaultAttributes: () => ({ emailVerified: true }),
     });
-    this.roleFactory = new RoleFactory(dataSource);
+    this.profileRepository = getRepositoryByName(dataSource, 'AdminProfile');
   }
 
-  /**
-   * Smart upsert for admin by email (unique field)
-   */
-  async smartUpsertAdmin(data: any): Promise<AdminProfile> {
-    // Filter out fields that don't exist in AdminProfile entity
-    const { passwordHash, ...adminData } = data;
+  async createOrUpdateAdmin(data: any): Promise<AdminAuth> {
+    const {
+      passwordHash,
+      firstName,
+      lastName,
+      phoneNumber,
+      address,
+      roleKey,
+      privilegeLevel,
+      ...rest
+    } = data;
 
-    const uniqueFields = ['email'];
-    return await this.smartUpsert(adminData, uniqueFields);
-  }
+    // Upsert AdminAuth by id or email
+    const auth = await this.smartUpsert(
+      {
+        id: data.id,
+        email: data.email.toLowerCase(),
+        password: passwordHash,
+        emailVerified: true,
+        roleKey,
+        privilegeLevel,
+      } as any,
+      ['email'],
+    );
 
-  /**
-   * Check if super admin already exists
-   */
-  async superAdminExists(): Promise<boolean> {
-    const superAdminData = ADMINS_DATA[0]; // First admin is always super admin
-    const existingAdmin = await this.repository.findOne({
-      where: [{ id: superAdminData.id }, { email: superAdminData.email }],
+    // Upsert AdminProfile linked to auth
+    const profileRepo = this.profileRepository as ReturnType<
+      typeof getRepositoryByName
+    >;
+    const existingProfile = await profileRepo.findOne({
+      where: { authId: auth.id },
     });
-    return !!existingAdmin;
+    const profileData: Partial<AdminProfile> = {
+      firstName,
+      lastName,
+      email: data.email.toLowerCase(),
+      phoneNumber,
+      address,
+      authId: auth.id,
+    };
+    if (existingProfile) {
+      await profileRepo.update({ id: existingProfile.id }, profileData);
+    } else {
+      await profileRepo.save(profileRepo.create(profileData));
+    }
+
+    return auth as any;
   }
 
-  /**
-   * Create all admins from static data using smart upsert
-   */
-  async createAll(): Promise<AdminProfile[]> {
-    console.log('🔄 Upserting admin profile records...');
+  async createAll(): Promise<AdminAuth[]> {
+    console.log('🔄 Upserting admin auth/profile records...');
 
-    // Create roles first
-    await this.roleFactory.createAll();
-
-    const admins = [];
+    const admins: AdminAuth[] = [];
     for (const adminData of ADMINS_DATA) {
       try {
-        const admin = await this.smartUpsertAdmin(adminData);
+        const admin = await this.createOrUpdateAdmin(adminData);
         admins.push(admin);
       } catch (error) {
         console.warn(
@@ -62,7 +83,7 @@ export class AdminFactory extends BaseFactory<AdminProfile> {
       }
     }
 
-    console.log(`✅ Upserted ${admins.length} admin profile records`);
+    console.log(`✅ Upserted ${admins.length} admin records`);
     return admins;
   }
 }
