@@ -1,3 +1,0 @@
-
-TRUNCATE TABLE admin_profiles CASCADE;
-TRUNCATE TABLE admin_auth CASCADE;

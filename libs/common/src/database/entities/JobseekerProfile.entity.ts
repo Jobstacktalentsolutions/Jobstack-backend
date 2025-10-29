@@ -1,12 +1,33 @@
-import { Entity, Column, OneToOne, JoinColumn, OneToMany } from 'typeorm';
-import { BaseEntity } from './base.entity';
+import {
+  Entity,
+  Column,
+  OneToOne,
+  JoinColumn,
+  OneToMany,
+  PrimaryColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { JobseekerSkill } from './JobseekerSkill.entity';
 import { JobseekerAuth } from './JobseekerAuth.entity';
 import { Document } from './Document.entity';
 import { ApprovalStatus } from './schema.enum';
 
-@Entity('job_seeker_profiles')
-export class JobSeekerProfile extends BaseEntity {
+@Entity('jobseeker_profiles')
+export class JobSeekerProfile {
+  @PrimaryColumn('uuid')
+  id: string;
+
+  @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdAt: Date;
+
+  @UpdateDateColumn({
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP',
+    onUpdate: 'CURRENT_TIMESTAMP',
+  })
+  updatedAt: Date;
+
   @Column()
   firstName: string;
 
@@ -51,12 +72,7 @@ export class JobSeekerProfile extends BaseEntity {
   })
   approvalStatus: ApprovalStatus;
 
-  @Column('uuid', { nullable: true })
-  authId?: string;
-
-  @OneToOne(() => JobseekerAuth, (auth) => auth.profile, {
-    onDelete: 'CASCADE',
-  })
-  @JoinColumn({ name: 'authId' })
+  @OneToOne(() => JobseekerAuth, (auth) => auth.profile)
+  @JoinColumn({ name: 'id' })
   auth: JobseekerAuth;
 }

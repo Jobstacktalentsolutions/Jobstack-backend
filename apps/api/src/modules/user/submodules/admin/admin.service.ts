@@ -8,6 +8,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AdminAuth } from '@app/common/database/entities/AdminAuth.entity';
+import { AdminProfile } from '@app/common/database/entities/AdminProfile.entity';
 import {
   RecruiterVerification,
   RecruiterProfile,
@@ -33,6 +34,8 @@ export class AdminService {
   constructor(
     @InjectRepository(AdminAuth)
     private readonly adminAuthRepo: Repository<AdminAuth>,
+    @InjectRepository(AdminProfile)
+    private readonly adminProfileRepo: Repository<AdminProfile>,
     @InjectRepository(RecruiterVerification)
     private readonly verificationRepo: Repository<RecruiterVerification>,
     @InjectRepository(RecruiterProfile)
@@ -41,19 +44,30 @@ export class AdminService {
   ) {}
 
   async getAdminProfile(userId: string): Promise<any> {
-    const admin = await this.adminAuthRepo.findOne({ where: { id: userId } });
-    if (!admin) {
+    const profile = await this.adminProfileRepo.findOne({
+      where: { id: userId },
+      relations: ['auth'],
+    });
+    if (!profile) {
       throw new NotFoundException('Admin not found');
     }
 
     return {
-      id: admin.id,
-      email: admin.email,
-      roleKey: admin.roleKey,
-      privilegeLevel: admin.privilegeLevel,
-      managerId: admin.managerId || null,
-      createdAt: admin.createdAt,
-      updatedAt: admin.updatedAt,
+      id: profile.id,
+      email: profile.auth.email,
+      roleKey: profile.auth.roleKey,
+      privilegeLevel: profile.auth.privilegeLevel,
+      managerId: profile.auth.managerId || null,
+      profile: {
+        firstName: profile.firstName,
+        lastName: profile.lastName,
+        email: profile.email,
+        phoneNumber: profile.phoneNumber,
+        profilePictureUrl: profile.profilePictureUrl,
+        address: profile.address,
+      },
+      createdAt: profile.createdAt,
+      updatedAt: profile.updatedAt,
     };
   }
 
@@ -90,16 +104,21 @@ export class AdminService {
       roleKey,
       privilegeLevel: target.privilegeLevel,
       managerId: creator.id,
-      profile: {
-        firstName: firstName || 'Admin',
-        lastName: lastName || 'User',
-        email: email.toLowerCase(),
-        phoneNumber: phoneNumber || '',
-        address: address || null,
-      } as any,
     });
 
     const saved = await this.adminAuthRepo.save(auth);
+
+    // Create profile with same ID
+    const profile = this.adminProfileRepo.create({
+      id: saved.id,
+      firstName: firstName || 'Admin',
+      lastName: lastName || 'User',
+      email: email.toLowerCase(),
+      phoneNumber: phoneNumber || '',
+      address: address || null,
+    });
+
+    await this.adminProfileRepo.save(profile);
 
     // Send credentials email
     await this.notificationService.sendEmail({
@@ -160,41 +179,55 @@ export class AdminService {
   }
 
   async updateAdminProfile(userId: string, updateData: any): Promise<any> {
-    const admin = await this.adminAuthRepo.findOne({ where: { id: userId } });
-    if (!admin) {
+    const profile = await this.adminProfileRepo.findOne({
+      where: { id: userId },
+      relations: ['auth'],
+    });
+    if (!profile) {
       throw new NotFoundException('Admin not found');
     }
 
+    // Update profile fields
+    if (updateData.firstName) profile.firstName = updateData.firstName;
+    if (updateData.lastName) profile.lastName = updateData.lastName;
+    if (updateData.phoneNumber) profile.phoneNumber = updateData.phoneNumber;
+    if (updateData.address !== undefined) profile.address = updateData.address;
+    if (updateData.profilePictureUrl !== undefined)
+      profile.profilePictureUrl = updateData.profilePictureUrl;
+
+    // Update auth email if provided
     if (updateData.email) {
-      admin.email = updateData.email.toLowerCase();
+      profile.auth.email = updateData.email.toLowerCase();
+      profile.email = updateData.email.toLowerCase();
+      await this.adminAuthRepo.save(profile.auth);
     }
 
-    await this.adminAuthRepo.save(admin);
+    await this.adminProfileRepo.save(profile);
     return this.getAdminProfile(userId);
   }
 
   async getAllAdmins(_userId: string): Promise<any[]> {
-    const admins = await this.adminAuthRepo.find({
-      select: [
-        'id',
-        'email',
-        'roleKey',
-        'privilegeLevel',
-        'managerId',
-        'createdAt',
-        'updatedAt',
-      ],
+    const profiles = await this.adminProfileRepo.find({
+      relations: ['auth'],
       order: { createdAt: 'DESC' },
     });
 
-    return admins.map((a) => ({
-      id: a.id,
-      email: a.email,
-      roleKey: a.roleKey,
-      privilegeLevel: a.privilegeLevel,
-      managerId: a.managerId || null,
-      createdAt: a.createdAt,
-      updatedAt: a.updatedAt,
+    return profiles.map((profile) => ({
+      id: profile.id,
+      email: profile.auth.email,
+      roleKey: profile.auth.roleKey,
+      privilegeLevel: profile.auth.privilegeLevel,
+      managerId: profile.auth.managerId || null,
+      profile: {
+        firstName: profile.firstName,
+        lastName: profile.lastName,
+        email: profile.email,
+        phoneNumber: profile.phoneNumber,
+        profilePictureUrl: profile.profilePictureUrl,
+        address: profile.address,
+      },
+      createdAt: profile.createdAt,
+      updatedAt: profile.updatedAt,
     }));
   }
 

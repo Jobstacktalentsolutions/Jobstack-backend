@@ -5,7 +5,7 @@ import * as bcrypt from 'bcryptjs';
  * Get super admin configuration from environment variables with fallbacks
  */
 function getSuperAdminConfig() {
-  const email = process.env.SUPER_ADMIN_EMAIL || 'superadmin@jobstack.ng';
+  const email = process.env.SUPER_ADMIN_EMAIL || 'enweremproper@gmail.com';
   const password = bcrypt.hashSync(
     process.env.SUPER_ADMIN_PASSWORD || 'admin123',
     12,

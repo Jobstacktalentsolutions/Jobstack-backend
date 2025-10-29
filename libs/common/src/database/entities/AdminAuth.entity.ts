@@ -32,5 +32,6 @@ export class AdminAuth extends BaseEntity {
     cascade: true,
     onDelete: 'CASCADE',
   })
+  @JoinColumn({ name: 'id' })
   profile?: AdminProfile;
 }

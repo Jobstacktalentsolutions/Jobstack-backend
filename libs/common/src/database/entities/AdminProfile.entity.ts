@@ -1,9 +1,29 @@
-import { Column, Entity, JoinColumn, OneToOne } from 'typeorm';
-import { BaseEntity } from './base.entity';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  OneToOne,
+  PrimaryColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { AdminAuth } from './AdminAuth.entity';
 
 @Entity('admin_profiles')
-export class AdminProfile extends BaseEntity {
+export class AdminProfile {
+  @PrimaryColumn('uuid')
+  id: string;
+
+  @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdAt: Date;
+
+  @UpdateDateColumn({
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP',
+    onUpdate: 'CURRENT_TIMESTAMP',
+  })
+  updatedAt: Date;
+
   @Column()
   firstName: string;
 
@@ -22,10 +42,7 @@ export class AdminProfile extends BaseEntity {
   @Column({ nullable: true })
   address?: string;
 
-  @Column('uuid', { nullable: true })
-  authId?: string;
-
   @OneToOne(() => AdminAuth, (auth) => auth.profile)
-  @JoinColumn({ name: 'authId' })
+  @JoinColumn({ name: 'id' })
   auth: AdminAuth;
 }

@@ -32,11 +32,10 @@ export class RecruiterService {
     userId: string,
     file: MulterFile,
   ): Promise<{ logoUrl: string }> {
-    const auth = await this.authRepo.findOne({
+    const profile = await this.profileRepo.findOne({
       where: { id: userId },
-      relations: ['profile'],
     });
-    if (!auth || !auth.profile) {
+    if (!profile) {
       throw new NotFoundException('Recruiter not found');
     }
 
@@ -52,20 +51,20 @@ export class RecruiterService {
     }
 
     // Delete old logo if exists
-    if (auth.profile.profilePictureId) {
+    if (profile.profilePictureId) {
       await this.deleteCompanyLogo(userId);
     }
 
     const upload = await this.storageService.uploadFile(file as any, {
-      folder: `recruiters/${auth.profile.id}/company-logo`,
+      folder: `recruiters/${profile.id}/company-logo`,
       bucketType: 'public',
       documentType: DocumentType.PROFILE_PICTURE,
       uploadedBy: userId,
       description: 'Company logo',
     });
 
-    auth.profile.profilePicture = upload.document;
-    await this.profileRepo.save(auth.profile);
+    profile.profilePicture = upload.document;
+    await this.profileRepo.save(profile);
     return { logoUrl: upload.url };
   }
 
@@ -73,43 +72,42 @@ export class RecruiterService {
    * Delete company logo
    */
   async deleteCompanyLogo(userId: string): Promise<void> {
-    const auth = await this.authRepo.findOne({
+    const profile = await this.profileRepo.findOne({
       where: { id: userId },
-      relations: ['profile'],
     });
-    if (!auth || !auth.profile) {
+    if (!profile) {
       throw new NotFoundException('Recruiter not found');
     }
 
-    const currentDocumentId = auth.profile.profilePictureId;
+    const currentDocumentId = profile.profilePictureId;
     if (!currentDocumentId) return;
 
     // Delete document using StorageService
     await this.storageService.deleteDocument(currentDocumentId);
 
-    auth.profile.profilePicture = undefined;
-    auth.profile.profilePictureId = undefined;
-    await this.profileRepo.save(auth.profile);
+    profile.profilePicture = undefined;
+    profile.profilePictureId = undefined;
+    await this.profileRepo.save(profile);
   }
 
   /**
    * Get recruiter profile with company information
    */
   async getRecruiterProfile(userId: string): Promise<any> {
-    const auth = await this.authRepo.findOne({
+    const profile = await this.profileRepo.findOne({
       where: { id: userId },
-      relations: ['profile', 'profile.profilePicture'],
+      relations: ['auth', 'profilePicture'],
     });
-    if (!auth || !auth.profile) {
+    if (!profile) {
       throw new NotFoundException('Recruiter not found');
     }
 
     return {
-      id: auth.id,
-      email: auth.email,
-      profile: auth.profile,
-      createdAt: auth.createdAt,
-      updatedAt: auth.updatedAt,
+      id: profile.id,
+      email: profile.auth.email,
+      profile: profile,
+      createdAt: profile.createdAt,
+      updatedAt: profile.updatedAt,
     };
   }
 
@@ -120,22 +118,22 @@ export class RecruiterService {
     userId: string,
     updateData: UpdateRecruiterProfileDto,
   ): Promise<any> {
-    const auth = await this.authRepo.findOne({
+    const profile = await this.profileRepo.findOne({
       where: { id: userId },
-      relations: ['profile', 'profile.profilePicture'],
+      relations: ['auth', 'profilePicture'],
     });
-    if (!auth || !auth.profile) {
+    if (!profile) {
       throw new NotFoundException('Recruiter not found');
     }
 
     // Update profile data
-    Object.assign(auth.profile, updateData);
-    await this.profileRepo.save(auth.profile);
+    Object.assign(profile, updateData);
+    await this.profileRepo.save(profile);
 
     // Update auth data if email is provided
     if (updateData.email) {
-      auth.email = updateData.email;
-      await this.authRepo.save(auth);
+      profile.auth.email = updateData.email;
+      await this.authRepo.save(profile.auth);
     }
 
     return this.getRecruiterProfile(userId);
@@ -235,21 +233,21 @@ export class RecruiterService {
 
   async getRecruiterById(recruiterId: string, adminId: string): Promise<any> {
     // Verify admin has permission (you can add admin verification logic here)
-    const recruiter = await this.profileRepo.findOne({
+    const profile = await this.profileRepo.findOne({
       where: { id: recruiterId },
       relations: ['auth', 'profilePicture'],
     });
 
-    if (!recruiter) {
+    if (!profile) {
       throw new NotFoundException('Recruiter not found');
     }
 
     return {
-      id: recruiter.id,
-      email: recruiter.auth?.email,
-      profile: recruiter,
-      createdAt: recruiter.createdAt,
-      updatedAt: recruiter.updatedAt,
+      id: profile.id,
+      email: profile.auth?.email,
+      profile: profile,
+      createdAt: profile.createdAt,
+      updatedAt: profile.updatedAt,
     };
   }
 }

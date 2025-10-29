@@ -22,8 +22,8 @@
     "db:migrate": "pnpm typeorm migration:run -d typeorm.config.ts",
     "db:revert": "pnpm typeorm migration:revert -d typeorm.config.ts",
     "db:show": "pnpm typeorm migration:show -d typeorm.config.ts",
-    "db:generate": "pnpm typeorm migration:generate ./migrations/ -d typeorm.config.ts",
-    "db:create": "pnpm typeorm migration:create ./migrations/",
+    "db:generate": "pnpm typeorm migration:generate -d typeorm.config.ts ./migrations/Migration",
+    "db:create": "pnpm typeorm migration:create ./migrations/Migration",
     "db:sync": "pnpm typeorm schema:sync -d typeorm.config.ts",
     "db:seed": "ts-node -r tsconfig-paths/register scripts/seed.ts"
   },

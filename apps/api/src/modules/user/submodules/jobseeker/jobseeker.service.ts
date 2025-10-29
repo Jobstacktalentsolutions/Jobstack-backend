@@ -35,12 +35,10 @@ export class JobseekerService {
     userId: string,
     file: MulterFile,
   ): Promise<{ cvUrl: string; documentId: string }> {
-    const auth = await this.authRepo.findOne({
+    const profile = await this.profileRepo.findOne({
       where: { id: userId },
-      relations: ['profile'],
     });
-    if (!auth || !auth.profile)
-      throw new NotFoundException('Jobseeker not found');
+    if (!profile) throw new NotFoundException('Jobseeker not found');
 
     // Enforce PDF mimetype
     const mime = (file.mimetype || '').toLowerCase();
@@ -49,20 +47,20 @@ export class JobseekerService {
     }
 
     // Delete existing CV if it exists
-    if (auth.profile.cvDocumentId) {
+    if (profile.cvDocumentId) {
       await this.deleteCv(userId);
     }
 
     const upload = await this.storageService.uploadFile(file as any, {
-      folder: `jobseekers/${auth.profile.id}/cv`,
+      folder: `jobseekers/${profile.id}/cv`,
       bucketType: 'private',
       documentType: DocumentType.CV,
       uploadedBy: userId,
       description: 'Job seeker CV',
     });
 
-    auth.profile.cvDocumentId = upload.document.id;
-    await this.profileRepo.save(auth.profile);
+    profile.cvDocumentId = upload.document.id;
+    await this.profileRepo.save(profile);
 
     return {
       cvUrl: upload.url,
@@ -72,20 +70,17 @@ export class JobseekerService {
 
   // Delete CV document (cvDocumentId will be automatically set to null by database)
   async deleteCv(userId: string): Promise<void> {
-    const auth = await this.authRepo.findOne({
+    const profile = await this.profileRepo.findOne({
       where: { id: userId },
-      relations: ['profile'],
     });
-    if (!auth || !auth.profile)
-      throw new NotFoundException('Jobseeker not found');
+    if (!profile) throw new NotFoundException('Jobseeker not found');
 
-    const currentDocumentId = auth.profile.cvDocumentId;
+    const currentDocumentId = profile.cvDocumentId;
     if (!currentDocumentId) return;
 
-    // auth.profile.cvDocumentId = undefined;
     await this.profileRepo.update(
       {
-        id: auth.profile.id,
+        id: profile.id,
       },
       {
         cvDocumentId: undefined,
@@ -98,15 +93,15 @@ export class JobseekerService {
   async getCvDocument(
     userId: string,
   ): Promise<{ document: Document; signedUrl: string } | null> {
-    const auth = await this.authRepo.findOne({
+    const profile = await this.profileRepo.findOne({
       where: { id: userId },
-      relations: ['profile', 'profile.cvDocument'],
+      relations: ['cvDocument'],
     });
-    if (!auth || !auth.profile || !auth.profile.cvDocument) {
+    if (!profile || !profile.cvDocument) {
       return null;
     }
 
-    const document = auth.profile.cvDocument;
+    const document = profile.cvDocument;
     const signedUrl = await this.storageService.getSignedUrl(
       document.fileKey,
       3600, // 1 hour expiry
@@ -122,32 +117,30 @@ export class JobseekerService {
     userId: string,
     updateData: UpdateProfileDto,
   ): Promise<JobSeekerProfile> {
-    const auth = await this.authRepo.findOne({
+    const profile = await this.profileRepo.findOne({
       where: { id: userId },
-      relations: ['profile'],
     });
-    if (!auth || !auth.profile)
-      throw new NotFoundException('Jobseeker not found');
+    if (!profile) throw new NotFoundException('Jobseeker not found');
 
     // Update basic profile fields
     if (updateData.jobTitle !== undefined) {
-      auth.profile.jobTitle = updateData.jobTitle;
+      profile.jobTitle = updateData.jobTitle;
     }
     if (updateData.brief !== undefined) {
-      auth.profile.brief = updateData.brief;
+      profile.brief = updateData.brief;
     }
     if (updateData.preferredLocation !== undefined) {
-      auth.profile.preferredLocation = updateData.preferredLocation;
+      profile.preferredLocation = updateData.preferredLocation;
     }
     if (updateData.address !== undefined) {
-      auth.profile.address = updateData.address;
+      profile.address = updateData.address;
     }
 
     // Handle skills smartly
     if (updateData.skills || updateData.skillIds) {
       // First, remove existing skills
       await this.jobseekerSkillRepo.delete({
-        profileId: auth.profile.id,
+        profileId: profile.id,
       });
 
       // Normalize and attach skills via SkillsService (non-transactional, best-effort)
@@ -160,7 +153,7 @@ export class JobseekerService {
       }
 
       await this.skillsService.attachSkillsToProfile(
-        auth.profile.id,
+        profile.id,
         Array.from(normalizedIds).map((skillId) => ({
           skillId,
         })),
@@ -168,7 +161,7 @@ export class JobseekerService {
     }
 
     // Save the updated profile
-    const updatedProfile = await this.profileRepo.save(auth.profile);
+    const updatedProfile = await this.profileRepo.save(profile);
 
     // Return profile with relations
     const profileWithRelations = await this.profileRepo.findOne({
@@ -185,50 +178,49 @@ export class JobseekerService {
 
   // Get jobseeker profile by user ID
   async getProfile(userId: string): Promise<JobSeekerProfile> {
-    const auth = await this.authRepo.findOne({
+    const profile = await this.profileRepo.findOne({
       where: { id: userId },
-      relations: ['profile', 'profile.userSkills', 'profile.userSkills.skill'],
+      relations: ['userSkills', 'userSkills.skill'],
     });
-    if (!auth || !auth.profile)
-      throw new NotFoundException('Jobseeker not found');
+    if (!profile) throw new NotFoundException('Jobseeker not found');
 
-    return auth.profile;
+    return profile;
   }
 
   // Admin methods for managing job seekers
   async getAllJobSeekers(adminId: string): Promise<any[]> {
     // Verify admin has permission (you can add admin verification logic here)
-    const jobSeekers = await this.authRepo.find({
-      relations: ['profile', 'profile.userSkills', 'profile.userSkills.skill'],
+    const profiles = await this.profileRepo.find({
+      relations: ['auth', 'userSkills', 'userSkills.skill'],
       order: { createdAt: 'DESC' },
     });
 
-    return jobSeekers.map((auth) => ({
-      id: auth.id,
-      email: auth.email,
-      profile: auth.profile,
-      createdAt: auth.createdAt,
-      updatedAt: auth.updatedAt,
+    return profiles.map((profile) => ({
+      id: profile.id,
+      email: profile.auth.email,
+      profile: profile,
+      createdAt: profile.createdAt,
+      updatedAt: profile.updatedAt,
     }));
   }
 
   async getJobSeekerById(jobSeekerId: string, adminId: string): Promise<any> {
     // Verify admin has permission (you can add admin verification logic here)
-    const jobSeeker = await this.authRepo.findOne({
+    const profile = await this.profileRepo.findOne({
       where: { id: jobSeekerId },
-      relations: ['profile', 'profile.userSkills', 'profile.userSkills.skill'],
+      relations: ['auth', 'userSkills', 'userSkills.skill'],
     });
 
-    if (!jobSeeker) {
+    if (!profile) {
       throw new NotFoundException('Job seeker not found');
     }
 
     return {
-      id: jobSeeker.id,
-      email: jobSeeker.email,
-      profile: jobSeeker.profile,
-      createdAt: jobSeeker.createdAt,
-      updatedAt: jobSeeker.updatedAt,
+      id: profile.id,
+      email: profile.auth.email,
+      profile: profile,
+      createdAt: profile.createdAt,
+      updatedAt: profile.updatedAt,
     };
   }
 }

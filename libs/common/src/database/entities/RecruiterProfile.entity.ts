@@ -1,12 +1,33 @@
-import { Entity, Column, OneToOne, JoinColumn, ManyToOne } from 'typeorm';
-import { BaseEntity } from './base.entity';
+import {
+  Entity,
+  Column,
+  OneToOne,
+  JoinColumn,
+  ManyToOne,
+  PrimaryColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { RecruiterAuth } from './RecruiterAuth.entity';
 import { RecruiterVerification } from './RecruiterVerification.entity';
 import { Document } from './Document.entity';
 import { RecruiterType } from './schema.enum';
 
-@Entity('recruiter')
-export class RecruiterProfile extends BaseEntity {
+@Entity('recruiter_profiles')
+export class RecruiterProfile {
+  @PrimaryColumn('uuid')
+  id: string;
+
+  @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdAt: Date;
+
+  @UpdateDateColumn({
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP',
+    onUpdate: 'CURRENT_TIMESTAMP',
+  })
+  updatedAt: Date;
+
   @Column()
   firstName: string;
 
@@ -32,13 +53,8 @@ export class RecruiterProfile extends BaseEntity {
   @Column({ type: 'enum', enum: RecruiterType })
   type: RecruiterType;
 
-  @Column('uuid', { nullable: true })
-  authId?: string;
-
-  @OneToOne(() => RecruiterAuth, (auth) => auth.profile, {
-    onDelete: 'CASCADE',
-  })
-  @JoinColumn({ name: 'authId' })
+  @OneToOne(() => RecruiterAuth, (auth) => auth.profile)
+  @JoinColumn({ name: 'id' })
   auth: RecruiterAuth;
 
   @OneToOne(() => RecruiterVerification, (v) => v.recruiter)

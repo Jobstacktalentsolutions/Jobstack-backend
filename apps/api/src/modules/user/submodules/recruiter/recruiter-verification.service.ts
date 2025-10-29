@@ -29,7 +29,7 @@ export class RecruiterVerificationService {
   // Get current user's verification with all documents
   async getMyVerification(userId: string) {
     const profile = await this.profileRepo.findOne({
-      where: { authId: userId },
+      where: { id: userId },
     });
     if (!profile) throw new NotFoundException('Recruiter profile not found');
 
@@ -43,7 +43,7 @@ export class RecruiterVerificationService {
   // Update verification information
   async updateVerificationInfo(userId: string, dto: UpdateVerificationInfoDto) {
     const profile = await this.profileRepo.findOne({
-      where: { authId: userId },
+      where: { id: userId },
     });
     if (!profile) throw new NotFoundException('Recruiter profile not found');
 
@@ -77,7 +77,7 @@ export class RecruiterVerificationService {
     file: MulterFile,
   ) {
     const profile = await this.profileRepo.findOne({
-      where: { authId: userId },
+      where: { id: userId },
     });
     if (!profile) throw new NotFoundException('Recruiter profile not found');
 
@@ -121,7 +121,7 @@ export class RecruiterVerificationService {
   // Get all verification documents for current user
   async getMyVerificationDocuments(userId: string) {
     const profile = await this.profileRepo.findOne({
-      where: { authId: userId },
+      where: { id: userId },
     });
     if (!profile) throw new NotFoundException('Recruiter profile not found');
 
@@ -141,7 +141,7 @@ export class RecruiterVerificationService {
   // Delete a verification document (recruiter only)
   async deleteVerificationDocument(userId: string, documentId: string) {
     const profile = await this.profileRepo.findOne({
-      where: { authId: userId },
+      where: { id: userId },
     });
     if (!profile) throw new NotFoundException('Recruiter profile not found');
 

@@ -86,8 +86,16 @@ export class JobSeekerAuthService {
     await queryRunner.startTransaction();
 
     try {
-      // Create profile first
+      // Create auth first
+      const auth = queryRunner.manager.create(JobseekerAuth, {
+        email: email.toLowerCase(),
+        password: hashedPassword,
+      });
+      await queryRunner.manager.save(auth);
+
+      // Create profile with same ID as auth
       const profile = queryRunner.manager.create(JobSeekerProfile, {
+        id: auth.id,
         email: email.toLowerCase(),
         firstName,
         lastName,
@@ -95,14 +103,6 @@ export class JobSeekerAuthService {
         approvalStatus: ApprovalStatus.PENDING,
       });
       await queryRunner.manager.save(profile);
-
-      // Create auth
-      const auth = queryRunner.manager.create(JobseekerAuth, {
-        email: email.toLowerCase(),
-        password: hashedPassword,
-        profile: profile,
-      });
-      await queryRunner.manager.save(auth);
 
       await queryRunner.commitTransaction();
 

@@ -17,6 +17,10 @@ export class JobseekerAuth extends BaseEntity {
   @OneToMany(() => JobseekerSession, (session) => session.jobseeker)
   sessions: JobseekerSession[];
 
-  @OneToOne(() => JobSeekerProfile, (profile) => profile.auth)
+  @OneToOne(() => JobSeekerProfile, (profile) => profile.auth, {
+    cascade: true,
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'id' })
   profile: JobSeekerProfile;
 }
