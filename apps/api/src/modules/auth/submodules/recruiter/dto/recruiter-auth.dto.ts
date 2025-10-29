@@ -37,9 +37,6 @@ export class RecruiterRegistrationDto {
   @IsString()
   @IsPhoneNumber('NG')
   phoneNumber: string;
-
-  @IsEnum(RecruiterType)
-  type: RecruiterType;
 }
 
 /**

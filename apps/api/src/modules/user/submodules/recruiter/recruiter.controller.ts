@@ -39,13 +39,7 @@ export class RecruiterController {
     return { success: true, profile: result };
   }
 
-  /**
-   * Get recruiter profile
-   */
-  @Get('profile')
-  async getProfile(@CurrentUser() user: CurrentUserPayload) {
-    return this.recruiterService.getRecruiterProfile(user.id);
-  }
+
 
   /**
    * Update recruiter profile

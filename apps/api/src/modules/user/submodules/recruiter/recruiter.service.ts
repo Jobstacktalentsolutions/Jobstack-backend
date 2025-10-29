@@ -96,19 +96,13 @@ export class RecruiterService {
   async getRecruiterProfile(userId: string): Promise<any> {
     const profile = await this.profileRepo.findOne({
       where: { id: userId },
-      relations: ['auth', 'profilePicture'],
+      relations: [ 'profilePicture'],
     });
     if (!profile) {
       throw new NotFoundException('Recruiter not found');
     }
 
-    return {
-      id: profile.id,
-      email: profile.auth.email,
-      profile: profile,
-      createdAt: profile.createdAt,
-      updatedAt: profile.updatedAt,
-    };
+    return profile;
   }
 
   /**
@@ -118,9 +112,9 @@ export class RecruiterService {
     userId: string,
     updateData: UpdateRecruiterProfileDto,
   ): Promise<any> {
-    const profile = await this.profileRepo.findOne({
+    let profile = await this.profileRepo.findOne({
       where: { id: userId },
-      relations: ['auth', 'profilePicture'],
+      relations: [ 'profilePicture'],
     });
     if (!profile) {
       throw new NotFoundException('Recruiter not found');
@@ -128,15 +122,10 @@ export class RecruiterService {
 
     // Update profile data
     Object.assign(profile, updateData);
-    await this.profileRepo.save(profile);
+    profile  = await this.profileRepo.save(profile);
 
-    // Update auth data if email is provided
-    if (updateData.email) {
-      profile.auth.email = updateData.email;
-      await this.authRepo.save(profile.auth);
-    }
 
-    return this.getRecruiterProfile(userId);
+    return profile;
   }
 
   // Admin methods for managing recruiters

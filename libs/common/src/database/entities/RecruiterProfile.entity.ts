@@ -50,8 +50,8 @@ export class RecruiterProfile {
   @Column({ nullable: true })
   address?: string;
 
-  @Column({ type: 'enum', enum: RecruiterType })
-  type: RecruiterType;
+  @Column({ type: 'enum', enum: RecruiterType, nullable: true })
+  type?: RecruiterType;
 
   @OneToOne(() => RecruiterAuth, (auth) => auth.profile)
   @JoinColumn({ name: 'id' })

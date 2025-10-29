@@ -14,6 +14,7 @@ import type { Request } from 'express';
 import { AdminJwtGuard, RequireAdminRole } from 'apps/api/src/guards';
 import { AdminService } from './admin.service';
 import { VerificationStatus } from '@app/common/shared/enums/recruiter-docs.enum';
+import { AdminRole } from '@app/common/shared/enums/roles.enum';
 
 @Controller('admin')
 @UseGuards(AdminJwtGuard)
@@ -41,7 +42,7 @@ export class AdminController {
 
   // Create a new admin (requires USER_MANAGEMENT role or higher privilege)
   @Post('admins')
-  @RequireAdminRole('USER_MANAGEMENT')
+  @RequireAdminRole(AdminRole.USER_MANAGEMENT.role)
   async createAdmin(@Req() req: Request, @Body() body: any) {
     const user = (req as any).user as { sub: string };
     return this.adminService.createAdmin(user.sub, body);
@@ -49,7 +50,7 @@ export class AdminController {
 
   // Delete an admin (requires SUPER_ADMIN or higher privilege)
   @Delete('admins/:id')
-  @RequireAdminRole('SUPER_ADMIN')
+  @RequireAdminRole(AdminRole.SUPER_ADMIN.role)
   async deleteAdmin(@Req() req: Request, @Param('id') adminId: string) {
     const user = (req as any).user as { sub: string };
     return this.adminService.deleteAdmin(user.sub, adminId);

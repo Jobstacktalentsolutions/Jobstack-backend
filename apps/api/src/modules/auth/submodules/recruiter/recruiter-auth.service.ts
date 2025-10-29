@@ -67,7 +67,7 @@ export class RecruiterAuthService {
     registrationData: RecruiterRegistrationDto,
     deviceInfo?: any,
   ): Promise<AuthResult> {
-    const { email, password, firstName, lastName, phoneNumber, type } =
+    const { email, password, firstName, lastName, phoneNumber } =
       registrationData;
 
     // Check if email already exists
@@ -102,27 +102,12 @@ export class RecruiterAuthService {
         firstName,
         lastName,
         phoneNumber,
-        type,
+        
       });
       await queryRunner.manager.save(profile);
 
       await queryRunner.commitTransaction();
 
-      await this.sendVerificationEmail(email.toLowerCase());
-
-      await this.notificationService.sendEmail({
-        to: email.toLowerCase(),
-        subject: 'Complete your recruiter verification',
-        template: EmailTemplateType.GENERAL_NOTIFICATION,
-        context: {
-          subject: 'Complete your recruiter verification',
-          firstName,
-          message:
-            'Please complete your verification to unlock full access. Visit your dashboard to upload your documents.',
-          actionText: 'Complete Verification',
-          actionUrl: `${ENV.FRONTEND_URL || ''}/recruiter/verification`,
-        },
-      });
 
       // Generate tokens
       const authResult = await this.generateTokens(auth, profile, deviceInfo);
