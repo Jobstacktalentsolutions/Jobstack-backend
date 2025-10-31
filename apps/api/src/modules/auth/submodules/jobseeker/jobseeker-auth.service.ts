@@ -77,6 +77,15 @@ export class JobSeekerAuthService {
       throw new ConflictException('Email already registered');
     }
 
+    // Check if phone number already exists
+    const existingProfile = await this.jobseekerProfileRepository.findOne({
+      where: { phoneNumber },
+    });
+
+    if (existingProfile) {
+      throw new ConflictException('Phone number already registered');
+    }
+
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 12);
 
