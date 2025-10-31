@@ -4,6 +4,7 @@ import {
   UnauthorizedException,
   ConflictException,
   NotFoundException,
+  BadRequestException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -226,6 +227,16 @@ export class AdminAuthService {
    */
   async sendVerificationEmail(email: string): Promise<EmailVerificationResult> {
     try {
+      // If account does not exist, return generic success to prevent enumeration
+      const auth = await this.adminAuthRepository.findOne({
+        where: { email: email.toLowerCase() },
+      });
+
+      if (!auth) {
+        throw new BadRequestException(
+          'No Employee account found with this email',
+        );
+      }
       // Check cooldown
       const codeKey = REDIS_KEYS.EMAIL_VERIFICATION_CODE(email);
       const existingCode = await this.redisService.get(codeKey);
@@ -321,11 +332,7 @@ export class AdminAuthService {
       });
 
       if (!auth) {
-        return {
-          sent: true,
-          message:
-            'If an account exists with this email, a reset code has been sent.',
-        };
+        throw new BadRequestException('Invalid request');
       }
 
       // Check cooldown
@@ -370,7 +377,7 @@ export class AdminAuthService {
       return {
         sent: true,
         message:
-          'If an account exists with this email, a reset code has been sent.',
+          "If an account exists with this email, we've sent a reset code. Check your inbox or spam.",
       };
     } catch (error) {
       this.logger.error(`Failed to send password reset code: ${error.message}`);

@@ -102,12 +102,10 @@ export class RecruiterAuthService {
         firstName,
         lastName,
         phoneNumber,
-        
       });
       await queryRunner.manager.save(profile);
 
       await queryRunner.commitTransaction();
-
 
       // Generate tokens
       const authResult = await this.generateTokens(auth, profile, deviceInfo);
@@ -310,6 +308,17 @@ export class RecruiterAuthService {
    */
   async sendVerificationEmail(email: string): Promise<EmailVerificationResult> {
     try {
+      // If account does not exist, return generic success to prevent enumeration
+      const auth = await this.recruiterAuthRepository.findOne({
+        where: { email: email.toLowerCase() },
+      });
+
+      if (!auth) {
+        throw new BadRequestException(
+          'No Employee account found with this email',
+        );
+      }
+
       // Check cooldown
       const codeKey = REDIS_KEYS.EMAIL_VERIFICATION_CODE(email);
       const existingCode = await this.redisService.get(codeKey);
@@ -406,12 +415,7 @@ export class RecruiterAuthService {
       });
 
       if (!auth) {
-        // Don't reveal if user exists
-        return {
-          sent: true,
-          message:
-            'If an account exists with this email, a reset code has been sent.',
-        };
+        throw new BadRequestException('Invalid request');
       }
 
       // Check cooldown
@@ -457,7 +461,7 @@ export class RecruiterAuthService {
       return {
         sent: true,
         message:
-          'If an account exists with this email, a reset code has been sent.',
+          "If an account exists with this email, we've sent a reset code. Check your inbox or spam.",
       };
     } catch (error) {
       this.logger.error(`Failed to send password reset code: ${error.message}`);

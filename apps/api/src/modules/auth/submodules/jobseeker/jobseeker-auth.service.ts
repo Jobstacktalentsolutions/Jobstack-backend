@@ -4,6 +4,7 @@ import {
   UnauthorizedException,
   ConflictException,
   NotFoundException,
+  BadRequestException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -330,8 +331,21 @@ export class JobSeekerAuthService {
    */
   async sendVerificationEmail(email: string): Promise<EmailVerificationResult> {
     try {
+      const normalizedEmail = email.trim().toLowerCase();
+      // If account does not exist, return generic success to prevent enumeration
+      const auth = await this.jobseekerAuthRepository.findOne({
+        where: { email: email.toLowerCase() },
+      });
+      if (!auth) {
+        return {
+          sent: true,
+          message:
+            "If an account exists with this email, we've sent a verification email. Check your inbox or spam.",
+        };
+      }
+
       // Check cooldown
-      const codeKey = REDIS_KEYS.EMAIL_VERIFICATION_CODE(email);
+      const codeKey = REDIS_KEYS.EMAIL_VERIFICATION_CODE(normalizedEmail);
       const existingCode = await this.redisService.get(codeKey);
 
       if (existingCode) {
@@ -354,7 +368,7 @@ export class JobSeekerAuthService {
 
       // Send email
       await this.notificationService.sendEmail({
-        to: email,
+        to: normalizedEmail,
         subject: 'Email Verification - JobStack',
         template: EmailTemplateType.EMAIL_VERIFICATION,
         context: {
@@ -382,7 +396,8 @@ export class JobSeekerAuthService {
     email: string,
     code: string,
   ): Promise<{ verified: boolean }> {
-    const codeKey = REDIS_KEYS.EMAIL_VERIFICATION_CODE(email);
+    const normalizedEmail = email.trim().toLowerCase();
+    const codeKey = REDIS_KEYS.EMAIL_VERIFICATION_CODE(normalizedEmail);
     const storedCode = await this.redisService.get(codeKey);
 
     if (!storedCode || storedCode !== code) {
@@ -391,7 +406,7 @@ export class JobSeekerAuthService {
 
     // Mark email as verified
     const auth = await this.jobseekerAuthRepository.findOne({
-      where: { email: email.toLowerCase() },
+      where: { email: normalizedEmail },
     });
 
     if (!auth) {
@@ -405,7 +420,7 @@ export class JobSeekerAuthService {
     // Clean up code
     await this.redisService.del(codeKey);
 
-    this.logger.log(`Email verified: ${email}`);
+    this.logger.log(`Email verified: ${normalizedEmail}`);
 
     return { verified: true };
   }
@@ -417,19 +432,17 @@ export class JobSeekerAuthService {
     requestData: PasswordResetRequestDto,
   ): Promise<PasswordResetRequestResult> {
     const { email } = requestData;
+    const normalizedEmail = email.trim().toLowerCase();
 
     try {
       // Find user
+      console.log('Email to reset password ', normalizedEmail);
       const auth = await this.jobseekerAuthRepository.findOne({
-        where: { email: email.toLowerCase() },
+        where: { email: normalizedEmail },
       });
 
       if (!auth) {
-        return {
-          sent: true,
-          message:
-            'If an account exists with this email, a reset code has been sent.',
-        };
+        throw new BadRequestException('No account found with this email');
       }
 
       // Check cooldown
@@ -460,7 +473,7 @@ export class JobSeekerAuthService {
 
       // Send email
       await this.notificationService.sendEmail({
-        to: email,
+        to: normalizedEmail,
         subject: 'Password Reset - JobStack',
         template: EmailTemplateType.PASSWORD_RESET,
         context: {
@@ -474,7 +487,7 @@ export class JobSeekerAuthService {
       return {
         sent: true,
         message:
-          'If an account exists with this email, a reset code has been sent.',
+          "If an account exists with this email, we've sent a reset code. Check your inbox or spam.",
       };
     } catch (error) {
       this.logger.error(`Failed to send password reset code: ${error.message}`);
@@ -489,10 +502,11 @@ export class JobSeekerAuthService {
     confirmData: PasswordResetConfirmCodeDto,
   ): Promise<PasswordResetConfirmationResult> {
     const { email, code } = confirmData;
+    const normalizedEmail = email.trim().toLowerCase();
 
     // Find user
     const auth = await this.jobseekerAuthRepository.findOne({
-      where: { email: email.toLowerCase() },
+      where: { email: normalizedEmail },
     });
 
     if (!auth) {
@@ -524,7 +538,7 @@ export class JobSeekerAuthService {
     const expiresAt = new Date();
     expiresAt.setMinutes(expiresAt.getMinutes() + 15);
 
-    this.logger.log(`Password reset code confirmed for: ${email}`);
+    this.logger.log(`Password reset code confirmed for: ${normalizedEmail}`);
 
     return { resetToken, expiresAt };
   }
