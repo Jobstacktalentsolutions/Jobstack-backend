@@ -9,6 +9,7 @@ import {
   UseInterceptors,
   Body,
   Param,
+  BadRequestException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { RecruiterJwtGuard, AdminJwtGuard } from 'apps/api/src/guards';
@@ -75,6 +76,30 @@ export class RecruiterVerificationController {
       params.id,
     );
   }
+
+  // Get document requirements for current recruiter type
+  @Get('requirements')
+  async getDocumentRequirements(@CurrentUser() user: CurrentUserPayload) {
+    const profile = await this.verificationService.getMyVerification(user.id);
+    if (!profile?.recruiter?.type) {
+      throw new BadRequestException('Recruiter type not set');
+    }
+    return this.verificationService.getDocumentRequirements(
+      profile.recruiter.type,
+    );
+  }
+
+  // Check auto-verification eligibility
+  @Get('auto-verify/check')
+  async checkAutoVerification(@CurrentUser() user: CurrentUserPayload) {
+    return this.verificationService.checkAutoVerificationEligibility(user.id);
+  }
+
+  // Trigger auto-verification
+  @Post('auto-verify')
+  async performAutoVerification(@CurrentUser() user: CurrentUserPayload) {
+    return this.verificationService.performAutoVerification(user.id);
+  }
 }
 
 // Admin routes for managing recruiter verification documents
@@ -97,5 +122,38 @@ export class AdminRecruiterVerificationController {
   @Delete('documents/:id')
   async deleteDocument(@Param() params: UuidParamDto) {
     return this.verificationService.adminDeleteVerificationDocument(params.id);
+  }
+
+  // Update verification status
+  @Put('status')
+  async updateVerificationStatus(
+    @Param('recruiterId') recruiterId: string,
+    @CurrentUser() admin: CurrentUserPayload,
+    @Body()
+    dto: {
+      status: 'APPROVED' | 'REJECTED' | 'PENDING';
+      rejectionReason?: string;
+    },
+  ) {
+    return this.verificationService.adminUpdateVerificationStatus(
+      recruiterId,
+      dto.status as any,
+      admin.id,
+      dto.rejectionReason,
+    );
+  }
+
+  // Mark document as verified/unverified
+  @Put('documents/:id/verify')
+  async updateDocumentVerification(
+    @Param() params: UuidParamDto,
+    @CurrentUser() admin: CurrentUserPayload,
+    @Body() dto: { verified: boolean },
+  ) {
+    return this.verificationService.adminUpdateDocumentVerification(
+      params.id,
+      dto.verified,
+      admin.id,
+    );
   }
 }

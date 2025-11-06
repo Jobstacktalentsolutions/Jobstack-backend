@@ -8,6 +8,7 @@ export enum SkillStatus {
 // Recruiter related enums
 export enum RecruiterType {
   INDIVIDUAL = 'Individual',
+  SME = 'SME', // Small and Medium Enterprises
   ORGANIZATION = 'Organization',
 }
 

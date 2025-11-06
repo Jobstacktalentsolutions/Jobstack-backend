@@ -13,7 +13,16 @@ import { StorageService } from '@app/common/storage/storage.service';
 import { UploadVerificationDocumentDto } from './dto/upload-verification-document.dto';
 import { UpdateVerificationInfoDto } from './dto/update-verification.dto';
 import { MulterFile } from '@app/common/shared/types';
-import { DocumentType } from '@app/common/database/entities/schema.enum';
+import {
+  DocumentType,
+  RecruiterType,
+} from '@app/common/database/entities/schema.enum';
+import { VerificationStatus } from '@app/common/shared/enums/recruiter-docs.enum';
+import {
+  getMandatoryDocuments,
+  getAllDocuments,
+  isDocumentMandatory,
+} from '@app/common/shared/config/recruiter-document-requirements';
 @Injectable()
 export class RecruiterVerificationService {
   constructor(
@@ -112,9 +121,13 @@ export class RecruiterVerificationService {
 
     await this.verificationDocRepo.save(verificationDoc);
 
+    // Check if this document upload enables auto-verification
+    const autoVerifyResult = await this.performAutoVerification(userId);
+
     return {
       ...verificationDoc,
       document: docUpload.document,
+      autoVerificationResult: autoVerifyResult,
     };
   }
 
@@ -202,5 +215,157 @@ export class RecruiterVerificationService {
     await this.verificationDocRepo.remove(verificationDoc);
 
     return { message: 'Document deleted successfully' };
+  }
+
+  // Get document requirements for a recruiter type
+  async getDocumentRequirements(recruiterType: RecruiterType) {
+    return getAllDocuments(recruiterType);
+  }
+
+  // Check if recruiter can be automatically verified
+  async checkAutoVerificationEligibility(userId: string): Promise<{
+    canAutoVerify: boolean;
+    missingMandatoryDocuments: string[];
+    verificationStatus: VerificationStatus;
+  }> {
+    const profile = await this.profileRepo.findOne({
+      where: { id: userId },
+    });
+
+    if (!profile || !profile.type) {
+      return {
+        canAutoVerify: false,
+        missingMandatoryDocuments: ['Recruiter type not set'],
+        verificationStatus: VerificationStatus.PENDING,
+      };
+    }
+
+    const verification = await this.verificationRepo.findOne({
+      where: { recruiterId: profile.id },
+      relations: ['documents'],
+    });
+
+    if (!verification) {
+      const mandatoryDocs = getMandatoryDocuments(profile.type);
+      return {
+        canAutoVerify: false,
+        missingMandatoryDocuments: mandatoryDocs.map((doc) => doc.description),
+        verificationStatus: VerificationStatus.PENDING,
+      };
+    }
+
+    // Get all mandatory documents for this recruiter type
+    const mandatoryDocuments = getMandatoryDocuments(profile.type);
+    const uploadedDocumentTypes = verification.documents
+      .filter((doc) => doc.verified)
+      .map((doc) => doc.documentType);
+
+    // Check for missing mandatory documents
+    const missingMandatory = mandatoryDocuments.filter(
+      (req) => !uploadedDocumentTypes.includes(req.documentType),
+    );
+
+    const canAutoVerify = missingMandatory.length === 0;
+
+    return {
+      canAutoVerify,
+      missingMandatoryDocuments: missingMandatory.map((doc) => doc.description),
+      verificationStatus: verification.status,
+    };
+  }
+
+  // Perform automatic verification if eligible
+  async performAutoVerification(userId: string): Promise<{
+    verified: boolean;
+    message: string;
+  }> {
+    const eligibility = await this.checkAutoVerificationEligibility(userId);
+
+    if (!eligibility.canAutoVerify) {
+      return {
+        verified: false,
+        message: `Cannot auto-verify. Missing: ${eligibility.missingMandatoryDocuments.join(', ')}`,
+      };
+    }
+
+    const profile = await this.profileRepo.findOne({
+      where: { id: userId },
+    });
+
+    const verification = await this.verificationRepo.findOne({
+      where: { recruiterId: profile.id },
+    });
+
+    if (verification && verification.status === VerificationStatus.PENDING) {
+      verification.status = VerificationStatus.APPROVED;
+      verification.reviewedAt = new Date();
+      await this.verificationRepo.save(verification);
+
+      return {
+        verified: true,
+        message: 'Recruiter automatically verified successfully',
+      };
+    }
+
+    return {
+      verified: false,
+      message: 'Verification already processed or not found',
+    };
+  }
+
+  // Admin: Manually verify/reject a recruiter
+  async adminUpdateVerificationStatus(
+    recruiterId: string,
+    status: VerificationStatus,
+    adminId: string,
+    rejectionReason?: string,
+  ) {
+    const verification = await this.verificationRepo.findOne({
+      where: { recruiterId },
+    });
+
+    if (!verification) {
+      throw new NotFoundException('Verification record not found');
+    }
+
+    verification.status = status;
+    verification.reviewedByAdminId = adminId;
+    verification.reviewedAt = new Date();
+
+    if (status === VerificationStatus.REJECTED && rejectionReason) {
+      verification.rejectionReason = rejectionReason;
+    }
+
+    await this.verificationRepo.save(verification);
+
+    return verification;
+  }
+
+  // Admin: Mark a document as verified/unverified
+  async adminUpdateDocumentVerification(
+    documentId: string,
+    verified: boolean,
+    adminId: string,
+  ) {
+    const verificationDoc = await this.verificationDocRepo.findOne({
+      where: { id: documentId },
+      relations: ['verification', 'verification.recruiter'],
+    });
+
+    if (!verificationDoc) {
+      throw new NotFoundException('Verification document not found');
+    }
+
+    verificationDoc.verified = verified;
+    await this.verificationDocRepo.save(verificationDoc);
+
+    // Check if this change affects auto-verification eligibility
+    const recruiterId = verificationDoc.verification.recruiter.id;
+    const autoVerifyResult = await this.performAutoVerification(recruiterId);
+
+    return {
+      document: verificationDoc,
+      autoVerificationResult: autoVerifyResult,
+    };
   }
 }
