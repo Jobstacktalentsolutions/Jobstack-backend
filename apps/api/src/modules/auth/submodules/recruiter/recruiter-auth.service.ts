@@ -67,7 +67,7 @@ export class RecruiterAuthService {
     registrationData: RecruiterRegistrationDto,
     deviceInfo?: any,
   ): Promise<AuthResult> {
-    const { email, password, firstName, lastName, phoneNumber } =
+    const { email, password, firstName, lastName, phoneNumber, type } =
       registrationData;
 
     // Check if email already exists
@@ -102,6 +102,7 @@ export class RecruiterAuthService {
         firstName,
         lastName,
         phoneNumber,
+        type,
       });
       await queryRunner.manager.save(profile);
 

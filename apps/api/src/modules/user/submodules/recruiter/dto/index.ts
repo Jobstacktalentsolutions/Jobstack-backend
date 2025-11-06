@@ -4,3 +4,4 @@ export * from './recruiter-verification.dto';
 export * from './update-verification.dto';
 export * from './upload-verification-document.dto';
 export * from './uuid-param.dto';
+export * from './admin-verification.dto';

@@ -19,6 +19,8 @@ import {
   UploadVerificationDocumentDto,
   UpdateVerificationInfoDto,
   UuidParamDto,
+  UpdateVerificationStatusDto,
+  UpdateDocumentVerificationDto,
 } from './dto';
 import type { MulterFile } from '@app/common/shared/types';
 
@@ -129,15 +131,11 @@ export class AdminRecruiterVerificationController {
   async updateVerificationStatus(
     @Param('recruiterId') recruiterId: string,
     @CurrentUser() admin: CurrentUserPayload,
-    @Body()
-    dto: {
-      status: 'APPROVED' | 'REJECTED' | 'PENDING';
-      rejectionReason?: string;
-    },
+    @Body() dto: UpdateVerificationStatusDto,
   ) {
     return this.verificationService.adminUpdateVerificationStatus(
       recruiterId,
-      dto.status as any,
+      dto.status,
       admin.id,
       dto.rejectionReason,
     );
@@ -148,7 +146,7 @@ export class AdminRecruiterVerificationController {
   async updateDocumentVerification(
     @Param() params: UuidParamDto,
     @CurrentUser() admin: CurrentUserPayload,
-    @Body() dto: { verified: boolean },
+    @Body() dto: UpdateDocumentVerificationDto,
   ) {
     return this.verificationService.adminUpdateDocumentVerification(
       params.id,

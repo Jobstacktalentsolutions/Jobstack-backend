@@ -9,10 +9,7 @@ import {
   ValidateIf,
 } from 'class-validator';
 
-export enum RecruiterType {
-  INDIVIDUAL = 'Individual',
-  ORGANIZATION = 'Organization',
-}
+import { RecruiterType } from '@app/common/database/entities/schema.enum';
 
 /**
  * Recruiter Registration DTO
@@ -37,6 +34,10 @@ export class RecruiterRegistrationDto {
   @IsString()
   @IsPhoneNumber('NG')
   phoneNumber: string;
+
+  @IsOptional()
+  @IsEnum(RecruiterType)
+  type?: RecruiterType;
 }
 
 /**

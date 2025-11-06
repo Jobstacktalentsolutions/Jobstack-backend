@@ -292,6 +292,13 @@ export class RecruiterVerificationService {
       where: { id: userId },
     });
 
+    if (!profile) {
+      return {
+        verified: false,
+        message: 'Recruiter profile not found',
+      };
+    }
+
     const verification = await this.verificationRepo.findOne({
       where: { recruiterId: profile.id },
     });
