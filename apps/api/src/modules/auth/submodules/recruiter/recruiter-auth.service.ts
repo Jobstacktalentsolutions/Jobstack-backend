@@ -217,7 +217,7 @@ export class RecruiterAuthService {
       // Generate new access token (keep same refresh token)
       const accessTokenId = uuidv4();
       const accessPayload: AccessTokenPayload = {
-        sub: auth.id,
+        id: auth.id,
         role: UserRole.RECRUITER,
         profileId: auth.profile.id,
         sessionId: session.id,
@@ -622,7 +622,7 @@ export class RecruiterAuthService {
 
     // Create access token payload
     const accessPayload: AccessTokenPayload = {
-      sub: auth.id,
+      id: auth.id,
       role: UserRole.RECRUITER,
       profileId: profile.id,
       sessionId: session.id,
@@ -633,7 +633,7 @@ export class RecruiterAuthService {
 
     // Create refresh token payload
     const refreshPayload: RefreshTokenPayload = {
-      sub: auth.id,
+      id: auth.id,
       role: UserRole.RECRUITER,
       profileId: profile.id,
       sessionId: session.id,

@@ -239,7 +239,7 @@ export class JobSeekerAuthService {
       // Generate new access token (keep same refresh token)
       const accessTokenId = uuidv4();
       const accessPayload: AccessTokenPayload = {
-        sub: auth.id,
+        id: auth.id,
         role: UserRole.JOB_SEEKER,
         profileId: auth.profile.id,
         sessionId: session.id,
@@ -669,7 +669,7 @@ export class JobSeekerAuthService {
 
     // Create access token payload
     const accessPayload: AccessTokenPayload = {
-      sub: auth.id,
+      id: auth.id,
       role: UserRole.JOB_SEEKER,
       profileId: profile.id,
       sessionId: session.id,
@@ -680,7 +680,7 @@ export class JobSeekerAuthService {
 
     // Create refresh token payload
     const refreshPayload: RefreshTokenPayload = {
-      sub: auth.id,
+      id: auth.id,
       role: UserRole.JOB_SEEKER,
       profileId: profile.id,
       sessionId: session.id,

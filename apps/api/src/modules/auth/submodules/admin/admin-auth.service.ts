@@ -139,7 +139,7 @@ export class AdminAuthService {
       // Generate new access token (keep same refresh token)
       const accessTokenId = uuidv4();
       const accessPayload: AccessTokenPayload = {
-        sub: auth.id,
+        id: auth.id,
         role: UserRole.ADMIN,
         sessionId: session.id,
         type: 'access',
@@ -536,7 +536,7 @@ export class AdminAuthService {
 
     // Create access token payload
     const accessPayload: AccessTokenPayload = {
-      sub: auth.id,
+      id: auth.id,
       role: UserRole.ADMIN,
       sessionId: session.id,
       type: 'access',
@@ -546,7 +546,7 @@ export class AdminAuthService {
 
     // Create refresh token payload
     const refreshPayload: RefreshTokenPayload = {
-      sub: auth.id,
+      id: auth.id,
       role: UserRole.ADMIN,
       sessionId: session.id,
       type: 'refresh',
