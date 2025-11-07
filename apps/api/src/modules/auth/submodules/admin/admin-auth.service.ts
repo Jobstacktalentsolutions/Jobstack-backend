@@ -125,7 +125,7 @@ export class AdminAuthService {
 
       // Find auth
       const auth = await this.adminAuthRepository.findOne({
-        where: { id: payload.sub },
+        where: { id: payload.id },
       });
 
       if (!auth) {

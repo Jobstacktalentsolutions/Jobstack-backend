@@ -39,7 +39,6 @@ import {
   PasswordResetRequestDto,
   PasswordResetConfirmCodeDto,
   PasswordResetDto,
-  RecruiterType,
 } from './dto/recruiter-auth.dto';
 import { ENV } from 'apps/api/src/modules/config';
 
@@ -202,7 +201,7 @@ export class RecruiterAuthService {
 
       // Find auth and profile
       const auth = await this.recruiterAuthRepository.findOne({
-        where: { id: payload.sub },
+        where: { id: payload.id },
         relations: ['profile'],
       });
 

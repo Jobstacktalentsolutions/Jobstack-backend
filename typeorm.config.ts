@@ -23,7 +23,7 @@ export const typeOrmConfig: DataSourceOptions = {
   migrations: ['migrations/**/*{.ts,.js}'],
   migrationsTableName: 'migrations',
   synchronize: true, // Should be false in production
-  logging: false, // disable verbose TypeORM logs
+  logging: ['error'],
 };
 
 const dataSource = new DataSource(typeOrmConfig);

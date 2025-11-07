@@ -224,7 +224,7 @@ export class JobSeekerAuthService {
 
       // Find auth and profile
       const auth = await this.jobseekerAuthRepository.findOne({
-        where: { id: payload.sub },
+        where: { id: payload.id },
         relations: ['profile'],
       });
 

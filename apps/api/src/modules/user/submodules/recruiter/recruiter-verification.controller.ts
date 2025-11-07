@@ -82,13 +82,14 @@ export class RecruiterVerificationController {
   // Get document requirements for current recruiter type
   @Get('requirements')
   async getDocumentRequirements(@CurrentUser() user: CurrentUserPayload) {
-    const profile = await this.verificationService.getMyVerification(user.id);
-    console.log(user, profile);
-    if (!profile?.recruiter?.type) {
+    const recruiterVerification =
+      await this.verificationService.getMyVerification(user.id);
+    console.log('recruiter verification', recruiterVerification);
+    if (!recruiterVerification?.recruiter?.type) {
       throw new BadRequestException('Recruiter type not set');
     }
     return this.verificationService.getDocumentRequirements(
-      profile.recruiter.type,
+      recruiterVerification.recruiter.type,
     );
   }
 

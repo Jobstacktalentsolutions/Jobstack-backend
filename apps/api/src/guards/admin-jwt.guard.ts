@@ -73,12 +73,14 @@ export class AdminJwtGuard implements CanActivate {
 
       if (requiredRoleKey) {
         const adminRepo = this.dataSource.getRepository(AdminAuth);
-        const admin = await adminRepo.findOne({ where: { id: payload.sub } });
+        const admin = await adminRepo.findOne({ where: { id: payload.id } });
         if (!admin) {
           throw new UnauthorizedException('Admin not found');
         }
 
-        const target = (AdminRole as Record<string, { privilegeLevel: number; role: string }>)[requiredRoleKey];
+        const target = (
+          AdminRole as Record<string, { privilegeLevel: number; role: string }>
+        )[requiredRoleKey];
         if (!target) {
           throw new ForbiddenException('Invalid role requirement');
         }

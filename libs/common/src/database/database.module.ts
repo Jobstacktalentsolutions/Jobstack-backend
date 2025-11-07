@@ -20,7 +20,7 @@ import { ENV } from '../../../../apps/api/src/modules/config/env.config';
           autoLoadEntities: true,
           // synchronize: nodeEnv !== 'production',
           synchronize: false,
-          logging: nodeEnv === 'development',
+          logging: ['error'],
         };
       },
       inject: [ConfigService],

@@ -46,7 +46,7 @@ export class RecruiterVerificationService {
       where: { recruiterId: profile.id },
       relations: ['documents', 'documents.document'],
     });
-    return existing || null;
+    return { ...existing, recruiter: profile };
   }
 
   // Update verification information
