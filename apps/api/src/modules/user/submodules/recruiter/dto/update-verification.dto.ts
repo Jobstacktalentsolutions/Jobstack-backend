@@ -11,13 +11,17 @@ export class UpdateVerificationInfoDto {
 
   @IsOptional()
   @IsString()
+  state?: string;
+
+  @IsOptional()
+  @IsString()
+  city?: string;
+
+  @IsOptional()
+  @IsString()
   companySize?: string;
 
   @IsOptional()
   @IsString()
   socialOrWebsiteUrl?: string;
-
-  @IsOptional()
-  @IsString()
-  businessAddress?: string;
 }

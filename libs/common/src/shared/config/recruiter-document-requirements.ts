@@ -19,36 +19,33 @@ export const RECRUITER_DOCUMENT_REQUIREMENTS: Record<
       description: 'Valid National ID',
       purpose: 'Confirms identity',
     },
-    {
-      documentType: RecruiterDocumentType.INTERNATIONAL_PASSPORT,
-      mandatory: true,
-      description: 'Valid International Passport (alternative to National ID)',
-      purpose: 'Confirms identity',
-    },
+
     {
       documentType: RecruiterDocumentType.PROOF_OF_ADDRESS,
       mandatory: true,
       description: 'Utility bill or tenancy agreement',
       purpose: 'Confirms legitimacy of location',
     },
-    {
-      documentType: RecruiterDocumentType.GUARANTOR_DETAILS,
-      mandatory: true,
-      description: 'Guarantor details document',
-      purpose: 'Confirms legitimacy of location',
-    },
-    {
-      documentType: RecruiterDocumentType.SERVICE_AGREEMENT,
-      mandatory: true,
-      description: 'Signed service agreement (digital)',
-      purpose: "Accepts Jobstack's terms, fees, and consent for deductions",
-    },
-    {
-      documentType: RecruiterDocumentType.PAYMENT_METHOD,
-      mandatory: true,
-      description: 'Payment method setup (card or bank details)',
-      purpose: 'For fee and salary payments',
-    },
+
+    // todo : temporarily disabled
+    // {
+    //   documentType: RecruiterDocumentType.GUARANTOR_DETAILS,
+    //   mandatory: true,
+    //   description: 'Guarantor details document',
+    //   purpose: 'Confirms legitimacy of location',
+    // },
+    // {
+    //   documentType: RecruiterDocumentType.SERVICE_AGREEMENT,
+    //   mandatory: true,
+    //   description: 'Signed service agreement (digital)',
+    //   purpose: "Accepts Jobstack's terms, fees, and consent for deductions",
+    // },
+    // {
+    //   documentType: RecruiterDocumentType.PAYMENT_METHOD,
+    //   mandatory: true,
+    //   description: 'Payment method setup (card or bank details)',
+    //   purpose: 'For fee and salary payments',
+    // },
   ],
 
   [RecruiterType.SME]: [

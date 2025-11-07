@@ -70,9 +70,10 @@ export class RecruiterVerificationService {
     // Update verification fields (recruiterType is now in profile.type)
     verification.companyName = dto.companyName;
     verification.companyAddress = dto.companyAddress;
+    verification.state = dto.state;
+    verification.city = dto.city;
     verification.companySize = dto.companySize;
     verification.socialOrWebsiteUrl = dto.socialOrWebsiteUrl;
-    verification.businessAddress = dto.businessAddress;
 
     await this.verificationRepo.save(verification);
 
@@ -116,7 +117,7 @@ export class RecruiterVerificationService {
       documentId: docUpload.document.id,
       documentType: dto.documentType,
       documentNumber: dto.documentNumber,
-      verified: false,
+      verified: true, // todo: temporary verification for development
     });
 
     await this.verificationDocRepo.save(verificationDoc);

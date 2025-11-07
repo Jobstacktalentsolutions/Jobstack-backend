@@ -25,13 +25,16 @@ export class RecruiterVerification extends BaseEntity {
   companyAddress?: string;
 
   @Column({ nullable: true })
+  state?: string;
+
+  @Column({ nullable: true })
+  city?: string;
+
+  @Column({ nullable: true })
   companySize?: string;
 
   @Column({ nullable: true })
   socialOrWebsiteUrl?: string;
-
-  @Column({ nullable: true })
-  businessAddress?: string;
 
   @Column({
     type: 'enum',
