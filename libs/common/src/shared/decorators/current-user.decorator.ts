@@ -4,6 +4,7 @@ import type { Request } from 'express';
 // Interface for the user payload structure
 export interface CurrentUserPayload {
   id: string;
+  sub: string; // JWT standard subject field
   email: string;
   role: string;
   profileId: string;
@@ -20,14 +21,31 @@ export const CurrentUser = createParamDecorator(
     ctx: ExecutionContext,
   ): CurrentUserPayload | string | null => {
     const request = ctx.switchToHttp().getRequest<Request>();
-    const user = request.user as CurrentUserPayload;
+    const jwtPayload = request.user as any;
 
-    if (!user) {
+    if (!jwtPayload) {
       return null;
     }
 
+    // Map JWT payload to CurrentUserPayload format
+    const user: CurrentUserPayload = {
+      id: jwtPayload.sub, // Map sub to id for convenience
+      sub: jwtPayload.sub,
+      email: jwtPayload.email,
+      role: jwtPayload.role,
+      profileId: jwtPayload.profileId,
+      sessionId: jwtPayload.sessionId,
+      jti: jwtPayload.jti,
+      refreshTokenId: jwtPayload.refreshTokenId,
+      ...jwtPayload, // Include any other properties
+    };
+
     // If specific property requested, return that property
     if (property) {
+      // Handle both 'id' and 'sub' requests for backward compatibility
+      if (property === 'id') {
+        return user.sub;
+      }
       return user[property];
     }
 

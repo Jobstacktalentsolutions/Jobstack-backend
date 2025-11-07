@@ -83,6 +83,7 @@ export class RecruiterVerificationController {
   @Get('requirements')
   async getDocumentRequirements(@CurrentUser() user: CurrentUserPayload) {
     const profile = await this.verificationService.getMyVerification(user.id);
+    console.log(user, profile);
     if (!profile?.recruiter?.type) {
       throw new BadRequestException('Recruiter type not set');
     }
