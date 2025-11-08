@@ -23,7 +23,7 @@ export const createJwtConfig = (
     publicKey: publicKey.replace(/\\n/g, '\n'),
     signOptions: {
       algorithm: 'RS256',
-      expiresIn: configService.get(ENV.JWT_ACCESS_TOKEN_EXPIRES_IN, '15m'),
+      expiresIn: configService.get(ENV.JWT_ACCESS_TOKEN_EXPIRES_IN, '2d'),
       issuer: configService.get(ENV.JWT_ISSUER, 'jobstack-platform'),
       audience: configService.get(ENV.JWT_AUDIENCE, 'jobstack-users'),
     },
@@ -46,7 +46,7 @@ export const createJwtConfig = (
  * JWT constants for use across the application
  */
 export const JWT_CONSTANTS = {
-  ACCESS_TOKEN_EXPIRY: '1d', // 15 minutes
+  ACCESS_TOKEN_EXPIRY: '2d', // 2 days
   REFRESH_TOKEN_EXPIRY: '7d', // 7 days
   EMAIL_VERIFICATION_TOKEN_EXPIRY: '24h', // 24 hours
   PASSWORD_RESET_TOKEN_EXPIRY: '15m', // 15 minutes
