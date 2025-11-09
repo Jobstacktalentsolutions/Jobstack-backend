@@ -102,7 +102,8 @@ export class JobseekerController {
   async getMyProfile(@Req() req: Request) {
     const user = (req as any).user as { sub: string };
     const result = await this.jobseekerService.getProfile(user.sub);
-    return { success: true, profile: result };
+    console.log('result', result);
+    return { success: true, data: result };
   }
 
   // Admin routes for managing job seekers

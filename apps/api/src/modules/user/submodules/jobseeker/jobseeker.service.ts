@@ -144,6 +144,12 @@ export class JobseekerService {
     if (updateData.address !== undefined) {
       profile.address = updateData.address;
     }
+    if (updateData.state !== undefined) {
+      profile.state = updateData.state;
+    }
+    if (updateData.city !== undefined) {
+      profile.city = updateData.city;
+    }
 
     // Handle skills smartly
     if (updateData.skills || updateData.skillIds) {
@@ -205,7 +211,7 @@ export class JobseekerService {
   async getAllJobSeekers(adminId: string): Promise<any[]> {
     // Verify admin has permission (you can add admin verification logic here)
     const profiles = await this.profileRepo.find({
-      relations: ['auth', 'userSkills', 'userSkills.skill'],
+      relations: ['auth', 'userSkills', 'userSkills.skill', 'cvDocument'],
       order: { createdAt: 'DESC' },
     });
 
@@ -222,7 +228,7 @@ export class JobseekerService {
     // Verify admin has permission (you can add admin verification logic here)
     const profile = await this.profileRepo.findOne({
       where: { id: jobSeekerId },
-      relations: ['auth', 'userSkills', 'userSkills.skill'],
+      relations: ['auth', 'userSkills', 'userSkills.skill', 'cvDocument'],
     });
 
     if (!profile) {

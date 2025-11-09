@@ -27,6 +27,14 @@ export class UpdateProfileDto {
   @IsOptional()
   address?: string;
 
+  @IsString()
+  @IsOptional()
+  state?: string;
+
+  @IsString()
+  @IsOptional()
+  city?: string;
+
   @IsArray()
   @IsString({ each: true })
   @IsOptional()

@@ -58,6 +58,12 @@ export class JobSeekerProfile {
   @Column({ type: 'text', nullable: true })
   preferredLocation?: string;
 
+  @Column({ nullable: true })
+  state?: string;
+
+  @Column({ nullable: true })
+  city?: string;
+
   @Column('uuid', { nullable: true })
   cvDocumentId?: string;
 
