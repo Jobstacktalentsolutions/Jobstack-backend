@@ -9,7 +9,7 @@ import { NotificationModule } from './modules/notification/notification.module';
 import { SkillsModule } from './modules/skills/skills.module';
 import { appProviders } from '@app/common/shared/utils/app.providers';
 import { UserModule } from './modules/user/user.module';
-import { LoggerModule as PinoLoggerModule } from 'nestjs-pino';
+
 @Module({
   imports: [
     ConfigModule,
@@ -20,14 +20,6 @@ import { LoggerModule as PinoLoggerModule } from 'nestjs-pino';
     AuthModule,
     JobseekerModule,
     UserModule,
-
-    PinoLoggerModule.forRoot({
-      pinoHttp: {
-        transport: {
-          target: 'pino-pretty',
-        },
-      },
-    }),
   ],
   controllers: [ApiController],
   providers: [ApiService, ...appProviders('api')],

@@ -91,12 +91,12 @@ export class RecruiterService {
   }
 
   /**
-   * Get recruiter profile with company information
+   * Get recruiter profile with company information and verification
    */
   async getRecruiterProfile(userId: string): Promise<any> {
     const profile = await this.profileRepo.findOne({
       where: { id: userId },
-      relations: [ 'profilePicture'],
+      relations: ['profilePicture', 'verification', 'verification.documents', 'verification.documents.document'],
     });
     if (!profile) {
       throw new NotFoundException('Recruiter not found');
@@ -114,7 +114,7 @@ export class RecruiterService {
   ): Promise<any> {
     let profile = await this.profileRepo.findOne({
       where: { id: userId },
-      relations: [ 'profilePicture'],
+      relations: ['profilePicture', 'verification', 'verification.documents', 'verification.documents.document'],
     });
     if (!profile) {
       throw new NotFoundException('Recruiter not found');
