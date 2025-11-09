@@ -56,64 +56,87 @@ export class StorageService {
     originalName: string;
     bucketType: 'public' | 'private';
   }> {
-    this.logger.log('Starting file upload', {
-      originalName: file?.originalname,
-      fileSize: file?.size,
-      mimeType: file?.mimetype,
-      bucketType: options.bucketType || 'private',
-      provider: options.provider || StorageService.DEFAULT_PROVIDER,
-    });
+    try {
+      this.logger.log('Starting file upload', {
+        originalName: file?.originalname,
+        fileSize: file?.size,
+        mimeType: file?.mimetype,
+        bucketType: options.bucketType || 'private',
+        provider: options.provider || StorageService.DEFAULT_PROVIDER,
+      });
 
-    this.validateFile(file);
+      this.validateFile(file);
 
-    const fileName =
-      options.fileName || this.generateFileName(file.originalname);
-    const baseFolder = 'documents';
-    const subFolder = options.folder || 'uploads';
-    const folder = `${baseFolder}/${subFolder}`;
-    const bucketType = options.bucketType || 'private';
-    const bucket = this.getBucketForType(bucketType, options.provider);
-    const providerInstance = this.getProvider(options.provider);
+      const fileName =
+        options.fileName || this.generateFileName(file.originalname);
+      const baseFolder = 'documents';
+      const subFolder = options.folder || 'uploads';
+      const folder = `${baseFolder}/${subFolder}`;
+      const bucketType = options.bucketType || 'private';
+      const bucket = this.getBucketForType(bucketType, options.provider);
+      const providerInstance = this.getProvider(options.provider);
 
-    // Sanitize filename for metadata headers
-    const sanitizedOriginalName = this.sanitizeFilename(file.originalname);
+      this.logger.log('Upload configuration', {
+        bucket,
+        folder,
+        fileName,
+        bucketType,
+      });
 
-    const uploadResult = await providerInstance.uploadFile(file, {
-      fileName,
-      folder,
-      bucket,
-      sanitizedOriginalName,
-    });
+      // Sanitize filename for metadata headers
+      const sanitizedOriginalName = this.sanitizeFilename(file.originalname);
 
-    // Create document record in database
-    const document = this.documentRepository.create({
-      fileKey: uploadResult.fileKey,
-      fileName,
-      originalName: uploadResult.originalName,
-      mimeType: uploadResult.mimeType,
-      size: uploadResult.size,
-      url: uploadResult.url,
-      type: options.documentType || DocumentType.OTHER,
-      description: options.description,
-      bucketType,
-      provider:
-        (options.provider || StorageService.DEFAULT_PROVIDER) === 'idrive'
-          ? StorageProviders.IDRIVE
-          : StorageProviders.IDRIVE,
-      uploadedBy: options.uploadedBy,
-    });
+      const uploadResult = await providerInstance.uploadFile(file, {
+        fileName,
+        folder,
+        bucket,
+        sanitizedOriginalName,
+      });
 
-    const savedDocument = await this.documentRepository.save(document);
+      // Create document record in database
+      const document = this.documentRepository.create({
+        fileKey: uploadResult.fileKey,
+        fileName,
+        originalName: uploadResult.originalName,
+        mimeType: uploadResult.mimeType,
+        size: uploadResult.size,
+        url: uploadResult.url,
+        type: options.documentType || DocumentType.OTHER,
+        description: options.description,
+        bucketType,
+        provider:
+          (options.provider || StorageService.DEFAULT_PROVIDER) === 'idrive'
+            ? StorageProviders.IDRIVE
+            : StorageProviders.IDRIVE,
+        uploadedBy: options.uploadedBy,
+      });
 
-    return {
-      document: savedDocument,
-      fileKey: uploadResult.fileKey,
-      url: uploadResult.url,
-      size: uploadResult.size,
-      mimeType: uploadResult.mimeType,
-      originalName: uploadResult.originalName,
-      bucketType: bucketType,
-    };
+      const savedDocument = await this.documentRepository.save(document);
+
+      this.logger.log('File upload completed successfully', {
+        documentId: savedDocument.id,
+        fileKey: uploadResult.fileKey,
+      });
+
+      return {
+        document: savedDocument,
+        fileKey: uploadResult.fileKey,
+        url: uploadResult.url,
+        size: uploadResult.size,
+        mimeType: uploadResult.mimeType,
+        originalName: uploadResult.originalName,
+        bucketType: bucketType,
+      };
+    } catch (error) {
+      this.logger.error('File upload failed', {
+        error: error.message,
+        originalName: file?.originalname,
+        bucketType: options.bucketType,
+      });
+      throw new BadRequestException(
+        error.message || 'File upload failed. Please try again.',
+      );
+    }
   }
 
   // Get file URL (signed for private, direct for public)

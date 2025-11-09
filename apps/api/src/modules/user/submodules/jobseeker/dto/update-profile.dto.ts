@@ -2,6 +2,15 @@ import { RecruiterType } from '@app/common/database/entities/schema.enum';
 import { IsString, IsOptional, IsArray, IsUUID, IsEnum } from 'class-validator';
 
 export class UpdateProfileDto {
+  // Basic profile fields
+  @IsString()
+  @IsOptional()
+  firstName?: string;
+
+  @IsString()
+  @IsOptional()
+  lastName?: string;
+
   @IsString()
   @IsOptional()
   jobTitle?: string;
@@ -27,6 +36,4 @@ export class UpdateProfileDto {
   @IsUUID('4', { each: true })
   @IsOptional()
   skillIds?: string[]; // Existing skill IDs
-
-  
 }

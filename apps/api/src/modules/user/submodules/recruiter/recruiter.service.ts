@@ -96,7 +96,12 @@ export class RecruiterService {
   async getRecruiterProfile(userId: string): Promise<any> {
     const profile = await this.profileRepo.findOne({
       where: { id: userId },
-      relations: ['profilePicture', 'verification', 'verification.documents', 'verification.documents.document'],
+      relations: [
+        'profilePicture',
+        'verification',
+        'verification.documents',
+        'verification.documents.document',
+      ],
     });
     if (!profile) {
       throw new NotFoundException('Recruiter not found');
@@ -114,7 +119,12 @@ export class RecruiterService {
   ): Promise<any> {
     let profile = await this.profileRepo.findOne({
       where: { id: userId },
-      relations: ['profilePicture', 'verification', 'verification.documents', 'verification.documents.document'],
+      relations: [
+        'profilePicture',
+        'verification',
+        'verification.documents',
+        'verification.documents.document',
+      ],
     });
     if (!profile) {
       throw new NotFoundException('Recruiter not found');
@@ -122,8 +132,7 @@ export class RecruiterService {
 
     // Update profile data
     Object.assign(profile, updateData);
-    profile  = await this.profileRepo.save(profile);
-
+    profile = await this.profileRepo.save(profile);
 
     return profile;
   }

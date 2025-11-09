@@ -64,6 +64,14 @@ export class IDriveProvider implements IStorageProvider {
       const sanitizedOriginalName =
         options.sanitizedOriginalName || file.originalname;
 
+      console.log('Uploading to S3:', {
+        bucket: options.bucket,
+        key,
+        contentType,
+        fileSize: file.size,
+        endpoint: this.endpoint,
+      });
+
       const put = new PutObjectCommand({
         Bucket: options.bucket,
         Key: key,
@@ -82,6 +90,8 @@ export class IDriveProvider implements IStorageProvider {
         60 * 60 * 24 * 7,
       );
 
+      console.log('Upload successful:', { key, url });
+
       return {
         fileKey: key,
         url,
@@ -90,13 +100,36 @@ export class IDriveProvider implements IStorageProvider {
         originalName: file.originalname,
       };
     } catch (error) {
-      console.error('Upload failed:', {
+      console.error('S3 Upload failed:', {
         error: error.message,
-        stack: error.stack,
-        originalName: file.originalname,
+        errorName: error.name,
+        statusCode: error.$metadata?.httpStatusCode,
         bucket: options.bucket,
+        endpoint: this.endpoint,
+        originalName: file.originalname,
       });
-      throw error;
+
+      // Provide more helpful error messages
+      if (error.name === 'NoSuchBucket') {
+        throw new Error(
+          `S3 bucket '${options.bucket}' does not exist. Please check your configuration.`,
+        );
+      }
+      if (
+        error.name === 'InvalidAccessKeyId' ||
+        error.name === 'SignatureDoesNotMatch'
+      ) {
+        throw new Error(
+          'S3 authentication failed. Please check your access key and secret key.',
+        );
+      }
+      if (error.$metadata?.httpStatusCode === 403) {
+        throw new Error(
+          'S3 access denied. Please check your bucket permissions.',
+        );
+      }
+
+      throw new Error(`S3 upload failed: ${error.message}`);
     }
   }
 
