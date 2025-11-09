@@ -33,6 +33,7 @@ export enum RecruiterDocumentType {
 }
 
 export enum VerificationStatus {
+  NOT_STARTED = 'NOT_STARTED',
   PENDING = 'PENDING',
   APPROVED = 'APPROVED',
   REJECTED = 'REJECTED',

@@ -68,7 +68,7 @@ export class JobSeekerProfile {
   @Column({
     type: 'enum',
     enum: ApprovalStatus,
-    default: ApprovalStatus.PENDING,
+    default: ApprovalStatus.NOT_STARTED,
   })
   approvalStatus: ApprovalStatus;
 

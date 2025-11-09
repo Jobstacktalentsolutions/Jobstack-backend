@@ -13,7 +13,10 @@ import { StorageService } from '@app/common/storage/storage.service';
 import { SkillsService } from 'apps/api/src/modules/skills/skills.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import type { MulterFile } from '@app/common/shared/types';
-import { DocumentType } from '@app/common/database/entities/schema.enum';
+import {
+  DocumentType,
+  ApprovalStatus,
+} from '@app/common/database/entities/schema.enum';
 
 @Injectable()
 export class JobseekerService {
@@ -60,6 +63,12 @@ export class JobseekerService {
     });
 
     profile.cvDocumentId = upload.document.id;
+
+    // Set approvalStatus to PENDING when CV is uploaded (user has started onboarding)
+    if (profile.approvalStatus === ApprovalStatus.NOT_STARTED) {
+      profile.approvalStatus = ApprovalStatus.PENDING;
+    }
+
     await this.profileRepo.save(profile);
 
     return {
@@ -158,6 +167,11 @@ export class JobseekerService {
           skillId,
         })),
       );
+    }
+
+    // Set approvalStatus to PENDING when user completes profile
+    if (profile.approvalStatus === ApprovalStatus.NOT_STARTED) {
+      profile.approvalStatus = ApprovalStatus.PENDING;
     }
 
     // Save the updated profile

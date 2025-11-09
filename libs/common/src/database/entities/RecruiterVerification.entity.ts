@@ -39,7 +39,7 @@ export class RecruiterVerification extends BaseEntity {
   @Column({
     type: 'enum',
     enum: VerificationStatus,
-    default: VerificationStatus.PENDING,
+    default: VerificationStatus.NOT_STARTED,
   })
   status: VerificationStatus;
 

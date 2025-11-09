@@ -75,6 +75,11 @@ export class RecruiterVerificationService {
     verification.companySize = dto.companySize;
     verification.socialOrWebsiteUrl = dto.socialOrWebsiteUrl;
 
+    // Set status to PENDING when user starts onboarding
+    if (verification.status === VerificationStatus.NOT_STARTED) {
+      verification.status = VerificationStatus.PENDING;
+    }
+
     await this.verificationRepo.save(verification);
 
     return verification;
@@ -99,7 +104,12 @@ export class RecruiterVerificationService {
     if (!verification) {
       verification = this.verificationRepo.create({
         recruiterId: profile.id,
+        status: VerificationStatus.PENDING, // Set to PENDING when first document is uploaded
       });
+      await this.verificationRepo.save(verification);
+    } else if (verification.status === VerificationStatus.NOT_STARTED) {
+      // Update status to PENDING when first document is uploaded
+      verification.status = VerificationStatus.PENDING;
       await this.verificationRepo.save(verification);
     }
 

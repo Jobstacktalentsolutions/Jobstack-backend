@@ -40,9 +40,10 @@ export enum Proficiency {
 }
 
 export enum ApprovalStatus {
-  PENDING = 'Pending',
-  APPROVED = 'Approved',
-  REJECTED = 'Rejected',
+  NOT_STARTED = 'NOT_STARTED',
+  PENDING = 'PENDING',
+  APPROVED = 'APPROVED',
+  REJECTED = 'REJECTED',
 }
 
 export enum DocumentType {
