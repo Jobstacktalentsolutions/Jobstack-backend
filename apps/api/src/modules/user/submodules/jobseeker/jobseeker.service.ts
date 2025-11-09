@@ -132,6 +132,12 @@ export class JobseekerService {
     if (!profile) throw new NotFoundException('Jobseeker not found');
 
     // Update basic profile fields
+    if (updateData.firstName !== undefined) {
+      profile.firstName = updateData.firstName;
+    }
+    if (updateData.lastName !== undefined) {
+      profile.lastName = updateData.lastName;
+    }
     if (updateData.jobTitle !== undefined) {
       profile.jobTitle = updateData.jobTitle;
     }
