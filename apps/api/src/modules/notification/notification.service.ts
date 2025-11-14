@@ -9,6 +9,7 @@ import {
   NotificationPriority,
   NotificationType,
 } from '@app/common/database/entities/schema.enum';
+import { UserRole } from '@app/common/shared/enums/user-roles.enum';
 import {
   NotificationResponse,
   AppNotificationQuery,
@@ -24,17 +25,34 @@ export class NotificationService {
     private readonly notificationRepository: Repository<Notification>,
   ) {}
 
+  // Helper to map UserRole enum to database field name
+  private getUserRoleFieldName(
+    role: UserRole,
+  ): 'jobseekerId' | 'employerId' | 'adminId' {
+    switch (role) {
+      case UserRole.JOB_SEEKER:
+        return 'jobseekerId';
+      case UserRole.EMPLOYER:
+        return 'employerId';
+      case UserRole.ADMIN:
+        return 'adminId';
+      default:
+        throw new Error(`Invalid user role: ${role}`);
+    }
+  }
+
   async getUserNotifications(
     userId: string,
-    userType: 'jobseeker' | 'recruiter' | 'admin',
+    userType: UserRole,
     query: AppNotificationQuery = {},
   ) {
     const { page = 1, limit = 20, isRead, search } = query;
     const skip = (page - 1) * limit;
+    const fieldName = this.getUserRoleFieldName(userType);
 
     const queryBuilder = this.notificationRepository
       .createQueryBuilder('notification')
-      .where(`notification.${userType}Id = :userId`, { userId })
+      .where(`notification.${fieldName} = :userId`, { userId })
       .orderBy('notification.createdAt', 'DESC')
       .skip(skip)
       .take(limit);
@@ -71,14 +89,13 @@ export class NotificationService {
   async getNotificationById(
     notificationId: string,
     userId: string,
-    userType: 'jobseeker' | 'recruiter' | 'admin',
+    userType: UserRole,
   ): Promise<Notification | null> {
+    const fieldName = this.getUserRoleFieldName(userType);
     return this.notificationRepository.findOne({
       where: {
         id: notificationId,
-        ...(userType === 'jobseeker' && { jobseekerId: userId }),
-        ...(userType === 'recruiter' && { recruiterId: userId }),
-        ...(userType === 'admin' && { adminId: userId }),
+        [fieldName]: userId,
       },
     });
   }
@@ -86,15 +103,14 @@ export class NotificationService {
   async markNotificationAsRead(
     notificationId: string,
     userId: string,
-    userType: 'jobseeker' | 'recruiter' | 'admin',
+    userType: UserRole,
   ): Promise<boolean> {
     try {
+      const fieldName = this.getUserRoleFieldName(userType);
       const result = await this.notificationRepository.update(
         {
           id: notificationId,
-          ...(userType === 'jobseeker' && { jobseekerId: userId }),
-          ...(userType === 'recruiter' && { recruiterId: userId }),
-          ...(userType === 'admin' && { adminId: userId }),
+          [fieldName]: userId,
         },
         {
           status: NotificationStatus.READ,
@@ -115,14 +131,13 @@ export class NotificationService {
 
   async markAllNotificationsAsRead(
     userId: string,
-    userType: 'jobseeker' | 'recruiter' | 'admin',
+    userType: UserRole,
   ): Promise<number> {
     try {
+      const fieldName = this.getUserRoleFieldName(userType);
       const result = await this.notificationRepository.update(
         {
-          ...(userType === 'jobseeker' && { jobseekerId: userId }),
-          ...(userType === 'recruiter' && { recruiterId: userId }),
-          ...(userType === 'admin' && { adminId: userId }),
+          [fieldName]: userId,
           status: NotificationStatus.SENT, // Only mark unread notifications
         },
         {
@@ -145,16 +160,12 @@ export class NotificationService {
     }
   }
 
-  async getUnreadCount(
-    userId: string,
-    userType: 'jobseeker' | 'recruiter' | 'admin',
-  ): Promise<number> {
+  async getUnreadCount(userId: string, userType: UserRole): Promise<number> {
     try {
+      const fieldName = this.getUserRoleFieldName(userType);
       const count = await this.notificationRepository.count({
         where: {
-          ...(userType === 'jobseeker' && { jobseekerId: userId }),
-          ...(userType === 'recruiter' && { recruiterId: userId }),
-          ...(userType === 'admin' && { adminId: userId }),
+          [fieldName]: userId,
           status: NotificationStatus.SENT, // Unread notifications
         },
       });
@@ -190,7 +201,7 @@ export class NotificationService {
    */
   async createAppNotification(
     userId: string,
-    userType: 'jobseeker' | 'recruiter' | 'admin',
+    userType: UserRole,
     data: {
       title: string;
       message: string;
@@ -198,6 +209,7 @@ export class NotificationService {
       priority?: NotificationPriority;
     },
   ): Promise<Notification> {
+    const fieldName = this.getUserRoleFieldName(userType);
     const notification = this.notificationRepository.create({
       title: data.title,
       message: data.message,
@@ -205,9 +217,7 @@ export class NotificationService {
       status: NotificationStatus.PENDING,
       priority: data.priority ?? NotificationPriority.MEDIUM,
       metadata: data.metadata,
-      ...(userType === 'jobseeker' && { jobseekerId: userId }),
-      ...(userType === 'recruiter' && { recruiterId: userId }),
-      ...(userType === 'admin' && { adminId: userId }),
+      [fieldName]: userId,
     });
 
     return await this.notificationRepository.save(notification);

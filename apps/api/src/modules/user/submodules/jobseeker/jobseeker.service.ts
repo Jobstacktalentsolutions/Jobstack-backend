@@ -156,6 +156,12 @@ export class JobseekerService {
     if (updateData.city !== undefined) {
       profile.city = updateData.city;
     }
+    if (updateData.minExpectedSalary !== undefined) {
+      profile.minExpectedSalary = updateData.minExpectedSalary;
+    }
+    if (updateData.maxExpectedSalary !== undefined) {
+      profile.maxExpectedSalary = updateData.maxExpectedSalary;
+    }
 
     // Handle skills smartly
     if (updateData.skills || updateData.skillIds) {

@@ -44,4 +44,10 @@ export class UpdateProfileDto {
   @IsUUID('4', { each: true })
   @IsOptional()
   skillIds?: string[]; // Existing skill IDs
+
+  @IsOptional()
+  minExpectedSalary?: number;
+
+  @IsOptional()
+  maxExpectedSalary?: number;
 }

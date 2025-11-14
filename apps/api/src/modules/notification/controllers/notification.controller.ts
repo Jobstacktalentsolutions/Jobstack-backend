@@ -10,25 +10,39 @@ import {
   HttpException,
 } from '@nestjs/common';
 import { NotificationService } from '../notification.service';
-
+import { UserRole } from '@app/common/shared/enums/user-roles.enum';
 import type { AppNotificationQuery } from '../notification.interface';
 
 @Controller('notifications')
 export class NotificationController {
   constructor(private readonly notificationService: NotificationService) {}
 
+  // Helper to parse and validate userType from URL parameter
+  private parseUserType(userTypeParam: string): UserRole {
+    const normalized = userTypeParam.toUpperCase();
+    // Map URL parameter to UserRole enum value
+    if (normalized === 'JOBSEEKER' || normalized === 'JOB_SEEKER') {
+      return UserRole.JOB_SEEKER;
+    }
+    if (normalized === 'EMPLOYER' || normalized === 'RECRUITER') {
+      return UserRole.EMPLOYER;
+    }
+    if (normalized === 'ADMIN') {
+      return UserRole.ADMIN;
+    }
+    throw new HttpException(
+      `Invalid userType. Must be one of: JOBSEEKER, EMPLOYER, ADMIN`,
+      HttpStatus.BAD_REQUEST,
+    );
+  }
+
   @Get(':userType/:userId')
   async getUserNotifications(
     @Param('userId') userId: string,
-    @Param('userType') userType: 'jobseeker' | 'recruiter' | 'admin',
+    @Param('userType') userTypeParam: string,
     @Query() query: AppNotificationQuery,
   ) {
-    if (!['jobseeker', 'recruiter', 'admin'].includes(userType)) {
-      throw new HttpException(
-        'Invalid userType. Must be jobseeker, recruiter, or admin',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
+    const userType = this.parseUserType(userTypeParam);
 
     const result = await this.notificationService.getUserNotifications(
       userId,
@@ -45,14 +59,9 @@ export class NotificationController {
   @Get(':userType/:userId/unread-count')
   async getUnreadCount(
     @Param('userId') userId: string,
-    @Param('userType') userType: 'jobseeker' | 'recruiter' | 'admin',
+    @Param('userType') userTypeParam: string,
   ) {
-    if (!['jobseeker', 'recruiter', 'admin'].includes(userType)) {
-      throw new HttpException(
-        'Invalid userType. Must be jobseeker, recruiter, or admin',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
+    const userType = this.parseUserType(userTypeParam);
 
     const count = await this.notificationService.getUnreadCount(
       userId,
@@ -69,14 +78,9 @@ export class NotificationController {
   async getNotificationById(
     @Param('notificationId') notificationId: string,
     @Param('userId') userId: string,
-    @Param('userType') userType: 'jobseeker' | 'recruiter' | 'admin',
+    @Param('userType') userTypeParam: string,
   ) {
-    if (!['jobseeker', 'recruiter', 'admin'].includes(userType)) {
-      throw new HttpException(
-        'Invalid userType. Must be jobseeker, recruiter, or admin',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
+    const userType = this.parseUserType(userTypeParam);
 
     const notification = await this.notificationService.getNotificationById(
       notificationId,
@@ -98,14 +102,9 @@ export class NotificationController {
   async markNotificationAsRead(
     @Param('notificationId') notificationId: string,
     @Param('userId') userId: string,
-    @Param('userType') userType: 'jobseeker' | 'recruiter' | 'admin',
+    @Param('userType') userTypeParam: string,
   ) {
-    if (!['jobseeker', 'recruiter', 'admin'].includes(userType)) {
-      throw new HttpException(
-        'Invalid userType. Must be jobseeker, recruiter, or admin',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
+    const userType = this.parseUserType(userTypeParam);
 
     const success = await this.notificationService.markNotificationAsRead(
       notificationId,
@@ -129,14 +128,9 @@ export class NotificationController {
   @Patch(':userType/:userId/read-all')
   async markAllNotificationsAsRead(
     @Param('userId') userId: string,
-    @Param('userType') userType: 'jobseeker' | 'recruiter' | 'admin',
+    @Param('userType') userTypeParam: string,
   ) {
-    if (!['jobseeker', 'recruiter', 'admin'].includes(userType)) {
-      throw new HttpException(
-        'Invalid userType. Must be jobseeker, recruiter, or admin',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
+    const userType = this.parseUserType(userTypeParam);
 
     const count = await this.notificationService.markAllNotificationsAsRead(
       userId,

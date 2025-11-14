@@ -1,12 +1,13 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 import type { Request } from 'express';
+import { UserRole } from '../enums/user-roles.enum';
 
 // Interface for the user payload structure
 export interface CurrentUserPayload {
   id: string;
   email: string;
-  role: string;
-  profileId: string;
+  role: UserRole;
+  profileId?: string;
   sessionId: string;
   jti: string;
   refreshTokenId?: string;

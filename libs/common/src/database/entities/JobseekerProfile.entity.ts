@@ -78,6 +78,12 @@ export class JobSeekerProfile {
   })
   approvalStatus: ApprovalStatus;
 
+  @Column({ type: 'decimal', precision: 12, scale: 2, nullable: true })
+  minExpectedSalary?: number;
+
+  @Column({ type: 'decimal', precision: 12, scale: 2, nullable: true })
+  maxExpectedSalary?: number;
+
   @OneToOne(() => JobseekerAuth, (auth) => auth.profile)
   @JoinColumn({ name: 'id' })
   auth: JobseekerAuth;

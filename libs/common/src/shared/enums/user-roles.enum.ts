@@ -1,7 +1,7 @@
 export enum UserRole {
-  JOB_SEEKER = 'job_seeker',
-  EMPLOYER = 'employer',
-  ADMIN = 'admin',
+  JOB_SEEKER = 'JOBSEEKER',
+  EMPLOYER = 'EMPLOYER',
+  ADMIN = 'ADMIN',
 }
 
 export type UserRoleType = keyof typeof UserRole;
