@@ -10,10 +10,10 @@ import { Repository } from 'typeorm';
 import { AdminAuth } from '@app/common/database/entities/AdminAuth.entity';
 import { AdminProfile } from '@app/common/database/entities/AdminProfile.entity';
 import {
-  RecruiterVerification,
-  RecruiterProfile,
+  EmployerVerification,
+  EmployerProfile,
 } from '@app/common/database/entities';
-import { VerificationStatus } from '@app/common/shared/enums/recruiter-docs.enum';
+import { VerificationStatus } from '@app/common/shared/enums/employer-docs.enum';
 import { AdminRole } from '@app/common/shared/enums/roles.enum';
 import * as bcrypt from 'bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
@@ -36,10 +36,10 @@ export class AdminService {
     private readonly adminAuthRepo: Repository<AdminAuth>,
     @InjectRepository(AdminProfile)
     private readonly adminProfileRepo: Repository<AdminProfile>,
-    @InjectRepository(RecruiterVerification)
-    private readonly verificationRepo: Repository<RecruiterVerification>,
-    @InjectRepository(RecruiterProfile)
-    private readonly profileRepo: Repository<RecruiterProfile>,
+    @InjectRepository(EmployerVerification)
+    private readonly verificationRepo: Repository<EmployerVerification>,
+    @InjectRepository(EmployerProfile)
+    private readonly profileRepo: Repository<EmployerProfile>,
     private readonly notificationService: NotificationService,
   ) {}
 
@@ -158,13 +158,13 @@ export class AdminService {
     return { success: true };
   }
 
-  async updateRecruiterVerification(
-    recruiterId: string,
+  async updateEmployerVerification(
+    employerId: string,
     status: VerificationStatus,
     rejectionReason?: string,
   ) {
     const verification = await this.verificationRepo.findOne({
-      where: { recruiterId },
+      where: { employerId },
       relations: ['documents', 'documents.document'],
     });
     if (!verification) throw new NotFoundException('Verification not found');
@@ -175,7 +175,7 @@ export class AdminService {
       status === VerificationStatus.REJECTED ? rejectionReason : undefined;
     await this.verificationRepo.save(verification);
 
-    return { recruiterId, status };
+    return { employerId, status };
   }
 
   async updateAdminProfile(userId: string, updateData: any): Promise<any> {

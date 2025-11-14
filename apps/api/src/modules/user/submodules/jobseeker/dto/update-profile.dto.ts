@@ -1,4 +1,4 @@
-import { RecruiterType } from '@app/common/database/entities/schema.enum';
+import { EmployerType } from '@app/common/database/entities/schema.enum';
 import { IsString, IsOptional, IsArray, IsUUID, IsEnum } from 'class-validator';
 
 export class UpdateProfileDto {

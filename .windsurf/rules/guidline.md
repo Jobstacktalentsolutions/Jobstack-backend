@@ -19,7 +19,7 @@ description: Architecutre Design & Guidline to use When making any critical or d
 
 ## "JobStack" Technical Focus
 
-- **Authentication (JWT/RBAC):** Implement Role-Based Access Control (RBAC) across all modules for three key roles: `Admin`, `Recruiter`, and `JobSeeker`.
+- **Authentication (JWT/RBAC):** Implement Role-Based Access Control (RBAC) across all modules for three key roles: `Admin`, `Employer`, and `JobSeeker`.
 - **Payments:** Integrate with **Paystack** for all transaction and payment flow management.
 - **Background Processing:** Use **Bull/Redis** for all asynchronous tasks, including the **Smart Matching Algorithm** and recommendation engine emails. The `background` service is dedicated to these tasks.
 - **Email:** Integrate with **Brevo** for all transactional email notifications (e.g., job recommendations, status updates).

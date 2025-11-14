@@ -5,8 +5,8 @@ export enum SkillStatus {
   SUGGESTED = 'SUGGESTED',
 }
 
-// Recruiter related enums
-export enum RecruiterType {
+// Employer related enums
+export enum EmployerType {
   INDIVIDUAL = 'Individual',
   SME = 'SME', // Small and Medium Enterprises
   ORGANIZATION = 'Organization',

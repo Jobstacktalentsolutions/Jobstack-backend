@@ -6,7 +6,7 @@ import { UserRole } from '../enums/user-roles.enum';
 export interface BaseJWTPayload {
   id: string; // User ID
   role: UserRole; // User role
-  profileId?: string; // Profile ID (for Recruiter and JobSeeker)
+  profileId?: string; // Profile ID (for Employer and JobSeeker)
   sessionId: string; // Session ID for revocation
   type: 'access' | 'refresh'; // Token type
   jti: string; // JWT ID for blacklisting

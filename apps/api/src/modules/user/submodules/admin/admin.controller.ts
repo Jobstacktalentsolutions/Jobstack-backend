@@ -13,7 +13,7 @@ import {
 import type { Request } from 'express';
 import { AdminJwtGuard, RequireAdminRole } from 'apps/api/src/guards';
 import { AdminService } from './admin.service';
-import { VerificationStatus } from '@app/common/shared/enums/recruiter-docs.enum';
+import { VerificationStatus } from '@app/common/shared/enums/employer-docs.enum';
 import { AdminRole } from '@app/common/shared/enums/roles.enum';
 
 @Controller('admin')
@@ -68,21 +68,21 @@ export class AdminController {
     return this.adminService.getSystemOverview(user.sub);
   }
 
-  @Patch('recruiters/:id/verification/approve')
-  async approveRecruiter(@Param('id') recruiterId: string) {
-    return this.adminService.updateRecruiterVerification(
-      recruiterId,
+  @Patch('employers/:id/verification/approve')
+  async approveEmployer(@Param('id') employerId: string) {
+    return this.adminService.updateEmployerVerification(
+      employerId,
       VerificationStatus.APPROVED,
     );
   }
 
-  @Patch('recruiters/:id/verification/reject')
-  async rejectRecruiter(
-    @Param('id') recruiterId: string,
+  @Patch('employers/:id/verification/reject')
+  async rejectEmployer(
+    @Param('id') employerId: string,
     @Body('reason') reason: string,
   ) {
-    return this.adminService.updateRecruiterVerification(
-      recruiterId,
+    return this.adminService.updateEmployerVerification(
+      employerId,
       VerificationStatus.REJECTED,
       reason,
     );

@@ -1,12 +1,12 @@
-# SME Recruiter Type and Document Verification System
+# SME Employer Type and Document Verification System
 
 ## Overview
 
-This document outlines the implementation of the SME (Small and Medium Enterprises) recruiter type and the enhanced document verification system for JobStack.
+This document outlines the implementation of the SME (Small and Medium Enterprises) employer type and the enhanced document verification system for JobStack.
 
-## Recruiter Types
+## Employer Types
 
-The system now supports three types of recruiters:
+The system now supports three types of employers:
 
 ### 1. Individual Employers (households, private persons)
 
@@ -48,40 +48,40 @@ The system now supports three types of recruiters:
 
 ### How It Works
 
-1. **Document Upload**: When a recruiter uploads a document, the system checks if all mandatory documents for their type are uploaded and verified.
+1. **Document Upload**: When an employer uploads a document, the system checks if all mandatory documents for their type are uploaded and verified.
 
-2. **Auto-Verification**: If all mandatory documents are uploaded and verified by an admin, the recruiter is automatically approved.
+2. **Auto-Verification**: If all mandatory documents are uploaded and verified by an admin, the employer is automatically approved.
 
-3. **Manual Override**: Admins can still manually approve or reject recruiters regardless of document status.
+3. **Manual Override**: Admins can still manually approve or reject employers regardless of document status.
 
 ### API Endpoints
 
-#### Recruiter Endpoints
+#### Employer Endpoints
 
-- `GET /recruiters/verification` - Get verification status
-- `PUT /recruiters/verification` - Update verification information
-- `GET /recruiters/verification/documents` - Get uploaded documents
-- `POST /recruiters/verification/documents` - Upload a document
-- `DELETE /recruiters/verification/documents/:id` - Delete a document
-- `GET /recruiters/verification/requirements` - Get document requirements for recruiter type
-- `GET /recruiters/verification/auto-verify/check` - Check auto-verification eligibility
-- `POST /recruiters/verification/auto-verify` - Trigger auto-verification
+- `GET /employers/verification` - Get verification status
+- `PUT /employers/verification` - Update verification information
+- `GET /employers/verification/documents` - Get uploaded documents
+- `POST /employers/verification/documents` - Upload a document
+- `DELETE /employers/verification/documents/:id` - Delete a document
+- `GET /employers/verification/requirements` - Get document requirements for employer type
+- `GET /employers/verification/auto-verify/check` - Check auto-verification eligibility
+- `POST /employers/verification/auto-verify` - Trigger auto-verification
 
 #### Admin Endpoints
 
-- `GET /admin/recruiters/:recruiterId/verification/documents` - Get recruiter documents
-- `DELETE /admin/recruiters/:recruiterId/verification/documents/:id` - Delete document
-- `PUT /admin/recruiters/:recruiterId/verification/status` - Update verification status
-- `PUT /admin/recruiters/:recruiterId/verification/documents/:id/verify` - Mark document as verified
+- `GET /admin/employers/:employerId/verification/documents` - Get employer documents
+- `DELETE /admin/employers/:employerId/verification/documents/:id` - Delete document
+- `PUT /admin/employers/:employerId/verification/status` - Update verification status
+- `PUT /admin/employers/:employerId/verification/documents/:id/verify` - Mark document as verified
 
 ## Database Changes
 
-### Migration: AddSmeRecruiterType
+### Migration: AddSmeEmployerType
 
 The migration adds:
 
-1. SME to the `RecruiterType` enum
-2. New document types for all recruiter categories
+1. SME to the `EmployerType` enum
+2. New document types for all employer categories
 3. Updates existing enum values to support the new document types
 
 ### New Document Types
@@ -103,7 +103,7 @@ The migration adds:
 
 ## Configuration
 
-Document requirements are configured in `libs/common/src/shared/config/recruiter-document-requirements.ts`. This allows for easy modification of requirements without code changes.
+Document requirements are configured in `libs/common/src/shared/config/employer-document-requirements.ts`. This allows for easy modification of requirements without code changes.
 
 ## Usage Examples
 
@@ -120,7 +120,7 @@ console.log(eligibility.missingMandatoryDocuments); // array of missing document
 
 ```typescript
 const requirements = await verificationService.getDocumentRequirements(
-  RecruiterType.SME,
+  EmployerType.SME,
 );
 const mandatory = requirements.filter((req) => req.mandatory);
 const optional = requirements.filter((req) => !req.mandatory);
@@ -143,7 +143,7 @@ console.log(result.autoVerificationResult);
 ## Benefits
 
 1. **Streamlined Process**: Automatic verification reduces manual admin work
-2. **Clear Requirements**: Each recruiter type has clearly defined document requirements
+2. **Clear Requirements**: Each employer type has clearly defined document requirements
 3. **Flexibility**: Optional documents allow for additional verification without blocking the process
 4. **Audit Trail**: All verification actions are tracked with timestamps and admin IDs
 5. **Type Safety**: Strong TypeScript typing ensures data consistency

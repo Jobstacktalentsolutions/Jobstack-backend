@@ -8,8 +8,8 @@ import { AdminAuthModule } from 'apps/api/src/modules/auth/submodules/admin/admi
 import { NotificationModule } from 'apps/api/src/modules/notification/notification.module';
 import {
   AdminProfile,
-  RecruiterVerification,
-  RecruiterProfile,
+  EmployerVerification,
+  EmployerProfile,
 } from '@app/common/database/entities';
 
 @Module({
@@ -17,8 +17,8 @@ import {
     TypeOrmModule.forFeature([
       AdminAuth,
       AdminProfile,
-      RecruiterVerification,
-      RecruiterProfile,
+      EmployerVerification,
+      EmployerProfile,
     ]),
     AdminAuthModule,
     NotificationModule,

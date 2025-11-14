@@ -3,7 +3,7 @@ import { BaseSeeder } from './base.seeder';
 import { SeedResult } from '../interfaces/seeder.interface';
 import { AdminFactory } from '../factories/admin.factory';
 import { SkillFactory } from '../factories/skill.factory';
-import { RecruiterFactory } from '../factories/recruiter.factory';
+import { EmployerFactory } from '../factories/employer.factory';
 import { JobseekerFactory } from '../factories/jobseeker.factory';
 
 /**
@@ -22,7 +22,7 @@ export class EntitySeeder extends BaseSeeder {
     // Initialize factories
     this.entityFactories = new Map<string, IFactory>();
     this.entityFactories.set('admins', new AdminFactory(dataSource));
-    this.entityFactories.set('recruiters', new RecruiterFactory(dataSource));
+    this.entityFactories.set('employers', new EmployerFactory(dataSource));
     this.entityFactories.set('jobseekers', new JobseekerFactory(dataSource));
     this.entityFactories.set('skills', new SkillFactory(dataSource));
   }
@@ -58,7 +58,7 @@ export class EntitySeeder extends BaseSeeder {
     }
 
     // Define seeding order to handle dependencies
-    const seedingOrder = ['admins', 'recruiters', 'jobseekers', 'skills'];
+    const seedingOrder = ['admins', 'employers', 'jobseekers', 'skills'];
     const orderedEntities = seedingOrder.filter((entity) =>
       entityNames.includes(entity),
     );

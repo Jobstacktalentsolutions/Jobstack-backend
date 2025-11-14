@@ -1,7 +1,7 @@
 import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { JobseekerAuth } from './JobseekerAuth.entity';
-import { RecruiterAuth } from './RecruiterAuth.entity';
+import { EmployerAuth } from './EmployerAuth.entity';
 import { AdminAuth } from './AdminAuth.entity';
 import {
   NotificationStatus,
@@ -53,7 +53,7 @@ export class Notification extends BaseEntity {
   jobseekerId?: string;
 
   @Column({ nullable: true })
-  recruiterId?: string;
+  employerId?: string;
 
   @Column({ nullable: true })
   adminId?: string;
@@ -75,9 +75,9 @@ export class Notification extends BaseEntity {
   @JoinColumn({ name: 'jobseekerId' })
   jobseeker?: JobseekerAuth;
 
-  @ManyToOne(() => RecruiterAuth, { nullable: true })
-  @JoinColumn({ name: 'recruiterId' })
-  recruiter?: RecruiterAuth;
+  @ManyToOne(() => EmployerAuth, { nullable: true })
+  @JoinColumn({ name: 'employerId' })
+  employer?: EmployerAuth;
 
   @ManyToOne(() => AdminAuth, { nullable: true })
   @JoinColumn({ name: 'adminId' })

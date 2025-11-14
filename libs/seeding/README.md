@@ -79,7 +79,7 @@ SUPER_ADMIN_LAST_NAME=Name
 Core permissions for JobStack RBAC system:
 
 - Admin Management (create, read, update, delete)
-- Recruiter Management (create, read, update, delete)
+- Employer Management (create, read, update, delete)
 - Jobseeker Management (create, read, update, delete)
 - Vetting Operations (view, update)
 - Job Management (create, read, update, delete, match)

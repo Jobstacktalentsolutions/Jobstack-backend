@@ -5,11 +5,11 @@ export enum Permissions {
   ADMIN_UPDATE = 'admin.update',
   ADMIN_DELETE = 'admin.delete',
 
-  // Recruiter Management
-  RECRUITER_CREATE = 'recruiter.create',
-  RECRUITER_READ = 'recruiter.read',
-  RECRUITER_UPDATE = 'recruiter.update',
-  RECRUITER_DELETE = 'recruiter.delete',
+  // Employer Management
+  EMPLOYER_CREATE = 'employer.create',
+  EMPLOYER_READ = 'employer.read',
+  EMPLOYER_UPDATE = 'employer.update',
+  EMPLOYER_DELETE = 'employer.delete',
 
   // Jobseeker Management
   JOBSEEKER_CREATE = 'jobseeker.create',

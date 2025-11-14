@@ -6,7 +6,7 @@
 
 ### Key Goals
 
-- Provide a seamless **Recruiter** experience for posting **Roles**.
+- Provide a seamless **Employer** experience for posting **Roles**.
 - Offer an intuitive platform for **Job Seekers** to find and apply for relevant work.
 - Centralize the agency's **vetting** and **matching** process.
 
@@ -24,7 +24,7 @@ JobStack is built on a modern, scalable, and fully typed stack.
 | **Caching**            | **Redis**                                    | High-speed cache for sessions, user data, and frequently accessed items.                   |
 | **Job Queue**          | **Bull** (with Redis)                        | Manages and processes background tasks reliably.                                           |
 | **Containerization**   | **Docker & Docker Compose**                  | Ensures environment consistency for all services.                                          |
-| **Frontend**           | **[Specify Framework: e.g., Next.js/React]** | User Interface for Recruiters and Job Seekers.                                             |
+| **Frontend**           | **[Specify Framework: e.g., Next.js/React]** | User Interface for Employers and Job Seekers.                                              |
 | **Proxy/Gateway**      | **Nginx** (via Railway)                      | Routes traffic and provides security/load balancing.                                       |
 
 ---
@@ -46,15 +46,15 @@ We utilize a modular, cloud-native hosting setup for easy deployment and scalabi
 
 The backend logic is organized into several distinct modules (`src/api/`).
 
-| Module              | Purpose                                                        | Key Sub-Modules                                               |
-| :------------------ | :------------------------------------------------------------- | :------------------------------------------------------------ |
-| **`Auth`**          | Handles user identification and access control.                | `Recruiter`, `JobSeeker`, `Admin` (login/signup logic)        |
-| **`User`**          | Manages all user profiles and account settings once logged in. | `Recruiter`, `JobSeeker`, `Admin` (profile updates, settings) |
-| **`Roles`**         | Manages all job postings and contract listings.                | `Listing` (Creation, Editing), `Application` (Apply, Status)  |
-| **`Vetting`**       | Manages the verification process for Job Seekers.              | `Status` (Updates), `Documents` (Approval)                    |
-| **`Payment`**       | Handles financial transactions through the platform.           | `Paystack`, `Transaction` (Recording payments)                |
-| **`Storage`**       | Manages file uploads (CVs, portfolios) securely.               | Integration with **Drive e2** (S3 compatible storage)         |
-| **`Notifications`** | Manages communication triggers (emails, in-app alerts).        | Integration with **Brevo** (Email Provider)                   |
+| Module              | Purpose                                                        | Key Sub-Modules                                              |
+| :------------------ | :------------------------------------------------------------- | :----------------------------------------------------------- |
+| **`Auth`**          | Handles user identification and access control.                | `Employer`, `JobSeeker`, `Admin` (login/signup logic)        |
+| **`User`**          | Manages all user profiles and account settings once logged in. | `Employer`, `JobSeeker`, `Admin` (profile updates, settings) |
+| **`Roles`**         | Manages all job postings and contract listings.                | `Listing` (Creation, Editing), `Application` (Apply, Status) |
+| **`Vetting`**       | Manages the verification process for Job Seekers.              | `Status` (Updates), `Documents` (Approval)                   |
+| **`Payment`**       | Handles financial transactions through the platform.           | `Paystack`, `Transaction` (Recording payments)               |
+| **`Storage`**       | Manages file uploads (CVs, portfolios) securely.               | Integration with **Drive e2** (S3 compatible storage)        |
+| **`Notifications`** | Manages communication triggers (emails, in-app alerts).        | Integration with **Brevo** (Email Provider)                  |
 
 ---
 
