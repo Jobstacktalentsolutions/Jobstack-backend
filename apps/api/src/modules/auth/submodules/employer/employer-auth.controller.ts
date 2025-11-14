@@ -79,10 +79,14 @@ export class EmployerAuthController {
 
   @Post('verify-email')
   @HttpCode(HttpStatus.OK)
-  async verifyEmail(@Body() confirmData: EmailVerificationConfirmDto) {
+  async verifyEmail(
+    @Body() confirmData: EmailVerificationConfirmDto,
+    @ReqDeviceInfo() deviceInfo: RequestDeviceInfo,
+  ) {
     return await this.employerAuthService.verifyEmail(
       confirmData.email,
       confirmData.code,
+      deviceInfo,
     );
   }
 

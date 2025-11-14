@@ -390,12 +390,13 @@ export class JobSeekerAuthService {
   }
 
   /**
-   * Verify email with code
+   * Verify email with code and return auth tokens
    */
   async verifyEmail(
     email: string,
     code: string,
-  ): Promise<{ verified: boolean }> {
+    deviceInfo?: any,
+  ): Promise<AuthResult> {
     const normalizedEmail = email.trim().toLowerCase();
     const codeKey = REDIS_KEYS.EMAIL_VERIFICATION_CODE(normalizedEmail);
     const storedCode = await this.redisService.get(codeKey);
@@ -404,9 +405,10 @@ export class JobSeekerAuthService {
       throw new UnauthorizedException('Invalid or expired verification code');
     }
 
-    // Mark email as verified
+    // Mark email as verified and load profile
     const auth = await this.jobseekerAuthRepository.findOne({
       where: { email: normalizedEmail },
+      relations: ['profile'],
     });
 
     if (!auth) {
@@ -420,9 +422,16 @@ export class JobSeekerAuthService {
     // Clean up code
     await this.redisService.del(codeKey);
 
+    // Generate and return tokens
+    const authResult = await this.generateTokens(
+      auth,
+      auth.profile,
+      deviceInfo,
+    );
+
     this.logger.log(`Email verified: ${normalizedEmail}`);
 
-    return { verified: true };
+    return authResult;
   }
 
   /**

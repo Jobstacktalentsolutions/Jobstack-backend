@@ -91,10 +91,14 @@ export class JobSeekerAuthController {
 
   @Post('verify-email')
   @HttpCode(HttpStatus.OK)
-  async verifyEmail(@Body() confirmData: EmailVerificationConfirmDto) {
+  async verifyEmail(
+    @Body() confirmData: EmailVerificationConfirmDto,
+    @ReqDeviceInfo() deviceInfo: RequestDeviceInfo,
+  ) {
     return await this.jobseekerAuthService.verifyEmail(
       confirmData.email,
       confirmData.code,
+      deviceInfo,
     );
   }
 

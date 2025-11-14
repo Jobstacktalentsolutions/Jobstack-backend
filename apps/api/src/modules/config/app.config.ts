@@ -11,8 +11,7 @@ const configService = new ConfigService();
 
 const CORS_OPTIONS: CorsOptions = {
   origin: [
-    'http://localhost:3000',
-    'http://localhost:5173',
+    /^(http:\/\/localhost:\d+)$/,
     'https://jobstackwebsite-frontend.vercel.app',
   ],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
