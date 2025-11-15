@@ -241,12 +241,13 @@ export class JobSeekerAuthService {
         expiresIn: '2d',
       });
 
-      // Update Redis session
+      // Update Redis session (keep existing refresh token ID from payload)
       const redisSessionData: RedisSessionData = {
         userId: auth.id,
         role: UserRole.JOB_SEEKER,
         profileId: auth.profile.id,
         sessionId: session.id,
+        refreshTokenId: payload.jti, // Use refresh token ID from the payload
         deviceFingerprint: this.generateDeviceFingerprint(deviceInfo),
         lastActivity: Date.now(),
       };
@@ -280,25 +281,27 @@ export class JobSeekerAuthService {
   /**
    * Logout - revoke tokens and invalidate session
    */
-  async logout(
-    sessionId: string,
-    accessTokenId: string,
-    refreshTokenId: string,
-  ): Promise<void> {
+  async logout(sessionId: string, accessTokenId: string): Promise<void> {
     try {
-      // Blacklist tokens
-      await Promise.all([
-        this.redisService.setex(
-          REDIS_KEYS.ACCESS_TOKEN_BLACKLIST(accessTokenId),
-          REDIS_KEYS.ACCESS_TOKEN_TTL,
-          'revoked',
-        ),
-        this.redisService.setex(
+      // Get refresh token ID from Redis session
+      const redisSession = await this.getRedisSession(sessionId);
+      const refreshTokenId = redisSession?.refreshTokenId;
+
+      // Blacklist access token
+      await this.redisService.setex(
+        REDIS_KEYS.ACCESS_TOKEN_BLACKLIST(accessTokenId),
+        REDIS_KEYS.ACCESS_TOKEN_TTL,
+        'revoked',
+      );
+
+      // Blacklist refresh token if available
+      if (refreshTokenId) {
+        await this.redisService.setex(
           REDIS_KEYS.REFRESH_TOKEN_BLACKLIST(refreshTokenId),
           REDIS_KEYS.REFRESH_TOKEN_TTL,
           'revoked',
-        ),
-      ]);
+        );
+      }
 
       // Remove Redis session
       await this.removeRedisSession(sessionId);
@@ -312,6 +315,7 @@ export class JobSeekerAuthService {
       this.logger.log(`JobSeeker logged out: session ${sessionId}`);
     } catch (error) {
       this.logger.error(`Logout failed: ${error.message}`);
+      throw error;
     }
   }
 
@@ -710,6 +714,7 @@ export class JobSeekerAuthService {
       role: UserRole.JOB_SEEKER,
       profileId: profile.id,
       sessionId: session.id,
+      refreshTokenId: refreshTokenId,
       deviceFingerprint: this.generateDeviceFingerprint(deviceInfo),
       lastActivity: Date.now(),
     };

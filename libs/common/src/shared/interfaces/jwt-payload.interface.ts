@@ -57,6 +57,7 @@ export interface RedisSessionData {
   role: UserRole;
   profileId?: string;
   sessionId: string;
+  refreshTokenId?: string; // Refresh token ID for logout
   deviceFingerprint?: string;
   lastActivity: number;
 }

@@ -72,11 +72,7 @@ export class JobSeekerAuthController {
   @Delete('logout')
   @HttpCode(HttpStatus.NO_CONTENT)
   async logout(@CurrentUser() user: CurrentUserPayload) {
-    await this.jobseekerAuthService.logout(
-      user.sessionId,
-      user.jti,
-      user.refreshTokenId!,
-    );
+    await this.jobseekerAuthService.logout(user.sessionId, user.jti);
   }
 
   @Post('send-verification-email')
