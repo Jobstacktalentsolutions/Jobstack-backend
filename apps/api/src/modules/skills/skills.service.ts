@@ -13,6 +13,7 @@ import {
   Proficiency,
   SkillStatus,
 } from '@app/common/database/entities/schema.enum';
+import { UserRole } from '@app/common/shared/enums/user-roles.enum';
 
 @Injectable()
 export class SkillsService {
@@ -101,7 +102,7 @@ export class SkillsService {
     try {
       await this.notificationService.createAppNotification(
         'system', // Placeholder - in real implementation, get actual admin IDs
-        'admin',
+        UserRole.JOB_SEEKER,
         {
           title: 'New skill suggested',
           message: `A new skill was suggested: ${saved.name}`,
