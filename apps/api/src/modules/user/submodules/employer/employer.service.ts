@@ -8,6 +8,7 @@ import { Repository, Like, FindOptionsWhere } from 'typeorm';
 import { EmployerProfile } from '@app/common/database/entities/EmployerProfile.entity';
 import { EmployerAuth } from '@app/common/database/entities/EmployerAuth.entity';
 import { EmployerVerification } from '@app/common/database/entities/EmployerVerification.entity';
+import { Document } from '@app/common/database/entities';
 import { StorageService } from '@app/common/storage/storage.service';
 import type { MulterFile } from '@app/common/shared/types';
 import { DocumentType } from '@app/common/database/entities/schema.enum';
@@ -88,6 +89,31 @@ export class EmployerService {
     profile.profilePicture = undefined;
     profile.profilePictureId = undefined;
     await this.profileRepo.save(profile);
+  }
+
+  /**
+   * Get company logo with signed URL
+   */
+  async getCompanyLogo(
+    userId: string,
+  ): Promise<{ document: Document; signedUrl: string } | null> {
+    const profile = await this.profileRepo.findOne({
+      where: { id: userId },
+      relations: ['profilePicture'],
+    });
+    if (!profile || !profile.profilePicture) {
+      return null;
+    }
+
+    const document = profile.profilePicture;
+    const signedUrl = await this.storageService.getSignedUrl(
+      document.fileKey,
+      3600, // 1 hour expiry
+      false, // not for download, just viewing
+      document.bucketType,
+    );
+
+    return { document, signedUrl };
   }
 
   /**

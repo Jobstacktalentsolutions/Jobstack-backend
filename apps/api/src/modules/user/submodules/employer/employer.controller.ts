@@ -77,6 +77,32 @@ export class EmployerController {
     return;
   }
 
+  /**
+   * Get company logo with signed URL
+   */
+  @Get('profile/company-logo')
+  @HttpCode(HttpStatus.OK)
+  async getCompanyLogo(@CurrentUser() user: CurrentUserPayload) {
+    const result = await this.employerService.getCompanyLogo(user.id);
+    if (!result) {
+      throw new BadRequestException('No company logo found');
+    }
+    return {
+      success: true,
+      document: {
+        id: result.document.id,
+        fileName: result.document.fileName,
+        originalName: result.document.originalName,
+        mimeType: result.document.mimeType,
+        size: result.document.size,
+        type: result.document.type,
+        description: result.document.description,
+        createdAt: result.document.createdAt,
+      },
+      signedUrl: result.signedUrl,
+    };
+  }
+
   // Admin routes for managing employers
   @Get('admin/all')
   @UseGuards(AdminJwtGuard)

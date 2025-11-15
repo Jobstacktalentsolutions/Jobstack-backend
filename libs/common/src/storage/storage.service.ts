@@ -149,9 +149,10 @@ export class StorageService {
   ): Promise<string> {
     const bucket = this.getBucketForType(bucketType, provider);
     const providerInstance = this.getProvider(provider);
-    if (bucketType === 'public') {
-      return providerInstance.getPublicFileUrl(fileKey, bucket);
-    }
+    // todo: for development we will always return private url
+    // if (bucketType === 'public') {
+    //   return providerInstance.getPublicFileUrl(fileKey, bucket);
+    // }
     return await providerInstance.getSignedFileUrl(fileKey, bucket, expiry);
   }
 
