@@ -3,18 +3,17 @@ import {
   Get,
   Put,
   Body,
-  Req,
   UseGuards,
   Patch,
   Param,
   Post,
   Delete,
 } from '@nestjs/common';
-import type { Request } from 'express';
 import { AdminJwtGuard, RequireAdminRole } from 'apps/api/src/guards';
 import { AdminService } from './admin.service';
 import { VerificationStatus } from '@app/common/shared/enums/employer-docs.enum';
 import { AdminRole } from '@app/common/shared/enums/roles.enum';
+import { CurrentUser, type CurrentUserPayload } from '@app/common/shared';
 
 @Controller('admin')
 @UseGuards(AdminJwtGuard)
@@ -22,50 +21,52 @@ export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 
   @Get('me')
-  async getMyProfile(@Req() req: Request) {
-    const user = (req as any).user as { sub: string };
-    const result = await this.adminService.getAdminProfile(user.sub);
+  async getMyProfile(@CurrentUser() user: CurrentUserPayload) {
+    const result = await this.adminService.getAdminProfile(user.id);
     return { success: true, profile: result };
   }
 
   @Get('profile')
-  async getProfile(@Req() req: Request) {
-    const user = (req as any).user as { sub: string };
-    return this.adminService.getAdminProfile(user.sub);
+  async getProfile(@CurrentUser() user: CurrentUserPayload) {
+    return this.adminService.getAdminProfile(user.id);
   }
 
   @Put('profile')
-  async updateProfile(@Body() updateData: any, @Req() req: Request) {
-    const user = (req as any).user as { sub: string };
-    return this.adminService.updateAdminProfile(user.sub, updateData);
+  async updateProfile(
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() updateData: any,
+  ) {
+    return this.adminService.updateAdminProfile(user.id, updateData);
   }
 
   // Create a new admin (requires USER_MANAGEMENT role or higher privilege)
   @Post('admins')
   @RequireAdminRole(AdminRole.USER_MANAGEMENT.role)
-  async createAdmin(@Req() req: Request, @Body() body: any) {
-    const user = (req as any).user as { sub: string };
-    return this.adminService.createAdmin(user.sub, body);
+  async createAdmin(
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() body: any,
+  ) {
+    return this.adminService.createAdmin(user.id, body);
   }
 
   // Delete an admin (requires SUPER_ADMIN or higher privilege)
   @Delete('admins/:id')
   @RequireAdminRole(AdminRole.SUPER_ADMIN.role)
-  async deleteAdmin(@Req() req: Request, @Param('id') adminId: string) {
-    const user = (req as any).user as { sub: string };
-    return this.adminService.deleteAdmin(user.sub, adminId);
+  async deleteAdmin(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') adminId: string,
+  ) {
+    return this.adminService.deleteAdmin(user.id, adminId);
   }
 
   @Get('all')
-  async getAllAdmins(@Req() req: Request) {
-    const user = (req as any).user as { sub: string };
-    return this.adminService.getAllAdmins(user.sub);
+  async getAllAdmins(@CurrentUser() user: CurrentUserPayload) {
+    return this.adminService.getAllAdmins(user.id);
   }
 
   @Get('system-overview')
-  async getSystemOverview(@Req() req: Request) {
-    const user = (req as any).user as { sub: string };
-    return this.adminService.getSystemOverview(user.sub);
+  async getSystemOverview(@CurrentUser() user: CurrentUserPayload) {
+    return this.adminService.getSystemOverview(user.id);
   }
 
   @Patch('employers/:id/verification/approve')

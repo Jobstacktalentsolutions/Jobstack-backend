@@ -1,18 +1,9 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 import type { Request } from 'express';
-import { UserRole } from '../enums/user-roles.enum';
+import type { AccessTokenPayload } from '../interfaces/jwt-payload.interface';
 
-// Interface for the user payload structure
-export interface CurrentUserPayload {
-  id: string;
-  email: string;
-  role: UserRole;
-  profileId?: string;
-  sessionId: string;
-  jti: string;
-  refreshTokenId?: string;
-  [key: string]: any;
-}
+// Re-export AccessTokenPayload as CurrentUserPayload for convenience
+export type CurrentUserPayload = AccessTokenPayload;
 
 // Param decorator to extract current user from request
 export const CurrentUser = createParamDecorator(
@@ -21,7 +12,7 @@ export const CurrentUser = createParamDecorator(
     ctx: ExecutionContext,
   ): CurrentUserPayload | string | null => {
     const request = ctx.switchToHttp().getRequest<Request>();
-    const user = request.user as CurrentUserPayload;
+    const user = request.user as AccessTokenPayload;
 
     if (!user) {
       return null;
