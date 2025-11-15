@@ -397,6 +397,17 @@ export class EmployerAuthService {
     // Clean up code
     await this.redisService.del(codeKey);
 
+    // Send welcome email after verification
+    await this.notificationService.sendEmail({
+      to: email.toLowerCase(),
+      subject: 'Welcome to JobStack',
+      template: EmailTemplateType.WELCOME,
+      context: {
+        firstName: auth.profile.firstName,
+        userType: UserRole.EMPLOYER,
+      },
+    });
+
     // Generate and return tokens
     const authResult = await this.generateTokens(
       auth,

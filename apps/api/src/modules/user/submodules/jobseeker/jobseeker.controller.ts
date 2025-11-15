@@ -79,6 +79,66 @@ export class JobseekerController {
     };
   }
 
+  // Upload profile picture for authenticated jobseeker
+  @Post('profile/picture')
+  @UseGuards(JobSeekerJwtGuard)
+  @UseInterceptors(FileInterceptor('file'))
+  @HttpCode(HttpStatus.OK)
+  async uploadProfilePicture(
+    @UploadedFile() file: MulterFile,
+    @Req() req: Request,
+  ) {
+    if (!file) {
+      throw new BadRequestException('No file uploaded');
+    }
+    const user = (req as any).user as { sub: string };
+    const result = await this.jobseekerService.uploadProfilePicture(
+      user.sub,
+      file,
+    );
+    return {
+      success: true,
+      pictureUrl: result.pictureUrl,
+      documentId: result.documentId,
+    };
+  }
+
+  // Delete profile picture for authenticated jobseeker
+  @Delete('profile/picture')
+  @UseGuards(JobSeekerJwtGuard)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async deleteProfilePicture(@Req() req: Request) {
+    const user = (req as any).user as { sub: string };
+    await this.jobseekerService.deleteProfilePicture(user.sub);
+    return;
+  }
+
+  // Get profile picture document with signed URL
+  @Get('profile/picture')
+  @UseGuards(JobSeekerJwtGuard)
+  @HttpCode(HttpStatus.OK)
+  async getProfilePicture(@Req() req: Request) {
+    const user = (req as any).user as { sub: string };
+    const result = await this.jobseekerService.getProfilePicture(user.sub);
+    if (!result) {
+      throw new BadRequestException('No profile picture found');
+    }
+    return {
+      success: true,
+      document: {
+        id: result.document.id,
+        fileName: result.document.fileName,
+        originalName: result.document.originalName,
+        mimeType: result.document.mimeType,
+        size: result.document.size,
+        type: result.document.type,
+        description: result.document.description,
+        createdAt: result.document.createdAt,
+      },
+      signedUrl: result.signedUrl,
+    };
+  }
+
   // Update jobseeker profile
   @Put('profile')
   @UseGuards(JobSeekerJwtGuard)

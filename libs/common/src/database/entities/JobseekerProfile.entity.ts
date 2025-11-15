@@ -40,8 +40,12 @@ export class JobSeekerProfile {
   @Column()
   phoneNumber: string;
 
-  @Column({ nullable: true })
-  profilePictureUrl?: string;
+  @Column('uuid', { nullable: true })
+  profilePictureId?: string;
+
+  @OneToOne(() => Document, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'profilePictureId' })
+  profilePicture?: Document;
 
   @Column({ nullable: true })
   address?: string;

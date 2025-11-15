@@ -119,17 +119,6 @@ export class JobSeekerAuthService {
       // Send verification email
       await this.sendVerificationEmail(email.toLowerCase());
 
-      // Send welcome email
-      await this.notificationService.sendEmail({
-        to: email.toLowerCase(),
-        subject: 'Welcome to JobStack',
-        template: EmailTemplateType.WELCOME,
-        context: {
-          firstName,
-          userType: UserRole.JOB_SEEKER,
-        },
-      });
-
       // Generate tokens
       const authResult = await this.generateTokens(auth, profile, deviceInfo);
 
@@ -421,6 +410,17 @@ export class JobSeekerAuthService {
 
     // Clean up code
     await this.redisService.del(codeKey);
+
+    // Send welcome email after verification
+    await this.notificationService.sendEmail({
+      to: normalizedEmail,
+      subject: 'Welcome to JobStack',
+      template: EmailTemplateType.WELCOME,
+      context: {
+        firstName: auth.profile.firstName,
+        userType: UserRole.JOB_SEEKER,
+      },
+    });
 
     // Generate and return tokens
     const authResult = await this.generateTokens(

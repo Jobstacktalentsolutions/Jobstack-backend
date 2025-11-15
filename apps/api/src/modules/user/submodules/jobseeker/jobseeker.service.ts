@@ -121,6 +121,94 @@ export class JobseekerService {
     return { document, signedUrl };
   }
 
+  // Upload and set profile picture document (image-only)
+  async uploadProfilePicture(
+    userId: string,
+    file: MulterFile,
+  ): Promise<{ pictureUrl: string; documentId: string }> {
+    const profile = await this.profileRepo.findOne({
+      where: { id: userId },
+    });
+    if (!profile) throw new NotFoundException('Jobseeker not found');
+
+    // Enforce image mimetypes
+    const allowedMimeTypes = [
+      'image/jpeg',
+      'image/png',
+      'image/gif',
+      'image/webp',
+    ];
+    const mime = (file.mimetype || '').toLowerCase();
+    if (!allowedMimeTypes.includes(mime)) {
+      throw new BadRequestException('Only image files are allowed');
+    }
+
+    // Delete existing profile picture if it exists
+    if (profile.profilePictureId) {
+      await this.deleteProfilePicture(userId);
+    }
+
+    const upload = await this.storageService.uploadFile(file as any, {
+      folder: `jobseekers/${profile.id}/profile-picture`,
+      bucketType: 'public',
+      documentType: DocumentType.PROFILE_PICTURE,
+      uploadedBy: userId,
+      description: 'Job seeker profile picture',
+    });
+
+    profile.profilePictureId = upload.document.id;
+    await this.profileRepo.save(profile);
+
+    return {
+      pictureUrl: upload.url,
+      documentId: upload.document.id,
+    };
+  }
+
+  // Delete profile picture document
+  async deleteProfilePicture(userId: string): Promise<void> {
+    const profile = await this.profileRepo.findOne({
+      where: { id: userId },
+    });
+    if (!profile) throw new NotFoundException('Jobseeker not found');
+
+    const currentDocumentId = profile.profilePictureId;
+    if (!currentDocumentId) return;
+
+    await this.profileRepo.update(
+      {
+        id: profile.id,
+      },
+      {
+        profilePictureId: undefined,
+      },
+    );
+    await this.storageService.deleteDocument(currentDocumentId);
+  }
+
+  // Get profile picture document with signed URL
+  async getProfilePicture(
+    userId: string,
+  ): Promise<{ document: Document; signedUrl: string } | null> {
+    const profile = await this.profileRepo.findOne({
+      where: { id: userId },
+      relations: ['profilePicture'],
+    });
+    if (!profile || !profile.profilePicture) {
+      return null;
+    }
+
+    const document = profile.profilePicture;
+    const signedUrl = await this.storageService.getSignedUrl(
+      document.fileKey,
+      3600, // 1 hour expiry
+      false, // not for download, just viewing
+      document.bucketType,
+    );
+
+    return { document, signedUrl };
+  }
+
   // Update jobseeker profile with smart skills handling
   async updateProfile(
     userId: string,
@@ -198,7 +286,7 @@ export class JobseekerService {
     // Return profile with relations
     const profileWithRelations = await this.profileRepo.findOne({
       where: { id: updatedProfile.id },
-      relations: ['userSkills', 'userSkills.skill'],
+      relations: ['userSkills', 'userSkills.skill', 'profilePicture'],
     });
 
     if (!profileWithRelations) {
@@ -212,7 +300,7 @@ export class JobseekerService {
   async getProfile(userId: string): Promise<JobSeekerProfile> {
     const profile = await this.profileRepo.findOne({
       where: { id: userId },
-      relations: ['userSkills', 'userSkills.skill'],
+      relations: ['userSkills', 'userSkills.skill', 'profilePicture'],
     });
     if (!profile) throw new NotFoundException('Jobseeker not found');
 
@@ -223,7 +311,13 @@ export class JobseekerService {
   async getAllJobSeekers(adminId: string): Promise<any[]> {
     // Verify admin has permission (you can add admin verification logic here)
     const profiles = await this.profileRepo.find({
-      relations: ['auth', 'userSkills', 'userSkills.skill', 'cvDocument'],
+      relations: [
+        'auth',
+        'userSkills',
+        'userSkills.skill',
+        'cvDocument',
+        'profilePicture',
+      ],
       order: { createdAt: 'DESC' },
     });
 
@@ -240,7 +334,13 @@ export class JobseekerService {
     // Verify admin has permission (you can add admin verification logic here)
     const profile = await this.profileRepo.findOne({
       where: { id: jobSeekerId },
-      relations: ['auth', 'userSkills', 'userSkills.skill', 'cvDocument'],
+      relations: [
+        'auth',
+        'userSkills',
+        'userSkills.skill',
+        'cvDocument',
+        'profilePicture',
+      ],
     });
 
     if (!profile) {
