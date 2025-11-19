@@ -5,6 +5,23 @@ export enum SkillStatus {
   SUGGESTED = 'SUGGESTED',
 }
 
+export enum SkillCategory {
+  TECHNICAL = 'TECHNICAL',
+  BUSINESS = 'BUSINESS',
+  DESIGN = 'DESIGN',
+  FINANCE_ACCOUNTING = 'FINANCE_ACCOUNTING',
+  SALES_MARKETING = 'SALES_MARKETING',
+  OPERATIONS = 'OPERATIONS',
+  COMMUNICATION = 'COMMUNICATION',
+  SOCIAL_MEDIA = 'SOCIAL_MEDIA',
+  SOFTWARE_DEVELOPMENT = 'SOFTWARE_DEVELOPMENT',
+  HOME_SUPPORT = 'HOME_SUPPORT',
+  MAINTENANCE_TRADES = 'MAINTENANCE_TRADES',
+  HOSPITALITY = 'HOSPITALITY',
+  SECURITY = 'SECURITY',
+  TRANSPORT_LOGISTICS = 'TRANSPORT_LOGISTICS',
+}
+
 // Employer related enums
 export enum EmployerType {
   INDIVIDUAL = 'Individual',
@@ -30,6 +47,48 @@ export enum NotificationPriority {
   MEDIUM = 3,
   HIGH = 2,
   URGENT = 1,
+}
+
+export enum DayOfWeek {
+  MONDAY = 'MONDAY',
+  TUESDAY = 'TUESDAY',
+  WEDNESDAY = 'WEDNESDAY',
+  THURSDAY = 'THURSDAY',
+  FRIDAY = 'FRIDAY',
+  SATURDAY = 'SATURDAY',
+  SUNDAY = 'SUNDAY',
+}
+
+export enum EmploymentType {
+  FULL_TIME = 'FULL_TIME',
+  PART_TIME = 'PART_TIME',
+}
+
+export enum EmploymentArrangement {
+  FULL_TIME_EMPLOYEE = 'FULL_TIME_EMPLOYEE',
+  CONTRACT = 'CONTRACT',
+}
+
+export enum WorkMode {
+  REMOTE = 'REMOTE',
+  HYBRID = 'HYBRID',
+  ON_SITE = 'ON_SITE',
+}
+
+export enum JobStatus {
+  DRAFT = 'DRAFT',
+  PUBLISHED = 'PUBLISHED',
+  CLOSED = 'CLOSED',
+}
+
+export enum JobCategory {
+  TECHNOLOGY = 'TECHNOLOGY',
+  BUSINESS = 'BUSINESS',
+  OPERATIONS = 'OPERATIONS',
+  DESIGN = 'DESIGN',
+  MARKETING = 'MARKETING',
+  FINANCE = 'FINANCE',
+  CUSTOMER_SERVICE = 'CUSTOMER_SERVICE',
 }
 
 // Jobseeker related enums

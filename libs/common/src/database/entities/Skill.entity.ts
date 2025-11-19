@@ -1,6 +1,6 @@
 import { Entity, Column, Index } from 'typeorm';
 import { BaseEntity } from './base.entity';
-import { SkillStatus } from './schema.enum';
+import { SkillCategory, SkillStatus } from './schema.enum';
 
 @Entity('skills')
 export class Skill extends BaseEntity {
@@ -13,6 +13,9 @@ export class Skill extends BaseEntity {
 
   @Column({ type: 'jsonb', default: [] })
   synonyms: string[];
+
+  @Column({ type: 'enum', enum: SkillCategory })
+  category: SkillCategory;
 
   @Column({ type: 'enum', enum: SkillStatus, default: SkillStatus.ACTIVE })
   status: SkillStatus;
