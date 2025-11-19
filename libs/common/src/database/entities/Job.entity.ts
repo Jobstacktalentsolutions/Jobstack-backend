@@ -5,10 +5,12 @@ import {
   JoinTable,
   ManyToMany,
   ManyToOne,
+  OneToMany,
 } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { EmployerProfile } from './EmployerProfile.entity';
 import { Skill } from './Skill.entity';
+import { JobApplication } from './JobApplication.entity';
 import {
   DayOfWeek,
   EmploymentArrangement,
@@ -86,4 +88,7 @@ export class Job extends BaseEntity {
 
   @Column('uuid')
   employerId: string;
+
+  @OneToMany(() => JobApplication, (application) => application.job)
+  applications: JobApplication[];
 }

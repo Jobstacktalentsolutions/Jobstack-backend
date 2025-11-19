@@ -7,11 +7,14 @@ import {
   PrimaryColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  OneToMany,
 } from 'typeorm';
 import { EmployerAuth } from './EmployerAuth.entity';
 import { EmployerVerification } from './EmployerVerification.entity';
 import { Document } from './Document.entity';
 import { EmployerType } from './schema.enum';
+import { Job } from './Job.entity';
+import { Employee } from './Employee.entity';
 
 @Entity('employer_profiles')
 export class EmployerProfile {
@@ -59,4 +62,10 @@ export class EmployerProfile {
 
   @OneToOne(() => EmployerVerification, (v) => v.employer)
   verification?: EmployerVerification;
+
+  @OneToMany(() => Job, (job) => job.employer)
+  jobs: Job[];
+
+  @OneToMany(() => Employee, (employee) => employee.employer)
+  employees: Employee[];
 }

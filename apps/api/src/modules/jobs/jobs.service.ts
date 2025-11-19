@@ -1,0 +1,241 @@
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { In, Repository, SelectQueryBuilder } from 'typeorm';
+import { EmployerProfile, Job, Skill } from '@app/common/database/entities';
+import {
+  CreateJobDto,
+  JobQueryDto,
+  UpdateJobDto,
+  UpdateJobStatusDto,
+} from './dto';
+import { JobStatus } from '@app/common/database/entities/schema.enum';
+
+@Injectable()
+export class JobsService {
+  constructor(
+    @InjectRepository(Job)
+    private readonly jobRepo: Repository<Job>,
+    @InjectRepository(Skill)
+    private readonly skillRepo: Repository<Skill>,
+    @InjectRepository(EmployerProfile)
+    private readonly employerRepo: Repository<EmployerProfile>,
+  ) {}
+
+  private readonly jobRelations = ['skills'];
+
+  // Creates a new job on behalf of an employer
+  async createJob(employerId: string, dto: CreateJobDto) {
+    await this.ensureEmployerExists(employerId);
+    this.assertSalaryRange(dto.salaryMin, dto.salaryMax);
+    const skills = await this.loadSkills(dto.skillIds);
+
+    const job = this.jobRepo.create({
+      title: dto.title,
+      description: dto.description,
+      category: dto.category,
+      employmentType: dto.employmentType,
+      employmentArrangement: dto.employmentArrangement,
+      workMode: dto.workMode,
+      salaryMin: dto.salaryMin,
+      salaryMax: dto.salaryMax,
+      state: dto.state,
+      city: dto.city,
+      address: dto.address,
+      startDay: dto.startDay,
+      endDay: dto.endDay,
+      tags: dto.tags ?? [],
+      applicationDeadline: dto.applicationDeadline
+        ? new Date(dto.applicationDeadline)
+        : undefined,
+      employerId,
+      skills,
+      status: JobStatus.DRAFT,
+    });
+
+    const created = await this.jobRepo.save(job);
+    return this.getEmployerJobById(employerId, created.id);
+  }
+
+  // Lists jobs for a particular employer with pagination
+  async getEmployerJobs(employerId: string, query: JobQueryDto) {
+    const qb = this.baseJobQuery().where('job.employerId = :employerId', {
+      employerId,
+    });
+    this.applyJobFilters(qb, query);
+
+    const [items, total, page, limit] = await this.executePagedQuery(qb, query);
+    return { items, total, page, limit };
+  }
+
+  // Retrieves a single employer job ensuring ownership
+  async getEmployerJobById(employerId: string, jobId: string) {
+    const job = await this.jobRepo.findOne({
+      where: { id: jobId, employerId },
+      relations: this.jobRelations,
+    });
+    if (!job) {
+      throw new NotFoundException('Job not found');
+    }
+    return job;
+  }
+
+  // Updates an employer job payload
+  async updateJob(employerId: string, jobId: string, dto: UpdateJobDto) {
+    const job = await this.getEmployerJobById(employerId, jobId);
+    this.assertSalaryRange(
+      dto.salaryMin ?? job.salaryMin,
+      dto.salaryMax ?? job.salaryMax,
+    );
+
+    if (dto.skillIds) {
+      job.skills = await this.loadSkills(dto.skillIds);
+    }
+
+    Object.assign(job, {
+      title: dto.title ?? job.title,
+      description: dto.description ?? job.description,
+      category: dto.category ?? job.category,
+      employmentType: dto.employmentType ?? job.employmentType,
+      employmentArrangement:
+        dto.employmentArrangement ?? job.employmentArrangement,
+      workMode: dto.workMode ?? job.workMode,
+      salaryMin: dto.salaryMin ?? job.salaryMin,
+      salaryMax: dto.salaryMax ?? job.salaryMax,
+      state: dto.state ?? job.state,
+      city: dto.city ?? job.city,
+      address: dto.address ?? job.address,
+      startDay: dto.startDay ?? job.startDay,
+      endDay: dto.endDay ?? job.endDay,
+      tags: dto.tags ?? job.tags,
+      applicationDeadline: dto.applicationDeadline
+        ? new Date(dto.applicationDeadline)
+        : job.applicationDeadline,
+    });
+
+    await this.jobRepo.save(job);
+    return this.getEmployerJobById(employerId, jobId);
+  }
+
+  // Deletes a job owned by an employer
+  async deleteJob(employerId: string, jobId: string) {
+    const job = await this.getEmployerJobById(employerId, jobId);
+    await this.jobRepo.remove(job);
+    return { success: true };
+  }
+
+  // Updates job status for employer scope
+  async updateJobStatus(
+    employerId: string,
+    jobId: string,
+    dto: UpdateJobStatusDto,
+  ) {
+    const job = await this.getEmployerJobById(employerId, jobId);
+    job.status = dto.status;
+    await this.jobRepo.save(job);
+    return this.getEmployerJobById(employerId, jobId);
+  }
+
+  // Lists jobs for admin with filters
+  async getAdminJobs(query: JobQueryDto) {
+    const qb = this.baseJobQuery();
+    this.applyJobFilters(qb, query);
+
+    const [items, total, page, limit] = await this.executePagedQuery(qb, query);
+    return { items, total, page, limit };
+  }
+
+  // Retrieves job by id for admin
+  async getAdminJob(jobId: string) {
+    const job = await this.jobRepo.findOne({
+      where: { id: jobId },
+      relations: [...this.jobRelations, 'employer'],
+    });
+    if (!job) {
+      throw new NotFoundException('Job not found');
+    }
+    return job;
+  }
+
+  // Updates job status for admin scope
+  async adminUpdateJobStatus(jobId: string, dto: UpdateJobStatusDto) {
+    const job = await this.getAdminJob(jobId);
+    job.status = dto.status;
+    await this.jobRepo.save(job);
+    return this.getAdminJob(jobId);
+  }
+
+  // Deletes job via admin override
+  async adminDeleteJob(jobId: string) {
+    const job = await this.getAdminJob(jobId);
+    await this.jobRepo.remove(job);
+    return { success: true };
+  }
+
+  // Ensures employer exists before job actions
+  private async ensureEmployerExists(employerId: string) {
+    const exists = await this.employerRepo.exist({ where: { id: employerId } });
+    if (!exists) {
+      throw new NotFoundException('Employer not found');
+    }
+  }
+
+  // Validates salary ranges when both values are provided
+  private assertSalaryRange(min?: number, max?: number) {
+    if (min !== undefined && max !== undefined && min > max) {
+      throw new BadRequestException(
+        'salaryMin cannot be greater than salaryMax',
+      );
+    }
+  }
+
+  // Loads skills referenced in payload
+  private async loadSkills(skillIds: string[]) {
+    const skills = await this.skillRepo.find({ where: { id: In(skillIds) } });
+    if (skills.length !== skillIds.length) {
+      throw new BadRequestException('One or more skills are invalid');
+    }
+    return skills;
+  }
+
+  // Builds base query with eager relations
+  private baseJobQuery(): SelectQueryBuilder<Job> {
+    return this.jobRepo
+      .createQueryBuilder('job')
+      .leftJoinAndSelect('job.skills', 'skill')
+      .leftJoinAndSelect('job.employer', 'employer');
+  }
+
+  // Applies reusable filters on a query builder
+  private applyJobFilters(qb: SelectQueryBuilder<Job>, query: JobQueryDto) {
+    if (query.status) {
+      qb.andWhere('job.status = :status', { status: query.status });
+    }
+    if (query.category) {
+      qb.andWhere('job.category = :category', { category: query.category });
+    }
+    if (query.search) {
+      qb.andWhere(
+        '(job.title ILIKE :search OR job.city ILIKE :search OR job.state ILIKE :search)',
+        { search: `%${query.search}%` },
+      );
+    }
+  }
+
+  // Executes pagination logic consistently
+  private async executePagedQuery(
+    qb: SelectQueryBuilder<Job>,
+    query: JobQueryDto,
+  ): Promise<[Job[], number, number, number]> {
+    const page = Math.max(1, query.page ?? 1);
+    const limit = Math.min(100, Math.max(1, query.limit ?? 20));
+    qb.take(limit)
+      .skip((page - 1) * limit)
+      .orderBy('job.createdAt', 'DESC');
+    const [items, total] = await qb.getManyAndCount();
+    return [items, total, page, limit];
+  }
+}

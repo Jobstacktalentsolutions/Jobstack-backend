@@ -1,0 +1,119 @@
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseUUIDPipe,
+  Patch,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
+import { AdminJwtGuard, EmployerJwtGuard } from 'apps/api/src/guards';
+import { JobsService } from './jobs.service';
+import {
+  CreateJobDto,
+  JobQueryDto,
+  UpdateJobDto,
+  UpdateJobStatusDto,
+} from './dto';
+import { CurrentUser, type CurrentUserPayload } from '@app/common/shared';
+
+@Controller('jobs')
+export class JobsController {
+  constructor(private readonly jobsService: JobsService) {}
+
+  // Creates a job for the authenticated employer
+  @Post()
+  @UseGuards(EmployerJwtGuard)
+  createJob(
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() dto: CreateJobDto,
+  ) {
+    return this.jobsService.createJob(user.id, dto);
+  }
+
+  // Lists jobs that belong to the employer
+  @Get()
+  @UseGuards(EmployerJwtGuard)
+  getEmployerJobs(
+    @CurrentUser() user: CurrentUserPayload,
+    @Query() query: JobQueryDto,
+  ) {
+    return this.jobsService.getEmployerJobs(user.id, query);
+  }
+
+  // Retrieves a single employer job
+  @Get(':jobId')
+  @UseGuards(EmployerJwtGuard)
+  getEmployerJob(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('jobId', ParseUUIDPipe) jobId: string,
+  ) {
+    return this.jobsService.getEmployerJobById(user.id, jobId);
+  }
+
+  // Updates employer job data
+  @Patch(':jobId')
+  @UseGuards(EmployerJwtGuard)
+  updateJob(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('jobId', ParseUUIDPipe) jobId: string,
+    @Body() dto: UpdateJobDto,
+  ) {
+    return this.jobsService.updateJob(user.id, jobId, dto);
+  }
+
+  // Updates only the job status
+  @Patch(':jobId/status')
+  @UseGuards(EmployerJwtGuard)
+  updateJobStatus(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('jobId', ParseUUIDPipe) jobId: string,
+    @Body() dto: UpdateJobStatusDto,
+  ) {
+    return this.jobsService.updateJobStatus(user.id, jobId, dto);
+  }
+
+  // Deletes a job and cascading relations
+  @Delete(':jobId')
+  @UseGuards(EmployerJwtGuard)
+  deleteJob(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('jobId', ParseUUIDPipe) jobId: string,
+  ) {
+    return this.jobsService.deleteJob(user.id, jobId);
+  }
+
+  // Lists all jobs for admins
+  @Get('admin')
+  @UseGuards(AdminJwtGuard)
+  getAdminJobs(@Query() query: JobQueryDto) {
+    return this.jobsService.getAdminJobs(query);
+  }
+
+  // Retrieves a specific job for admins
+  @Get('admin/:jobId')
+  @UseGuards(AdminJwtGuard)
+  getAdminJob(@Param('jobId', ParseUUIDPipe) jobId: string) {
+    return this.jobsService.getAdminJob(jobId);
+  }
+
+  // Allows admins to update job status
+  @Patch('admin/:jobId/status')
+  @UseGuards(AdminJwtGuard)
+  adminUpdateJobStatus(
+    @Param('jobId', ParseUUIDPipe) jobId: string,
+    @Body() dto: UpdateJobStatusDto,
+  ) {
+    return this.jobsService.adminUpdateJobStatus(jobId, dto);
+  }
+
+  // Allows admins to delete jobs
+  @Delete('admin/:jobId')
+  @UseGuards(AdminJwtGuard)
+  adminDeleteJob(@Param('jobId', ParseUUIDPipe) jobId: string) {
+    return this.jobsService.adminDeleteJob(jobId);
+  }
+}

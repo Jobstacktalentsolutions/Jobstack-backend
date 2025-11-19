@@ -12,6 +12,8 @@ import { JobseekerSkill } from './JobseekerSkill.entity';
 import { JobseekerAuth } from './JobseekerAuth.entity';
 import { Document } from './Document.entity';
 import { ApprovalStatus } from './schema.enum';
+import { JobApplication } from './JobApplication.entity';
+import { Employee } from './Employee.entity';
 
 @Entity('jobseeker_profiles')
 export class JobSeekerProfile {
@@ -91,4 +93,13 @@ export class JobSeekerProfile {
   @OneToOne(() => JobseekerAuth, (auth) => auth.profile)
   @JoinColumn({ name: 'id' })
   auth: JobseekerAuth;
+
+  @OneToMany(
+    () => JobApplication,
+    (application) => application.jobseekerProfile,
+  )
+  applications: JobApplication[];
+
+  @OneToMany(() => Employee, (employee) => employee.jobseekerProfile)
+  employments: Employee[];
 }
