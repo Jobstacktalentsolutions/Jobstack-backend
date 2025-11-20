@@ -21,6 +21,7 @@ export enum SkillCategory {
   HOSPITALITY = 'HOSPITALITY',
   SECURITY = 'SECURITY',
   TRANSPORT_LOGISTICS = 'TRANSPORT_LOGISTICS',
+  OTHERS = 'OTHERS',
 }
 
 // Employer related enums

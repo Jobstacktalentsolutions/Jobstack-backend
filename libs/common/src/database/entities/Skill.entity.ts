@@ -14,7 +14,11 @@ export class Skill extends BaseEntity {
   @Column({ type: 'jsonb', default: [] })
   synonyms: string[];
 
-  @Column({ type: 'enum', enum: SkillCategory })
+  @Column({
+    type: 'enum',
+    enum: SkillCategory,
+    default: SkillCategory.OTHERS,
+  })
   category: SkillCategory;
 
   @Column({ type: 'enum', enum: SkillStatus, default: SkillStatus.ACTIVE })
