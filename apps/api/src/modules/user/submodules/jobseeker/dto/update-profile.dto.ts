@@ -1,5 +1,12 @@
-import { EmployerType } from '@app/common/database/entities/schema.enum';
-import { IsString, IsOptional, IsArray, IsUUID, IsEnum } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsArray,
+  IsUUID,
+  IsPhoneNumber,
+  IsInt,
+  Min,
+} from 'class-validator';
 
 export class UpdateProfileDto {
   // Basic profile fields
@@ -18,6 +25,10 @@ export class UpdateProfileDto {
   @IsString()
   @IsOptional()
   brief?: string;
+
+  @IsOptional()
+  @IsString()
+  phoneNumber?: string;
 
   @IsString()
   @IsOptional()
@@ -50,4 +61,9 @@ export class UpdateProfileDto {
 
   @IsOptional()
   maxExpectedSalary?: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  yearsOfExperience?: number;
 }

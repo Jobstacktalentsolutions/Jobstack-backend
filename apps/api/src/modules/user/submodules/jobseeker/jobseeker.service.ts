@@ -232,6 +232,9 @@ export class JobseekerService {
     if (updateData.brief !== undefined) {
       profile.brief = updateData.brief;
     }
+    if (updateData.phoneNumber !== undefined) {
+      profile.phoneNumber = updateData.phoneNumber;
+    }
     if (updateData.preferredLocation !== undefined) {
       profile.preferredLocation = updateData.preferredLocation;
     }
@@ -249,6 +252,9 @@ export class JobseekerService {
     }
     if (updateData.maxExpectedSalary !== undefined) {
       profile.maxExpectedSalary = updateData.maxExpectedSalary;
+    }
+    if (updateData.yearsOfExperience !== undefined) {
+      profile.yearsOfExperience = updateData.yearsOfExperience;
     }
 
     // Handle skills smartly

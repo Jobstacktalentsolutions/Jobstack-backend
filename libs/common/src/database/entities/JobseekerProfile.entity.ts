@@ -61,6 +61,9 @@ export class JobSeekerProfile {
   @Column({ type: 'text', nullable: true })
   brief?: string;
 
+  @Column({ type: 'int', nullable: true })
+  yearsOfExperience?: number;
+
   @Column({ type: 'text', nullable: true })
   preferredLocation?: string;
 
