@@ -25,6 +25,12 @@ export class EmployerVerification extends BaseEntity {
   companyAddress?: string;
 
   @Column({ nullable: true })
+  companyWebsite?: string;
+
+  @Column({ nullable: true })
+  companyDescription?: string;
+
+  @Column({ nullable: true })
   state?: string;
 
   @Column({ nullable: true })
