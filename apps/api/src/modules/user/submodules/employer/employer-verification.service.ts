@@ -162,6 +162,46 @@ export class EmployerVerificationService {
     });
   }
 
+  // Get single verification document with signed URL for current user
+  async getMyVerificationDocumentWithSignedUrl(
+    userId: string,
+    documentId: string,
+  ) {
+    const profile = await this.profileRepo.findOne({
+      where: { id: userId },
+    });
+    if (!profile) throw new NotFoundException('Employer profile not found');
+
+    const verification = await this.verificationRepo.findOne({
+      where: { employerId: profile.id },
+    });
+
+    if (!verification) {
+      throw new NotFoundException('Verification not found');
+    }
+
+    const verificationDoc = await this.verificationDocRepo.findOne({
+      where: { id: documentId, verificationId: verification.id },
+      relations: ['document'],
+    });
+
+    if (!verificationDoc || !verificationDoc.document) {
+      throw new NotFoundException('Document not found');
+    }
+
+    const signedUrl = await this.storageService.getSignedUrl(
+      verificationDoc.document.fileKey,
+      3600,
+      false,
+      verificationDoc.document.bucketType,
+    );
+
+    return {
+      document: verificationDoc,
+      signedUrl,
+    };
+  }
+
   // Delete a verification document (employer only)
   async deleteVerificationDocument(userId: string, documentId: string) {
     const profile = await this.profileRepo.findOne({

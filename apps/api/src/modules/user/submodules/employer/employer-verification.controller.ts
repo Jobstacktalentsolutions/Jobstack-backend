@@ -52,6 +52,18 @@ export class EmployerVerificationController {
     return this.verificationService.getMyVerificationDocuments(user.id);
   }
 
+  // Get single verification document with signed URL
+  @Get('documents/:id')
+  async getDocument(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param() params: UuidParamDto,
+  ) {
+    return this.verificationService.getMyVerificationDocumentWithSignedUrl(
+      user.id,
+      params.id,
+    );
+  }
+
   // Upload a single verification document
   @Post('documents')
   @UseInterceptors(FileInterceptor('file'))
