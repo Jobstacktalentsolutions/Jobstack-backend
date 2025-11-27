@@ -16,7 +16,7 @@ import {
   EmployeeQueryDto,
   UpdateEmployeeDto,
   UpdateEmployeeStatusDto,
-} from './dto';
+} from '../../dto';
 import {
   EmployeeStatus,
   EmploymentArrangement,

@@ -9,11 +9,11 @@ import {
   Skill,
 } from '@app/common/database/entities';
 import { JobsController } from './jobs.controller';
-import { JobApplicationsController } from './job-applications.controller';
-import { EmployeesController } from './employees.controller';
+import { JobApplicationsController } from './submodules/application/job-applications.controller';
+import { EmployeesController } from './submodules/employees/employees.controller';
 import { JobsService } from './jobs.service';
 import { JobApplicationsService } from './job-applications.service';
-import { EmployeesService } from './employees.service';
+import { EmployeesService } from './submodules/employees/employees.service';
 import {
   AdminJwtGuard,
   EmployerJwtGuard,
