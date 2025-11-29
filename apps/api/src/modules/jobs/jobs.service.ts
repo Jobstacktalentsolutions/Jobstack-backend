@@ -139,6 +139,20 @@ export class JobsService {
     return this.getEmployerJobById(employerId, jobId);
   }
 
+  // Lists all published jobs for jobseekers (for explore/browse functionality)
+  async getPublishedJobs(query: JobQueryDto) {
+    const qb = this.baseJobQuery()
+      .where('job.status = :status', { status: JobStatus.PUBLISHED })
+      .andWhere(
+        '(job.applicationDeadline IS NULL OR job.applicationDeadline > :now)',
+        { now: new Date() },
+      );
+    this.applyJobFilters(qb, query);
+
+    const [items, total, page, limit] = await this.executePagedQuery(qb, query);
+    return { items, total, page, limit };
+  }
+
   // Lists jobs for admin with filters
   async getAdminJobs(query: JobQueryDto) {
     const qb = this.baseJobQuery();

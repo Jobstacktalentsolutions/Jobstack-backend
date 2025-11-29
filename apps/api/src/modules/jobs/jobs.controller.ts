@@ -53,6 +53,25 @@ export class JobsController {
     return this.jobsService.getEmployerJobs(user.id, query);
   }
 
+  // Gets job recommendations for authenticated job seeker
+  // IMPORTANT: This route must come before @Get(':jobId') to avoid route conflicts
+  @Get('recommendations')
+  @UseGuards(JobSeekerJwtGuard)
+  getJobRecommendations(
+    @CurrentUser() user: CurrentUserPayload,
+    @Query() query: JobRecommendationQueryDto,
+  ) {
+    return this.jobRecommendationsService.getJobRecommendations(user.id, query);
+  }
+
+  // Gets all published jobs for jobseekers (for explore/browse)
+  // IMPORTANT: This route must come before @Get(':jobId') to avoid route conflicts
+  @Get('published')
+  @UseGuards(JobSeekerJwtGuard)
+  getPublishedJobs(@Query() query: JobQueryDto) {
+    return this.jobsService.getPublishedJobs(query);
+  }
+
   // Retrieves a single employer job
   @Get(':jobId')
   @UseGuards(EmployerJwtGuard)
@@ -93,16 +112,6 @@ export class JobsController {
     @Param('jobId', ParseUUIDPipe) jobId: string,
   ) {
     return this.jobsService.deleteJob(user.id, jobId);
-  }
-
-  // Gets job recommendations for authenticated job seeker
-  @Get('recommendations')
-  @UseGuards(JobSeekerJwtGuard)
-  getJobRecommendations(
-    @CurrentUser() user: CurrentUserPayload,
-    @Query() query: JobRecommendationQueryDto,
-  ) {
-    return this.jobRecommendationsService.getJobRecommendations(user.id, query);
   }
 
   // Lists all jobs for admins

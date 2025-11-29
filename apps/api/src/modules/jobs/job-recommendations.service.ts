@@ -49,8 +49,8 @@ export class JobRecommendationsService {
     qb.andWhere(
       `NOT EXISTS (
         SELECT 1 FROM job_applications application 
-        WHERE application.jobId = job.id 
-        AND application.jobseekerProfileId = :jobSeekerId
+        WHERE application."jobId" = job.id 
+        AND application."jobseekerProfileId" = :jobSeekerId
       )`,
       { jobSeekerId },
     );
