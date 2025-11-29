@@ -2,6 +2,7 @@ export * from './create-job.dto';
 export * from './update-job.dto';
 export * from './job-query.dto';
 export * from './update-job-status.dto';
+export * from './job-recommendation-query.dto';
 export * from '../submodules/application/dto/create-job-application.dto';
 export * from '../submodules/application/dto/application-query.dto';
 export * from '../submodules/application/dto/update-application-status.dto';

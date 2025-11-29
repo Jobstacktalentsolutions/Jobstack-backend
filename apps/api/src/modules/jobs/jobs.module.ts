@@ -6,12 +6,14 @@ import {
   Job,
   JobApplication,
   JobSeekerProfile,
+  JobseekerSkill,
   Skill,
 } from '@app/common/database/entities';
 import { JobsController } from './jobs.controller';
 import { JobApplicationsController } from './submodules/application/job-applications.controller';
 import { EmployeesController } from './submodules/employees/employees.controller';
 import { JobsService } from './jobs.service';
+import { JobRecommendationsService } from './job-recommendations.service';
 import { JobApplicationsService } from './submodules/application/job-applications.service';
 import { EmployeesService } from './submodules/employees/employees.service';
 import {
@@ -31,6 +33,7 @@ import { JobSeekerAuthModule } from '../auth/submodules/jobseeker/jobseeker-auth
       EmployerProfile,
       JobApplication,
       JobSeekerProfile,
+      JobseekerSkill,
       Employee,
     ]),
     forwardRef(() => AdminAuthModule),
@@ -40,6 +43,7 @@ import { JobSeekerAuthModule } from '../auth/submodules/jobseeker/jobseeker-auth
   controllers: [JobsController, JobApplicationsController, EmployeesController],
   providers: [
     JobsService,
+    JobRecommendationsService,
     JobApplicationsService,
     EmployeesService,
     AdminJwtGuard,

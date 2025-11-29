@@ -10,11 +10,17 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { AdminJwtGuard, EmployerJwtGuard } from 'apps/api/src/guards';
+import {
+  AdminJwtGuard,
+  EmployerJwtGuard,
+  JobSeekerJwtGuard,
+} from 'apps/api/src/guards';
 import { JobsService } from './jobs.service';
+import { JobRecommendationsService } from './job-recommendations.service';
 import {
   CreateJobDto,
   JobQueryDto,
+  JobRecommendationQueryDto,
   UpdateJobDto,
   UpdateJobStatusDto,
 } from './dto';
@@ -22,7 +28,10 @@ import { CurrentUser, type CurrentUserPayload } from '@app/common/shared';
 
 @Controller('jobs')
 export class JobsController {
-  constructor(private readonly jobsService: JobsService) {}
+  constructor(
+    private readonly jobsService: JobsService,
+    private readonly jobRecommendationsService: JobRecommendationsService,
+  ) {}
 
   // Creates a job for the authenticated employer
   @Post()
@@ -84,6 +93,16 @@ export class JobsController {
     @Param('jobId', ParseUUIDPipe) jobId: string,
   ) {
     return this.jobsService.deleteJob(user.id, jobId);
+  }
+
+  // Gets job recommendations for authenticated job seeker
+  @Get('recommendations')
+  @UseGuards(JobSeekerJwtGuard)
+  getJobRecommendations(
+    @CurrentUser() user: CurrentUserPayload,
+    @Query() query: JobRecommendationQueryDto,
+  ) {
+    return this.jobRecommendationsService.getJobRecommendations(user.id, query);
   }
 
   // Lists all jobs for admins
