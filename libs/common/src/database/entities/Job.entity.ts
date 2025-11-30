@@ -77,6 +77,9 @@ export class Job extends BaseEntity {
   })
   status: JobStatus;
 
+  @Column({ type: 'int', default: 0 })
+  applicantsCount: number;
+
   @ManyToMany(() => Skill, { cascade: false })
   @JoinTable({
     name: 'job_skills',

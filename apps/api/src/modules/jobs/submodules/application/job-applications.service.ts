@@ -68,6 +68,10 @@ export class JobApplicationsService {
     });
 
     const saved = await this.applicationRepo.save(application);
+    
+    // Increment applicants count for the job
+    await this.jobRepo.increment({ id: jobId }, 'applicantsCount', 1);
+    
     return this.getApplicationById(saved.id);
   }
 
