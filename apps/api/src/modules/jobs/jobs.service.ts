@@ -141,13 +141,28 @@ export class JobsService {
 
   // Lists all published jobs for jobseekers (for explore/browse functionality)
   async getPublishedJobs(query: JobQueryDto) {
-    const qb = this.baseJobQuery()
-      .where('job.status = :status', { status: JobStatus.PUBLISHED })
-      .andWhere(
-        '(job.applicationDeadline IS NULL OR job.applicationDeadline > :now)',
-        { now: new Date() },
+    // Get jobs that are published and not expired (matches recommendations query structure)
+    const qb = this.baseJobQuery().where('job.status = :status', {
+      status: JobStatus.PUBLISHED,
+    });
+
+    // Filter out expired jobs only if they have a deadline set
+    // Jobs without deadlines are always shown
+    qb.andWhere(
+      '(job.applicationDeadline IS NULL OR job.applicationDeadline > :now)',
+      { now: new Date() },
+    );
+
+    // Apply additional filters but exclude status since we've already filtered by PUBLISHED
+    if (query.category) {
+      qb.andWhere('job.category = :category', { category: query.category });
+    }
+    if (query.search) {
+      qb.andWhere(
+        '(job.title ILIKE :search OR job.description ILIKE :search OR job.city ILIKE :search OR job.state ILIKE :search)',
+        { search: `%${query.search}%` },
       );
-    this.applyJobFilters(qb, query);
+    }
 
     const [items, total, page, limit] = await this.executePagedQuery(qb, query);
     return { items, total, page, limit };
