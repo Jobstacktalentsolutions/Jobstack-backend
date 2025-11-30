@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, SelectQueryBuilder } from 'typeorm';
 import { Job, JobSeekerProfile } from '@app/common/database/entities';
-import { JobRecommendationQueryDto } from './dto';
+import { JobRecommendationQueryDto } from '../dto';
 import { JobStatus } from '@app/common/database/entities/schema.enum';
 
 @Injectable()

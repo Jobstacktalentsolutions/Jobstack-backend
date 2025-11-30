@@ -10,10 +10,13 @@ import {
   Skill,
 } from '@app/common/database/entities';
 import { JobsController } from './jobs.controller';
+import { JobsEmployerController } from './controllers/jobs-employer.controller';
+import { JobsJobseekerController } from './controllers/jobs-jobseeker.controller';
+import { JobsAdminController } from './controllers/jobs-admin.controller';
 import { JobApplicationsController } from './submodules/application/job-applications.controller';
 import { EmployeesController } from './submodules/employees/employees.controller';
-import { JobsService } from './jobs.service';
-import { JobRecommendationsService } from './job-recommendations.service';
+import { JobsService } from './services/jobs.service';
+import { JobRecommendationsService } from './services/job-recommendations.service';
 import { JobApplicationsService } from './submodules/application/job-applications.service';
 import { EmployeesService } from './submodules/employees/employees.service';
 import {
@@ -40,7 +43,14 @@ import { JobSeekerAuthModule } from '../auth/submodules/jobseeker/jobseeker-auth
     forwardRef(() => EmployerAuthModule),
     forwardRef(() => JobSeekerAuthModule),
   ],
-  controllers: [JobsController, JobApplicationsController, EmployeesController],
+  controllers: [
+    JobsEmployerController,
+    JobsJobseekerController,
+    JobsAdminController,
+    JobsController, // Public routes registered last to avoid conflicts
+    JobApplicationsController,
+    EmployeesController,
+  ],
   providers: [
     JobsService,
     JobRecommendationsService,

@@ -11,7 +11,7 @@ import {
   JobQueryDto,
   UpdateJobDto,
   UpdateJobStatusDto,
-} from './dto';
+} from '../dto';
 import { JobStatus } from '@app/common/database/entities/schema.enum';
 
 @Injectable()
@@ -61,11 +61,45 @@ export class JobsService {
     return this.getEmployerJobById(employerId, created.id);
   }
 
-  // Lists jobs for a particular employer with pagination
-  async getEmployerJobs(employerId: string, query: JobQueryDto) {
-    const qb = this.baseJobQuery().where('job.employerId = :employerId', {
-      employerId,
-    });
+  // Unified method to fetch jobs with configurable filters
+  async getJobs(
+    query: JobQueryDto,
+    options?: {
+      employerId?: string;
+      status?: JobStatus;
+      includeExpired?: boolean;
+    },
+  ) {
+    const qb = this.baseJobQuery();
+    const conditions: string[] = [];
+    const params: Record<string, any> = {};
+
+    // Filter by employer if specified
+    if (options?.employerId) {
+      conditions.push('job.employerId = :employerId');
+      params.employerId = options.employerId;
+    }
+
+    // Filter by status if specified
+    if (options?.status) {
+      conditions.push('job.status = :status');
+      params.status = options.status;
+    }
+
+    // Filter out expired jobs for published jobs (unless includeExpired is true)
+    if (options?.status === JobStatus.PUBLISHED && !options?.includeExpired) {
+      conditions.push(
+        '(job.applicationDeadline IS NULL OR job.applicationDeadline > :now)',
+      );
+      params.now = new Date();
+    }
+
+    // Apply base conditions
+    if (conditions.length > 0) {
+      qb.where(conditions.join(' AND '), params);
+    }
+
+    // Apply common filters (category, search, status from query)
     this.applyJobFilters(qb, query);
 
     const [items, total, page, limit] = await this.executePagedQuery(qb, query);
@@ -84,9 +118,27 @@ export class JobsService {
     return job;
   }
 
-  // Updates an employer job payload
-  async updateJob(employerId: string, jobId: string, dto: UpdateJobDto) {
-    const job = await this.getEmployerJobById(employerId, jobId);
+  // Retrieves a single job by ID (public endpoint)
+  async getJobById(jobId: string) {
+    const job = await this.jobRepo.findOne({
+      where: { id: jobId },
+      relations: this.jobRelations,
+    });
+    if (!job) {
+      throw new NotFoundException('Job not found');
+    }
+    return job;
+  }
+
+  // Updates a job (employerId optional - if provided, verifies ownership)
+  async updateJob(jobId: string, dto: UpdateJobDto, employerId?: string) {
+    const job = await this.getJobById(jobId);
+
+    // Verify ownership if employerId is provided
+    if (employerId && job.employerId !== employerId) {
+      throw new NotFoundException('Job not found');
+    }
+
     this.assertSalaryRange(
       dto.salaryMin ?? job.salaryMin,
       dto.salaryMax ?? job.salaryMax,
@@ -119,89 +171,36 @@ export class JobsService {
     });
 
     await this.jobRepo.save(job);
-    return this.getEmployerJobById(employerId, jobId);
+    return this.getJobById(jobId);
   }
 
-  // Deletes a job owned by an employer
-  async deleteJob(employerId: string, jobId: string) {
-    const job = await this.getEmployerJobById(employerId, jobId);
-    await this.jobRepo.remove(job);
-    return { success: true };
-  }
-
-  // Updates job status for employer scope
+  // Updates job status (employerId optional - if provided, verifies ownership)
   async updateJobStatus(
-    employerId: string,
     jobId: string,
     dto: UpdateJobStatusDto,
+    employerId?: string,
   ) {
-    const job = await this.getEmployerJobById(employerId, jobId);
-    job.status = dto.status;
-    await this.jobRepo.save(job);
-    return this.getEmployerJobById(employerId, jobId);
-  }
+    const job = await this.getJobById(jobId);
 
-  // Lists all published jobs for jobseekers (for explore/browse functionality)
-  async getPublishedJobs(query: JobQueryDto) {
-    // Get jobs that are published and not expired (matches recommendations query structure)
-    const qb = this.baseJobQuery().where('job.status = :status', {
-      status: JobStatus.PUBLISHED,
-    });
-
-    // Filter out expired jobs only if they have a deadline set
-    // Jobs without deadlines are always shown
-    qb.andWhere(
-      '(job.applicationDeadline IS NULL OR job.applicationDeadline > :now)',
-      { now: new Date() },
-    );
-
-    // Apply additional filters but exclude status since we've already filtered by PUBLISHED
-    if (query.category) {
-      qb.andWhere('job.category = :category', { category: query.category });
-    }
-    if (query.search) {
-      qb.andWhere(
-        '(job.title ILIKE :search OR job.description ILIKE :search OR job.city ILIKE :search OR job.state ILIKE :search)',
-        { search: `%${query.search}%` },
-      );
-    }
-
-    const [items, total, page, limit] = await this.executePagedQuery(qb, query);
-    return { items, total, page, limit };
-  }
-
-  // Lists jobs for admin with filters
-  async getAdminJobs(query: JobQueryDto) {
-    const qb = this.baseJobQuery();
-    this.applyJobFilters(qb, query);
-
-    const [items, total, page, limit] = await this.executePagedQuery(qb, query);
-    return { items, total, page, limit };
-  }
-
-  // Retrieves job by id for admin
-  async getAdminJob(jobId: string) {
-    const job = await this.jobRepo.findOne({
-      where: { id: jobId },
-      relations: [...this.jobRelations, 'employer'],
-    });
-    if (!job) {
+    // Verify ownership if employerId is provided
+    if (employerId && job.employerId !== employerId) {
       throw new NotFoundException('Job not found');
     }
-    return job;
-  }
 
-  // Updates job status for admin scope
-  async adminUpdateJobStatus(jobId: string, dto: UpdateJobStatusDto) {
-    const job = await this.getAdminJob(jobId);
     job.status = dto.status;
     await this.jobRepo.save(job);
-    return this.getAdminJob(jobId);
+    return this.getJobById(jobId);
   }
 
-  // Deletes job via admin override
-  async adminDeleteJob(jobId: string) {
-    const job = await this.getAdminJob(jobId);
+  // Deletes a job (employerId optional - if provided, verifies ownership)
+  async deleteJob(jobId: string, employerId?: string) {
+    const job = await this.getJobById(jobId);
+
+    // Verify ownership if employerId is provided
+    if (employerId && job.employerId !== employerId) {
+      throw new NotFoundException('Job not found');
+    }
+
     await this.jobRepo.remove(job);
     return { success: true };
   }
@@ -250,7 +249,7 @@ export class JobsService {
     }
     if (query.search) {
       qb.andWhere(
-        '(job.title ILIKE :search OR job.city ILIKE :search OR job.state ILIKE :search)',
+        '(job.title ILIKE :search OR job.description ILIKE :search OR job.city ILIKE :search OR job.state ILIKE :search)',
         { search: `%${query.search}%` },
       );
     }
