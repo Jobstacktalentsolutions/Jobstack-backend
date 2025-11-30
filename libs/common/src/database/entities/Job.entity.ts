@@ -55,11 +55,14 @@ export class Job extends BaseEntity {
   @Column({ type: 'text', nullable: true })
   address?: string;
 
-  @Column({ type: 'enum', enum: DayOfWeek, nullable: true })
-  startDay?: DayOfWeek;
+  @Column({ type: 'jsonb', nullable: true })
+  workDays?: DayOfWeek[];
 
-  @Column({ type: 'enum', enum: DayOfWeek, nullable: true })
-  endDay?: DayOfWeek;
+  @Column({ nullable: true })
+  startTime?: string;
+
+  @Column({ nullable: true })
+  endTime?: string;
 
   @Column({ type: 'jsonb', default: [] })
   tags: string[];

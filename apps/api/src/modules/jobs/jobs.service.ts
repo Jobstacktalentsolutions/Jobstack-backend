@@ -45,8 +45,9 @@ export class JobsService {
       state: dto.state,
       city: dto.city,
       address: dto.address,
-      startDay: dto.startDay,
-      endDay: dto.endDay,
+      workDays: dto.workDays,
+      startTime: dto.startTime,
+      endTime: dto.endTime,
       tags: dto.tags ?? [],
       applicationDeadline: dto.applicationDeadline
         ? new Date(dto.applicationDeadline)
@@ -108,8 +109,9 @@ export class JobsService {
       state: dto.state ?? job.state,
       city: dto.city ?? job.city,
       address: dto.address ?? job.address,
-      startDay: dto.startDay ?? job.startDay,
-      endDay: dto.endDay ?? job.endDay,
+      workDays: dto.workDays ?? job.workDays,
+      startTime: dto.startTime ?? job.startTime,
+      endTime: dto.endTime ?? job.endTime,
       tags: dto.tags ?? job.tags,
       applicationDeadline: dto.applicationDeadline
         ? new Date(dto.applicationDeadline)

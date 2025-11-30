@@ -67,7 +67,7 @@ export enum EmploymentType {
 }
 
 export enum EmploymentArrangement {
-  FULL_TIME_EMPLOYEE = 'FULL_TIME_EMPLOYEE',
+  PERMANENT_EMPLOYEE = 'PERMANENT_EMPLOYEE',
   CONTRACT = 'CONTRACT',
 }
 

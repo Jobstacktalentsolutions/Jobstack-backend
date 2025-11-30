@@ -66,12 +66,17 @@ export class CreateJobDto {
   address?: string;
 
   @IsOptional()
-  @IsEnum(DayOfWeek)
-  startDay?: DayOfWeek;
+  @IsArray()
+  @IsEnum(DayOfWeek, { each: true })
+  workDays?: DayOfWeek[];
 
   @IsOptional()
-  @IsEnum(DayOfWeek)
-  endDay?: DayOfWeek;
+  @IsString()
+  startTime?: string;
+
+  @IsOptional()
+  @IsString()
+  endTime?: string;
 
   @IsOptional()
   @IsArray()
