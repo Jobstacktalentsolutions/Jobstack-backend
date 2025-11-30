@@ -129,6 +129,45 @@ export class JobApplicationsService {
     return this.getApplicationById(applicationId);
   }
 
+  // Withdraws an application (jobseeker can withdraw their own application)
+  async withdrawApplication(jobseekerId: string, applicationId: string) {
+    const application = await this.applicationRepo.findOne({
+      where: { id: applicationId },
+      relations: ['job'],
+    });
+
+    if (!application) {
+      throw new NotFoundException('Application not found');
+    }
+
+    if (application.jobseekerProfileId !== jobseekerId) {
+      throw new NotFoundException('Application not found');
+    }
+
+    if (application.status === JobApplicationStatus.WITHDRAWN) {
+      throw new BadRequestException('Application is already withdrawn');
+    }
+
+    if (application.status === JobApplicationStatus.HIRED) {
+      throw new BadRequestException('Cannot withdraw a hired application');
+    }
+
+    application.status = JobApplicationStatus.WITHDRAWN;
+    application.statusUpdatedAt = new Date();
+    await this.applicationRepo.save(application);
+
+    // Decrement applicants count for the job
+    if (application.job) {
+      await this.jobRepo.decrement(
+        { id: application.job.id },
+        'applicantsCount',
+        1,
+      );
+    }
+
+    return this.getApplicationById(applicationId);
+  }
+
   // Lists applications for admins
   async getAdminApplications(query: ApplicationQueryDto) {
     const qb = this.baseApplicationQuery();

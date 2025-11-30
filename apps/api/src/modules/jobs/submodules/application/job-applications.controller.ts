@@ -49,6 +49,19 @@ export class JobApplicationsController {
     return this.jobApplicationsService.getJobseekerApplications(user.id, query);
   }
 
+  // Allows a jobseeker to withdraw their own application
+  @Patch('me/:applicationId/withdraw')
+  @UseGuards(JobSeekerJwtGuard)
+  withdrawApplication(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('applicationId', ParseUUIDPipe) applicationId: string,
+  ) {
+    return this.jobApplicationsService.withdrawApplication(
+      user.id,
+      applicationId,
+    );
+  }
+
   // Lists applications for a job owned by the employer
   @Get('job/:jobId')
   @UseGuards(EmployerJwtGuard)
