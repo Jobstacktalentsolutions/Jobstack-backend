@@ -68,10 +68,6 @@ export class JobApplicationsService {
     });
 
     const saved = await this.applicationRepo.save(application);
-    
-    // Increment applicants count for the job
-    await this.jobRepo.increment({ id: jobId }, 'applicantsCount', 1);
-    
     return this.getApplicationById(saved.id);
   }
 
@@ -126,45 +122,6 @@ export class JobApplicationsService {
     application.note = dto.note ?? application.note;
     application.statusUpdatedAt = new Date();
     await this.applicationRepo.save(application);
-    return this.getApplicationById(applicationId);
-  }
-
-  // Withdraws an application (jobseeker can withdraw their own application)
-  async withdrawApplication(jobseekerId: string, applicationId: string) {
-    const application = await this.applicationRepo.findOne({
-      where: { id: applicationId },
-      relations: ['job'],
-    });
-
-    if (!application) {
-      throw new NotFoundException('Application not found');
-    }
-
-    if (application.jobseekerProfileId !== jobseekerId) {
-      throw new NotFoundException('Application not found');
-    }
-
-    if (application.status === JobApplicationStatus.WITHDRAWN) {
-      throw new BadRequestException('Application is already withdrawn');
-    }
-
-    if (application.status === JobApplicationStatus.HIRED) {
-      throw new BadRequestException('Cannot withdraw a hired application');
-    }
-
-    application.status = JobApplicationStatus.WITHDRAWN;
-    application.statusUpdatedAt = new Date();
-    await this.applicationRepo.save(application);
-
-    // Decrement applicants count for the job
-    if (application.job) {
-      await this.jobRepo.decrement(
-        { id: application.job.id },
-        'applicantsCount',
-        1,
-      );
-    }
-
     return this.getApplicationById(applicationId);
   }
 
