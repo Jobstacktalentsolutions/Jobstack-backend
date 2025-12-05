@@ -11,7 +11,12 @@ import {
 import { JobseekerSkill } from './JobseekerSkill.entity';
 import { JobseekerAuth } from './JobseekerAuth.entity';
 import { Document } from './Document.entity';
-import { ApprovalStatus } from './schema.enum';
+import {
+  ApprovalStatus,
+  EmploymentArrangement,
+  EmploymentType,
+  WorkMode,
+} from './schema.enum';
 import { JobApplication } from './JobApplication.entity';
 import { Employee } from './Employee.entity';
 
@@ -92,6 +97,27 @@ export class JobSeekerProfile {
 
   @Column({ type: 'decimal', precision: 12, scale: 2, nullable: true })
   maxExpectedSalary?: number;
+
+  @Column({
+    type: 'enum',
+    enum: EmploymentType,
+    nullable: true,
+  })
+  preferredEmploymentType?: EmploymentType;
+
+  @Column({
+    type: 'enum',
+    enum: WorkMode,
+    nullable: true,
+  })
+  preferredWorkMode?: WorkMode;
+
+  @Column({
+    type: 'enum',
+    enum: EmploymentArrangement,
+    nullable: true,
+  })
+  preferredEmploymentArrangement?: EmploymentArrangement;
 
   @OneToOne(() => JobseekerAuth, (auth) => auth.profile)
   @JoinColumn({ name: 'id' })

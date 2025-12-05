@@ -4,6 +4,7 @@ export * from './logger/logger.module';
 export * from './redis/redis.module';
 export * from './redis/redis.service';
 export * from './redis/redis.config';
+export * from './cache/cache.module';
 export * from './database';
 export * from './storage';
 export * from './database/entities/Role.entity';

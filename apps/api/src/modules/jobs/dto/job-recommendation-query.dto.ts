@@ -1,4 +1,4 @@
-import { IsInt, IsOptional } from 'class-validator';
+import { IsInt, IsOptional, IsBoolean } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class JobRecommendationQueryDto {
@@ -11,5 +11,10 @@ export class JobRecommendationQueryDto {
   @Type(() => Number)
   @IsInt()
   limit?: number;
+
+  @IsOptional()
+  @Type(() => Boolean)
+  @IsBoolean()
+  skipCache?: boolean;
 }
 

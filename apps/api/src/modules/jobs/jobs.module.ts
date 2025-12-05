@@ -17,6 +17,8 @@ import { JobApplicationsController } from './submodules/application/job-applicat
 import { EmployeesController } from './submodules/employees/employees.controller';
 import { JobsService } from './services/jobs.service';
 import { JobRecommendationsService } from './services/job-recommendations.service';
+import { JobRecommendationsProcessor } from './services/job-recommendations.processor';
+import { JobRecommendationsScheduler } from './services/job-recommendations.scheduler';
 import { JobApplicationsService } from './submodules/application/job-applications.service';
 import { EmployeesService } from './submodules/employees/employees.service';
 import {
@@ -53,7 +55,9 @@ import { JobSeekerAuthModule } from '../auth/submodules/jobseeker/jobseeker-auth
   ],
   providers: [
     JobsService,
+    JobRecommendationsProcessor,
     JobRecommendationsService,
+    JobRecommendationsScheduler,
     JobApplicationsService,
     EmployeesService,
     AdminJwtGuard,

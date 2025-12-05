@@ -3,14 +3,20 @@ import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { createJwtConfig } from '../../../apps/api/src/modules/config/jwt.config';
 import { BullModule } from '@nestjs/bull';
+import { ScheduleModule } from '@nestjs/schedule';
 import { CommonService } from './common.service';
 import { DatabaseModule } from './database/database.module';
+import { CacheModule } from './cache/cache.module';
+import { RedisModule } from './redis/redis.module';
 import { ENV } from '../../../apps/api/src/modules/config/env.config';
 
 @Global()
 @Module({
   imports: [
     DatabaseModule,
+    RedisModule,
+    CacheModule,
+    ScheduleModule.forRoot(),
     JwtModule.registerAsync({
       global: true,
       imports: [ConfigModule],
@@ -25,6 +31,6 @@ import { ENV } from '../../../apps/api/src/modules/config/env.config';
     }),
   ],
   providers: [CommonService],
-  exports: [CommonService, DatabaseModule, BullModule, JwtModule],
+  exports: [CommonService, DatabaseModule, BullModule, JwtModule, CacheModule],
 })
 export class CommonModule {}
