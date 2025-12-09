@@ -1,5 +1,6 @@
 import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { BullModule } from '@nestjs/bull';
 import {
   Employee,
   EmployerProfile,
@@ -9,6 +10,7 @@ import {
   JobseekerSkill,
   Skill,
 } from '@app/common/database/entities';
+import { QUEUE_NAMES } from '@app/common/queue';
 import { JobsController } from './jobs.controller';
 import { JobsEmployerController } from './controllers/jobs-employer.controller';
 import { JobsJobseekerController } from './controllers/jobs-jobseeker.controller';
@@ -18,9 +20,12 @@ import { EmployeesController } from './submodules/employees/employees.controller
 import { JobsService } from './services/jobs.service';
 import { JobRecommendationsService } from './services/job-recommendations.service';
 import { JobRecommendationsProcessor } from './services/job-recommendations.processor';
-import { JobRecommendationsScheduler } from './services/job-recommendations.scheduler';
 import { JobApplicationsService } from './submodules/application/job-applications.service';
 import { EmployeesService } from './submodules/employees/employees.service';
+import {
+  JobRecommendationsConsumer,
+  JobRecommendationsProducer,
+} from './queue';
 import {
   AdminJwtGuard,
   EmployerJwtGuard,
@@ -41,6 +46,10 @@ import { JobSeekerAuthModule } from '../auth/submodules/jobseeker/jobseeker-auth
       JobseekerSkill,
       Employee,
     ]),
+    // Register the job recommendations queue
+    BullModule.registerQueue({
+      name: QUEUE_NAMES.JOB_RECOMMENDATIONS,
+    }),
     forwardRef(() => AdminAuthModule),
     forwardRef(() => EmployerAuthModule),
     forwardRef(() => JobSeekerAuthModule),
@@ -57,13 +66,15 @@ import { JobSeekerAuthModule } from '../auth/submodules/jobseeker/jobseeker-auth
     JobsService,
     JobRecommendationsProcessor,
     JobRecommendationsService,
-    JobRecommendationsScheduler,
+    // Bull queue consumer and producer
+    JobRecommendationsConsumer,
+    JobRecommendationsProducer,
     JobApplicationsService,
     EmployeesService,
     AdminJwtGuard,
     EmployerJwtGuard,
     JobSeekerJwtGuard,
   ],
-  exports: [JobsService],
+  exports: [JobsService, JobRecommendationsProducer],
 })
 export class JobsModule {}

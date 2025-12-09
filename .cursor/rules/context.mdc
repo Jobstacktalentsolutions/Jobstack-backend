@@ -18,10 +18,10 @@ We remove the burden of sourcing, vetting, and payment administration from busin
 
 ## Key Business Logic
 
-1.  **Two-Sided Roles:** The system must clearly distinguish between **Recruiters** (Businesses) and **Job Seekers** (Talent), although there is an extra role for admins.
+1.  **Two-Sided Roles:** The system must clearly distinguish between **Employers** (Businesses) and **Job Seekers** (Talent), although there is an extra role for admins.
 2.  **Agency Vetting:** The platform enables agency admins to manage the detailed vetting status and documentation of all Job Seekers.
-3.  **Payment Flow:** The system facilitates payments from Recruiters to the Agency, and then from the Agency to the Talent (handling both contract and employment payments).
+3.  **Payment Flow:** The system facilitates payments from Employers to the Agency, and then from the Agency to the Talent (handling both contract and employment payments).
 
 ## Scope Focus
 
-The MVP focuses on the core user journeys: Recruiter job posting, Job Seeker profile creation/application, and the Agency's internal vetting/matching/admin dashboard workflow.
+The MVP focuses on the core user journeys: Employer job posting, Job Seeker profile creation/application, and the Agency's internal vetting/matching/admin dashboard workflow.

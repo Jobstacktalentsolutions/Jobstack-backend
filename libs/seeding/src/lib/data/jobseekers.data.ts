@@ -1,7 +1,9 @@
+import { CONSTANT_IDS } from './constant.data';
+
+// Keeping placeholder to illustrate usage of constant IDs for future jobseeker seeds
 export const JOBSEEKERS_DATA: any[] = [
-  // Example:
   // {
-  //   id: 'c4b2f3d4-5678-4e1f-9a0b-abcdefabcdef',
+  //   id: CONSTANT_IDS.JOBSEEKERS[0],
   //   firstName: 'John',
   //   lastName: 'Doe',
   //   email: 'jobseeker@example.com',

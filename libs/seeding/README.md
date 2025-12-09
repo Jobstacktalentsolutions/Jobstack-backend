@@ -12,9 +12,13 @@ pnpm db:seed -- permissions
 pnpm db:seed -- roles
 pnpm db:seed -- admins
 pnpm db:seed -- skills
+pnpm db:seed -- documents
+pnpm db:seed -- employers
+pnpm db:seed -- jobs
+pnpm db:seed -- jobseekers
 
-# Seed multiple entities
-pnpm db:seed -- permissions roles admins
+# Seed multiple entities (order is respected automatically)
+pnpm db:seed -- permissions roles admins skills documents employers jobs jobseekers
 ```
 
 ### Run full system initialization (recommended):
@@ -23,7 +27,7 @@ pnpm db:seed -- permissions roles admins
 # Seed all system essentials (permissions → roles → admins)
 pnpm db:seed -- permissions roles admins
 
-# Seed everything including skills
+# Seed everything including skills, documents, employers, jobs, jobseekers
 pnpm db:seed
 ```
 
@@ -33,6 +37,10 @@ pnpm db:seed
 - `roles` - Admin roles (super_admin, admin, vetting_admin, payment_admin)
 - `admins` - Admin profiles with role assignments
 - `skills` - Job skills for the Nigerian market
+- `documents` - Placeholder storage docs for employer verification
+- `employers` - Employer auth/profile + verification + documents
+- `jobs` - Job postings linked to employers and skills
+- `jobseekers` - (placeholder) demo jobseekers
 
 ## Super Admin Configuration
 
@@ -56,6 +64,7 @@ SUPER_ADMIN_LAST_NAME=Name
 ### ✅ Safe Operations
 
 - **Idempotent upserts**: Re-runs are safe; existing records are updated by static IDs
+- **Dependency-aware factories**: Factories seed their prerequisites automatically (e.g., employers seed documents first; jobs seed skills and employers first)
 - **No truncation**: Existing data is preserved using smart upsert logic
 - **Dependency handling**: Entities are seeded in the correct order automatically
 
@@ -67,10 +76,12 @@ SUPER_ADMIN_LAST_NAME=Name
 
 ### ✅ Comprehensive Data
 
-- **22 system permissions** covering all JobStack operations
-- **4 predefined roles** with appropriate permission sets
-- **4 admin profiles** including super admin
-- **22 skills** relevant to the Nigerian job market
+- **Permissions/Roles/Admins** with static IDs
+- **Skills** fully enumerated in `constant.data.ts`
+- **Documents** with mock storage metadata (private bucket)
+- **Employers** with nested verification + document references
+- **Jobs** richly described and tied to employers/skills
+- **Jobseekers** placeholder IDs reserved for future seeds
 
 ## Entity Details
 
@@ -106,7 +117,9 @@ Default admin accounts:
 
 ### Skills
 
-22 relevant skills for the Nigerian job market:
+Skill IDs are centralized in `libs/seeding/src/lib/data/constant.data.ts`; do not edit IDs after initial creation.
+
+22+ relevant skills for the Nigerian job market:
 
 - Technical: JavaScript, Python, React, TypeScript, Node.js
 - Database: PostgreSQL, MySQL, MongoDB
@@ -250,3 +263,10 @@ export SUPER_ADMIN_PASSWORD=your-secure-password
 ---
 
 **Note**: This seeding system is designed to be run safely multiple times. All operations are idempotent and will not cause data loss or duplication.
+
+Do note that when an entity depends on another entity, you should seed the depended entity first (because it is a foreign key) in the factory before upserting the main entity. Current order: permissions → roles → admins → skills → documents → employers → jobs → jobseekers.
+
+Factory dependency hooks (auto-run):
+- `DocumentFactory` (none)
+- `EmployerFactory` -> seeds `DocumentFactory` before linking verification docs
+- `JobFactory` -> seeds `SkillFactory` and `EmployerFactory` before inserting jobs; skips jobs if employer or required skills are missing

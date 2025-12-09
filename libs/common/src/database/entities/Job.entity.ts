@@ -15,7 +15,7 @@ import {
   DayOfWeek,
   EmploymentArrangement,
   EmploymentType,
-  JobCategory,
+  SkillCategory,
   JobStatus,
   WorkMode,
 } from './schema.enum';
@@ -28,8 +28,8 @@ export class Job extends BaseEntity {
   @Column({ type: 'text' })
   description: string;
 
-  @Column({ type: 'enum', enum: JobCategory })
-  category: JobCategory;
+  @Column({ type: 'enum', enum: SkillCategory })
+  category: SkillCategory;
 
   @Column({ type: 'enum', enum: EmploymentType })
   employmentType: EmploymentType;

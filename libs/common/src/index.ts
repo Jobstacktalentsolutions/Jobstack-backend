@@ -5,6 +5,7 @@ export * from './redis/redis.module';
 export * from './redis/redis.service';
 export * from './redis/redis.config';
 export * from './cache/cache.module';
+export * from './queue';
 export * from './database';
 export * from './storage';
 export * from './database/entities/Role.entity';

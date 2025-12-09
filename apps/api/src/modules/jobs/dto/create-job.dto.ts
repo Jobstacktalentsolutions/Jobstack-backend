@@ -17,7 +17,7 @@ import {
   DayOfWeek,
   EmploymentArrangement,
   EmploymentType,
-  JobCategory,
+  SkillCategory,
   WorkMode,
 } from '@app/common/database/entities/schema.enum';
 
@@ -31,8 +31,8 @@ export class CreateJobDto {
   @MinLength(20)
   description: string;
 
-  @IsEnum(JobCategory)
-  category: JobCategory;
+  @IsEnum(SkillCategory)
+  category: SkillCategory;
 
   @IsEnum(EmploymentType)
   employmentType: EmploymentType;

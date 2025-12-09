@@ -37,23 +37,13 @@ export class JobRecommendationsService {
 
     const cacheKey = this.getCacheKey(jobSeekerId, query);
 
-    // If skipCache is true, calculate and update cache
-    if (query.skipCache) {
-      const recommendations =
-        await this.recommendationsProcessor.calculateRecommendations(
-          jobSeekerId,
-          query,
-        );
-      // Cache for 24 hours (86400 seconds)
-      await this.cacheManager.set(cacheKey, recommendations, 86400);
-      return recommendations;
+    if (!query.skipCache) {
+      const cached = await this.cacheManager.get(cacheKey);
+      if (cached) {
+        return cached;
+      }
     }
 
-    // Try to get from cache first
-    const cached = await this.cacheManager.get(cacheKey);
-    if (cached) {
-      return cached;
-    }
 
     // Cache miss - calculate recommendations
     const recommendations =

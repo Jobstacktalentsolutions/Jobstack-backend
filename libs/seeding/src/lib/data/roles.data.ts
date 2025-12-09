@@ -1,1 +1,4 @@
-// Removed: role seed data no longer needed; roles are static via AdminRole enum.
+import { CONSTANT_IDS } from './constant.data';
+
+// Roles are static via AdminRole enum; IDs retained here for completeness/reference.
+export const ROLE_IDS = CONSTANT_IDS.ROLES;

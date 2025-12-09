@@ -4,17 +4,30 @@ import { getRepositoryByName } from '../utils/repository.utils';
 import { EmployerAuth } from '@app/common/database/entities/EmployerAuth.entity';
 import { EmployerProfile } from '@app/common/database/entities/EmployerProfile.entity';
 import { EMPLOYERS_DATA } from '../data/employers.data';
+import { DocumentFactory } from './document.factory';
 
 export class EmployerFactory extends BaseFactory<EmployerAuth> {
   private profileRepository: any;
-
+  private verificationRepository: any;
+  private verificationDocumentRepository: any;
+  private documentFactory: DocumentFactory;
   constructor(dataSource: DataSource) {
     super(dataSource, getRepositoryByName(dataSource, 'EmployerAuth'), {
       defaultAttributes: () => ({ emailVerified: true }),
     });
     this.profileRepository = getRepositoryByName(dataSource, 'EmployerProfile');
+    this.verificationRepository = getRepositoryByName(
+      dataSource,
+      'EmployerVerification',
+    );
+    this.verificationDocumentRepository = getRepositoryByName(
+      dataSource,
+      'EmployerVerificationDocument',
+    );
+    this.documentFactory = new DocumentFactory(this.dataSource);
   }
 
+  // createOrUpdateEmployer upserts auth, profile, verification, and documents
   async createOrUpdateEmployer(data: any): Promise<EmployerAuth> {
     const {
       passwordHash,
@@ -24,6 +37,7 @@ export class EmployerFactory extends BaseFactory<EmployerAuth> {
       address,
       type,
       profilePictureId,
+      verification,
       ...rest
     } = data;
 
@@ -34,7 +48,7 @@ export class EmployerFactory extends BaseFactory<EmployerAuth> {
         password: passwordHash,
         emailVerified: true,
       } as any,
-      ['email'],
+      ['id', 'email'],
     );
 
     const profileRepo = this.profileRepository as ReturnType<
@@ -62,11 +76,65 @@ export class EmployerFactory extends BaseFactory<EmployerAuth> {
       await profileRepo.save(profileRepo.create(profileData));
     }
 
+    // Handle Verification
+    if (verification) {
+      const verificationRepo = this.verificationRepository;
+      const verificationDocRepo = this.verificationDocumentRepository;
+
+      let existingVerification = await verificationRepo.findOne({
+        where: { employerId: auth.id },
+      });
+
+      const verificationData = {
+        employerId: auth.id,
+        companyName: verification.companyName,
+        companyAddress: verification.companyAddress,
+        status: verification.status,
+      };
+
+      if (existingVerification) {
+        await verificationRepo.update(
+          { id: existingVerification.id },
+          verificationData,
+        );
+      } else {
+        existingVerification = await verificationRepo.save(
+          verificationRepo.create(verificationData),
+        );
+      }
+
+      // Handle Verification Documents
+      if (verification.documents && verification.documents.length > 0) {
+        for (const doc of verification.documents) {
+          const docData = {
+            verificationId: existingVerification.id,
+            documentId: doc.documentId,
+            documentType: doc.documentType,
+            verified: doc.verified,
+          };
+
+          const existingDoc = await verificationDocRepo.findOne({
+            where: {
+              verificationId: existingVerification.id,
+              documentId: doc.documentId,
+            },
+          });
+
+          if (!existingDoc) {
+            await verificationDocRepo.save(verificationDocRepo.create(docData));
+          }
+        }
+      }
+    }
+
     return auth as any;
   }
 
+  // createAll upserts all employer seed records
   async createAll(): Promise<EmployerAuth[]> {
     console.log('🔄 Upserting employer auth/profile records...');
+
+    await this.documentFactory.createAll();
 
     const employers: EmployerAuth[] = [];
     for (const empData of EMPLOYERS_DATA) {

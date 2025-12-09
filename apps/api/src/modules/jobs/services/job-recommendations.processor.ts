@@ -2,7 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, SelectQueryBuilder } from 'typeorm';
 import { Job, JobSeekerProfile } from '@app/common/database/entities';
-import { JobStatus } from '@app/common/database/entities/schema.enum';
+import {
+  JobStatus,
+  SkillCategory,
+} from '@app/common/database/entities/schema.enum';
 import { JobRecommendationQueryDto } from '../dto';
 
 // Interface for recommendation result
@@ -56,8 +59,10 @@ export class JobRecommendationsProcessor {
         );
       }
     });
-    const userSkillCategories = new Set(
-      profile.userSkills?.map((us) => us.skill?.category).filter(Boolean) ?? [],
+    const userSkillCategories = new Set<SkillCategory>(
+      profile.userSkills
+        ?.map((us) => us.skill?.category)
+        .filter((c): c is SkillCategory => c !== undefined && c !== null) ?? [],
     );
 
     // Get jobs that are published and not expired
@@ -127,7 +132,7 @@ export class JobRecommendationsProcessor {
     userSkillIds: string[],
     userSkillNames: Set<string>,
     userSkillSynonyms: Set<string>,
-    userSkillCategories: Set<string>,
+    userSkillCategories: Set<SkillCategory>,
   ): number {
     let score = 0;
 
@@ -171,13 +176,9 @@ export class JobRecommendationsProcessor {
       score += skillMatchRatio * 35;
     }
 
-    // Enhanced category matching with fuzzy search (25% weight)
-    if (userSkillCategories.size > 0) {
-      const categoryMatch = this.enhancedCategoryMatch(
-        Array.from(userSkillCategories),
-        job.category,
-      );
-      if (categoryMatch) {
+    // Category matching (25% weight)
+    if (userSkillCategories.size > 0 && job.category) {
+      if (userSkillCategories.has(job.category as SkillCategory)) {
         score += 25;
       }
     }
@@ -237,136 +238,6 @@ export class JobRecommendationsProcessor {
     }
 
     return Math.round(score * 100) / 100; // Round to 2 decimal places
-  }
-
-  // Enhanced category matching with fuzzy search
-  private enhancedCategoryMatch(
-    skillCategories: string[],
-    jobCategory: string,
-  ): boolean {
-    // Enhanced bidirectional category mapping
-    const categoryMap: Record<string, string[]> = {
-      TECHNOLOGY: [
-        'TECHNICAL',
-        'SOFTWARE_DEVELOPMENT',
-        'DATABASE',
-        'TECHNOLOGY',
-      ],
-      BUSINESS: ['BUSINESS', 'FINANCE_ACCOUNTING'],
-      DESIGN: ['DESIGN'],
-      MARKETING: ['SALES_MARKETING', 'SOCIAL_MEDIA', 'COMMUNICATION'],
-      OPERATIONS: ['OPERATIONS'],
-      FINANCE: ['FINANCE_ACCOUNTING', 'BUSINESS'],
-      CUSTOMER_SERVICE: ['COMMUNICATION', 'SALES_MARKETING'],
-      HOME_SERVICES: ['HOME_SUPPORT'],
-      MAINTENANCE: ['MAINTENANCE_TRADES'],
-      HOSPITALITY: ['HOSPITALITY'],
-      SECURITY: ['SECURITY'],
-      TRANSPORT: ['TRANSPORT_LOGISTICS'],
-    };
-
-    // Direct match check
-    const matchingCategories = categoryMap[jobCategory] ?? [];
-    if (
-      skillCategories.some((sc) =>
-        matchingCategories.some((mc) => mc === sc),
-      )
-    ) {
-      return true;
-    }
-
-    // Fuzzy matching - check for partial matches and similar category names
-    const jobCategoryLower = jobCategory.toLowerCase();
-    const fuzzyMatches = skillCategories.some((sc) => {
-      const scLower = sc.toLowerCase();
-      // Check if skill category contains job category keywords or vice versa
-      return (
-        scLower.includes(jobCategoryLower) ||
-        jobCategoryLower.includes(scLower) ||
-        this.areCategoriesSimilar(sc, jobCategory)
-      );
-    });
-
-    return fuzzyMatches;
-  }
-
-  // Checks if two category names are similar (fuzzy matching)
-  private areCategoriesSimilar(cat1: string, cat2: string): boolean {
-    const cat1Lower = cat1.toLowerCase();
-    const cat2Lower = cat2.toLowerCase();
-
-    // Exact match
-    if (cat1Lower === cat2Lower) return true;
-
-    // Check for common keywords
-    const commonKeywords = [
-      ['tech', 'technical', 'technology'],
-      ['business', 'finance'],
-      ['marketing', 'sales', 'communication'],
-      ['design', 'creative'],
-      ['operations', 'operational'],
-      ['hospitality', 'service'],
-      ['maintenance', 'repair', 'trades'],
-      ['transport', 'logistics', 'delivery'],
-      ['security', 'safety'],
-      ['home', 'household', 'domestic'],
-    ];
-
-    for (const keywordGroup of commonKeywords) {
-      const cat1HasKeyword = keywordGroup.some((kw) => cat1Lower.includes(kw));
-      const cat2HasKeyword = keywordGroup.some((kw) => cat2Lower.includes(kw));
-      if (cat1HasKeyword && cat2HasKeyword) {
-        return true;
-      }
-    }
-
-    // Levenshtein-like similarity for short category names
-    if (cat1Lower.length <= 15 && cat2Lower.length <= 15) {
-      const similarity = this.calculateStringSimilarity(cat1Lower, cat2Lower);
-      return similarity > 0.7; // 70% similarity threshold
-    }
-
-    return false;
-  }
-
-  // Calculates string similarity using a simple algorithm
-  private calculateStringSimilarity(str1: string, str2: string): number {
-    const longer = str1.length > str2.length ? str1 : str2;
-    const shorter = str1.length > str2.length ? str2 : str1;
-
-    if (longer.length === 0) return 1.0;
-
-    const distance = this.levenshteinDistance(longer, shorter);
-    return (longer.length - distance) / longer.length;
-  }
-
-  // Simple Levenshtein distance calculation
-  private levenshteinDistance(str1: string, str2: string): number {
-    const matrix: number[][] = [];
-
-    for (let i = 0; i <= str2.length; i++) {
-      matrix[i] = [i];
-    }
-
-    for (let j = 0; j <= str1.length; j++) {
-      matrix[0][j] = j;
-    }
-
-    for (let i = 1; i <= str2.length; i++) {
-      for (let j = 1; j <= str1.length; j++) {
-        if (str2.charAt(i - 1) === str1.charAt(j - 1)) {
-          matrix[i][j] = matrix[i - 1][j - 1];
-        } else {
-          matrix[i][j] = Math.min(
-            matrix[i - 1][j - 1] + 1, // substitution
-            matrix[i][j - 1] + 1, // insertion
-            matrix[i - 1][j] + 1, // deletion
-          );
-        }
-      }
-    }
-
-    return matrix[str2.length][str1.length];
   }
 
   // Calculates salary range overlap percentage
@@ -438,16 +309,9 @@ export class JobRecommendationsProcessor {
 
     // Calculate word overlap ratio
     const totalUniqueWords = new Set([...userWords, ...jobWords]).size;
-    const wordSimilarity = commonWords.length / totalUniqueWords;
+    if (totalUniqueWords === 0) return 0;
 
-    // Use string similarity for additional scoring
-    const stringSimilarity = this.calculateStringSimilarity(
-      userTitleLower,
-      jobTitleLower,
-    );
-
-    // Combine both metrics
-    return wordSimilarity * 0.6 + stringSimilarity * 0.4;
+    return commonWords.length / totalUniqueWords;
   }
 
   // Builds base query with eager relations for recommendations
@@ -459,4 +323,9 @@ export class JobRecommendationsProcessor {
       .orderBy('job.createdAt', 'DESC'); // Add default ordering by recency
   }
 }
+
+
+
+
+
 

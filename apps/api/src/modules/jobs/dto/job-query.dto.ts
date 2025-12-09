@@ -1,7 +1,7 @@
 import { IsEnum, IsInt, IsOptional, IsString } from 'class-validator';
 import { Type } from 'class-transformer';
 import {
-  JobCategory,
+  SkillCategory,
   JobStatus,
 } from '@app/common/database/entities/schema.enum';
 
@@ -11,8 +11,8 @@ export class JobQueryDto {
   status?: JobStatus;
 
   @IsOptional()
-  @IsEnum(JobCategory)
-  category?: JobCategory;
+  @IsEnum(SkillCategory)
+  category?: SkillCategory;
 
   @IsOptional()
   @IsString()
