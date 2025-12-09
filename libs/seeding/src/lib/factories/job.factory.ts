@@ -68,14 +68,18 @@ export class JobFactory extends BaseFactory<Job> {
 
         const { skills, ...jobProps } = jobData;
 
+        // First upsert the job without many-to-many relations to avoid TypeORM update issues
         const job = await this.smartUpsert(
           {
             ...jobProps,
             employer,
-            skills: skills_entities,
           },
           ['id'],
         );
+
+        // Then set skills relation explicitly
+        job.skills = skills_entities;
+        await this.repository.save(job);
 
         jobs.push(job);
       } catch (error) {
