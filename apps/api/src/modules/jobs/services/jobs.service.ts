@@ -263,23 +263,6 @@ export class JobsService {
     const page = Math.max(1, query.page ?? 1);
     const limit = Math.min(100, Math.max(1, query.limit ?? 20));
     qb.take(limit)
-      .select([
-        'job.id',
-        'job.title',
-        'job.description',
-        'job.category',
-        'job.employmentType',
-        'job.workMode',
-        'job.salaryMin',
-        'job.salaryMax',
-        'job.state',
-        'job.city',
-        'job.address',
-        'job.workDays',
-        'job.startTime',
-        'job.endTime',
-        'job.tags',
-      ])
       .skip((page - 1) * limit)
       .orderBy('job.createdAt', 'DESC');
     const [items, total] = await qb.getManyAndCount();
