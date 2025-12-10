@@ -9,7 +9,9 @@ import { ADMINS_DATA } from '../data/admins.data';
  * Admin factory for seeding admins (auth + profile)
  */
 export class AdminFactory extends BaseFactory<AdminAuth> {
-  private profileRepository: ReturnType<typeof getRepositoryByName<AdminProfile>>;
+  private profileRepository: ReturnType<
+    typeof getRepositoryByName<AdminProfile>
+  >;
 
   constructor(dataSource: DataSource) {
     super(dataSource, getRepositoryByName(dataSource, 'AdminAuth'), {
@@ -49,10 +51,7 @@ export class AdminFactory extends BaseFactory<AdminAuth> {
     >;
     // Find by primary id or nested relation (backward compatible with older schema assumptions)
     const existingProfile = await profileRepo.findOne({
-      where: [
-        { id: auth.id } as any,
-        { auth: { id: auth.id } } as any,
-      ],
+      where: [{ id: auth.id } as any, { auth: { id: auth.id } } as any],
       relations: ['auth'],
     });
     const profileData: Partial<AdminProfile> = {
@@ -62,7 +61,6 @@ export class AdminFactory extends BaseFactory<AdminAuth> {
       email: data.email.toLowerCase(),
       phoneNumber,
       address,
-      
     };
     if (existingProfile) {
       await profileRepo.update({ id: existingProfile.id }, profileData);

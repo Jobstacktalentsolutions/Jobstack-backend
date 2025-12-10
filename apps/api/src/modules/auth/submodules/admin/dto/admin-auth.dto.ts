@@ -10,7 +10,12 @@ export {
   PasswordResetDto,
 } from 'apps/api/src/modules/auth/dto/auth.dto';
 
-import { IsEmail, IsString, MinLength, IsStrongPassword } from 'class-validator';
+import {
+  IsEmail,
+  IsString,
+  MinLength,
+  IsStrongPassword,
+} from 'class-validator';
 
 /**
  * Change Password DTO for Admin (email + password only)

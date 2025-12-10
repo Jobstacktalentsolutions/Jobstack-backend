@@ -28,7 +28,7 @@ export class AdminAuth extends BaseEntity {
   @OneToMany(() => AdminSession, (session) => session.admin)
   sessions: AdminSession[];
 
-@OneToOne(() => AdminProfile, (profile) => profile.auth, {
+  @OneToOne(() => AdminProfile, (profile) => profile.auth, {
     cascade: true,
     onDelete: 'CASCADE',
   })
