@@ -16,11 +16,14 @@ export class JobsJobseekerController {
   // Gets all published and public jobs for jobseekers
   @Get()
   @UseGuards(JobSeekerJwtGuard)
-  getJobs(@Query() query: JobQueryDto) {
-    return this.jobsService.getJobs(query, {
+  async getJobs(@Query() query: JobQueryDto) {
+    const result = await this.jobsService.getJobs(query, {
       status: JobStatus.PUBLISHED,
       includeExpired: false,
     });
+
+    console.log('result', result);
+    return result;
   }
 
   // Gets job recommendations for authenticated job seeker
