@@ -26,7 +26,6 @@ import {
 } from '@app/common/shared/interfaces/jwt-payload.interface';
 import {
   AuthResult,
-  EmailVerificationResult,
   PasswordResetRequestResult,
   PasswordResetConfirmationResult,
 } from 'apps/api/src/modules/auth/interfaces/auth.interface';
@@ -35,6 +34,7 @@ import {
   PasswordResetRequestDto,
   PasswordResetConfirmCodeDto,
   PasswordResetDto,
+  AdminChangePasswordDto,
 } from './dto/admin-auth.dto';
 
 @Injectable()
@@ -72,10 +72,10 @@ export class AdminAuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    // Check if email is verified
-    if (!auth.emailVerified) {
+    // Check if password has been changed from default
+    if (!auth.hasChangedPassword) {
       throw new UnauthorizedException(
-        'Please verify your email before logging in',
+        'Please change your default password before logging in',
       );
     }
 
@@ -223,98 +223,32 @@ export class AdminAuthService {
   }
 
   /**
-   * Send email verification code
+   * Change password for admin (used when changing default password)
    */
-  async sendVerificationEmail(email: string): Promise<EmailVerificationResult> {
-    try {
-      // If account does not exist, return generic success to prevent enumeration
-      const auth = await this.adminAuthRepository.findOne({
-        where: { email: email.toLowerCase() },
-      });
-
-      if (!auth) {
-        throw new BadRequestException(
-          'No Employee account found with this email',
-        );
-      }
-      // Check cooldown
-      const codeKey = REDIS_KEYS.EMAIL_VERIFICATION_CODE(email);
-      const existingCode = await this.redisService.get(codeKey);
-
-      if (existingCode) {
-        const ttl = await this.redisService.ttl(codeKey);
-        if (ttl > 540) {
-          return {
-            sent: false,
-            waitTime: ttl - 540,
-            message:
-              'Verification code was recently sent. Please wait before requesting another.',
-          };
-        }
-      }
-
-      // Generate 6-digit code
-      const code = Math.floor(100000 + Math.random() * 900000).toString();
-
-      // Store code
-      await this.redisService.setex(codeKey, REDIS_KEYS.VERIFICATION_TTL, code);
-
-      // Send email
-      await this.notificationService.sendEmail({
-        to: email,
-        subject: 'Email Verification - JobStack Admin',
-        template: 'email-verification',
-        context: {
-          code,
-          expiryMinutes: 10,
-        },
-      });
-
-      this.logger.log(`Verification email sent to: ${email}`);
-
-      return {
-        sent: true,
-        message: 'Verification code sent to your email.',
-      };
-    } catch (error) {
-      this.logger.error(`Failed to send verification email: ${error.message}`);
-      throw error;
-    }
-  }
-
-  /**
-   * Verify email with code
-   */
-  async verifyEmail(
+  async changePassword(
     email: string,
-    code: string,
-  ): Promise<{ verified: boolean }> {
-    const codeKey = REDIS_KEYS.EMAIL_VERIFICATION_CODE(email);
-    const storedCode = await this.redisService.get(codeKey);
-
-    if (!storedCode || storedCode !== code) {
-      throw new UnauthorizedException('Invalid or expired verification code');
-    }
-
-    // Mark email as verified
+    newPassword: string,
+  ): Promise<{ success: boolean }> {
+    // Find admin by email
     const auth = await this.adminAuthRepository.findOne({
       where: { email: email.toLowerCase() },
     });
 
     if (!auth) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException('Admin not found');
     }
 
-    // Update emailVerified field
-    auth.emailVerified = true;
+    // Hash new password
+    const hashedPassword = await bcrypt.hash(newPassword, 12);
+
+    // Update password and mark as changed
+    auth.password = hashedPassword;
+    auth.hasChangedPassword = true;
     await this.adminAuthRepository.save(auth);
 
-    // Clean up code
-    await this.redisService.del(codeKey);
+    this.logger.log(`Password changed for admin: ${email}`);
 
-    this.logger.log(`Email verified: ${email}`);
-
-    return { verified: true };
+    return { success: true };
   }
 
   /**
@@ -463,8 +397,9 @@ export class AdminAuthService {
       // Hash new password
       const hashedPassword = await bcrypt.hash(newPassword, 12);
 
-      // Update password
+      // Update password and mark as changed
       auth.password = hashedPassword;
+      auth.hasChangedPassword = true;
       await this.adminAuthRepository.save(auth);
 
       // Invalidate all sessions

@@ -22,7 +22,6 @@ export class JobsJobseekerController {
       includeExpired: false,
     });
 
-    console.log('result', result);
     return result;
   }
 

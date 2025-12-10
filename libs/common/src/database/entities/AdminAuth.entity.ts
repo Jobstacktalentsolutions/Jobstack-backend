@@ -12,7 +12,7 @@ export class AdminAuth extends BaseEntity {
   password: string;
 
   @Column({ default: false })
-  emailVerified: boolean;
+  hasChangedPassword: boolean;
 
   // New simplified authorization fields
   @Column({ type: 'varchar', length: 64 })

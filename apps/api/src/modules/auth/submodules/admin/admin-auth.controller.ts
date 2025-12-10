@@ -14,11 +14,10 @@ import { AdminAuthService } from './admin-auth.service';
 import {
   LoginDto,
   RefreshTokenDto,
-  EmailVerificationRequestDto,
-  EmailVerificationConfirmDto,
   PasswordResetRequestDto,
   PasswordResetConfirmCodeDto,
   PasswordResetDto,
+  AdminChangePasswordDto,
 } from './dto/admin-auth.dto';
 import { AdminJwtGuard } from 'apps/api/src/guards';
 
@@ -55,23 +54,6 @@ export class AdminAuthController {
     await this.adminAuthService.logout(sessionId, jti, refreshTokenId);
   }
 
-  @Post('send-verification-email')
-  @HttpCode(HttpStatus.OK)
-  async sendVerificationEmail(
-    @Body() requestData: EmailVerificationRequestDto,
-  ) {
-    return await this.adminAuthService.sendVerificationEmail(requestData.email);
-  }
-
-  @Post('verify-email')
-  @HttpCode(HttpStatus.OK)
-  async verifyEmail(@Body() confirmData: EmailVerificationConfirmDto) {
-    return await this.adminAuthService.verifyEmail(
-      confirmData.email,
-      confirmData.code,
-    );
-  }
-
   @Post('send-password-reset-code')
   @HttpCode(HttpStatus.OK)
   async sendPasswordResetCode(@Body() requestData: PasswordResetRequestDto) {
@@ -90,5 +72,14 @@ export class AdminAuthController {
   @HttpCode(HttpStatus.OK)
   async resetPassword(@Body() resetData: PasswordResetDto) {
     return await this.adminAuthService.resetPassword(resetData);
+  }
+
+  @Post('change-password')
+  @HttpCode(HttpStatus.OK)
+  async changePassword(@Body() changeData: AdminChangePasswordDto) {
+    return await this.adminAuthService.changePassword(
+      changeData.email,
+      changeData.newPassword,
+    );
   }
 }

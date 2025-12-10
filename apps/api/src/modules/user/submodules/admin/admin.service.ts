@@ -100,7 +100,7 @@ export class AdminService {
     const auth = this.adminAuthRepo.create({
       email: email.toLowerCase(),
       password: hashed,
-      emailVerified: true,
+      hasChangedPassword: false,
       roleKey,
       privilegeLevel: target.privilegeLevel,
       managerId: creator.id,

@@ -13,7 +13,7 @@ export class AdminFactory extends BaseFactory<AdminAuth> {
 
   constructor(dataSource: DataSource) {
     super(dataSource, getRepositoryByName(dataSource, 'AdminAuth'), {
-      defaultAttributes: () => ({ emailVerified: true }),
+      defaultAttributes: () => ({ hasChangedPassword: true }),
     });
     this.profileRepository = getRepositoryByName(dataSource, 'AdminProfile');
   }
@@ -36,7 +36,7 @@ export class AdminFactory extends BaseFactory<AdminAuth> {
         id: data.id,
         email: data.email.toLowerCase(),
         password: passwordHash,
-        emailVerified: true,
+        hasChangedPassword: true, // Seeded admins have specific passwords, not default
         roleKey,
         privilegeLevel,
       } as any,
