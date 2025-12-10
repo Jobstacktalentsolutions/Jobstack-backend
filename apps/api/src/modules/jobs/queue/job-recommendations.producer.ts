@@ -7,11 +7,13 @@ import {
   type PrecalculateAllRecommendationsJobData,
   type PrecalculateSingleRecommendationJobData,
 } from '../types/job-recommendations.types';
+import { ConfigService } from '@nestjs/config';
+import { ENV } from 'apps/api/src/modules/config';
 
 /**
  * Producer service for job recommendations queue
  * Handles adding jobs to the queue and managing repeatable jobs
- * 
+ *
  * Implements OnModuleInit to set up the daily scheduled job on startup
  */
 @Injectable()
@@ -24,6 +26,7 @@ export class JobRecommendationsProducer implements OnModuleInit {
   constructor(
     @InjectQueue(QUEUE_NAMES.JOB_RECOMMENDATIONS)
     private readonly recommendationsQueue: Bull.Queue,
+    private readonly configService: ConfigService,
   ) {}
 
   /**
@@ -31,7 +34,10 @@ export class JobRecommendationsProducer implements OnModuleInit {
    * Uses Bull's repeatable jobs feature for cron-like scheduling
    */
   async onModuleInit() {
-    await this.setupDailyPrecalculationJob();
+    const disableJob = this.configService.get(ENV.DISABLE_JOBS);
+    if (!disableJob) {
+      await this.setupDailyPrecalculationJob();
+    }
   }
 
   /**
@@ -117,7 +123,12 @@ export class JobRecommendationsProducer implements OnModuleInit {
       priority?: number;
     },
   ): Promise<{ jobId: string | number }> {
-    const { page = 1, limit = 100, triggeredBy = 'manual', priority = 5 } = options ?? {};
+    const {
+      page = 1,
+      limit = 100,
+      triggeredBy = 'manual',
+      priority = 5,
+    } = options ?? {};
 
     const jobOptions: Bull.JobOptions = {
       priority,
@@ -196,7 +207,12 @@ export class JobRecommendationsProducer implements OnModuleInit {
    */
   async cleanQueue(
     grace: number = 1000 * 60 * 60, // 1 hour default
-    status: 'completed' | 'wait' | 'active' | 'delayed' | 'failed' = 'completed',
+    status:
+      | 'completed'
+      | 'wait'
+      | 'active'
+      | 'delayed'
+      | 'failed' = 'completed',
   ): Promise<Bull.Job[]> {
     const removed = await this.recommendationsQueue.clean(grace, status);
     this.logger.log(`Cleaned ${removed.length} ${status} jobs from queue`);

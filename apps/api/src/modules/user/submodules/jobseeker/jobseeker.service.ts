@@ -161,6 +161,7 @@ export class JobseekerService {
 
     return {
       pictureUrl: upload.url,
+
       documentId: upload.document.id,
     };
   }

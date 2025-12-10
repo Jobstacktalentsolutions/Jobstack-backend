@@ -100,7 +100,7 @@ export class JobsService {
     }
 
     // Apply common filters (category, search, status from query)
-    this.applyJobFilters(qb, query);
+    // this.applyJobFilters(qb, query);
 
     const [items, total, page, limit] = await this.executePagedQuery(qb, query);
     return { items, total, page, limit };
@@ -262,10 +262,11 @@ export class JobsService {
   ): Promise<[Job[], number, number, number]> {
     const page = Math.max(1, query.page ?? 1);
     const limit = Math.min(100, Math.max(1, query.limit ?? 20));
-    qb.take(limit)
-      .skip((page - 1) * limit)
-      .orderBy('job.createdAt', 'DESC');
+    // qb.take(limit)
+    //   .skip((page - 1) * limit)
+    //   .orderBy('job.createdAt', 'DESC');
     const [items, total] = await qb.getManyAndCount();
+    console.log('items', items);
     return [items, total, page, limit];
   }
 }
