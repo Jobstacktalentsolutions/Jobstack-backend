@@ -26,6 +26,7 @@ export class JobsService {
   ) {}
 
   private readonly jobRelations = ['skills'];
+  private readonly jobListRelations = ['skills']; // Minimal relations for listings
 
   // Creates a new job on behalf of an employer
   async createJob(employerId: string, dto: CreateJobDto) {
@@ -70,7 +71,7 @@ export class JobsService {
       includeExpired?: boolean;
     },
   ) {
-    const qb = this.baseJobQuery();
+    const qb = this.baseJobListQuery(); // Use optimized query for listings
     const conditions: string[] = [];
     const params: Record<string, any> = {};
 
@@ -231,12 +232,44 @@ export class JobsService {
     return skills;
   }
 
-  // Builds base query with eager relations
+  // Builds base query with eager relations (for detailed views)
   private baseJobQuery(): SelectQueryBuilder<Job> {
     return this.jobRepo
       .createQueryBuilder('job')
       .leftJoinAndSelect('job.skills', 'skill')
       .leftJoinAndSelect('job.employer', 'employer');
+  }
+
+  // Builds optimized query for job listings (minimal fields)
+  private baseJobListQuery(): SelectQueryBuilder<Job> {
+    return this.jobRepo
+      .createQueryBuilder('job')
+      .select([
+        'job.id',
+        'job.title',
+        'job.description',
+        'job.category',
+        'job.employmentType',
+        'job.employmentArrangement',
+        'job.workMode',
+        'job.salaryMin',
+        'job.salaryMax',
+        'job.state',
+        'job.city',
+        'job.address',
+        'job.workDays',
+        'job.startTime',
+        'job.endTime',
+        'job.tags',
+        'job.applicationDeadline',
+        'job.status',
+        'job.applicantsCount',
+        'job.employerId',
+        'job.createdAt',
+        'job.updatedAt',
+      ])
+      .leftJoin('job.skills', 'skill')
+      .addSelect(['skill.id', 'skill.name', 'skill.description']);
   }
 
   // Applies reusable filters on a query builder

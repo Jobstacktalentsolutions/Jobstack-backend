@@ -23,6 +23,7 @@ import {
   RefreshTokenPayload,
   RedisSessionData,
   PasswordResetTokenPayload,
+  DefaultPasswordChangeTokenPayload,
 } from '@app/common/shared/interfaces/jwt-payload.interface';
 import {
   AuthResult,
@@ -34,7 +35,8 @@ import {
   PasswordResetRequestDto,
   PasswordResetConfirmCodeDto,
   PasswordResetDto,
-  AdminChangePasswordDto,
+  AdminDefaultPasswordChangeDto,
+  AdminDefaultPasswordChangeRequestDto,
 } from './dto/admin-auth.dto';
 
 @Injectable()
@@ -223,30 +225,96 @@ export class AdminAuthService {
   }
 
   /**
-   * Change password for admin (used when changing default password)
+   * Request a token for changing the default password.
    */
-  async changePassword(
-    email: string,
-    newPassword: string,
-  ): Promise<{ success: boolean }> {
-    // Find admin by email
+  async requestDefaultPasswordChange(
+    requestData: AdminDefaultPasswordChangeRequestDto,
+  ): Promise<PasswordResetConfirmationResult> {
+    const { email, currentPassword } = requestData;
+    const normalizedEmail = email.toLowerCase();
+
     const auth = await this.adminAuthRepository.findOne({
-      where: { email: email.toLowerCase() },
+      where: { email: normalizedEmail },
+    });
+
+    if (!auth) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    if (auth.hasChangedPassword) {
+      throw new BadRequestException('Default password already changed');
+    }
+
+    const isPasswordValid = await bcrypt.compare(currentPassword, auth.password);
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    const tokenPayload: DefaultPasswordChangeTokenPayload = {
+      userId: auth.id,
+      type: 'default_password_change',
+      iat: Math.floor(Date.now() / 1000),
+    };
+
+    const resetToken = await this.jwtService.signAsync(tokenPayload, {
+      expiresIn: '15m',
+    });
+
+    const expiresAt = new Date();
+    expiresAt.setMinutes(expiresAt.getMinutes() + 15);
+
+    this.logger.log(`Default password change token issued for admin: ${auth.id}`);
+
+    return { resetToken, expiresAt };
+  }
+
+  /**
+   * Complete the default password change flow using the issued token.
+   */
+  async completeDefaultPasswordChange(
+    changeData: AdminDefaultPasswordChangeDto,
+  ): Promise<{ success: boolean }> {
+    let payload: DefaultPasswordChangeTokenPayload;
+    try {
+      payload = await this.jwtService.verifyAsync<DefaultPasswordChangeTokenPayload>(
+        changeData.resetToken,
+      );
+    } catch (error) {
+      this.logger.error(
+        `Default password change verification failed: ${
+          error instanceof Error ? error.message : 'unknown error'
+        }`,
+      );
+      throw new UnauthorizedException('Invalid or expired change token');
+    }
+
+    if (payload.type !== 'default_password_change') {
+      throw new UnauthorizedException('Invalid change token');
+    }
+
+    const auth = await this.adminAuthRepository.findOne({
+      where: { id: payload.userId },
     });
 
     if (!auth) {
       throw new NotFoundException('Admin not found');
     }
 
-    // Hash new password
-    const hashedPassword = await bcrypt.hash(newPassword, 12);
+    if (auth.hasChangedPassword) {
+      throw new BadRequestException('Default password already changed');
+    }
 
-    // Update password and mark as changed
+    const hashedPassword = await bcrypt.hash(changeData.newPassword, 12);
     auth.password = hashedPassword;
     auth.hasChangedPassword = true;
     await this.adminAuthRepository.save(auth);
 
-    this.logger.log(`Password changed for admin: ${email}`);
+    await this.adminSessionRepository.update(
+      { admin: { id: auth.id } },
+      { isActive: false },
+    );
+
+    this.logger.log(`Default password changed for admin: ${auth.email}`);
 
     return { success: true };
   }

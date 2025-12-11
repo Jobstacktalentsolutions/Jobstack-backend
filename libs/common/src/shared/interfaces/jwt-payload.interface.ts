@@ -50,6 +50,16 @@ export interface PasswordResetTokenPayload {
 }
 
 /**
+ * Default password change token payload
+ */
+export interface DefaultPasswordChangeTokenPayload {
+  userId: string;
+  type: 'default_password_change';
+  iat: number;
+  exp?: number;
+}
+
+/**
  * Redis Session Data
  */
 export interface RedisSessionData {

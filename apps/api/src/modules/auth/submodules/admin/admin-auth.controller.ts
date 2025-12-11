@@ -17,7 +17,8 @@ import {
   PasswordResetRequestDto,
   PasswordResetConfirmCodeDto,
   PasswordResetDto,
-  AdminChangePasswordDto,
+  AdminDefaultPasswordChangeDto,
+  AdminDefaultPasswordChangeRequestDto,
 } from './dto/admin-auth.dto';
 import { AdminJwtGuard } from 'apps/api/src/guards';
 
@@ -74,12 +75,23 @@ export class AdminAuthController {
     return await this.adminAuthService.resetPassword(resetData);
   }
 
-  @Post('change-password')
+  @Post('request-default-password-change')
   @HttpCode(HttpStatus.OK)
-  async changePassword(@Body() changeData: AdminChangePasswordDto) {
-    return await this.adminAuthService.changePassword(
-      changeData.email,
-      changeData.newPassword,
+  async requestDefaultPasswordChange(
+    @Body() requestData: AdminDefaultPasswordChangeRequestDto,
+  ) {
+    return await this.adminAuthService.requestDefaultPasswordChange(
+      requestData,
+    );
+  }
+
+  @Post('complete-default-password-change')
+  @HttpCode(HttpStatus.OK)
+  async completeDefaultPasswordChange(
+    @Body() changeData: AdminDefaultPasswordChangeDto,
+  ) {
+    return await this.adminAuthService.completeDefaultPasswordChange(
+      changeData,
     );
   }
 }

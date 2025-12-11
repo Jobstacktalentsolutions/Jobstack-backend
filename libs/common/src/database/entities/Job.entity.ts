@@ -1,5 +1,6 @@
 import {
   Column,
+  Decimal128,
   Entity,
   JoinColumn,
   JoinTable,
@@ -40,10 +41,10 @@ export class Job extends BaseEntity {
   @Column({ type: 'enum', enum: WorkMode })
   workMode: WorkMode;
 
-  @Column({ type: 'decimal', precision: 12, scale: 2, nullable: true })
+  @Column({ type: 'float', nullable: true })
   salaryMin?: number;
 
-  @Column({ type: 'decimal', precision: 12, scale: 2, nullable: true })
+  @Column({ type: 'float', nullable: true })
   salaryMax?: number;
 
   @Column({ nullable: true })

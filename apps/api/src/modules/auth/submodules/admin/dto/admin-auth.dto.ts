@@ -18,12 +18,23 @@ import {
 } from 'class-validator';
 
 /**
- * Change Password DTO for Admin (email + password only)
- * Used when admin needs to change their default password
+ * DTO for requesting the default password change token.
  */
-export class AdminChangePasswordDto {
+export class AdminDefaultPasswordChangeRequestDto {
   @IsEmail()
   email: string;
+
+  @IsString()
+  @MinLength(8, { message: 'Password must be at least 8 characters long' })
+  currentPassword: string;
+}
+
+/**
+ * DTO for completing the default password change flow with a new password.
+ */
+export class AdminDefaultPasswordChangeDto {
+  @IsString()
+  resetToken: string;
 
   @IsString()
   @MinLength(8, { message: 'Password must be at least 8 characters long' })
