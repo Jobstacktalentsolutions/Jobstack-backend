@@ -58,12 +58,16 @@ export class Job extends BaseEntity {
   @Column({ type: 'enum', enum: ContractPaymentType, nullable: true })
   contractPaymentType?: ContractPaymentType;
 
-  // Contract duration fields (for CONTRACT employment arrangement)
+  // Contract duration display field (for CONTRACT employment arrangement)
+  @Column({ type: 'int', nullable: true })
+  contractDurationDays?: number;
+
+  // Generic start/end dates (for tracking purposes, applicable to both contract and permanent roles)
   @Column({ type: 'timestamp', nullable: true })
-  contractStartDate?: Date;
+  startDate?: Date;
 
   @Column({ type: 'timestamp', nullable: true })
-  contractEndDate?: Date;
+  endDate?: Date;
 
   @Column({ nullable: true })
   state?: string;

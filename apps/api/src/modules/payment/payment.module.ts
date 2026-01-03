@@ -3,15 +3,14 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
 import { 
   Payment, 
-  SystemConfig, 
   Employee, 
   EmployerProfile 
 } from '@app/common/database/entities';
+import { SystemConfigModule } from '../system-config/system-config.module';
 
 // Services
 import { PaymentService } from './services/payment.service';
 import { PaystackService } from './services/paystack.service';
-import { SystemConfigService } from './services/system-config.service';
 
 // Controllers
 import { PaymentController } from './controllers/payment.controller';
@@ -22,16 +21,15 @@ import { PaymentAdminController } from './controllers/payment-admin.controller';
   imports: [
     TypeOrmModule.forFeature([
       Payment,
-      SystemConfig,
       Employee,
       EmployerProfile,
     ]),
     ConfigModule,
+    SystemConfigModule,
   ],
   providers: [
     PaymentService,
     PaystackService,
-    SystemConfigService,
   ],
   controllers: [
     PaymentController,

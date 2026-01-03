@@ -6,6 +6,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { SystemConfig } from '@app/common/database/entities';
+import { SystemConfigKey } from '../system-config-keys.enum';
 
 @Injectable()
 export class SystemConfigService {
@@ -15,11 +16,11 @@ export class SystemConfigService {
   ) {}
 
   // Get configuration value by key
-  async getConfig(key: string): Promise<any> {
+  async getConfig(key: SystemConfigKey | string): Promise<any> {
     const config = await this.systemConfigRepo.findOne({ where: { key } });
     if (!config) {
       // Return default values for known keys
-      if (key === 'EMPLOYEE_ACTIVATION_PERCENTAGE') {
+      if (key === SystemConfigKey.EMPLOYEE_ACTIVATION_PERCENTAGE) {
         return 10; // Default 10%
       }
       throw new NotFoundException(`Configuration key '${key}' not found`);
@@ -34,7 +35,7 @@ export class SystemConfigService {
 
   // Update configuration (admin only)
   async updateConfig(
-    key: string,
+    key: SystemConfigKey | string,
     value: any,
     updatedBy: string,
     description?: string,
@@ -69,7 +70,9 @@ export class SystemConfigService {
 
   // Get employee activation percentage
   async getEmployeeActivationPercentage(): Promise<number> {
-    const percentage = await this.getConfig('EMPLOYEE_ACTIVATION_PERCENTAGE');
+    const percentage = await this.getConfig(
+      SystemConfigKey.EMPLOYEE_ACTIVATION_PERCENTAGE,
+    );
 
     if (typeof percentage !== 'number' || percentage < 0 || percentage > 100) {
       throw new BadRequestException(
@@ -84,7 +87,7 @@ export class SystemConfigService {
   async initializeDefaults(): Promise<void> {
     const defaultConfigs = [
       {
-        key: 'EMPLOYEE_ACTIVATION_PERCENTAGE',
+        key: SystemConfigKey.EMPLOYEE_ACTIVATION_PERCENTAGE,
         value: 10,
         description:
           'Percentage of salary/contract fee required as upfront payment for employee activation',

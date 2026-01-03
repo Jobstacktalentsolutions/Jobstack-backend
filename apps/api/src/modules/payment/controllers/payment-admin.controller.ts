@@ -8,10 +8,10 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { PaymentService } from '../services/payment.service';
-import { SystemConfigService } from '../services/system-config.service';
+import { SystemConfigService } from '../../system-config/services/system-config.service';
+import { SystemConfigKey } from '../../system-config/system-config-keys.enum';
 import { 
   PaymentQueryDto, 
-  UpdateSystemConfigDto, 
   UpdatePaymentPercentageDto 
 } from '../dto';
 import { AdminJwtGuard } from '../../../guards/admin-jwt.guard';
@@ -44,9 +44,8 @@ export class PaymentAdminController {
     @CurrentUser('id') adminId: string,
     @Body() dto: UpdatePaymentPercentageDto,
   ) {
-    
     const config = await this.systemConfigService.updateConfig(
-      'EMPLOYEE_ACTIVATION_PERCENTAGE',
+      SystemConfigKey.EMPLOYEE_ACTIVATION_PERCENTAGE,
       dto.percentage,
       adminId,
       dto.description || 'Percentage of salary/contract fee required as upfront payment for employee activation',
@@ -55,27 +54,6 @@ export class PaymentAdminController {
     return {
       success: true,
       message: 'Payment percentage updated successfully',
-      data: config,
-    };
-  }
-
-  // Update system configuration
-  @Put('config')
-  async updateSystemConfig(
-    @CurrentUser('id') adminId: string,
-    @Body() dto: UpdateSystemConfigDto,
-  ) {
-    
-    const config = await this.systemConfigService.updateConfig(
-      dto.key,
-      dto.value,
-      adminId,
-      dto.description,
-    );
-
-    return {
-      success: true,
-      message: 'System configuration updated successfully',
       data: config,
     };
   }

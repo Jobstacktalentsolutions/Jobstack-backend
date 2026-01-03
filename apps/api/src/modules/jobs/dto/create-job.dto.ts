@@ -75,14 +75,20 @@ export class CreateJobDto {
   @IsEnum(ContractPaymentType)
   contractPaymentType?: ContractPaymentType;
 
-  // Contract duration fields
+  // Contract duration display field
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber({}, { message: 'contractDurationDays must be numeric' })
+  contractDurationDays?: number;
+
+  // Generic start/end dates (for tracking purposes)
   @IsOptional()
   @IsDateString()
-  contractStartDate?: string;
+  startDate?: string;
 
   @IsOptional()
   @IsDateString()
-  contractEndDate?: string;
+  endDate?: string;
 
   @IsOptional()
   @IsString()

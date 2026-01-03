@@ -5,7 +5,6 @@ import {
   Payment, 
   Employee, 
   EmployerProfile,
-  SystemConfig 
 } from '@app/common/database/entities';
 import { 
   PaymentStatus, 
@@ -14,7 +13,7 @@ import {
   EmployeePaymentStatus 
 } from '@app/common/database/entities/schema.enum';
 import { PaystackService } from './paystack.service';
-import { SystemConfigService } from './system-config.service';
+import { SystemConfigService } from '../../system-config/services/system-config.service';
 import {
   PaymentCalculationResult,
   InitiatePaymentParams,

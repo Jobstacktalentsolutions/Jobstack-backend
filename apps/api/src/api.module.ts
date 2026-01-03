@@ -11,6 +11,7 @@ import { appProviders } from '@app/common/shared/utils/app.providers';
 import { UserModule } from './modules/user/user.module';
 import { JobsModule } from './modules/jobs/jobs.module';
 import { PaymentModule } from './modules/payment/payment.module';
+import { SystemConfigModule } from './modules/system-config/system-config.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { PaymentModule } from './modules/payment/payment.module';
     UserModule,
     JobsModule,
     PaymentModule,
+    SystemConfigModule,
   ],
   controllers: [ApiController],
   providers: [ApiService, ...appProviders('api')],
