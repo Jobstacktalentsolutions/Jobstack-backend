@@ -46,6 +46,9 @@ import { ENV } from './env.config';
         [ENV.SUPER_ADMIN_PASSWORD]: Joi.string().required(),
         [ENV.SUPER_ADMIN_FIRST_NAME]: Joi.string().required(),
         [ENV.SUPER_ADMIN_LAST_NAME]: Joi.string().required(),
+        [ENV.PAYSTACK_SECRET_KEY]: Joi.string().required(),
+        [ENV.PAYSTACK_PUBLIC_KEY]: Joi.string().required(),
+        [ENV.PAYSTACK_WEBHOOK_SECRET]: Joi.string().required(),
       } as Record<
         ENV,
         Joi.StringSchema | Joi.NumberSchema | Joi.BooleanSchema

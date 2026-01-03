@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToOne } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { EmployerProfile } from './EmployerProfile.entity';
 import { Job } from './Job.entity';
@@ -8,6 +8,7 @@ import {
   EmploymentArrangement,
   EmploymentType,
   ContractPaymentType,
+  EmployeePaymentStatus,
 } from './schema.enum';
 
 @Entity('employees')
@@ -72,4 +73,23 @@ export class Employee extends BaseEntity {
 
   @Column({ type: 'text', nullable: true })
   notes?: string;
+
+  // Payment related fields
+  @Column({
+    type: 'enum',
+    enum: EmployeePaymentStatus,
+    default: EmployeePaymentStatus.NOT_REQUIRED,
+  })
+  paymentStatus: EmployeePaymentStatus;
+
+  @Column('uuid', { nullable: true })
+  paymentId?: string;
+
+  @Column({ type: 'boolean', default: false })
+  activationBlocked: boolean;
+
+  // Payment relation
+  @OneToOne('Payment', 'employee', { nullable: true })
+  @JoinColumn({ name: 'paymentId' })
+  payment?: any; // Using any to avoid circular import
 }

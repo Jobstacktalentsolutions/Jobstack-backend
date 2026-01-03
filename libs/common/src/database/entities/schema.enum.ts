@@ -130,3 +130,23 @@ export enum DocumentType {
   PROFILE_PICTURE = 'PROFILE_PICTURE',
   OTHER = 'OTHER',
 }
+
+// Payment related enums
+export enum PaymentStatus {
+  PENDING = 'PENDING',
+  SUCCESS = 'SUCCESS',
+  FAILED = 'FAILED',
+  REFUNDED = 'REFUNDED',
+}
+
+export enum PaymentType {
+  EMPLOYEE_ACTIVATION = 'EMPLOYEE_ACTIVATION',
+  CONTRACT_ACTIVATION = 'CONTRACT_ACTIVATION',
+}
+
+export enum EmployeePaymentStatus {
+  NOT_REQUIRED = 'NOT_REQUIRED',
+  PENDING = 'PENDING',
+  PAID = 'PAID',
+  FAILED = 'FAILED',
+}

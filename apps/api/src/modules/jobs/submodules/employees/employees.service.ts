@@ -146,6 +146,19 @@ export class EmployeesService {
     dto: UpdateEmployeeStatusDto,
   ) {
     const employee = await this.getEmployerEmployeeById(employerId, employeeId);
+    
+    // Check payment requirement before allowing activation
+    if (dto.status === EmployeeStatus.ACTIVE && employee.status === EmployeeStatus.ONBOARDING) {
+      // Check if employee has salary/contract fee that requires payment
+      const hasPaymentAmount = employee.salaryOffered || employee.contractFeeOffered;
+      
+      if (hasPaymentAmount && employee.paymentStatus !== 'PAID') {
+        throw new BadRequestException(
+          'Payment is required before employee can be activated. Please complete the payment process first.'
+        );
+      }
+    }
+    
     employee.status = dto.status;
     await this.employeeRepo.save(employee);
     return this.getEmployerEmployeeById(employerId, employeeId);
