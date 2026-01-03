@@ -19,6 +19,7 @@ import {
   SkillCategory,
   JobStatus,
   WorkMode,
+  ContractPaymentType,
 } from './schema.enum';
 
 @Entity('jobs')
@@ -46,6 +47,23 @@ export class Job extends BaseEntity {
 
   @Column({ type: 'float', nullable: true })
   salaryMax?: number;
+
+  // Contract compensation fields (for CONTRACT employment arrangement)
+  @Column({ type: 'float', nullable: true })
+  contractFeeMin?: number;
+
+  @Column({ type: 'float', nullable: true })
+  contractFeeMax?: number;
+
+  @Column({ type: 'enum', enum: ContractPaymentType, nullable: true })
+  contractPaymentType?: ContractPaymentType;
+
+  // Contract duration fields (for CONTRACT employment arrangement)
+  @Column({ type: 'timestamp', nullable: true })
+  contractStartDate?: Date;
+
+  @Column({ type: 'timestamp', nullable: true })
+  contractEndDate?: Date;
 
   @Column({ nullable: true })
   state?: string;

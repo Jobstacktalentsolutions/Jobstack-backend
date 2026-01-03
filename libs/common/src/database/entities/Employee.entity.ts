@@ -7,6 +7,7 @@ import {
   EmployeeStatus,
   EmploymentArrangement,
   EmploymentType,
+  ContractPaymentType,
 } from './schema.enum';
 
 @Entity('employees')
@@ -55,8 +56,16 @@ export class Employee extends BaseEntity {
   @Column({ type: 'timestamp', nullable: true })
   endDate?: Date;
 
+  // Salary for permanent employees
   @Column({ type: 'decimal', precision: 12, scale: 2, nullable: true })
   salaryOffered?: number;
+
+  // Contract compensation fields (for CONTRACT employment arrangement)
+  @Column({ type: 'decimal', precision: 12, scale: 2, nullable: true })
+  contractFeeOffered?: number;
+
+  @Column({ type: 'enum', enum: ContractPaymentType, nullable: true })
+  contractPaymentType?: ContractPaymentType;
 
   @Column({ nullable: true })
   currency?: string;

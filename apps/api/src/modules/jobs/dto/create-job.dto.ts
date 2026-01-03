@@ -19,6 +19,7 @@ import {
   EmploymentType,
   SkillCategory,
   WorkMode,
+  ContractPaymentType,
 } from '@app/common/database/entities/schema.enum';
 
 export class CreateJobDto {
@@ -52,6 +53,36 @@ export class CreateJobDto {
   @Type(() => Number)
   @IsNumber({ maxDecimalPlaces: 2 }, { message: 'salaryMax must be numeric' })
   salaryMax?: number;
+
+  // Contract compensation fields
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber(
+    { maxDecimalPlaces: 2 },
+    { message: 'contractFeeMin must be numeric' },
+  )
+  contractFeeMin?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber(
+    { maxDecimalPlaces: 2 },
+    { message: 'contractFeeMax must be numeric' },
+  )
+  contractFeeMax?: number;
+
+  @IsOptional()
+  @IsEnum(ContractPaymentType)
+  contractPaymentType?: ContractPaymentType;
+
+  // Contract duration fields
+  @IsOptional()
+  @IsDateString()
+  contractStartDate?: string;
+
+  @IsOptional()
+  @IsDateString()
+  contractEndDate?: string;
 
   @IsOptional()
   @IsString()

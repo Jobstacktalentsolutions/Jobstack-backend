@@ -71,6 +71,13 @@ export enum EmploymentArrangement {
   CONTRACT = 'CONTRACT',
 }
 
+export enum ContractPaymentType {
+  HOURLY = 'HOURLY',
+  DAILY = 'DAILY',
+  FIXED_PROJECT = 'FIXED_PROJECT',
+  MONTHLY_CONTRACT = 'MONTHLY_CONTRACT',
+}
+
 export enum WorkMode {
   REMOTE = 'REMOTE',
   HYBRID = 'HYBRID',

@@ -12,6 +12,7 @@ import {
   EmployeeStatus,
   EmploymentArrangement,
   EmploymentType,
+  ContractPaymentType,
 } from '@app/common/database/entities/schema.enum';
 
 export class CreateEmployeeDto {
@@ -46,6 +47,19 @@ export class CreateEmployeeDto {
     { message: 'salaryOffered must be numeric' },
   )
   salaryOffered?: number;
+
+  // Contract compensation fields
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber(
+    { maxDecimalPlaces: 2 },
+    { message: 'contractFeeOffered must be numeric' },
+  )
+  contractFeeOffered?: number;
+
+  @IsOptional()
+  @IsEnum(ContractPaymentType)
+  contractPaymentType?: ContractPaymentType;
 
   @IsOptional()
   @IsString()
