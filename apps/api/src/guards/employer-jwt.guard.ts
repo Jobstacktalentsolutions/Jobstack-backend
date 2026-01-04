@@ -6,11 +6,13 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Reflector } from '@nestjs/core';
+import { DataSource } from 'typeorm';
 import { AccessTokenPayload } from '@app/common/shared/interfaces/jwt-payload.interface';
 import { UserRole } from '@app/common/shared/enums/user-roles.enum';
 import { RedisService } from '@app/common/redis/redis.service';
 import { REDIS_KEYS } from '@app/common/redis/redis.config';
 import { EmployerAuthService } from '../modules/auth/submodules/employer/employer-auth.service';
+import { EmployerAuth } from '@app/common/database/entities/EmployerAuth.entity';
 
 @Injectable()
 export class EmployerJwtGuard implements CanActivate {
@@ -19,6 +21,7 @@ export class EmployerJwtGuard implements CanActivate {
     private reflector: Reflector,
     private employerAuthService: EmployerAuthService,
     private redisService: RedisService,
+    private dataSource: DataSource,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -54,6 +57,22 @@ export class EmployerJwtGuard implements CanActivate {
 
       if (!sessionValidation.valid) {
         throw new UnauthorizedException('Session expired or invalid');
+      }
+
+      // Check if account is suspended
+      if (sessionValidation.userId) {
+        const employerAuthRepo = this.dataSource.getRepository(EmployerAuth);
+        const auth = await employerAuthRepo.findOne({
+          where: { id: sessionValidation.userId },
+        });
+
+        if (auth?.suspended) {
+          throw new UnauthorizedException(
+            auth.suspensionReason
+              ? `Your account has been suspended. Reason: ${auth.suspensionReason}`
+              : 'Your account has been suspended. Please contact support for assistance.',
+          );
+        }
       }
 
       // Attach user data to request

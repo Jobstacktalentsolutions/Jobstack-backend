@@ -12,6 +12,8 @@ import { AdminProfile } from '@app/common/database/entities/AdminProfile.entity'
 import {
   EmployerVerification,
   EmployerProfile,
+  EmployerAuth,
+  JobseekerAuth,
 } from '@app/common/database/entities';
 import { VerificationStatus } from '@app/common/shared/enums/employer-docs.enum';
 import { AdminRole } from '@app/common/shared/enums/roles.enum';
@@ -40,6 +42,10 @@ export class AdminService {
     private readonly verificationRepo: Repository<EmployerVerification>,
     @InjectRepository(EmployerProfile)
     private readonly profileRepo: Repository<EmployerProfile>,
+    @InjectRepository(EmployerAuth)
+    private readonly employerAuthRepo: Repository<EmployerAuth>,
+    @InjectRepository(JobseekerAuth)
+    private readonly jobseekerAuthRepo: Repository<JobseekerAuth>,
     private readonly notificationService: NotificationService,
   ) {}
 
@@ -137,26 +143,6 @@ export class AdminService {
     return { id: saved.id, email: saved.email, roleKey: saved.roleKey };
   }
 
-  async deleteAdmin(requesterId: string, targetAdminId: string) {
-    if (requesterId === targetAdminId) {
-      throw new BadRequestException('Cannot delete yourself');
-    }
-
-    const [requester, target] = await Promise.all([
-      this.adminAuthRepo.findOne({ where: { id: requesterId } }),
-      this.adminAuthRepo.findOne({ where: { id: targetAdminId } }),
-    ]);
-
-    if (!target) throw new NotFoundException('Target admin not found');
-
-    // Only higher privilege can delete lower
-    if (requester!.privilegeLevel <= target.privilegeLevel) {
-      throw new ForbiddenException('Insufficient privilege to delete admin');
-    }
-
-    await this.adminAuthRepo.remove(target);
-    return { success: true };
-  }
 
   async updateEmployerVerification(
     employerId: string,
@@ -243,5 +229,271 @@ export class AdminService {
       activeSessions: 0,
       storageUsed: '0 MB',
     };
+  }
+
+  /**
+   * Suspend an employer account
+   */
+  async suspendEmployer(
+    adminId: string,
+    employerId: string,
+    reason?: string,
+  ): Promise<{ success: boolean; employerId: string }> {
+    const employerAuth = await this.employerAuthRepo.findOne({
+      where: { id: employerId },
+      relations: ['profile'],
+    });
+
+    if (!employerAuth) {
+      throw new NotFoundException('Employer not found');
+    }
+
+    if (employerAuth.suspended) {
+      throw new BadRequestException('Employer is already suspended');
+    }
+
+    employerAuth.suspended = true;
+    employerAuth.suspendedAt = new Date();
+    employerAuth.suspensionReason = reason || null;
+
+    await this.employerAuthRepo.save(employerAuth);
+
+    // Send notification email
+    if (employerAuth.profile) {
+      await this.notificationService.sendEmail({
+        to: employerAuth.email,
+        subject: 'Account Suspension Notice',
+        template: 'general-notification',
+        context: {
+          firstName: employerAuth.profile.firstName || 'Employer',
+          message: reason
+            ? `Your account has been suspended. Reason: ${reason}`
+            : 'Your account has been suspended. Please contact support for assistance.',
+          actionText: 'Contact Support',
+          actionUrl: process.env.SUPPORT_URL || 'https://jobstack.ng/support',
+        },
+      });
+    }
+
+    return { success: true, employerId };
+  }
+
+  /**
+   * Unsuspend an employer account
+   */
+  async unsuspendEmployer(
+    adminId: string,
+    employerId: string,
+  ): Promise<{ success: boolean; employerId: string }> {
+    const employerAuth = await this.employerAuthRepo.findOne({
+      where: { id: employerId },
+      relations: ['profile'],
+    });
+
+    if (!employerAuth) {
+      throw new NotFoundException('Employer not found');
+    }
+
+    if (!employerAuth.suspended) {
+      throw new BadRequestException('Employer is not suspended');
+    }
+
+    employerAuth.suspended = false;
+    employerAuth.suspendedAt = null;
+    employerAuth.suspensionReason = null;
+
+    await this.employerAuthRepo.save(employerAuth);
+
+    // Send notification email
+    if (employerAuth.profile) {
+      await this.notificationService.sendEmail({
+        to: employerAuth.email,
+        subject: 'Account Reinstated',
+        template: 'general-notification',
+        context: {
+          firstName: employerAuth.profile.firstName || 'Employer',
+          message: 'Your account has been reinstated. You can now log in and use all features.',
+          actionText: 'Login to Dashboard',
+          actionUrl:
+            process.env.EMPLOYER_DASHBOARD_URL || 'https://jobstack.ng/employer/login',
+        },
+      });
+    }
+
+    return { success: true, employerId };
+  }
+
+  /**
+   * Suspend a jobseeker account
+   */
+  async suspendJobseeker(
+    adminId: string,
+    jobseekerId: string,
+    reason?: string,
+  ): Promise<{ success: boolean; jobseekerId: string }> {
+    const jobseekerAuth = await this.jobseekerAuthRepo.findOne({
+      where: { id: jobseekerId },
+      relations: ['profile'],
+    });
+
+    if (!jobseekerAuth) {
+      throw new NotFoundException('Jobseeker not found');
+    }
+
+    if (jobseekerAuth.suspended) {
+      throw new BadRequestException('Jobseeker is already suspended');
+    }
+
+    jobseekerAuth.suspended = true;
+    jobseekerAuth.suspendedAt = new Date();
+    jobseekerAuth.suspensionReason = reason || null;
+
+    await this.jobseekerAuthRepo.save(jobseekerAuth);
+
+    // Send notification email
+    if (jobseekerAuth.profile) {
+      await this.notificationService.sendEmail({
+        to: jobseekerAuth.email,
+        subject: 'Account Suspension Notice',
+        template: 'general-notification',
+        context: {
+          firstName: jobseekerAuth.profile.firstName || 'Jobseeker',
+          message: reason
+            ? `Your account has been suspended. Reason: ${reason}`
+            : 'Your account has been suspended. Please contact support for assistance.',
+          actionText: 'Contact Support',
+          actionUrl: process.env.SUPPORT_URL || 'https://jobstack.ng/support',
+        },
+      });
+    }
+
+    return { success: true, jobseekerId };
+  }
+
+  /**
+   * Unsuspend a jobseeker account
+   */
+  async unsuspendJobseeker(
+    adminId: string,
+    jobseekerId: string,
+  ): Promise<{ success: boolean; jobseekerId: string }> {
+    const jobseekerAuth = await this.jobseekerAuthRepo.findOne({
+      where: { id: jobseekerId },
+      relations: ['profile'],
+    });
+
+    if (!jobseekerAuth) {
+      throw new NotFoundException('Jobseeker not found');
+    }
+
+    if (!jobseekerAuth.suspended) {
+      throw new BadRequestException('Jobseeker is not suspended');
+    }
+
+    jobseekerAuth.suspended = false;
+    jobseekerAuth.suspendedAt = null;
+    jobseekerAuth.suspensionReason = null;
+
+    await this.jobseekerAuthRepo.save(jobseekerAuth);
+
+    // Send notification email
+    if (jobseekerAuth.profile) {
+      await this.notificationService.sendEmail({
+        to: jobseekerAuth.email,
+        subject: 'Account Reinstated',
+        template: 'general-notification',
+        context: {
+          firstName: jobseekerAuth.profile.firstName || 'Jobseeker',
+          message: 'Your account has been reinstated. You can now log in and use all features.',
+          actionText: 'Login to Dashboard',
+          actionUrl:
+            process.env.JOBSEEKER_DASHBOARD_URL ||
+            'https://jobstack.ng/jobseeker/login',
+        },
+      });
+    }
+
+    return { success: true, jobseekerId };
+  }
+
+  /**
+   * Suspend an admin account (only SUPER_ADMIN can do this)
+   */
+  async suspendAdmin(
+    requesterId: string,
+    targetAdminId: string,
+    reason?: string,
+  ): Promise<{ success: boolean; adminId: string }> {
+    if (requesterId === targetAdminId) {
+      throw new BadRequestException('Cannot suspend yourself');
+    }
+
+    const requester = await this.adminAuthRepo.findOne({
+      where: { id: requesterId },
+    });
+
+    if (!requester) {
+      throw new NotFoundException('Requester admin not found');
+    }
+
+    // Only SUPER_ADMIN can suspend other admins
+    if (requester.roleKey !== AdminRole.SUPER_ADMIN.role) {
+      throw new ForbiddenException(
+        'Only SUPER_ADMIN can suspend admin accounts',
+      );
+    }
+
+    const target = await this.adminAuthRepo.findOne({
+      where: { id: targetAdminId },
+      relations: ['profile'],
+    });
+
+    if (!target) {
+      throw new NotFoundException('Target admin not found');
+    }
+
+    // Note: We'll need to add suspension fields to AdminAuth entity
+    // For now, we'll just prevent login by checking role or add a suspended field
+    // Since AdminAuth doesn't have suspension fields yet, we'll skip this for now
+    // and implement it if needed
+
+    throw new BadRequestException(
+      'Admin suspension not yet implemented. Use delete instead.',
+    );
+  }
+
+  /**
+   * Delete an admin account (only SUPER_ADMIN can do this, and cannot delete themselves)
+   */
+  async deleteAdmin(requesterId: string, targetAdminId: string) {
+    if (requesterId === targetAdminId) {
+      throw new BadRequestException('Cannot delete yourself');
+    }
+
+    const requester = await this.adminAuthRepo.findOne({
+      where: { id: requesterId },
+    });
+
+    if (!requester) {
+      throw new NotFoundException('Requester admin not found');
+    }
+
+    // Only SUPER_ADMIN can delete other admins
+    if (requester.roleKey !== AdminRole.SUPER_ADMIN.role) {
+      throw new ForbiddenException(
+        'Only SUPER_ADMIN can delete admin accounts',
+      );
+    }
+
+    const target = await this.adminAuthRepo.findOne({
+      where: { id: targetAdminId },
+    });
+
+    if (!target) {
+      throw new NotFoundException('Target admin not found');
+    }
+
+    await this.adminAuthRepo.remove(target);
+    return { success: true };
   }
 }

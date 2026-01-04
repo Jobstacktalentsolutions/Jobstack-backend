@@ -88,4 +88,46 @@ export class AdminController {
       reason,
     );
   }
+
+  // Suspend employer account
+  @Patch('employers/:id/suspend')
+  @RequireAdminRole(AdminRole.USER_MANAGEMENT.role)
+  async suspendEmployer(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') employerId: string,
+    @Body('reason') reason?: string,
+  ) {
+    return this.adminService.suspendEmployer(user.id, employerId, reason);
+  }
+
+  // Unsuspend employer account
+  @Patch('employers/:id/unsuspend')
+  @RequireAdminRole(AdminRole.USER_MANAGEMENT.role)
+  async unsuspendEmployer(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') employerId: string,
+  ) {
+    return this.adminService.unsuspendEmployer(user.id, employerId);
+  }
+
+  // Suspend jobseeker account
+  @Patch('jobseekers/:id/suspend')
+  @RequireAdminRole(AdminRole.USER_MANAGEMENT.role)
+  async suspendJobseeker(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') jobseekerId: string,
+    @Body('reason') reason?: string,
+  ) {
+    return this.adminService.suspendJobseeker(user.id, jobseekerId, reason);
+  }
+
+  // Unsuspend jobseeker account
+  @Patch('jobseekers/:id/unsuspend')
+  @RequireAdminRole(AdminRole.USER_MANAGEMENT.role)
+  async unsuspendJobseeker(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') jobseekerId: string,
+  ) {
+    return this.adminService.unsuspendJobseeker(user.id, jobseekerId);
+  }
 }

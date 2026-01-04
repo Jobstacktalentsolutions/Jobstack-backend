@@ -10,6 +10,8 @@ import {
   AdminProfile,
   EmployerVerification,
   EmployerProfile,
+  EmployerAuth,
+  JobseekerAuth,
 } from '@app/common/database/entities';
 
 @Module({
@@ -19,6 +21,8 @@ import {
       AdminProfile,
       EmployerVerification,
       EmployerProfile,
+      EmployerAuth,
+      JobseekerAuth,
     ]),
     AdminAuthModule,
     NotificationModule,

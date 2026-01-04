@@ -151,6 +151,15 @@ export class EmployerAuthService {
       );
     }
 
+    // Check if account is suspended
+    if (auth.suspended) {
+      throw new UnauthorizedException(
+        auth.suspensionReason
+          ? `Your account has been suspended. Reason: ${auth.suspensionReason}`
+          : 'Your account has been suspended. Please contact support for assistance.',
+      );
+    }
+
     // Generate tokens
     const authResult = await this.generateTokens(
       auth,
@@ -207,6 +216,15 @@ export class EmployerAuthService {
 
       if (!auth) {
         throw new UnauthorizedException('User not found');
+      }
+
+      // Check if account is suspended
+      if (auth.suspended) {
+        throw new UnauthorizedException(
+          auth.suspensionReason
+            ? `Your account has been suspended. Reason: ${auth.suspensionReason}`
+            : 'Your account has been suspended. Please contact support for assistance.',
+        );
       }
 
       // Update session activity

@@ -14,10 +14,19 @@ export class JobseekerAuth extends BaseEntity {
   @Column({ default: false })
   emailVerified: boolean;
 
+  @Column({ default: false })
+  suspended: boolean;
+
+  @Column({ type: 'timestamp', nullable: true })
+  suspendedAt: Date | null;
+
+  @Column({ type: 'text', nullable: true })
+  suspensionReason: string | null;
+
   @OneToMany(() => JobseekerSession, (session) => session.jobseeker)
   sessions: JobseekerSession[];
 
-@OneToOne(() => JobSeekerProfile, (profile) => profile.auth, {
+  @OneToOne(() => JobSeekerProfile, (profile) => profile.auth, {
     cascade: true,
     onDelete: 'CASCADE',
   })

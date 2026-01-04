@@ -14,6 +14,15 @@ export class EmployerAuth extends BaseEntity {
   @Column({ default: false })
   emailVerified: boolean;
 
+  @Column({ default: false })
+  suspended: boolean;
+
+  @Column({ type: 'timestamp', nullable: true })
+  suspendedAt: Date | null;
+
+  @Column({ type: 'text', nullable: true })
+  suspensionReason: string | null;
+
   @OneToMany(() => EmployerSession, (session) => session.employer)
   sessions: EmployerSession[];
 
