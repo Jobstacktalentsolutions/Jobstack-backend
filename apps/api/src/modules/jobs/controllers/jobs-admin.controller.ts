@@ -9,7 +9,8 @@ import {
   UseGuards,
   Body,
 } from '@nestjs/common';
-import { AdminJwtGuard } from 'apps/api/src/guards';
+import { AdminJwtGuard, RequireAdminRole } from 'apps/api/src/guards';
+import { AdminRole } from '@app/common/shared/enums/roles.enum';
 import { JobsService } from '../services/jobs.service';
 import { JobQueryDto, UpdateJobDto, UpdateJobStatusDto } from '../dto';
 
@@ -41,9 +42,10 @@ export class JobsAdminController {
     return this.jobsService.updateJob(jobId, dto);
   }
 
-  // Allows admins to update job status
+  // Allows admins to update job status (Operations & Support approves new job posts)
   @Patch(':jobId/status')
   @UseGuards(AdminJwtGuard)
+  @RequireAdminRole(AdminRole.OPERATIONS_SUPPORT.role)
   updateJobStatus(
     @Param('jobId', ParseUUIDPipe) jobId: string,
     @Body() dto: UpdateJobStatusDto,

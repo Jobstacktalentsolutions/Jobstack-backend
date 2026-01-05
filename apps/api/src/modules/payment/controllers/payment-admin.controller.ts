@@ -10,17 +10,18 @@ import {
 import { PaymentService } from '../services/payment.service';
 import { SystemConfigService } from '../../system-config/services/system-config.service';
 import { SystemConfigKey } from '../../system-config/system-config-keys.enum';
-import { 
-  PaymentQueryDto, 
-  UpdatePaymentPercentageDto 
-} from '../dto';
+import { PaymentQueryDto, UpdatePaymentPercentageDto } from '../dto';
 import { AdminJwtGuard } from '../../../guards/admin-jwt.guard';
 import { RequireAdminRole } from '../../../guards/require-admin-role.decorator';
+import { AdminRole } from '@app/common/shared/enums/roles.enum';
 import { CurrentUser } from '@app/common/shared/decorators/current-user.decorator';
 
 @Controller('admin/payment')
 @UseGuards(AdminJwtGuard)
-@RequireAdminRole(['admin', 'super_admin', 'payment_admin'])
+@RequireAdminRole([
+  AdminRole.FINANCE_BILLING_MANAGER.role,
+  AdminRole.SUPER_ADMIN.role,
+])
 export class PaymentAdminController {
   constructor(
     private readonly paymentService: PaymentService,
@@ -31,7 +32,7 @@ export class PaymentAdminController {
   @Get('config')
   async getPaymentConfig() {
     const configs = await this.systemConfigService.getAllConfigs();
-    
+
     return {
       success: true,
       data: configs,
@@ -48,7 +49,8 @@ export class PaymentAdminController {
       SystemConfigKey.EMPLOYEE_ACTIVATION_PERCENTAGE,
       dto.percentage,
       adminId,
-      dto.description || 'Percentage of salary/contract fee required as upfront payment for employee activation',
+      dto.description ||
+        'Percentage of salary/contract fee required as upfront payment for employee activation',
     );
 
     return {

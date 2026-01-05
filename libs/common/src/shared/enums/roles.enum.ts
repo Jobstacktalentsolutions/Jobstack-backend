@@ -9,16 +9,16 @@ export const AdminRole = {
     privilegeLevel: PrivilegeLevel.FULL,
     role: 'SUPER_ADMIN',
   },
-  USER_MANAGEMENT: {
+  VETTING_SPECIALIST: {
     privilegeLevel: PrivilegeLevel.ELEVATED,
-    role: 'USER_MANAGEMENT',
+    role: 'VETTING_SPECIALIST',
   },
-  CONTENT_MODERATION: {
+  OPERATIONS_SUPPORT: {
     privilegeLevel: PrivilegeLevel.ELEVATED,
-    role: 'CONTENT_MODERATION',
+    role: 'OPERATIONS_SUPPORT',
   },
-  ANALYTICS: {
-    privilegeLevel: PrivilegeLevel.BASIC,
-    role: 'ANALYTICS',
+  FINANCE_BILLING_MANAGER: {
+    privilegeLevel: PrivilegeLevel.ELEVATED,
+    role: 'FINANCE_BILLING_MANAGER',
   },
 };

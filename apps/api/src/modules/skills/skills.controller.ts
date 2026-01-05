@@ -12,7 +12,8 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { SkillsService } from './skills.service';
-import { AdminJwtGuard, JobSeekerJwtGuard } from 'apps/api/src/guards';
+import { AdminJwtGuard, JobSeekerJwtGuard, RequireAdminRole } from 'apps/api/src/guards';
+import { AdminRole } from '@app/common/shared/enums/roles.enum';
 import { Skill } from '@app/common/database/entities/Skill.entity';
 import { CreateSkillDto, UpdateSkillDto, SuggestSkillDto } from './dto';
 
@@ -33,16 +34,18 @@ export class SkillsController {
     return this.skillsService.suggestSkill(body.name);
   }
 
-  // Admin: create
+  // Admin: create (Vetting Specialist manages candidate quality control)
   @UseGuards(AdminJwtGuard)
+  @RequireAdminRole(AdminRole.VETTING_SPECIALIST.role)
   @Post()
   @HttpCode(HttpStatus.CREATED)
   async create(@Body() body: CreateSkillDto): Promise<Skill> {
     return this.skillsService.createSkill(body);
   }
 
-  // Admin: update
+  // Admin: update (Vetting Specialist manages candidate quality control)
   @UseGuards(AdminJwtGuard)
+  @RequireAdminRole(AdminRole.VETTING_SPECIALIST.role)
   @Patch(':id')
   async update(
     @Param('id') id: string,
@@ -51,8 +54,9 @@ export class SkillsController {
     return this.skillsService.updateSkill(id, body);
   }
 
-  // Admin: delete
+  // Admin: delete (Vetting Specialist manages candidate quality control)
   @UseGuards(AdminJwtGuard)
+  @RequireAdminRole(AdminRole.VETTING_SPECIALIST.role)
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   async remove(@Param('id') id: string): Promise<void> {

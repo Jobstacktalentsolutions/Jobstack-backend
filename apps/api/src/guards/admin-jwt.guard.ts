@@ -67,28 +67,25 @@ export class AdminJwtGuard implements CanActivate {
       request.user = payload;
 
       // Optional role requirement check
-      const requiredRoleKey = this.reflector.getAllAndOverride<
-        string | undefined
+      const requiredRole = this.reflector.getAllAndOverride<
+        string | string[] | undefined
       >(ADMIN_REQUIRED_ROLE, [context.getHandler(), context.getClass()]);
 
-      if (requiredRoleKey) {
+      if (requiredRole) {
         const adminRepo = this.dataSource.getRepository(AdminAuth);
         const admin = await adminRepo.findOne({ where: { id: payload.id } });
         if (!admin) {
           throw new UnauthorizedException('Admin not found');
         }
 
-        const target = (
-          AdminRole as Record<string, { privilegeLevel: number; role: string }>
-        )[requiredRoleKey];
-        if (!target) {
-          throw new ForbiddenException('Invalid role requirement');
-        }
-
-        const hasRole = admin.roleKey === requiredRoleKey;
-        const hasHigherPrivilege = admin.privilegeLevel > target.privilegeLevel;
-        if (!hasRole && !hasHigherPrivilege) {
-          throw new ForbiddenException('Insufficient role or privilege');
+        // Handle both single role string and array of roles
+        const requiredRoles = Array.isArray(requiredRole) ? requiredRole : [requiredRole];
+        
+        // Check if admin has any of the required roles or is SUPER_ADMIN
+        const hasRequiredRole = requiredRoles.includes(admin.roleKey) || admin.roleKey === AdminRole.SUPER_ADMIN.role;
+        
+        if (!hasRequiredRole) {
+          throw new ForbiddenException('Insufficient role permissions');
         }
       }
 

@@ -39,9 +39,9 @@ export class AdminController {
     return this.adminService.updateAdminProfile(user.id, updateData);
   }
 
-  // Create a new admin (requires USER_MANAGEMENT role or higher privilege)
+  // Create a new admin (requires SUPER_ADMIN role)
   @Post('admins')
-  @RequireAdminRole(AdminRole.USER_MANAGEMENT.role)
+  @RequireAdminRole(AdminRole.SUPER_ADMIN.role)
   async createAdmin(
     @CurrentUser() user: CurrentUserPayload,
     @Body() body: any,
@@ -69,7 +69,9 @@ export class AdminController {
     return this.adminService.getSystemOverview(user.id);
   }
 
+  // Approve employer verification (Operations & Support handles new employer accounts)
   @Patch('employers/:id/verification/approve')
+  @RequireAdminRole(AdminRole.OPERATIONS_SUPPORT.role)
   async approveEmployer(@Param('id') employerId: string) {
     return this.adminService.updateEmployerVerification(
       employerId,
@@ -77,7 +79,9 @@ export class AdminController {
     );
   }
 
+  // Reject employer verification (Operations & Support handles new employer accounts)
   @Patch('employers/:id/verification/reject')
+  @RequireAdminRole(AdminRole.OPERATIONS_SUPPORT.role)
   async rejectEmployer(
     @Param('id') employerId: string,
     @Body('reason') reason: string,
@@ -89,9 +93,9 @@ export class AdminController {
     );
   }
 
-  // Suspend employer account
+  // Suspend employer account (Operations & Support handles user management)
   @Patch('employers/:id/suspend')
-  @RequireAdminRole(AdminRole.USER_MANAGEMENT.role)
+  @RequireAdminRole(AdminRole.OPERATIONS_SUPPORT.role)
   async suspendEmployer(
     @CurrentUser() user: CurrentUserPayload,
     @Param('id') employerId: string,
@@ -102,7 +106,7 @@ export class AdminController {
 
   // Unsuspend employer account
   @Patch('employers/:id/unsuspend')
-  @RequireAdminRole(AdminRole.USER_MANAGEMENT.role)
+  @RequireAdminRole(AdminRole.OPERATIONS_SUPPORT.role)
   async unsuspendEmployer(
     @CurrentUser() user: CurrentUserPayload,
     @Param('id') employerId: string,
@@ -110,9 +114,9 @@ export class AdminController {
     return this.adminService.unsuspendEmployer(user.id, employerId);
   }
 
-  // Suspend jobseeker account
+  // Suspend jobseeker account (Operations & Support handles user management)
   @Patch('jobseekers/:id/suspend')
-  @RequireAdminRole(AdminRole.USER_MANAGEMENT.role)
+  @RequireAdminRole(AdminRole.OPERATIONS_SUPPORT.role)
   async suspendJobseeker(
     @CurrentUser() user: CurrentUserPayload,
     @Param('id') jobseekerId: string,
@@ -123,7 +127,7 @@ export class AdminController {
 
   // Unsuspend jobseeker account
   @Patch('jobseekers/:id/unsuspend')
-  @RequireAdminRole(AdminRole.USER_MANAGEMENT.role)
+  @RequireAdminRole(AdminRole.OPERATIONS_SUPPORT.role)
   async unsuspendJobseeker(
     @CurrentUser() user: CurrentUserPayload,
     @Param('id') jobseekerId: string,

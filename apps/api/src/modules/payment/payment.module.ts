@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
-import { 
-  Payment, 
-  Employee, 
-  EmployerProfile 
+import {
+  Payment,
+  Employee,
+  EmployerProfile,
 } from '@app/common/database/entities';
 import { SystemConfigModule } from '../system-config/system-config.module';
 
@@ -19,27 +19,16 @@ import { PaymentAdminController } from './controllers/payment-admin.controller';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([
-      Payment,
-      Employee,
-      EmployerProfile,
-    ]),
+    TypeOrmModule.forFeature([Payment, Employee, EmployerProfile]),
     ConfigModule,
     SystemConfigModule,
   ],
-  providers: [
-    PaymentService,
-    PaystackService,
-  ],
+  providers: [PaymentService, PaystackService],
   controllers: [
     PaymentController,
     PaymentWebhookController,
     PaymentAdminController,
   ],
-  exports: [
-    PaymentService,
-    PaystackService,
-    SystemConfigService,
-  ],
+  exports: [PaymentService, PaystackService],
 })
 export class PaymentModule {}

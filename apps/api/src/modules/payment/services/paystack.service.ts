@@ -62,9 +62,11 @@ export class PaystackService {
   private readonly baseUrl = 'https://api.paystack.co';
 
   constructor(private readonly configService: ConfigService) {
-    this.secretKey = this.configService.get<string>(ENV.PAYSTACK_SECRET_KEY);
-    this.publicKey = this.configService.get<string>(ENV.PAYSTACK_PUBLIC_KEY);
-    this.webhookSecret = this.configService.get<string>(ENV.PAYSTACK_WEBHOOK_SECRET);
+    this.secretKey = this.configService.get<string>(ENV.PAYSTACK_SECRET_KEY)!;
+    this.publicKey = this.configService.get<string>(ENV.PAYSTACK_PUBLIC_KEY)!;
+    this.webhookSecret = this.configService.get<string>(
+      ENV.PAYSTACK_WEBHOOK_SECRET,
+    )!;
   }
 
   // Initialize transaction
@@ -80,7 +82,7 @@ export class PaystackService {
       const response = await fetch(`${this.baseUrl}/transaction/initialize`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${this.secretKey}`,
+          Authorization: `Bearer ${this.secretKey}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -94,16 +96,24 @@ export class PaystackService {
       });
 
       const data = await response.json();
-      
+
       if (!response.ok) {
-        this.logger.error(`Paystack initialization failed: ${data.message}`, data);
-        throw new BadRequestException(`Payment initialization failed: ${data.message}`);
+        this.logger.error(
+          `Paystack initialization failed: ${data.message}`,
+          data,
+        );
+        throw new BadRequestException(
+          `Payment initialization failed: ${data.message}`,
+        );
       }
 
       this.logger.log(`Payment initialized: ${params.reference}`);
       return data;
     } catch (error) {
-      this.logger.error(`Failed to initialize payment: ${error.message}`, error);
+      this.logger.error(
+        `Failed to initialize payment: ${error.message}`,
+        error,
+      );
       throw error;
     }
   }
@@ -111,22 +121,32 @@ export class PaystackService {
   // Verify transaction
   async verifyTransaction(reference: string): Promise<PaystackVerifyResponse> {
     try {
-      const response = await fetch(`${this.baseUrl}/transaction/verify/${reference}`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${this.secretKey}`,
-          'Content-Type': 'application/json',
+      const response = await fetch(
+        `${this.baseUrl}/transaction/verify/${reference}`,
+        {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${this.secretKey}`,
+            'Content-Type': 'application/json',
+          },
         },
-      });
+      );
 
       const data = await response.json();
-      
+
       if (!response.ok) {
-        this.logger.error(`Paystack verification failed: ${data.message}`, data);
-        throw new BadRequestException(`Payment verification failed: ${data.message}`);
+        this.logger.error(
+          `Paystack verification failed: ${data.message}`,
+          data,
+        );
+        throw new BadRequestException(
+          `Payment verification failed: ${data.message}`,
+        );
       }
 
-      this.logger.log(`Payment verified: ${reference} - Status: ${data.data.status}`);
+      this.logger.log(
+        `Payment verified: ${reference} - Status: ${data.data.status}`,
+      );
       return data;
     } catch (error) {
       this.logger.error(`Failed to verify payment: ${error.message}`, error);
@@ -135,7 +155,10 @@ export class PaystackService {
   }
 
   // Handle webhook events
-  handleWebhook(payload: string, signature: string): PaystackWebhookEvent | null {
+  handleWebhook(
+    payload: string,
+    signature: string,
+  ): PaystackWebhookEvent | null {
     try {
       // Verify webhook signature
       const hash = crypto
@@ -150,7 +173,7 @@ export class PaystackService {
 
       const event: PaystackWebhookEvent = JSON.parse(payload);
       this.logger.log(`Webhook received: ${event.event}`);
-      
+
       return event;
     } catch (error) {
       this.logger.error(`Failed to process webhook: ${error.message}`, error);

@@ -10,13 +10,10 @@ import {
   HttpCode,
 } from '@nestjs/common';
 import { PaymentService } from '../services/payment.service';
-import { 
-  InitiatePaymentDto, 
-  PaymentQueryDto, 
-  VerifyPaymentDto 
-} from '../dto';
+import { InitiatePaymentDto, PaymentQueryDto, VerifyPaymentDto } from '../dto';
 import { EmployerJwtGuard } from '../../../guards/employer-jwt.guard';
 import { CurrentUser } from '@app/common/shared/decorators/current-user.decorator';
+import { Payment } from '@app/common/database/entities';
 
 @Controller('payment')
 @UseGuards(EmployerJwtGuard)
@@ -30,7 +27,6 @@ export class PaymentController {
     @CurrentUser('profileId') employerId: string,
     @Body() dto: InitiatePaymentDto,
   ) {
-    
     const result = await this.paymentService.initiatePayment({
       employeeId: dto.employeeId,
       employerId,
@@ -50,8 +46,10 @@ export class PaymentController {
     @CurrentUser('profileId') employerId: string,
     @Param('paymentId') paymentId: string,
   ) {
-    
-    const payment = await this.paymentService.getPaymentById(paymentId, employerId);
+    const payment = await this.paymentService.getPaymentById(
+      paymentId,
+      employerId,
+    );
 
     return {
       success: true,
@@ -65,12 +63,15 @@ export class PaymentController {
     @CurrentUser('profileId') employerId: string,
     @Param('employeeId') employeeId: string,
   ) {
-    
-    const paymentStatus = await this.paymentService.checkPaymentStatus(employeeId);
+    const paymentStatus =
+      await this.paymentService.checkPaymentStatus(employeeId);
 
-    let payment = null;
+    let payment: Payment | null = null;
     if (paymentStatus.paymentId) {
-      payment = await this.paymentService.getPaymentById(paymentStatus.paymentId, employerId);
+      payment = await this.paymentService.getPaymentById(
+        paymentStatus.paymentId,
+        employerId,
+      );
     }
 
     return {
@@ -101,7 +102,6 @@ export class PaymentController {
     @CurrentUser('profileId') employerId: string,
     @Query() query: PaymentQueryDto,
   ) {
-    
     const result = await this.paymentService.getPaymentHistory({
       ...query,
       employerId,
