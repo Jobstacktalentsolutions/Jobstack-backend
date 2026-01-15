@@ -12,18 +12,12 @@ export const createJwtConfig = (
   const privateKey = configService.get(ENV.JWT_PRIVATE_KEY);
   const publicKey = configService.get(ENV.JWT_PUBLIC_KEY);
 
-  if (!privateKey || !publicKey) {
-    throw new Error(
-      'JWT_PRIVATE_KEY and JWT_PUBLIC_KEY must be set in all environments',
-    );
-  }
-
   const config = {
     privateKey: privateKey.replace(/\\n/g, '\n'), // Handle escaped newlines
     publicKey: publicKey.replace(/\\n/g, '\n'),
     signOptions: {
       algorithm: 'RS256',
-      expiresIn: configService.get(ENV.JWT_ACCESS_TOKEN_EXPIRES_IN, '2d'),
+      expiresIn: configService.get(ENV.JWT_ACCESS_TOKEN_EXPIRES_IN, '7d'),
       issuer: configService.get(ENV.JWT_ISSUER, 'jobstack-platform'),
       audience: configService.get(ENV.JWT_AUDIENCE, 'jobstack-users'),
     },
@@ -46,8 +40,8 @@ export const createJwtConfig = (
  * JWT constants for use across the application
  */
 export const JWT_CONSTANTS = {
-  ACCESS_TOKEN_EXPIRY: '2d', // 2 days
-  REFRESH_TOKEN_EXPIRY: '7d', // 7 days
+  ACCESS_TOKEN_EXPIRY: '1d', // 7 days
+  REFRESH_TOKEN_EXPIRY: '60d', // 7 days
   EMAIL_VERIFICATION_TOKEN_EXPIRY: '24h', // 24 hours
   PASSWORD_RESET_TOKEN_EXPIRY: '15m', // 15 minutes
 

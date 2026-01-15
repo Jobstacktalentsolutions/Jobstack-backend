@@ -151,7 +151,7 @@ export class AdminAuthService {
       };
 
       const accessToken = await this.jwtService.signAsync(accessPayload, {
-        expiresIn: '2d',
+        expiresIn: '7d',
       });
 
       // Update Redis session
@@ -165,7 +165,7 @@ export class AdminAuthService {
       await this.storeRedisSession(session.id, redisSessionData);
 
       const expiresAt = new Date();
-      expiresAt.setDate(expiresAt.getDate() + 2);
+      expiresAt.setDate(expiresAt.getDate() + 7);
 
       this.logger.log(`Token refreshed for admin: ${auth.id}`);
 
@@ -245,7 +245,10 @@ export class AdminAuthService {
       throw new BadRequestException('Default password already changed');
     }
 
-    const isPasswordValid = await bcrypt.compare(currentPassword, auth.password);
+    const isPasswordValid = await bcrypt.compare(
+      currentPassword,
+      auth.password,
+    );
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid credentials');
     }
@@ -263,7 +266,9 @@ export class AdminAuthService {
     const expiresAt = new Date();
     expiresAt.setMinutes(expiresAt.getMinutes() + 15);
 
-    this.logger.log(`Default password change token issued for admin: ${auth.id}`);
+    this.logger.log(
+      `Default password change token issued for admin: ${auth.id}`,
+    );
 
     return { resetToken, expiresAt };
   }
@@ -276,9 +281,10 @@ export class AdminAuthService {
   ): Promise<{ success: boolean }> {
     let payload: DefaultPasswordChangeTokenPayload;
     try {
-      payload = await this.jwtService.verifyAsync<DefaultPasswordChangeTokenPayload>(
-        changeData.resetToken,
-      );
+      payload =
+        await this.jwtService.verifyAsync<DefaultPasswordChangeTokenPayload>(
+          changeData.resetToken,
+        );
     } catch (error) {
       this.logger.error(
         `Default password change verification failed: ${
@@ -559,7 +565,7 @@ export class AdminAuthService {
 
     // Generate tokens
     const [accessToken, refreshToken] = await Promise.all([
-      this.jwtService.signAsync(accessPayload, { expiresIn: '2d' }),
+      this.jwtService.signAsync(accessPayload, { expiresIn: '7d' }),
       this.jwtService.signAsync(refreshPayload, { expiresIn: '7d' }),
     ]);
 
@@ -574,7 +580,7 @@ export class AdminAuthService {
     await this.storeRedisSession(session.id, redisSessionData);
 
     const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + 2);
+    expiresAt.setDate(expiresAt.getDate() + 7);
 
     return {
       accessToken,

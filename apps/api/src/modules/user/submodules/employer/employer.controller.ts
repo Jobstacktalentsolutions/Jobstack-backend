@@ -26,7 +26,6 @@ import {
 } from './dto';
 
 @Controller('user/employer')
-@UseGuards(EmployerJwtGuard)
 export class EmployerController {
   constructor(private readonly employerService: EmployerService) {}
 
@@ -34,6 +33,7 @@ export class EmployerController {
    * Get current user's profile (me route)
    */
   @Get('me')
+  @UseGuards(EmployerJwtGuard)
   async getMyProfile(@CurrentUser() user: CurrentUserPayload) {
     const result = await this.employerService.getEmployerProfile(user.id);
     return { success: true, profile: result };
@@ -43,6 +43,7 @@ export class EmployerController {
    * Update employer profile
    */
   @Put('profile')
+  @UseGuards(EmployerJwtGuard)
   async updateProfile(
     @CurrentUser() user: CurrentUserPayload,
     @Body() updateData: UpdateEmployerProfileDto,
@@ -54,6 +55,7 @@ export class EmployerController {
    * Upload company logo
    */
   @Post('profile/company-logo')
+  @UseGuards(EmployerJwtGuard)
   @UseInterceptors(FileInterceptor('file'))
   @HttpCode(HttpStatus.OK)
   async uploadCompanyLogo(
@@ -71,6 +73,7 @@ export class EmployerController {
    * Delete company logo
    */
   @Delete('profile/company-logo')
+  @UseGuards(EmployerJwtGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteCompanyLogo(@CurrentUser() user: CurrentUserPayload) {
     await this.employerService.deleteCompanyLogo(user.id);
@@ -81,6 +84,7 @@ export class EmployerController {
    * Get company logo with signed URL
    */
   @Get('profile/company-logo')
+  @UseGuards(EmployerJwtGuard)
   @HttpCode(HttpStatus.OK)
   async getCompanyLogo(@CurrentUser() user: CurrentUserPayload) {
     const result = await this.employerService.getCompanyLogo(user.id);

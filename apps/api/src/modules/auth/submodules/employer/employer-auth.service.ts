@@ -244,7 +244,7 @@ export class EmployerAuthService {
       };
 
       const accessToken = await this.jwtService.signAsync(accessPayload, {
-        expiresIn: '2d',
+        expiresIn: '7d',
       });
 
       // Update Redis session
@@ -259,7 +259,7 @@ export class EmployerAuthService {
       await this.storeRedisSession(session.id, redisSessionData);
 
       const expiresAt = new Date();
-      expiresAt.setDate(expiresAt.getDate() + 2);
+      expiresAt.setDate(expiresAt.getDate() + 7);
 
       this.logger.log(`Token refreshed for employer: ${auth.id}`);
 
@@ -681,7 +681,7 @@ export class EmployerAuthService {
 
     // Generate tokens
     const [accessToken, refreshToken] = await Promise.all([
-      this.jwtService.signAsync(accessPayload, { expiresIn: '2d' }),
+      this.jwtService.signAsync(accessPayload, { expiresIn: '7d' }),
       this.jwtService.signAsync(refreshPayload, { expiresIn: '7d' }),
     ]);
 
@@ -697,7 +697,7 @@ export class EmployerAuthService {
     await this.storeRedisSession(session.id, redisSessionData);
 
     const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + 2);
+    expiresAt.setDate(expiresAt.getDate() + 7);
 
     return {
       accessToken,
