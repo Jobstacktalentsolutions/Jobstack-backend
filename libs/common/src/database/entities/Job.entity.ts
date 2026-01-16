@@ -33,6 +33,9 @@ export class Job extends BaseEntity {
   @Column({ type: 'enum', enum: SkillCategory })
   category: SkillCategory;
 
+  @Column({ nullable: true })
+  subcategory?: string; // Stores the detailed subcategory (e.g., TECHNICAL, HOME_SUPPORT, etc.)
+
   @Column({ type: 'enum', enum: EmploymentType })
   employmentType: EmploymentType;
 
@@ -102,6 +105,18 @@ export class Job extends BaseEntity {
 
   @Column({ type: 'int', default: 0 })
   applicantsCount: number;
+
+  @Column({ type: 'boolean', default: false })
+  performCustomScreening: boolean;
+
+  @Column({ type: 'timestamp', nullable: true })
+  vettingCompletedAt?: Date;
+
+  @Column({ nullable: true })
+  vettingCompletedBy?: string; // System identifier
+
+  @Column({ type: 'int', nullable: true })
+  highlightedCandidateCount?: number; // Admin can adjust highlighted candidates count
 
   @ManyToMany(() => Skill, { cascade: false })
   @JoinTable({

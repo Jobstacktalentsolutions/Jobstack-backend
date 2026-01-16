@@ -17,9 +17,12 @@ export class Skill extends BaseEntity {
   @Column({
     type: 'enum',
     enum: SkillCategory,
-    default: SkillCategory.OTHERS,
+    default: SkillCategory.LOW_SKILL,
   })
   category: SkillCategory;
+
+  @Column({ nullable: true })
+  subcategory?: string; // Stores the detailed subcategory (e.g., TECHNICAL, HOME_SUPPORT, etc.)
 
   @Column({ type: 'enum', enum: SkillStatus, default: SkillStatus.ACTIVE })
   status: SkillStatus;

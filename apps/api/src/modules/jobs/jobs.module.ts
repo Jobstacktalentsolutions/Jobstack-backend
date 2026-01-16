@@ -20,12 +20,15 @@ import { EmployeesController } from './submodules/employees/employees.controller
 import { JobsService } from './services/jobs.service';
 import { JobRecommendationsService } from './services/job-recommendations.service';
 import { JobRecommendationsProcessor } from './services/job-recommendations.processor';
+import { JobVettingService } from './services/job-vetting.service';
 import { JobApplicationsService } from './submodules/application/job-applications.service';
 import { EmployeesService } from './submodules/employees/employees.service';
 import {
   JobRecommendationsConsumer,
   JobRecommendationsProducer,
 } from './queue';
+import { JobVettingProducer } from './queue/job-vetting.producer';
+import { JobVettingConsumer } from './queue/job-vetting.consumer';
 import {
   AdminJwtGuard,
   EmployerJwtGuard,
@@ -34,6 +37,7 @@ import {
 import { AdminAuthModule } from '../auth/submodules/admin/admin-auth.module';
 import { EmployerAuthModule } from '../auth/submodules/employer/employer-auth.module';
 import { JobSeekerAuthModule } from '../auth/submodules/jobseeker/jobseeker-auth.module';
+import { NotificationModule } from '../notification/notification.module';
 
 @Module({
   imports: [
@@ -50,9 +54,23 @@ import { JobSeekerAuthModule } from '../auth/submodules/jobseeker/jobseeker-auth
     BullModule.registerQueue({
       name: QUEUE_NAMES.JOB_RECOMMENDATIONS,
     }),
+    // Register the job vetting queue
+    BullModule.registerQueue({
+      name: QUEUE_NAMES.JOB_VETTING,
+      defaultJobOptions: {
+        attempts: 3,
+        backoff: {
+          type: 'exponential',
+          delay: 2000,
+        },
+        removeOnComplete: 10,
+        removeOnFail: 5,
+      },
+    }),
     forwardRef(() => AdminAuthModule),
     forwardRef(() => EmployerAuthModule),
     forwardRef(() => JobSeekerAuthModule),
+    NotificationModule,
   ],
   controllers: [
     JobsEmployerController,
@@ -66,15 +84,18 @@ import { JobSeekerAuthModule } from '../auth/submodules/jobseeker/jobseeker-auth
     JobsService,
     JobRecommendationsProcessor,
     JobRecommendationsService,
+    JobVettingService,
     // Bull queue consumer and producer
     JobRecommendationsConsumer,
     JobRecommendationsProducer,
+    JobVettingConsumer,
+    JobVettingProducer,
     JobApplicationsService,
     EmployeesService,
     AdminJwtGuard,
     EmployerJwtGuard,
     JobSeekerJwtGuard,
   ],
-  exports: [JobsService, JobRecommendationsProducer],
+  exports: [JobsService, JobRecommendationsProducer, JobVettingProducer, JobVettingService],
 })
 export class JobsModule {}

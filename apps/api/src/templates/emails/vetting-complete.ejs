@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vetting Completed - <%= jobTitle %></title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2563eb;
+            margin-bottom: 10px;
+        }
+        h1 {
+            color: #1f2937;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+        .job-info {
+            background-color: #f3f4f6;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .stat-item {
+            flex: 1;
+            padding: 15px;
+            background-color: #eff6ff;
+            border-radius: 8px;
+            margin: 0 5px;
+        }
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2563eb;
+        }
+        .stat-label {
+            font-size: 14px;
+            color: #6b7280;
+            margin-top: 5px;
+        }
+        .cta-button {
+            display: inline-block;
+            background-color: #2563eb;
+            color: white;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .cta-button:hover {
+            background-color: #1d4ed8;
+        }
+        .instructions {
+            background-color: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+            color: #6b7280;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">JobStack</div>
+            <h1>🎯 Vetting Completed</h1>
+        </div>
+
+        <div class="job-info">
+            <h2 style="margin-top: 0; color: #1f2937;"><%= jobTitle %></h2>
+            <p style="margin-bottom: 0; color: #6b7280;">Job ID: <%= jobId %></p>
+        </div>
+
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-number"><%= totalApplicants %></div>
+                <div class="stat-label">Total Applicants</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number"><%= highlightedCount %></div>
+                <div class="stat-label">Highlighted Candidates</div>
+            </div>
+        </div>
+
+        <div class="instructions">
+            <h3 style="margin-top: 0; color: #92400e;">📋 Next Steps</h3>
+            <p style="margin-bottom: 0; color: #92400e;">
+                The automatic vetting system has ranked all applicants and highlighted the top candidates for your review. 
+                You can now:
+            </p>
+            <ul style="color: #92400e; margin: 10px 0;">
+                <li>Review all ranked applicants in the admin dashboard</li>
+                <li>Adjust the number of highlighted candidates if needed</li>
+                <li>Select candidates for screening (phone/video interviews)</li>
+            </ul>
+        </div>
+
+        <div style="text-align: center;">
+            <a href="<%= dashboardUrl %>" class="cta-button">
+                View Vetted Candidates
+            </a>
+        </div>
+
+        <div class="footer">
+            <p>This is an automated notification from JobStack's vetting system.</p>
+            <p>If you have any questions, please contact our support team.</p>
+        </div>
+    </div>
+</body>
+</html>

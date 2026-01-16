@@ -11,6 +11,7 @@ import {
   MinLength,
   IsNumber,
   IsDateString,
+  IsBoolean,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import {
@@ -34,6 +35,10 @@ export class CreateJobDto {
 
   @IsEnum(SkillCategory)
   category: SkillCategory;
+
+  @IsOptional()
+  @IsString()
+  subcategory?: string; // Detailed subcategory (e.g., TECHNICAL, HOME_SUPPORT, etc.)
 
   @IsEnum(EmploymentType)
   employmentType: EmploymentType;
@@ -124,6 +129,10 @@ export class CreateJobDto {
   @IsOptional()
   @IsDateString()
   applicationDeadline?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  performCustomScreening?: boolean;
 
   @IsArray()
   @ArrayNotEmpty()

@@ -38,4 +38,14 @@ export class JobApplication extends BaseEntity {
 
   @Column({ type: 'timestamp', nullable: true })
   statusUpdatedAt?: Date;
+
+  // Screening meeting details (set when candidate is selected for screening)
+  @Column({ type: 'text', nullable: true })
+  screeningMeetingLink?: string;
+
+  @Column({ type: 'timestamp', nullable: true })
+  screeningScheduledAt?: Date;
+
+  @Column({ type: 'text', nullable: true })
+  screeningPrepInfo?: string; // Additional information for candidate preparation
 }

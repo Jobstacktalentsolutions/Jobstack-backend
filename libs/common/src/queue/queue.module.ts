@@ -9,6 +9,7 @@ import { ENV } from 'apps/api/src/modules/config';
  */
 export const QUEUE_NAMES = {
   JOB_RECOMMENDATIONS: 'job-recommendations',
+  JOB_VETTING: 'job-vetting',
 } as const;
 
 export type QueueName = (typeof QUEUE_NAMES)[keyof typeof QUEUE_NAMES];

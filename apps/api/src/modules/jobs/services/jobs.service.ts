@@ -13,6 +13,7 @@ import {
   UpdateJobStatusDto,
 } from '../dto';
 import { JobStatus } from '@app/common/database/entities/schema.enum';
+import { JobVettingProducer } from '../queue/job-vetting.producer';
 
 @Injectable()
 export class JobsService {
@@ -23,6 +24,7 @@ export class JobsService {
     private readonly skillRepo: Repository<Skill>,
     @InjectRepository(EmployerProfile)
     private readonly employerRepo: Repository<EmployerProfile>,
+    private readonly jobVettingProducer: JobVettingProducer,
   ) {}
 
   private readonly jobRelations = ['skills'];
@@ -59,6 +61,7 @@ export class JobsService {
       applicationDeadline: dto.applicationDeadline
         ? new Date(dto.applicationDeadline)
         : undefined,
+      performCustomScreening: dto.performCustomScreening ?? false,
       employerId,
       skills,
       status: JobStatus.DRAFT,
@@ -181,6 +184,8 @@ export class JobsService {
       applicationDeadline: dto.applicationDeadline
         ? new Date(dto.applicationDeadline)
         : job.applicationDeadline,
+      performCustomScreening:
+        dto.performCustomScreening ?? job.performCustomScreening,
     });
 
     await this.jobRepo.save(job);
@@ -200,8 +205,20 @@ export class JobsService {
       throw new NotFoundException('Job not found');
     }
 
+    const previousStatus = job.status;
     job.status = dto.status;
     await this.jobRepo.save(job);
+
+    // Trigger vetting when job is published
+    if (dto.status === JobStatus.PUBLISHED && previousStatus !== JobStatus.PUBLISHED) {
+      try {
+        await this.jobVettingProducer.queueJobVetting(jobId, 'status-change');
+      } catch (error) {
+        // Log error but don't fail the status update
+        console.error(`Failed to queue vetting for job ${jobId}:`, error);
+      }
+    }
+
     return this.getJobById(jobId);
   }
 
@@ -276,6 +293,7 @@ export class JobsService {
         'job.applicationDeadline',
         'job.status',
         'job.applicantsCount',
+        'job.performCustomScreening',
         'job.employerId',
         'job.createdAt',
         'job.updatedAt',
