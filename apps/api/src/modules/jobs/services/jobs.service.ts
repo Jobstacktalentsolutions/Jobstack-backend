@@ -149,6 +149,9 @@ export class JobsService {
     const published = await this.jobRepo.count({
       where: { status: JobStatus.PUBLISHED },
     });
+    const active = await this.jobRepo.count({
+      where: { status: JobStatus.ACTIVE },
+    });
     const closed = await this.jobRepo.count({
       where: { status: JobStatus.CLOSED },
     });
@@ -157,6 +160,7 @@ export class JobsService {
       total,
       draft,
       published,
+      active,
       closed,
     };
   }
