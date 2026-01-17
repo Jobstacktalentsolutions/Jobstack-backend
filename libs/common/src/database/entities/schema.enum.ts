@@ -125,6 +125,7 @@ export enum WorkMode {
 export enum JobStatus {
   DRAFT = 'DRAFT',
   PUBLISHED = 'PUBLISHED',
+  ACTIVE = 'ACTIVE', // when the admin permits it to be active
   CLOSED = 'CLOSED',
 }
 

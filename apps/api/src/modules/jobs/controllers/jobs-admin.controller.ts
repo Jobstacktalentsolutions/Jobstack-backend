@@ -95,6 +95,30 @@ export class JobsAdminController {
     };
   }
 
+  // Get all applications for a job (admin view)
+  @Get(':jobId/applications')
+  @UseGuards(AdminJwtGuard)
+  async getJobApplications(@Param('jobId', ParseUUIDPipe) jobId: string) {
+    const applications = await this.applicationRepo.find({
+      where: { jobId },
+      relations: ['jobseekerProfile', 'jobseekerProfile.profilePicture'],
+      order: { createdAt: 'DESC' },
+    });
+
+    return applications.map((app) => ({
+      id: app.id,
+      status: app.status,
+      appliedAt: app.createdAt,
+      jobseeker: {
+        id: app.jobseekerProfile.id,
+        firstName: app.jobseekerProfile.firstName,
+        lastName: app.jobseekerProfile.lastName,
+        email: app.jobseekerProfile.email,
+        avatarUrl: app.jobseekerProfile.profilePicture?.url,
+      },
+    }));
+  }
+
   // Get all ranked applicants with highlighted status
   @Get(':jobId/vetted-applicants')
   @UseGuards(AdminJwtGuard)
