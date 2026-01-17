@@ -171,7 +171,8 @@ export class JobsService {
       contractFeeMin: dto.contractFeeMin ?? job.contractFeeMin,
       contractFeeMax: dto.contractFeeMax ?? job.contractFeeMax,
       contractPaymentType: dto.contractPaymentType ?? job.contractPaymentType,
-      contractDurationDays: dto.contractDurationDays ?? job.contractDurationDays,
+      contractDurationDays:
+        dto.contractDurationDays ?? job.contractDurationDays,
       startDate: dto.startDate ? new Date(dto.startDate) : job.startDate,
       endDate: dto.endDate ? new Date(dto.endDate) : job.endDate,
       state: dto.state ?? job.state,
@@ -210,7 +211,10 @@ export class JobsService {
     await this.jobRepo.save(job);
 
     // Trigger vetting when job is published
-    if (dto.status === JobStatus.PUBLISHED && previousStatus !== JobStatus.PUBLISHED) {
+    if (
+      dto.status === JobStatus.PUBLISHED &&
+      previousStatus !== JobStatus.PUBLISHED
+    ) {
       try {
         await this.jobVettingProducer.queueJobVetting(jobId, 'status-change');
       } catch (error) {
@@ -299,7 +303,14 @@ export class JobsService {
         'job.updatedAt',
       ])
       .leftJoin('job.skills', 'skill')
-      .addSelect(['skill.id', 'skill.name', 'skill.description']);
+      .addSelect(['skill.id', 'skill.name', 'skill.description'])
+      .leftJoin('job.employer', 'employer')
+      .addSelect([
+        'employer.id',
+        'employer.firstName',
+        'employer.lastName',
+        'employer.email',
+      ]);
   }
 
   // Applies reusable filters on a query builder
