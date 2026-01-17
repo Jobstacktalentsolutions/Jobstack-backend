@@ -347,6 +347,9 @@ export class JobseekerService {
         'userSkills.skill',
         'cvDocument',
         'profilePicture',
+        'applications',
+        'applications.job',
+        'applications.job.employer',
       ],
     });
 

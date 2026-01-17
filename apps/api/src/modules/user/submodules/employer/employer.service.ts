@@ -259,17 +259,42 @@ export class EmployerService {
     // Verify admin has permission (you can add admin verification logic here)
     const profile = await this.profileRepo.findOne({
       where: { id: employerId },
-      relations: ['auth', 'profilePicture'],
+      relations: [
+        'auth',
+        'profilePicture',
+        'verification',
+        'verification.documents',
+        'verification.documents.document',
+        'jobs',
+        'employees',
+      ],
     });
 
     if (!profile) {
       throw new NotFoundException('Employer not found');
     }
 
+    // Calculate metrics
+    const totalJobsPosted = profile.jobs?.length || 0;
+    const totalApplicants =
+      profile.jobs?.reduce((sum, job) => sum + (job.applicantsCount || 0), 0) ||
+      0;
+    const totalHires = profile.employees?.length || 0;
+
+    // Attach to profile or return as separate fields (we will return as separate fields mixed into the response)
+    // The frontend expects "metrics" inside the view model, but the backend currently returns a flat structure with "profile".
+    // We will inject these values into the returned object.
+
     return {
       id: profile.id,
       email: profile.auth?.email,
       profile: profile,
+      metrics: {
+        totalJobsPosted,
+        totalApplicants,
+        totalHires,
+        avgTimeToHire: 0, // Placeholder as we don't have this logic yet
+      },
       createdAt: profile.createdAt,
       updatedAt: profile.updatedAt,
     };
