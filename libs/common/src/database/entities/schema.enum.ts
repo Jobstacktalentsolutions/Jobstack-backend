@@ -15,7 +15,10 @@ export interface SkillSubcategoryMapping {
   [subcategory: string]: number; // subcategory name -> job count
 }
 
-export const SkillCategoryMapping: Record<SkillCategory, SkillSubcategoryMapping> = {
+export const SkillCategoryMapping: Record<
+  SkillCategory,
+  SkillSubcategoryMapping
+> = {
   [SkillCategory.HIGH_SKILL]: {
     TECHNICAL: 0,
     DATABASE: 0,

@@ -77,7 +77,10 @@ export class JobsAdminController {
   @Post(':jobId/vet')
   @UseGuards(AdminJwtGuard)
   async triggerVetting(@Param('jobId', ParseUUIDPipe) jobId: string) {
-    const result = await this.jobVettingProducer.queueJobVetting(jobId, 'manual');
+    const result = await this.jobVettingProducer.queueJobVetting(
+      jobId,
+      'manual',
+    );
     return {
       success: true,
       message: 'Vetting job queued successfully',
@@ -91,7 +94,7 @@ export class JobsAdminController {
   async getVettedApplicants(@Param('jobId', ParseUUIDPipe) jobId: string) {
     // Get job to check if vetting is completed
     const job = await this.jobsService.getJobById(jobId);
-    
+
     if (!job.vettingCompletedAt) {
       return {
         success: false,
@@ -103,7 +106,11 @@ export class JobsAdminController {
     // Get all applications with jobseeker profiles
     const applications = await this.applicationRepo.find({
       where: { jobId },
-      relations: ['jobseekerProfile', 'jobseekerProfile.userSkills', 'jobseekerProfile.userSkills.skill'],
+      relations: [
+        'jobseekerProfile',
+        'jobseekerProfile.userSkills',
+        'jobseekerProfile.userSkills.skill',
+      ],
       order: { createdAt: 'DESC' },
     });
 
@@ -113,7 +120,7 @@ export class JobsAdminController {
       vettingCompleted: true,
       vettingCompletedAt: job.vettingCompletedAt,
       highlightedCandidateCount: job.highlightedCandidateCount,
-      applications: applications.map(app => ({
+      applications: applications.map((app) => ({
         id: app.id,
         status: app.status,
         createdAt: app.createdAt,
@@ -125,12 +132,13 @@ export class JobsAdminController {
           yearsOfExperience: app.jobseekerProfile.yearsOfExperience,
           city: app.jobseekerProfile.city,
           state: app.jobseekerProfile.state,
-          skills: app.jobseekerProfile.userSkills?.map(us => ({
-            id: us.skill.id,
-            name: us.skill.name,
-            proficiency: us.proficiency,
-            yearsExperience: us.yearsExperience,
-          })) || [],
+          skills:
+            app.jobseekerProfile.userSkills?.map((us) => ({
+              id: us.skill.id,
+              name: us.skill.name,
+              proficiency: us.proficiency,
+              yearsExperience: us.yearsExperience,
+            })) || [],
         },
       })),
     };
@@ -144,7 +152,7 @@ export class JobsAdminController {
     @Body() body: { count: number },
   ) {
     const { count } = body;
-    
+
     if (count < 1 || count > 10) {
       return {
         success: false,
@@ -168,7 +176,8 @@ export class JobsAdminController {
   @UseGuards(AdminJwtGuard)
   async selectCandidatesForScreening(
     @Param('jobId', ParseUUIDPipe) jobId: string,
-    @Body() body: { 
+    @Body()
+    body: {
       candidates: Array<{
         applicationId: string;
         meetingLink: string;
@@ -178,7 +187,7 @@ export class JobsAdminController {
     },
   ) {
     const { candidates } = body;
-    
+
     if (!candidates || candidates.length === 0) {
       return {
         success: false,
@@ -188,10 +197,15 @@ export class JobsAdminController {
 
     // Validate all required fields
     for (const candidate of candidates) {
-      if (!candidate.applicationId || !candidate.meetingLink || !candidate.scheduledAt) {
+      if (
+        !candidate.applicationId ||
+        !candidate.meetingLink ||
+        !candidate.scheduledAt
+      ) {
         return {
           success: false,
-          message: 'Each candidate must have applicationId, meetingLink, and scheduledAt',
+          message:
+            'Each candidate must have applicationId, meetingLink, and scheduledAt',
         };
       }
     }
@@ -205,13 +219,13 @@ export class JobsAdminController {
           screeningMeetingLink: candidate.meetingLink,
           screeningScheduledAt: new Date(candidate.scheduledAt),
           screeningPrepInfo: candidate.prepInfo || null,
-        }
+        },
       );
     }
 
     // Send notifications to candidates with meeting details
     await this.jobVettingService.notifyCandidatesForScreening(
-      candidates.map(c => c.applicationId)
+      candidates.map((c) => c.applicationId),
     );
 
     return {
@@ -229,7 +243,7 @@ export class JobsAdminController {
     @Body() body: { applicationIds: string[] },
   ) {
     const { applicationIds } = body;
-    
+
     if (!applicationIds || applicationIds.length === 0) {
       return {
         success: false,

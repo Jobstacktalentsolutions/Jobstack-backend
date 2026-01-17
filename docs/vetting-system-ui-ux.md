@@ -172,6 +172,85 @@
 - **Application Updates:** Refresh applicant list when new applications arrive
 - **Status Changes:** Update UI when application statuses change (e.g., after screening)
 
+### Required Pages/Subsections/Modals
+
+#### Admin Dashboard
+
+**Pages:**
+- **Vetted Applicants Page** (`/admin/jobs/:jobId/vetted-applicants`)
+  - Main view showing all ranked applicants for a job
+  - Displays highlighted candidates at top with unique styling
+  - Shows scores, status badges, and profile information
+  - Includes controls to adjust highlighted count
+
+**Subsections:**
+- **Vetting Status Section** (within job detail page)
+  - Shows vetting completion status and timestamp
+  - Manual trigger button for re-vetting
+  - Summary statistics (total applicants, highlighted count)
+
+**Modals:**
+- **Select Candidates for Screening Modal**
+  - Multi-select interface for choosing candidates
+  - Per-candidate form fields:
+    - Meeting link input (URL validation)
+    - Date & time picker (future dates only)
+    - Optional prep info textarea
+  - Validation feedback and submit confirmation
+- **Adjust Highlighted Count Modal**
+  - Slider or number input (1-10 range)
+  - Shows current count and preview of changes
+- **View Meeting Details Modal**
+  - Displays stored meeting link, scheduled time, and prep info
+  - Shows email notification status
+  - Edit capability (if needed)
+
+#### Employer Dashboard
+
+**Subsections:**
+- **Vetted Candidates Section** (within job detail page)
+  - View-only list of vetted candidates (if permissions allow)
+  - Shows highlighted candidates and basic ranking
+  - Status indicators for screening progress
+- **Screening Status Section**
+  - Overview of candidates selected for screening
+  - Meeting schedule summary (if shared with employer)
+
+**Modals:**
+- **View Candidate Details Modal**
+  - Expanded view of candidate profile and vetting score
+  - Screening status and meeting information (if applicable)
+
+#### Job Seeker Dashboard
+
+**Pages:**
+- **My Applications Page** (enhanced)
+  - Application status indicators including "Vetted" and "Selected for Screening"
+  - Visual distinction for applications in screening process
+
+**Subsections:**
+- **Screening Details Section** (within application detail view)
+  - Meeting link (clickable button)
+  - Scheduled date & time (formatted, with timezone)
+  - Preparation information
+  - Status indicator showing email notification received
+
+**Modals:**
+- **Screening Meeting Details Modal**
+  - Full meeting information display
+  - Calendar integration option
+  - Copy meeting link functionality
+- **Application Status Modal**
+  - Current application status
+  - Vetting score (if available)
+  - Next steps information
+
+**Notifications/Components:**
+- **In-app Notification Banner**
+  - Alert when selected for screening
+  - Quick access to meeting details
+  - Dismissible after viewing
+
 ---
 
 ## Key Takeaways for UI/UX
