@@ -6,63 +6,22 @@ export enum SkillStatus {
 }
 
 export enum SkillCategory {
-  HIGH_SKILL = 'HIGH_SKILL',
-  LOW_SKILL = 'LOW_SKILL',
-}
-
-// Mapping of subcategories to skill levels with job counts
-export interface SkillSubcategoryMapping {
-  [subcategory: string]: number; // subcategory name -> job count
-}
-
-export const SkillCategoryMapping: Record<
-  SkillCategory,
-  SkillSubcategoryMapping
-> = {
-  [SkillCategory.HIGH_SKILL]: {
-    TECHNICAL: 0,
-    DATABASE: 0,
-    SOFTWARE_DEVELOPMENT: 0,
-    DESIGN: 0,
-    FINANCE_ACCOUNTING: 0,
-    BUSINESS: 0,
-    SALES_MARKETING: 0,
-    OPERATIONS: 0,
-    COMMUNICATION: 0,
-    SOCIAL_MEDIA: 0,
-  },
-  [SkillCategory.LOW_SKILL]: {
-    HOME_SUPPORT: 0,
-    MAINTENANCE_TRADES: 0,
-    HOSPITALITY: 0,
-    SECURITY: 0,
-    TRANSPORT_LOGISTICS: 0,
-    OTHERS: 0,
-  },
-};
-
-// Helper function to get skill level from subcategory
-export function getSkillLevelFromSubcategory(
-  subcategory: string,
-): SkillCategory | null {
-  if (
-    SkillCategoryMapping[SkillCategory.HIGH_SKILL].hasOwnProperty(subcategory)
-  ) {
-    return SkillCategory.HIGH_SKILL;
-  }
-  if (
-    SkillCategoryMapping[SkillCategory.LOW_SKILL].hasOwnProperty(subcategory)
-  ) {
-    return SkillCategory.LOW_SKILL;
-  }
-  return null;
-}
-
-// Helper function to get all subcategories for a skill level
-export function getSubcategoriesForSkillLevel(
-  skillLevel: SkillCategory,
-): string[] {
-  return Object.keys(SkillCategoryMapping[skillLevel]);
+  TECHNICAL = 'TECHNICAL',
+  DATABASE = 'DATABASE',
+  BUSINESS = 'BUSINESS',
+  DESIGN = 'DESIGN',
+  FINANCE_ACCOUNTING = 'FINANCE_ACCOUNTING',
+  SALES_MARKETING = 'SALES_MARKETING',
+  OPERATIONS = 'OPERATIONS',
+  COMMUNICATION = 'COMMUNICATION',
+  SOCIAL_MEDIA = 'SOCIAL_MEDIA',
+  SOFTWARE_DEVELOPMENT = 'SOFTWARE_DEVELOPMENT',
+  HOME_SUPPORT = 'HOME_SUPPORT',
+  MAINTENANCE_TRADES = 'MAINTENANCE_TRADES',
+  HOSPITALITY = 'HOSPITALITY',
+  SECURITY = 'SECURITY',
+  TRANSPORT_LOGISTICS = 'TRANSPORT_LOGISTICS',
+  OTHERS = 'OTHERS',
 }
 
 // Employer related enums
@@ -139,8 +98,6 @@ export enum JobApplicationStatus {
   HIRED = 'HIRED',
   REJECTED = 'REJECTED',
   WITHDRAWN = 'WITHDRAWN',
-  VETTED = 'VETTED', // Application has been automatically vetted and ranked
-  SELECTED_FOR_SCREENING = 'SELECTED_FOR_SCREENING', // Selected by admin for screening (phone/video interview)
 }
 
 export enum EmployeeStatus {

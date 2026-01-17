@@ -16,8 +16,7 @@ export const SYSTEM_SKILLS = [
     description: 'Programming language for web development',
     synonyms: ['JS', 'ECMAScript', 'Node.js'],
     status: SkillStatus.ACTIVE,
-    category: SkillCategory.HIGH_SKILL,
-    subcategory: 'TECHNICAL',
+    category: SkillCategory.TECHNICAL,
   },
   {
     id: CONSTANT_IDS.SKILLS[1],
@@ -25,8 +24,7 @@ export const SYSTEM_SKILLS = [
     description: 'High-level programming language',
     synonyms: ['Python3', 'Django', 'Flask'],
     status: SkillStatus.ACTIVE,
-    category: SkillCategory.HIGH_SKILL,
-    subcategory: 'TECHNICAL',
+    category: SkillCategory.TECHNICAL,
   },
   {
     id: CONSTANT_IDS.SKILLS[2],
@@ -34,8 +32,7 @@ export const SYSTEM_SKILLS = [
     description: 'JavaScript library for building user interfaces',
     synonyms: ['ReactJS', 'React.js'],
     status: SkillStatus.ACTIVE,
-    category: SkillCategory.HIGH_SKILL,
-    subcategory: 'TECHNICAL',
+    category: SkillCategory.TECHNICAL,
   },
   {
     id: CONSTANT_IDS.SKILLS[3],
@@ -43,8 +40,7 @@ export const SYSTEM_SKILLS = [
     description: 'Typed superset of JavaScript',
     synonyms: ['TS'],
     status: SkillStatus.ACTIVE,
-    category: SkillCategory.HIGH_SKILL,
-    subcategory: 'TECHNICAL',
+    category: SkillCategory.TECHNICAL,
   },
   {
     id: CONSTANT_IDS.SKILLS[4],
@@ -52,8 +48,7 @@ export const SYSTEM_SKILLS = [
     description: 'JavaScript runtime for server-side development',
     synonyms: ['NodeJS', 'Node'],
     status: SkillStatus.ACTIVE,
-    category: SkillCategory.HIGH_SKILL,
-    subcategory: 'TECHNICAL',
+    category: SkillCategory.TECHNICAL,
   },
 
   // Database Skills
@@ -63,8 +58,7 @@ export const SYSTEM_SKILLS = [
     description: 'Advanced open-source relational database',
     synonyms: ['Postgres', 'PSQL'],
     status: SkillStatus.ACTIVE,
-    category: SkillCategory.HIGH_SKILL,
-    subcategory: 'SOFTWARE_DEVELOPMENT',
+    category: SkillCategory.SOFTWARE_DEVELOPMENT,
   },
   {
     id: CONSTANT_IDS.SKILLS[6],
@@ -72,8 +66,7 @@ export const SYSTEM_SKILLS = [
     description: 'Popular open-source relational database',
     synonyms: ['MySQL Server'],
     status: SkillStatus.ACTIVE,
-    category: SkillCategory.HIGH_SKILL,
-    subcategory: 'SOFTWARE_DEVELOPMENT',
+    category: SkillCategory.SOFTWARE_DEVELOPMENT,
   },
   {
     id: CONSTANT_IDS.SKILLS[7],
@@ -81,8 +74,7 @@ export const SYSTEM_SKILLS = [
     description: 'NoSQL document database',
     synonyms: ['Mongo'],
     status: SkillStatus.ACTIVE,
-    category: SkillCategory.HIGH_SKILL,
-    subcategory: 'SOFTWARE_DEVELOPMENT',
+    category: SkillCategory.SOFTWARE_DEVELOPMENT,
   },
 
   // Business Skills
@@ -92,8 +84,7 @@ export const SYSTEM_SKILLS = [
     description: 'Planning and executing projects effectively',
     synonyms: ['PM', 'Agile', 'Scrum'],
     status: SkillStatus.ACTIVE,
-    category: SkillCategory.HIGH_SKILL,
-    subcategory: 'BUSINESS',
+    category: SkillCategory.BUSINESS,
   },
   {
     id: CONSTANT_IDS.SKILLS[9],
@@ -101,8 +92,7 @@ export const SYSTEM_SKILLS = [
     description: 'Marketing products and services using digital channels',
     synonyms: ['Online Marketing', 'Internet Marketing'],
     status: SkillStatus.ACTIVE,
-    category: SkillCategory.HIGH_SKILL,
-    subcategory: 'BUSINESS',
+    category: SkillCategory.BUSINESS,
   },
   {
     id: CONSTANT_IDS.SKILLS[10],
@@ -110,8 +100,7 @@ export const SYSTEM_SKILLS = [
     description: 'Analyzing data to extract insights',
     synonyms: ['Analytics', 'Data Science'],
     status: SkillStatus.ACTIVE,
-    category: SkillCategory.HIGH_SKILL,
-    subcategory: 'BUSINESS',
+    category: SkillCategory.BUSINESS,
   },
   {
     id: CONSTANT_IDS.SKILLS[11],
@@ -119,8 +108,7 @@ export const SYSTEM_SKILLS = [
     description: 'Providing support and assistance to customers',
     synonyms: ['Customer Support', 'Client Relations'],
     status: SkillStatus.ACTIVE,
-    category: SkillCategory.HIGH_SKILL,
-    subcategory: 'BUSINESS',
+    category: SkillCategory.BUSINESS,
   },
 
   // Design Skills
@@ -130,8 +118,7 @@ export const SYSTEM_SKILLS = [
     description: 'User interface and user experience design',
     synonyms: ['User Experience', 'User Interface', 'Product Design'],
     status: SkillStatus.ACTIVE,
-    category: SkillCategory.HIGH_SKILL,
-    subcategory: 'DESIGN',
+    category: SkillCategory.DESIGN,
   },
   {
     id: CONSTANT_IDS.SKILLS[13],
@@ -139,8 +126,7 @@ export const SYSTEM_SKILLS = [
     description: 'Visual communication and design',
     synonyms: ['Visual Design', 'Brand Design'],
     status: SkillStatus.ACTIVE,
-    category: SkillCategory.HIGH_SKILL,
-    subcategory: 'DESIGN',
+    category: SkillCategory.DESIGN,
   },
 
   // Finance & Accounting
@@ -150,8 +136,7 @@ export const SYSTEM_SKILLS = [
     description: 'Financial record keeping and analysis',
     synonyms: ['Bookkeeping', 'Financial Accounting'],
     status: SkillStatus.ACTIVE,
-    category: SkillCategory.HIGH_SKILL,
-    subcategory: 'FINANCE_ACCOUNTING',
+    category: SkillCategory.FINANCE_ACCOUNTING,
   },
   {
     id: CONSTANT_IDS.SKILLS[15],
@@ -159,8 +144,7 @@ export const SYSTEM_SKILLS = [
     description: 'Analyzing financial data and performance',
     synonyms: ['Financial Planning', 'Budget Analysis'],
     status: SkillStatus.ACTIVE,
-    category: SkillCategory.HIGH_SKILL,
-    subcategory: 'FINANCE_ACCOUNTING',
+    category: SkillCategory.FINANCE_ACCOUNTING,
   },
 
   // Sales & Marketing
@@ -170,8 +154,7 @@ export const SYSTEM_SKILLS = [
     description: 'Selling products and services',
     synonyms: ['Business Development', 'Revenue Generation'],
     status: SkillStatus.ACTIVE,
-    category: SkillCategory.HIGH_SKILL,
-    subcategory: 'SALES_MARKETING',
+    category: SkillCategory.SALES_MARKETING,
   },
   {
     id: CONSTANT_IDS.SKILLS[17],
@@ -179,8 +162,7 @@ export const SYSTEM_SKILLS = [
     description: 'Creating and distributing valuable content',
     synonyms: ['Content Creation', 'Content Strategy'],
     status: SkillStatus.ACTIVE,
-    category: SkillCategory.HIGH_SKILL,
-    subcategory: 'SALES_MARKETING',
+    category: SkillCategory.SALES_MARKETING,
   },
 
   // Operations
@@ -190,8 +172,7 @@ export const SYSTEM_SKILLS = [
     description: 'Managing business operations and processes',
     synonyms: ['Business Operations', 'Process Management'],
     status: SkillStatus.ACTIVE,
-    category: SkillCategory.HIGH_SKILL,
-    subcategory: 'OPERATIONS',
+    category: SkillCategory.OPERATIONS,
   },
   {
     id: CONSTANT_IDS.SKILLS[19],
@@ -199,8 +180,7 @@ export const SYSTEM_SKILLS = [
     description: 'Managing supply chain and logistics',
     synonyms: ['Logistics', 'Procurement'],
     status: SkillStatus.ACTIVE,
-    category: SkillCategory.HIGH_SKILL,
-    subcategory: 'OPERATIONS',
+    category: SkillCategory.OPERATIONS,
   },
 
   // Communication
@@ -210,8 +190,7 @@ export const SYSTEM_SKILLS = [
     description: 'Effective verbal and written communication',
     synonyms: ['Public Speaking', 'Presentation Skills'],
     status: SkillStatus.ACTIVE,
-    category: SkillCategory.HIGH_SKILL,
-    subcategory: 'COMMUNICATION',
+    category: SkillCategory.COMMUNICATION,
   },
   {
     id: CONSTANT_IDS.SKILLS[21],
@@ -219,8 +198,7 @@ export const SYSTEM_SKILLS = [
     description: 'Proficiency in English language',
     synonyms: ['English Proficiency', 'Business English'],
     status: SkillStatus.ACTIVE,
-    category: SkillCategory.HIGH_SKILL,
-    subcategory: 'COMMUNICATION',
+    category: SkillCategory.COMMUNICATION,
   },
 
   // Home Support & Domestic
@@ -230,8 +208,7 @@ export const SYSTEM_SKILLS = [
     description: 'Cleaning and maintaining living spaces',
     synonyms: ['Cleaning', 'Domestic Cleaning', 'Janitorial'],
     status: SkillStatus.ACTIVE,
-    category: SkillCategory.LOW_SKILL,
-    subcategory: 'HOME_SUPPORT',
+    category: SkillCategory.HOME_SUPPORT,
   },
   {
     id: CONSTANT_IDS.SKILLS[23],
@@ -239,8 +216,7 @@ export const SYSTEM_SKILLS = [
     description: 'Caring for infants and children in the home',
     synonyms: ['Childcare', 'Nanny', 'Babysitting'],
     status: SkillStatus.ACTIVE,
-    category: SkillCategory.LOW_SKILL,
-    subcategory: 'HOME_SUPPORT',
+    category: SkillCategory.HOME_SUPPORT,
   },
   {
     id: CONSTANT_IDS.SKILLS[24],
@@ -248,8 +224,7 @@ export const SYSTEM_SKILLS = [
     description: 'General household help including errands and chores',
     synonyms: ['House Help', 'Domestic Staff'],
     status: SkillStatus.ACTIVE,
-    category: SkillCategory.LOW_SKILL,
-    subcategory: 'HOME_SUPPORT',
+    category: SkillCategory.HOME_SUPPORT,
   },
 
   // Maintenance & Trades
@@ -259,8 +234,7 @@ export const SYSTEM_SKILLS = [
     description: 'Installation and repair of water systems',
     synonyms: ['Pipe Fitting', 'Water Systems'],
     status: SkillStatus.ACTIVE,
-    category: SkillCategory.LOW_SKILL,
-    subcategory: 'MAINTENANCE_TRADES',
+    category: SkillCategory.MAINTENANCE_TRADES,
   },
   {
     id: CONSTANT_IDS.SKILLS[26],
@@ -268,8 +242,7 @@ export const SYSTEM_SKILLS = [
     description: 'Diagnosing and fixing electrical issues',
     synonyms: ['Electrician', 'Electrical Maintenance'],
     status: SkillStatus.ACTIVE,
-    category: SkillCategory.LOW_SKILL,
-    subcategory: 'MAINTENANCE_TRADES',
+    category: SkillCategory.MAINTENANCE_TRADES,
   },
   {
     id: CONSTANT_IDS.SKILLS[27],
@@ -277,8 +250,7 @@ export const SYSTEM_SKILLS = [
     description: 'Woodwork construction and repairs',
     synonyms: ['Woodwork', 'Furniture Repairs'],
     status: SkillStatus.ACTIVE,
-    category: SkillCategory.LOW_SKILL,
-    subcategory: 'MAINTENANCE_TRADES',
+    category: SkillCategory.MAINTENANCE_TRADES,
   },
   {
     id: CONSTANT_IDS.SKILLS[28],
@@ -286,8 +258,7 @@ export const SYSTEM_SKILLS = [
     description: 'Maintaining outdoor spaces and lawns',
     synonyms: ['Gardening', 'Landscaping', 'Groundskeeping'],
     status: SkillStatus.ACTIVE,
-    category: SkillCategory.LOW_SKILL,
-    subcategory: 'MAINTENANCE_TRADES',
+    category: SkillCategory.MAINTENANCE_TRADES,
   },
 
   // Hospitality & Culinary
@@ -297,8 +268,7 @@ export const SYSTEM_SKILLS = [
     description: 'Preparing meals and managing kitchen duties',
     synonyms: ['Chef', 'Cook', 'Meal Preparation'],
     status: SkillStatus.ACTIVE,
-    category: SkillCategory.LOW_SKILL,
-    subcategory: 'HOSPITALITY',
+    category: SkillCategory.HOSPITALITY,
   },
   {
     id: CONSTANT_IDS.SKILLS[30],
@@ -306,8 +276,7 @@ export const SYSTEM_SKILLS = [
     description: 'Food preparation for events or offices',
     synonyms: ['Catering', 'Event Catering'],
     status: SkillStatus.ACTIVE,
-    category: SkillCategory.LOW_SKILL,
-    subcategory: 'HOSPITALITY',
+    category: SkillCategory.HOSPITALITY,
   },
 
   // Security
@@ -317,8 +286,7 @@ export const SYSTEM_SKILLS = [
     description: 'Protecting property and people',
     synonyms: ['Security', 'Guard', 'Watchman'],
     status: SkillStatus.ACTIVE,
-    category: SkillCategory.LOW_SKILL,
-    subcategory: 'SECURITY',
+    category: SkillCategory.SECURITY,
   },
   {
     id: CONSTANT_IDS.SKILLS[32],
@@ -326,8 +294,7 @@ export const SYSTEM_SKILLS = [
     description: 'Managing entry points and access control',
     synonyms: ['Gate Keeper', 'Access Control'],
     status: SkillStatus.ACTIVE,
-    category: SkillCategory.LOW_SKILL,
-    subcategory: 'SECURITY',
+    category: SkillCategory.SECURITY,
   },
 
   // Transport & Logistics
@@ -337,8 +304,7 @@ export const SYSTEM_SKILLS = [
     description: 'Driving company or personal vehicles safely',
     synonyms: ['Driver', 'Chauffeur'],
     status: SkillStatus.ACTIVE,
-    category: SkillCategory.LOW_SKILL,
-    subcategory: 'TRANSPORT_LOGISTICS',
+    category: SkillCategory.TRANSPORT_LOGISTICS,
   },
   {
     id: CONSTANT_IDS.SKILLS[34],
@@ -346,7 +312,6 @@ export const SYSTEM_SKILLS = [
     description: 'Handling deliveries and dispatch logistics',
     synonyms: ['Dispatch Rider', 'Logistics'],
     status: SkillStatus.ACTIVE,
-    category: SkillCategory.LOW_SKILL,
-    subcategory: 'TRANSPORT_LOGISTICS',
+    category: SkillCategory.TRANSPORT_LOGISTICS,
   },
 ];

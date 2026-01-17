@@ -9,4 +9,3 @@ export * from './queue';
 export * from './database';
 export * from './storage';
 export * from './database/entities/Role.entity';
-export * from './database/entities/Permission.entity';

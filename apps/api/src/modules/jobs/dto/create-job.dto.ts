@@ -36,10 +36,6 @@ export class CreateJobDto {
   @IsEnum(SkillCategory)
   category: SkillCategory;
 
-  @IsOptional()
-  @IsString()
-  subcategory?: string; // Detailed subcategory (e.g., TECHNICAL, HOME_SUPPORT, etc.)
-
   @IsEnum(EmploymentType)
   employmentType: EmploymentType;
 

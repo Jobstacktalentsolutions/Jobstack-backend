@@ -20,4 +20,3 @@ export * from './Employee.entity';
 export * from './Notification.entity';
 export * from './Document.entity';
 export * from './Role.entity';
-export * from './Permission.entity';

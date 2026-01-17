@@ -218,7 +218,7 @@ export class JobsAdminController {
           status: JobApplicationStatus.SELECTED_FOR_SCREENING,
           screeningMeetingLink: candidate.meetingLink,
           screeningScheduledAt: new Date(candidate.scheduledAt),
-          screeningPrepInfo: candidate.prepInfo || null,
+          screeningPrepInfo: candidate.prepInfo ?? undefined,
         },
       );
     }
