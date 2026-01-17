@@ -24,6 +24,44 @@ export enum SkillCategory {
   OTHERS = 'OTHERS',
 }
 
+export enum SkillType {
+  HIGH_SKILL = 'HIGH_SKILL',
+  LOW_SKILL = 'LOW_SKILL',
+}
+
+// Mapping of skill types to skill categories
+// Used to determine which categories are high skill vs low skill
+export const SkillTypeCategory: Record<SkillType, SkillCategory[]> = {
+  [SkillType.HIGH_SKILL]: [
+    SkillCategory.TECHNICAL,
+    SkillCategory.DATABASE,
+    SkillCategory.SOFTWARE_DEVELOPMENT,
+    SkillCategory.DESIGN,
+    SkillCategory.FINANCE_ACCOUNTING,
+    SkillCategory.BUSINESS,
+    SkillCategory.SALES_MARKETING,
+    SkillCategory.OPERATIONS,
+  ],
+  [SkillType.LOW_SKILL]: [
+    SkillCategory.HOME_SUPPORT,
+    SkillCategory.MAINTENANCE_TRADES,
+    SkillCategory.HOSPITALITY,
+    SkillCategory.SECURITY,
+    SkillCategory.TRANSPORT_LOGISTICS,
+    SkillCategory.COMMUNICATION,
+    SkillCategory.SOCIAL_MEDIA,
+    SkillCategory.OTHERS,
+  ],
+};
+
+// Utility function to get skill type from category
+export function getSkillTypeFromCategory(category: SkillCategory): SkillType {
+  if (SkillTypeCategory[SkillType.HIGH_SKILL].includes(category)) {
+    return SkillType.HIGH_SKILL;
+  }
+  return SkillType.LOW_SKILL;
+}
+
 // Employer related enums
 export enum EmployerType {
   INDIVIDUAL = 'Individual',

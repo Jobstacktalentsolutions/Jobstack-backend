@@ -11,8 +11,13 @@ import {
   JobApplicationStatus,
   SkillCategory,
   EmployeeStatus,
+  SkillType,
+  getSkillTypeFromCategory,
 } from '@app/common/database/entities/schema.enum';
-import { VETTING_CONFIG, getHighlightedCandidateCount } from '../config/vetting.config';
+import {
+  VETTING_CONFIG,
+  getHighlightedCandidateCount,
+} from '../config/vetting.config';
 import { NotificationService } from '../../notification/notification.service';
 
 export interface VettingResult {
@@ -70,7 +75,11 @@ export class JobVettingService {
     // Get all applications for this job
     const applications = await this.applicationRepo.find({
       where: { jobId },
-      relations: ['jobseekerProfile', 'jobseekerProfile.userSkills', 'jobseekerProfile.userSkills.skill'],
+      relations: [
+        'jobseekerProfile',
+        'jobseekerProfile.userSkills',
+        'jobseekerProfile.userSkills.skill',
+      ],
     });
 
     if (applications.length === 0) {
@@ -87,20 +96,38 @@ export class JobVettingService {
     const vettedApplicants: VettedApplicant[] = [];
 
     for (const application of applications) {
-      const isEmployed = await this.checkNotAlreadyEmployed(application.jobseekerProfileId);
-      
+      const isEmployed = await this.checkNotAlreadyEmployed(
+        application.jobseekerProfileId,
+      );
+
       // Skip employed applicants
       if (isEmployed) {
-        this.logger.debug(`Skipping employed applicant ${application.jobseekerProfileId}`);
+        this.logger.debug(
+          `Skipping employed applicant ${application.jobseekerProfileId}`,
+        );
         continue;
       }
 
       const score = await this.calculateApplicantScore(application, job);
-      const profileCompleteness = this.calculateProfileCompleteness(application.jobseekerProfile);
-      const proximityScore = this.calculateProximityScore(job, application.jobseekerProfile);
-      const experienceScore = this.calculateExperienceScore(application.jobseekerProfile, job);
-      const skillMatchScore = this.calculateSkillMatchScore(application.jobseekerProfile, job);
-      const applicationSpeedScore = this.calculateApplicationSpeedScore(application, job);
+      const profileCompleteness = this.calculateProfileCompleteness(
+        application.jobseekerProfile,
+      );
+      const proximityScore = this.calculateProximityScore(
+        job,
+        application.jobseekerProfile,
+      );
+      const experienceScore = this.calculateExperienceScore(
+        application.jobseekerProfile,
+        job,
+      );
+      const skillMatchScore = this.calculateSkillMatchScore(
+        application.jobseekerProfile,
+        job,
+      );
+      const applicationSpeedScore = this.calculateApplicationSpeedScore(
+        application,
+        job,
+      );
 
       vettedApplicants.push({
         applicationId: application.id,
@@ -125,7 +152,11 @@ export class JobVettingService {
       job.highlightedCandidateCount,
     );
 
-    for (let i = 0; i < Math.min(highlightedCount, vettedApplicants.length); i++) {
+    for (
+      let i = 0;
+      i < Math.min(highlightedCount, vettedApplicants.length);
+      i++
+    ) {
       vettedApplicants[i].isHighlighted = true;
     }
 
@@ -138,7 +169,9 @@ export class JobVettingService {
       vettingCompletedBy: 'system',
     });
 
-    this.logger.log(`Vetting completed for job ${jobId}. ${vettedApplicants.length} applicants processed, ${highlightedCount} highlighted`);
+    this.logger.log(
+      `Vetting completed for job ${jobId}. ${vettedApplicants.length} applicants processed, ${highlightedCount} highlighted`,
+    );
 
     return {
       jobId,
@@ -151,34 +184,41 @@ export class JobVettingService {
   /**
    * Calculate overall applicant score based on job category
    */
-  private async calculateApplicantScore(application: JobApplication, job: Job): Promise<number> {
+  private async calculateApplicantScore(
+    application: JobApplication,
+    job: Job,
+  ): Promise<number> {
     const profile = application.jobseekerProfile;
-    
+
     const profileCompleteness = this.calculateProfileCompleteness(profile);
     const proximityScore = this.calculateProximityScore(job, profile);
     const experienceScore = this.calculateExperienceScore(profile, job);
     const skillMatchScore = this.calculateSkillMatchScore(profile, job);
-    const applicationSpeedScore = this.calculateApplicationSpeedScore(application, job);
+    const applicationSpeedScore = this.calculateApplicationSpeedScore(
+      application,
+      job,
+    );
 
     let totalScore = 0;
 
-    if (job.category === SkillCategory.HIGH_SKILL) {
+    const skillType = getSkillTypeFromCategory(job.category);
+    if (skillType === SkillType.HIGH_SKILL) {
       // High-skill job scoring
       const weights = VETTING_CONFIG.highSkillWeights;
-      totalScore = 
-        (experienceScore * weights.yearsOfExperience) +
-        (skillMatchScore * weights.skillMatching) +
-        (profileCompleteness * weights.profileCompleteness) +
-        (proximityScore * weights.proximity) +
-        (applicationSpeedScore * weights.applicationSpeed);
+      totalScore =
+        experienceScore * weights.yearsOfExperience +
+        skillMatchScore * weights.skillMatching +
+        profileCompleteness * weights.profileCompleteness +
+        proximityScore * weights.proximity +
+        applicationSpeedScore * weights.applicationSpeed;
     } else {
       // Low-skill job scoring
       const weights = VETTING_CONFIG.lowSkillWeights;
-      totalScore = 
-        (applicationSpeedScore * weights.applicationSpeed) +
-        (profileCompleteness * weights.profileCompleteness) +
-        (experienceScore * weights.experience) +
-        (proximityScore * weights.proximity);
+      totalScore =
+        applicationSpeedScore * weights.applicationSpeed +
+        profileCompleteness * weights.profileCompleteness +
+        experienceScore * weights.experience +
+        proximityScore * weights.proximity;
     }
 
     return Math.round(totalScore * 100) / 100; // Round to 2 decimal places
@@ -195,7 +235,11 @@ export class JobVettingService {
     score += weights.basicInfo * 100;
 
     // Location
-    const hasLocation = profile.state || profile.city || profile.address || profile.preferredLocation;
+    const hasLocation =
+      profile.state ||
+      profile.city ||
+      profile.address ||
+      profile.preferredLocation;
     if (hasLocation) {
       score += weights.location * 100;
     }
@@ -216,7 +260,10 @@ export class JobVettingService {
     }
 
     // Years of experience
-    if (profile.yearsOfExperience !== null && profile.yearsOfExperience !== undefined) {
+    if (
+      profile.yearsOfExperience !== null &&
+      profile.yearsOfExperience !== undefined
+    ) {
       score += weights.yearsOfExperience * 100;
     }
 
@@ -243,7 +290,7 @@ export class JobVettingService {
     if (job.state && profile.state) {
       if (job.state.toLowerCase() === profile.state.toLowerCase()) {
         score += 60;
-        
+
         // Exact city match (bonus)
         if (job.city && profile.city) {
           if (job.city.toLowerCase() === profile.city.toLowerCase()) {
@@ -255,7 +302,9 @@ export class JobVettingService {
 
     // Check preferred location
     if (score === 0 && job.city && profile.preferredLocation) {
-      if (profile.preferredLocation.toLowerCase().includes(job.city.toLowerCase())) {
+      if (
+        profile.preferredLocation.toLowerCase().includes(job.city.toLowerCase())
+      ) {
         score += 30;
       }
     }
@@ -266,13 +315,17 @@ export class JobVettingService {
   /**
    * Calculate experience score based on years of experience (0-100)
    */
-  private calculateExperienceScore(profile: JobSeekerProfile, job: Job): number {
+  private calculateExperienceScore(
+    profile: JobSeekerProfile,
+    job: Job,
+  ): number {
     if (!profile.yearsOfExperience) {
       return 0;
     }
 
     // For high-skill jobs, more experience is better
-    if (job.category === SkillCategory.HIGH_SKILL) {
+    const skillType = getSkillTypeFromCategory(job.category);
+    if (skillType === SkillType.HIGH_SKILL) {
       // Score based on experience level
       if (profile.yearsOfExperience >= 10) return 100;
       if (profile.yearsOfExperience >= 5) return 80;
@@ -291,7 +344,10 @@ export class JobVettingService {
   /**
    * Calculate skill matching score (0-100)
    */
-  private calculateSkillMatchScore(profile: JobSeekerProfile, job: Job): number {
+  private calculateSkillMatchScore(
+    profile: JobSeekerProfile,
+    job: Job,
+  ): number {
     if (!job.skills || job.skills.length === 0) {
       return 50; // Neutral score if no required skills
     }
@@ -300,11 +356,13 @@ export class JobVettingService {
       return 0; // No skills listed
     }
 
-    const jobSkillIds = new Set(job.skills.map(skill => skill.id));
-    const userSkillIds = new Set(profile.userSkills.map(us => us.skillId));
-    
+    const jobSkillIds = new Set(job.skills.map((skill) => skill.id));
+    const userSkillIds = new Set(profile.userSkills.map((us) => us.skillId));
+
     // Calculate intersection
-    const matchingSkills = [...jobSkillIds].filter(skillId => userSkillIds.has(skillId));
+    const matchingSkills = [...jobSkillIds].filter((skillId) =>
+      userSkillIds.has(skillId),
+    );
     const matchPercentage = matchingSkills.length / job.skills.length;
 
     return Math.round(matchPercentage * 100);
@@ -313,23 +371,32 @@ export class JobVettingService {
   /**
    * Calculate application speed score (0-100)
    */
-  private calculateApplicationSpeedScore(application: JobApplication, job: Job): number {
+  private calculateApplicationSpeedScore(
+    application: JobApplication,
+    job: Job,
+  ): number {
     const jobCreatedAt = new Date(job.createdAt);
     const applicationCreatedAt = new Date(application.createdAt);
-    
-    const hoursDiff = (applicationCreatedAt.getTime() - jobCreatedAt.getTime()) / (1000 * 60 * 60);
-    
+
+    const hoursDiff =
+      (applicationCreatedAt.getTime() - jobCreatedAt.getTime()) /
+      (1000 * 60 * 60);
+
     if (hoursDiff < 0) {
       return 0; // Application created before job (shouldn't happen)
     }
 
     const config = VETTING_CONFIG.applicationSpeed;
-    
+
     if (hoursDiff <= config.maxHoursForFullScore) {
       return 100;
     }
 
-    const score = Math.max(0, 100 - ((hoursDiff - config.maxHoursForFullScore) * config.scoreDecayPerHour));
+    const score = Math.max(
+      0,
+      100 -
+        (hoursDiff - config.maxHoursForFullScore) * config.scoreDecayPerHour,
+    );
     return Math.round(score);
   }
 
@@ -350,12 +417,14 @@ export class JobVettingService {
   /**
    * Update application statuses after vetting
    */
-  private async updateApplicationStatuses(vettedApplicants: VettedApplicant[]): Promise<void> {
-    const applicationIds = vettedApplicants.map(va => va.applicationId);
-    
+  private async updateApplicationStatuses(
+    vettedApplicants: VettedApplicant[],
+  ): Promise<void> {
+    const applicationIds = vettedApplicants.map((va) => va.applicationId);
+
     await this.applicationRepo.update(
       { id: In(applicationIds) },
-      { status: JobApplicationStatus.VETTED }
+      { status: JobApplicationStatus.VETTED },
     );
   }
 
@@ -369,8 +438,13 @@ export class JobVettingService {
     });
 
     for (const application of applications) {
-      if (!application.screeningMeetingLink || !application.screeningScheduledAt) {
-        this.logger.warn(`Application ${application.id} missing meeting details, skipping notification`);
+      if (
+        !application.screeningMeetingLink ||
+        !application.screeningScheduledAt
+      ) {
+        this.logger.warn(
+          `Application ${application.id} missing meeting details, skipping notification`,
+        );
         continue;
       }
 
@@ -405,9 +479,14 @@ export class JobVettingService {
           },
         });
 
-        this.logger.log(`Screening notification sent to ${application.jobseekerProfile.email}`);
+        this.logger.log(
+          `Screening notification sent to ${application.jobseekerProfile.email}`,
+        );
       } catch (error) {
-        this.logger.error(`Failed to send screening notification to ${application.jobseekerProfile.email}`, error);
+        this.logger.error(
+          `Failed to send screening notification to ${application.jobseekerProfile.email}`,
+          error,
+        );
       }
     }
   }
@@ -415,7 +494,9 @@ export class JobVettingService {
   /**
    * Notify candidates after external screening is completed
    */
-  async notifyCandidatesAfterScreening(applicationIds: string[]): Promise<void> {
+  async notifyCandidatesAfterScreening(
+    applicationIds: string[],
+  ): Promise<void> {
     const applications = await this.applicationRepo.find({
       where: { id: In(applicationIds) },
       relations: ['jobseekerProfile', 'job'],
@@ -434,9 +515,14 @@ export class JobVettingService {
           },
         });
 
-        this.logger.log(`Screening completion notification sent to ${application.jobseekerProfile.email}`);
+        this.logger.log(
+          `Screening completion notification sent to ${application.jobseekerProfile.email}`,
+        );
       } catch (error) {
-        this.logger.error(`Failed to send screening completion notification to ${application.jobseekerProfile.email}`, error);
+        this.logger.error(
+          `Failed to send screening completion notification to ${application.jobseekerProfile.email}`,
+          error,
+        );
       }
     }
   }
@@ -444,7 +530,10 @@ export class JobVettingService {
   /**
    * Send vetting completion notification to admin
    */
-  async notifyAdminVettingComplete(jobId: string, result: VettingResult): Promise<void> {
+  async notifyAdminVettingComplete(
+    jobId: string,
+    result: VettingResult,
+  ): Promise<void> {
     const job = await this.jobRepo.findOne({
       where: { id: jobId },
       relations: ['employer'],
@@ -473,9 +562,14 @@ export class JobVettingService {
         },
       });
 
-      this.logger.log(`Vetting completion notification sent to admin for job ${jobId}`);
+      this.logger.log(
+        `Vetting completion notification sent to admin for job ${jobId}`,
+      );
     } catch (error) {
-      this.logger.error(`Failed to send vetting completion notification for job ${jobId}`, error);
+      this.logger.error(
+        `Failed to send vetting completion notification for job ${jobId}`,
+        error,
+      );
     }
   }
 }
