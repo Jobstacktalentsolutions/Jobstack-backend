@@ -140,6 +140,27 @@ export class JobsService {
     return job;
   }
 
+  // Retrieves job statistics
+  async getJobStats() {
+    const total = await this.jobRepo.count();
+    const draft = await this.jobRepo.count({
+      where: { status: JobStatus.DRAFT },
+    });
+    const published = await this.jobRepo.count({
+      where: { status: JobStatus.PUBLISHED },
+    });
+    const closed = await this.jobRepo.count({
+      where: { status: JobStatus.CLOSED },
+    });
+
+    return {
+      total,
+      draft,
+      published,
+      closed,
+    };
+  }
+
   // Updates a job (employerId optional - if provided, verifies ownership)
   async updateJob(jobId: string, dto: UpdateJobDto, employerId?: string) {
     const job = await this.getJobById(jobId);

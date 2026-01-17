@@ -31,6 +31,13 @@ export class JobsAdminController {
     private readonly applicationRepo: Repository<JobApplication>,
   ) {}
 
+  // Get job statistics
+  @Get('stats')
+  @UseGuards(AdminJwtGuard)
+  getStats() {
+    return this.jobsService.getJobStats();
+  }
+
   // Lists all jobs for admins (no filters, can see everything)
   @Get()
   @UseGuards(AdminJwtGuard)
