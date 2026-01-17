@@ -12,6 +12,7 @@ import {
 import { AdminJwtGuard, RequireAdminRole } from 'apps/api/src/guards';
 import { AdminService } from './admin.service';
 import { VerificationStatus } from '@app/common/shared/enums/employer-docs.enum';
+import { ApprovalStatus } from '@app/common/database/entities/schema.enum';
 import { AdminRole } from '@app/common/shared/enums/roles.enum';
 import { CurrentUser, type CurrentUserPayload } from '@app/common/shared';
 
@@ -39,14 +40,14 @@ export class AdminController {
     return this.adminService.updateAdminProfile(user.id, updateData);
   }
 
-  // Create a new admin (requires SUPER_ADMIN role)
   @Post('admins')
   @RequireAdminRole(AdminRole.SUPER_ADMIN.role)
   async createAdmin(
     @CurrentUser() user: CurrentUserPayload,
     @Body() body: any,
   ) {
-    return this.adminService.createAdmin(user.id, body);
+    const admin = await this.adminService.createAdmin(user.id, body);
+    return { success: true, data: admin };
   }
 
   // Delete an admin (requires SUPER_ADMIN or higher privilege)
@@ -59,9 +60,29 @@ export class AdminController {
     return this.adminService.deleteAdmin(user.id, adminId);
   }
 
+  @Patch('admins/:id/suspend')
+  @RequireAdminRole(AdminRole.SUPER_ADMIN.role)
+  async suspendAdmin(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') adminId: string,
+    @Body('reason') reason?: string,
+  ) {
+    return this.adminService.suspendAdmin(user.id, adminId, reason);
+  }
+
+  @Patch('admins/:id/unsuspend')
+  @RequireAdminRole(AdminRole.SUPER_ADMIN.role)
+  async unsuspendAdmin(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') adminId: string,
+  ) {
+    return this.adminService.unsuspendAdmin(user.id, adminId);
+  }
+
   @Get('all')
   async getAllAdmins(@CurrentUser() user: CurrentUserPayload) {
-    return this.adminService.getAllAdmins(user.id);
+    const admins = await this.adminService.getAllAdmins(user.id);
+    return { success: true, data: admins };
   }
 
   @Get('system-overview')
@@ -133,5 +154,25 @@ export class AdminController {
     @Param('id') jobseekerId: string,
   ) {
     return this.adminService.unsuspendJobseeker(user.id, jobseekerId);
+  }
+
+  // Approve jobseeker verification
+  @Patch('jobseekers/:id/verification/approve')
+  @RequireAdminRole(AdminRole.OPERATIONS_SUPPORT.role)
+  async approveJobseeker(@Param('id') jobseekerId: string) {
+    return this.adminService.updateJobseekerVerification(
+      jobseekerId,
+      ApprovalStatus.APPROVED,
+    );
+  }
+
+  // Reject jobseeker verification
+  @Patch('jobseekers/:id/verification/reject')
+  @RequireAdminRole(AdminRole.OPERATIONS_SUPPORT.role)
+  async rejectJobseeker(@Param('id') jobseekerId: string) {
+    return this.adminService.updateJobseekerVerification(
+      jobseekerId,
+      ApprovalStatus.REJECTED,
+    );
   }
 }

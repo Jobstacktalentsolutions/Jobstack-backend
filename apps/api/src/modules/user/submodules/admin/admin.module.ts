@@ -12,6 +12,7 @@ import {
   EmployerProfile,
   EmployerAuth,
   JobseekerAuth,
+  JobSeekerProfile,
 } from '@app/common/database/entities';
 
 @Module({
@@ -23,6 +24,7 @@ import {
       EmployerProfile,
       EmployerAuth,
       JobseekerAuth,
+      JobSeekerProfile,
     ]),
     AdminAuthModule,
     NotificationModule,

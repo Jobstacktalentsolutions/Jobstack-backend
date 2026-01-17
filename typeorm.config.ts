@@ -22,7 +22,7 @@ export const typeOrmConfig: DataSourceOptions = {
   ],
   migrations: ['migrations/**/*{.ts,.js}'],
   migrationsTableName: 'migrations',
-  synchronize: true, // Should be false in production
+  synchronize: false, // Should be false in production
   logging: ['error'],
 };
 

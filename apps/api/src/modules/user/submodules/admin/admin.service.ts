@@ -14,8 +14,10 @@ import {
   EmployerProfile,
   EmployerAuth,
   JobseekerAuth,
+  JobSeekerProfile,
 } from '@app/common/database/entities';
 import { VerificationStatus } from '@app/common/shared/enums/employer-docs.enum';
+import { ApprovalStatus } from '@app/common/database/entities/schema.enum';
 import { AdminRole } from '@app/common/shared/enums/roles.enum';
 import * as bcrypt from 'bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
@@ -46,6 +48,8 @@ export class AdminService {
     private readonly employerAuthRepo: Repository<EmployerAuth>,
     @InjectRepository(JobseekerAuth)
     private readonly jobseekerAuthRepo: Repository<JobseekerAuth>,
+    @InjectRepository(JobSeekerProfile)
+    private readonly jobseekerProfileRepo: Repository<JobSeekerProfile>,
     private readonly notificationService: NotificationService,
   ) {}
 
@@ -143,7 +147,6 @@ export class AdminService {
     return { id: saved.id, email: saved.email, roleKey: saved.roleKey };
   }
 
-
   async updateEmployerVerification(
     employerId: string,
     status: VerificationStatus,
@@ -214,6 +217,7 @@ export class AdminService {
       },
       createdAt: profile.createdAt,
       updatedAt: profile.updatedAt,
+      suspended: profile.auth.suspended,
     }));
   }
 
@@ -312,10 +316,12 @@ export class AdminService {
         template: 'general-notification',
         context: {
           firstName: employerAuth.profile.firstName || 'Employer',
-          message: 'Your account has been reinstated. You can now log in and use all features.',
+          message:
+            'Your account has been reinstated. You can now log in and use all features.',
           actionText: 'Login to Dashboard',
           actionUrl:
-            process.env.EMPLOYER_DASHBOARD_URL || 'https://jobstack.ng/employer/login',
+            process.env.EMPLOYER_DASHBOARD_URL ||
+            'https://jobstack.ng/employer/login',
         },
       });
     }
@@ -404,7 +410,8 @@ export class AdminService {
         template: 'general-notification',
         context: {
           firstName: jobseekerAuth.profile.firstName || 'Jobseeker',
-          message: 'Your account has been reinstated. You can now log in and use all features.',
+          message:
+            'Your account has been reinstated. You can now log in and use all features.',
           actionText: 'Login to Dashboard',
           actionUrl:
             process.env.JOBSEEKER_DASHBOARD_URL ||
@@ -414,6 +421,21 @@ export class AdminService {
     }
 
     return { success: true, jobseekerId };
+  }
+
+  async updateJobseekerVerification(
+    jobseekerId: string,
+    status: ApprovalStatus,
+  ) {
+    const profile = await this.jobseekerProfileRepo.findOne({
+      where: { id: jobseekerId },
+    });
+    if (!profile) throw new NotFoundException('Jobseeker profile not found');
+
+    profile.approvalStatus = status;
+    await this.jobseekerProfileRepo.save(profile);
+
+    return { jobseekerId, status };
   }
 
   /**
@@ -452,14 +474,60 @@ export class AdminService {
       throw new NotFoundException('Target admin not found');
     }
 
-    // Note: We'll need to add suspension fields to AdminAuth entity
-    // For now, we'll just prevent login by checking role or add a suspended field
-    // Since AdminAuth doesn't have suspension fields yet, we'll skip this for now
-    // and implement it if needed
+    if (target.suspended) {
+      throw new BadRequestException('Admin is already suspended');
+    }
 
-    throw new BadRequestException(
-      'Admin suspension not yet implemented. Use delete instead.',
-    );
+    target.suspended = true;
+    target.suspendedAt = new Date();
+    target.suspensionReason = reason || null;
+
+    await this.adminAuthRepo.save(target);
+
+    return { success: true, adminId: target.id };
+  }
+
+  /**
+   * Unsuspend an admin account (only SUPER_ADMIN can do this)
+   */
+  async unsuspendAdmin(
+    requesterId: string,
+    targetAdminId: string,
+  ): Promise<{ success: boolean; adminId: string }> {
+    const requester = await this.adminAuthRepo.findOne({
+      where: { id: requesterId },
+    });
+
+    if (!requester) {
+      throw new NotFoundException('Requester admin not found');
+    }
+
+    // Only SUPER_ADMIN can unsuspend other admins
+    if (requester.roleKey !== AdminRole.SUPER_ADMIN.role) {
+      throw new ForbiddenException(
+        'Only SUPER_ADMIN can unsuspend admin accounts',
+      );
+    }
+
+    const target = await this.adminAuthRepo.findOne({
+      where: { id: targetAdminId },
+    });
+
+    if (!target) {
+      throw new NotFoundException('Target admin not found');
+    }
+
+    if (!target.suspended) {
+      throw new BadRequestException('Admin is not suspended');
+    }
+
+    target.suspended = false;
+    target.suspendedAt = null;
+    target.suspensionReason = null;
+
+    await this.adminAuthRepo.save(target);
+
+    return { success: true, adminId: target.id };
   }
 
   /**

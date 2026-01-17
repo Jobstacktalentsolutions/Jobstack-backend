@@ -28,6 +28,15 @@ export class AdminAuth extends BaseEntity {
   @OneToMany(() => AdminSession, (session) => session.admin)
   sessions: AdminSession[];
 
+  @Column({ default: false })
+  suspended: boolean;
+
+  @Column({ type: 'timestamp', nullable: true })
+  suspendedAt: Date | null;
+
+  @Column({ type: 'text', nullable: true })
+  suspensionReason: string | null;
+
   @OneToOne(() => AdminProfile, (profile) => profile.auth, {
     cascade: true,
     onDelete: 'CASCADE',
