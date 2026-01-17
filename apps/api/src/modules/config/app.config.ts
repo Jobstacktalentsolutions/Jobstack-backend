@@ -13,8 +13,8 @@ const CORS_OPTIONS: CorsOptions = {
   origin: [
     /^(http:\/\/localhost:\d+)$/,
     configService.get(ENV.FRONTEND_URL, 'http://localhost:3000'),
-    'https://jobstack.ng',
-    'https://www.jobstack.com',
+    'https://jobstack.org',
+    'https://www.jobstack.org',
     'https://jobstackwebsite-frontend.vercel.app',
   ],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
