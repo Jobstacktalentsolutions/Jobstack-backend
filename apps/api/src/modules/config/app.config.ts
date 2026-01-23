@@ -14,6 +14,8 @@ const CORS_OPTIONS: CorsOptions = {
     /^(http:\/\/localhost:\d+)$/,
     configService.get(ENV.FRONTEND_URL, 'http://localhost:3000'),
     'https://jobstack.org',
+    'https://admin.jobstack.org',
+    'https://www.admin.jobstack.org',
     'https://www.jobstack.org',
     'https://jobstackwebsite-frontend.vercel.app',
   ],
