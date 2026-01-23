@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>You've Been Selected for Screening - <%= jobTitle %></title>
+    <title>Screening Scheduled - <%= jobTitle %></title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -35,8 +35,8 @@
             margin-bottom: 20px;
             font-size: 24px;
         }
-        .congratulations {
-            background: linear-gradient(135deg, #10b981, #059669);
+        .notification-banner {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
             color: white;
             padding: 20px;
             border-radius: 10px;
@@ -49,31 +49,14 @@
             border-radius: 8px;
             margin: 20px 0;
         }
-        .next-steps {
-            background-color: #eff6ff;
-            border-left: 4px solid #2563eb;
-            padding: 20px;
-            margin: 20px 0;
-        }
-        .next-steps h3 {
-            margin-top: 0;
-            color: #1d4ed8;
-        }
-        .next-steps ul {
-            color: #1e40af;
-            margin: 10px 0;
-        }
-        .next-steps li {
-            margin: 8px 0;
-        }
-        .important-note {
+        .candidate-info {
             background-color: #fef3c7;
-            border: 1px solid #f59e0b;
-            padding: 15px;
+            border: 2px solid #f59e0b;
+            padding: 20px;
             border-radius: 8px;
             margin: 20px 0;
         }
-        .important-note h4 {
+        .candidate-info h3 {
             margin-top: 0;
             color: #92400e;
         }
@@ -107,15 +90,26 @@
         .meeting-info strong {
             color: #0c4a6e;
         }
-        .prep-info {
-            background-color: #fef3c7;
-            border-left: 4px solid #f59e0b;
-            padding: 15px;
+        .role-info {
+            background-color: #eff6ff;
+            border-left: 4px solid #3b82f6;
+            padding: 20px;
             margin: 20px 0;
         }
-        .prep-info h4 {
+        .role-info h3 {
             margin-top: 0;
-            color: #92400e;
+            color: #1e40af;
+        }
+        .important-note {
+            background-color: #fef2f2;
+            border: 1px solid #dc2626;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .important-note h4 {
+            margin-top: 0;
+            color: #991b1b;
         }
         .footer {
             text-align: center;
@@ -131,12 +125,12 @@
     <div class="container">
         <div class="header">
             <div class="logo">JobStack</div>
-            <h1>🎉 Great News!</h1>
+            <h1>Screening Interview Scheduled</h1>
         </div>
 
-        <div class="congratulations">
-            <h2 style="margin: 0; font-size: 20px;">Congratulations, <%= candidateName %>!</h2>
-            <p style="margin: 10px 0 0 0; font-size: 16px;">You've been selected for the next round of screening.</p>
+        <div class="notification-banner">
+            <h2 style="margin: 0; font-size: 20px;">Custom Screening Invitation</h2>
+            <p style="margin: 10px 0 0 0; font-size: 16px;">You've been invited to screen a candidate for your position.</p>
         </div>
 
         <div class="job-info">
@@ -144,56 +138,65 @@
             <p style="color: #6b7280; margin-bottom: 0;">Job ID: <%= jobId %></p>
         </div>
 
+        <div class="candidate-info">
+            <h3>Candidate Information</h3>
+            <p><strong>Name:</strong> <%= candidateName %></p>
+            <p style="margin-bottom: 0;"><strong>Application ID:</strong> <%= applicationId %></p>
+        </div>
+
         <div class="meeting-details">
-            <h3>📅 Your Screening Interview Details</h3>
+            <h3>Meeting Details</h3>
             
             <div class="meeting-info">
-                <strong>📆 Scheduled Date & Time:</strong><br>
+                <strong>Scheduled Date & Time:</strong><br>
                 <%= scheduledDateTime %>
             </div>
 
             <div class="meeting-info">
-                <strong>🔗 Meeting Link:</strong><br>
+                <strong>Meeting Link:</strong><br>
                 <a href="<%= meetingLink %>" class="meeting-link" target="_blank">Join Screening Interview</a>
             </div>
-
-            <% if (employerWillJoin) { %>
-            <div class="meeting-info" style="background-color: #f0fdf4; padding: 12px; border-radius: 6px; border: 1px solid #16a34a;">
-                <strong style="color: #15803d;">👥 Screening Format:</strong><br>
-                <span style="color: #166534;">This will be a collaborative screening with the employer present. Both the JobStack admin (as invigilator) and the employer will join the call to assess your fit for the role.</span>
-            </div>
-            <% } else { %>
-            <div class="meeting-info" style="background-color: #eff6ff; padding: 12px; border-radius: 6px; border: 1px solid #3b82f6;">
-                <strong style="color: #1e40af;">👤 Screening Format:</strong><br>
-                <span style="color: #1e3a8a;">This will be a screening interview with the JobStack admin who will assess your suitability for the role.</span>
-            </div>
-            <% } %>
-
-            <p style="margin-bottom: 0; color: #0c4a6e; font-size: 14px; margin-top: 15px;">
-                Please join the meeting at the scheduled time using the link above. 
-                Make sure you have a stable internet connection and a quiet environment.
-            </p>
         </div>
 
         <% if (prepInfo) { %>
-        <div class="prep-info">
-            <h4>📋 Preparation Information</h4>
-            <p style="margin-bottom: 0; color: #92400e; white-space: pre-wrap;"><%= prepInfo %></p>
+        <div style="background-color: #f3f4f6; padding: 15px; border-radius: 8px; margin: 20px 0;">
+            <h4 style="margin-top: 0; color: #374151;">Preparation Information:</h4>
+            <p style="margin-bottom: 0; color: #4b5563; white-space: pre-wrap;"><%= prepInfo %></p>
         </div>
         <% } %>
 
+        <div class="role-info">
+            <h3>Your Role in This Screening</h3>
+            <p><strong>As the employer, you will:</strong></p>
+            <ul style="color: #1e40af;">
+                <li>Conduct the screening interview with the candidate</li>
+                <li>Assess the candidate's suitability for your position</li>
+                <li>Ask relevant questions about their experience and qualifications</li>
+                <li>Make the final decision on whether to hire this candidate</li>
+            </ul>
+            <p><strong>The JobStack admin will:</strong></p>
+            <ul style="color: #1e40af;">
+                <li>Join as an invigilator representing JobStack</li>
+                <li>Ensure the screening process is professional and fair</li>
+                <li>Provide support and facilitate the conversation</li>
+                <li>Record the outcome for JobStack's records</li>
+            </ul>
+        </div>
+
         <div class="important-note">
-            <h4>⚠️ Important</h4>
-            <p style="margin-bottom: 0;">
-                Please ensure you're available at the scheduled time. If you need to reschedule, 
-                please contact our support team as soon as possible. The screening process is time-sensitive.
-            </p>
+            <h4>Important Reminders</h4>
+            <ul style="color: #991b1b; margin: 10px 0;">
+                <li>Please join the meeting at the scheduled time</li>
+                <li>Prepare your questions and evaluation criteria beforehand</li>
+                <li>The admin will be present throughout the screening</li>
+                <li>If you need to reschedule, contact JobStack support immediately</li>
+            </ul>
         </div>
 
         <div style="background-color: #f0fdf4; border: 1px solid #16a34a; padding: 15px; border-radius: 8px; margin: 20px 0;">
             <p style="margin: 0; color: #15803d; text-align: center;">
-                <strong>Good luck with your screening! 🍀</strong><br>
-                We're excited to learn more about you.
+                <strong>Thank you for using JobStack's screening service!</strong><br>
+                We're here to help you find the perfect candidate.
             </p>
         </div>
 

@@ -277,6 +277,7 @@ export class JobVettingService {
 
   /**
    * Calculate proximity score based on location matching (0-100)
+   * Emphasizes LGA/city matching for low-skill jobs
    */
   private calculateProximityScore(job: Job, profile: JobSeekerProfile): number {
     // If no location info available, return neutral score
@@ -286,30 +287,56 @@ export class JobVettingService {
 
     let score = 0;
 
-    // Exact state match
-    if (job.state && profile.state) {
-      if (job.state.toLowerCase() === profile.state.toLowerCase()) {
-        score += 60;
+    // City matching (treated as LGA equivalent for local proximity)
+    if (job.city && profile.city) {
+      if (job.city.toLowerCase().trim() === profile.city.toLowerCase().trim()) {
+        // Same city/LGA - highest priority
+        score = 100;
+        return score;
+      }
+    }
 
-        // Exact city match (bonus)
+    // State match (if cities don't match or aren't available)
+    if (job.state && profile.state) {
+      if (job.state.toLowerCase().trim() === profile.state.toLowerCase().trim()) {
+        score += 50;
+        
+        // Partial city match bonus
         if (job.city && profile.city) {
-          if (job.city.toLowerCase() === profile.city.toLowerCase()) {
-            score += 40;
+          const jobCityLower = job.city.toLowerCase();
+          const profileCityLower = profile.city.toLowerCase();
+          // Check if cities are related (contain each other)
+          if (jobCityLower.includes(profileCityLower) || profileCityLower.includes(jobCityLower)) {
+            score += 25;
           }
         }
       }
     }
 
-    // Check preferred location
-    if (score === 0 && job.city && profile.preferredLocation) {
-      if (
-        profile.preferredLocation.toLowerCase().includes(job.city.toLowerCase())
-      ) {
-        score += 30;
+    // Check preferred location as fallback
+    if (score === 0 && profile.preferredLocation) {
+      const preferredLower = profile.preferredLocation.toLowerCase();
+      
+      if (job.city && preferredLower.includes(job.city.toLowerCase())) {
+        score += 35;
+      } else if (job.state && preferredLower.includes(job.state.toLowerCase())) {
+        score += 25;
       }
     }
 
-    return Math.min(100, score);
+    // Check address for additional locality hints
+    if (score < 100 && job.address && profile.address) {
+      const jobAddressLower = job.address.toLowerCase();
+      const profileAddressLower = profile.address.toLowerCase();
+      
+      // Look for common locality markers in addresses
+      if (jobAddressLower.includes(profileAddressLower.split(',')[0]) || 
+          profileAddressLower.includes(jobAddressLower.split(',')[0])) {
+        score += 15;
+      }
+    }
+
+    return Math.min(100, Math.round(score));
   }
 
   /**
@@ -434,7 +461,7 @@ export class JobVettingService {
   async notifyCandidatesForScreening(applicationIds: string[]): Promise<void> {
     const applications = await this.applicationRepo.find({
       where: { id: In(applicationIds) },
-      relations: ['jobseekerProfile', 'job'],
+      relations: ['jobseekerProfile', 'job', 'job.employer'],
     });
 
     for (const application of applications) {
@@ -463,6 +490,9 @@ export class JobVettingService {
           timeZoneName: 'short',
         });
 
+        const employerWillJoin = application.job.performCustomScreening;
+
+        // Send email to candidate
         await this.notificationService.sendEmail({
           to: application.jobseekerProfile.email,
           subject: 'You have been selected for screening',
@@ -476,15 +506,41 @@ export class JobVettingService {
             scheduledTime: formattedTime,
             scheduledDateTime: `${formattedDate} at ${formattedTime}`,
             prepInfo: application.screeningPrepInfo || null,
+            employerWillJoin,
           },
         });
 
         this.logger.log(
-          `Screening notification sent to ${application.jobseekerProfile.email}`,
+          `Screening notification sent to candidate ${application.jobseekerProfile.email}`,
         );
+
+        // If custom screening, also notify the employer
+        if (employerWillJoin && application.job.employer) {
+          await this.notificationService.sendEmail({
+            to: application.job.employer.email,
+            subject: `Screening scheduled for ${application.job.title}`,
+            template: 'employer-screening-invitation',
+            context: {
+              employerName: `${application.job.employer.firstName} ${application.job.employer.lastName}`,
+              jobTitle: application.job.title,
+              jobId: application.job.id,
+              candidateName: `${application.jobseekerProfile.firstName} ${application.jobseekerProfile.lastName}`,
+              applicationId: application.id,
+              meetingLink: application.screeningMeetingLink,
+              scheduledDate: formattedDate,
+              scheduledTime: formattedTime,
+              scheduledDateTime: `${formattedDate} at ${formattedTime}`,
+              prepInfo: application.screeningPrepInfo || null,
+            },
+          });
+
+          this.logger.log(
+            `Screening notification sent to employer ${application.job.employer.email}`,
+          );
+        }
       } catch (error) {
         this.logger.error(
-          `Failed to send screening notification to ${application.jobseekerProfile.email}`,
+          `Failed to send screening notification for application ${application.id}`,
           error,
         );
       }

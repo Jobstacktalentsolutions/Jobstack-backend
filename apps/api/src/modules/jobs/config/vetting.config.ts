@@ -56,10 +56,10 @@ export const VETTING_CONFIG: VettingConfig = {
   },
   
   lowSkillWeights: {
-    applicationSpeed: 0.40,
-    profileCompleteness: 0.30,
-    experience: 0.20,
-    proximity: 0.10,
+    proximity: 0.35, // Emphasizing local availability for low-skill jobs
+    applicationSpeed: 0.30,
+    profileCompleteness: 0.20,
+    experience: 0.15, // Less critical for low-skill roles
   },
   
   profileCompletenessWeights: {
