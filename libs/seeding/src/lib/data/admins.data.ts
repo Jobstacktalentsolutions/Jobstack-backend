@@ -6,14 +6,14 @@ import { CONSTANT_IDS } from './constant.data';
  * Get super admin configuration from environment variables with fallbacks
  */
 function getSuperAdminConfig() {
-  const email = process.env.SUPER_ADMIN_EMAIL || 'enweremproper@gmail.com';
-  const password = bcrypt.hashSync(
-    process.env.SUPER_ADMIN_PASSWORD || 'admin123',
-    12,
-  );
-  const firstName = process.env.SUPER_ADMIN_FIRST_NAME || 'Super';
-  const lastName = process.env.SUPER_ADMIN_LAST_NAME || 'Admin';
+  const email = process.env.SUPER_ADMIN_EMAIL!;
+  const password = bcrypt.hashSync(process.env.SUPER_ADMIN_PASSWORD!, 12);
+  const firstName = process.env.SUPER_ADMIN_FIRST_NAME!;
+  const lastName = process.env.SUPER_ADMIN_LAST_NAME!;
 
+  if (!email || !password || !firstName || !lastName) {
+    throw new Error('Super admin configuration is missing');
+  }
   return {
     email,
     password,
@@ -30,6 +30,17 @@ export const ADMINS_DATA = [
     firstName: superAdminConfig.firstName,
     lastName: superAdminConfig.lastName,
     email: superAdminConfig.email,
+    phoneNumber: '+2348010000001',
+    address: 'Lagos, Nigeria',
+    roleKey: AdminRole.SUPER_ADMIN.role,
+    privilegeLevel: AdminRole.SUPER_ADMIN.privilegeLevel,
+    passwordHash: superAdminConfig.password,
+  },
+  {
+    id: CONSTANT_IDS.ADMINS[0],
+    firstName: 'Wonuola',
+    lastName: 'ALonge',
+    email: 'wonuolalonge@gmail.com',
     phoneNumber: '+2348010000001',
     address: 'Lagos, Nigeria',
     roleKey: AdminRole.SUPER_ADMIN.role,
