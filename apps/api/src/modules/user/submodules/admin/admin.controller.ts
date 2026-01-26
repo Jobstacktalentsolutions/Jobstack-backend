@@ -12,7 +12,7 @@ import {
 import { AdminJwtGuard, RequireAdminRole } from 'apps/api/src/guards';
 import { AdminService } from './admin.service';
 import { VerificationStatus } from '@app/common/shared/enums/employer-docs.enum';
-import { ApprovalStatus } from '@app/common/database/entities/schema.enum';
+import { ApprovalStatus, EmployerStatus } from '@app/common/database/entities/schema.enum';
 import { AdminRole } from '@app/common/shared/enums/roles.enum';
 import { CurrentUser, type CurrentUserPayload } from '@app/common/shared';
 
@@ -114,6 +114,26 @@ export class AdminController {
     );
   }
 
+  // Activate employer account (requires verification to be APPROVED)
+  @Patch('employers/:id/activate')
+  @RequireAdminRole(AdminRole.OPERATIONS_SUPPORT.role)
+  async activateEmployer(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') employerId: string,
+  ) {
+    return this.adminService.updateEmployerStatus(user.id, employerId, EmployerStatus.ACTIVE);
+  }
+
+  // Deactivate employer account
+  @Patch('employers/:id/deactivate')
+  @RequireAdminRole(AdminRole.OPERATIONS_SUPPORT.role)
+  async deactivateEmployer(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') employerId: string,
+  ) {
+    return this.adminService.updateEmployerStatus(user.id, employerId, EmployerStatus.INACTIVE);
+  }
+
   // Suspend employer account (Operations & Support handles user management)
   @Patch('employers/:id/suspend')
   @RequireAdminRole(AdminRole.OPERATIONS_SUPPORT.role)
@@ -122,17 +142,17 @@ export class AdminController {
     @Param('id') employerId: string,
     @Body('reason') reason?: string,
   ) {
-    return this.adminService.suspendEmployer(user.id, employerId, reason);
+    return this.adminService.updateEmployerStatus(user.id, employerId, EmployerStatus.SUSPENDED, reason);
   }
 
-  // Unsuspend employer account
+  // Unsuspend employer account (sets back to INACTIVE)
   @Patch('employers/:id/unsuspend')
   @RequireAdminRole(AdminRole.OPERATIONS_SUPPORT.role)
   async unsuspendEmployer(
     @CurrentUser() user: CurrentUserPayload,
     @Param('id') employerId: string,
   ) {
-    return this.adminService.unsuspendEmployer(user.id, employerId);
+    return this.adminService.updateEmployerStatus(user.id, employerId, EmployerStatus.INACTIVE);
   }
 
   // Suspend jobseeker account (Operations & Support handles user management)

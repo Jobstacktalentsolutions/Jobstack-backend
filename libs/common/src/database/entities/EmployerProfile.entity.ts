@@ -12,7 +12,7 @@ import {
 import { EmployerAuth } from './EmployerAuth.entity';
 import { EmployerVerification } from './EmployerVerification.entity';
 import { Document } from './Document.entity';
-import { EmployerType } from './schema.enum';
+import { EmployerType, EmployerStatus } from './schema.enum';
 import { Job } from './Job.entity';
 import { Employee } from './Employee.entity';
 
@@ -55,6 +55,16 @@ export class EmployerProfile {
 
   @Column({ type: 'enum', enum: EmployerType, nullable: true })
   type?: EmployerType;
+
+  @Column({
+    type: 'enum',
+    enum: EmployerStatus,
+    default: EmployerStatus.INACTIVE,
+  })
+  status: EmployerStatus;
+
+  @Column({ nullable: true })
+  suspensionReason?: string;
 
   @OneToOne(() => EmployerAuth, (auth) => auth.profile)
   @JoinColumn({ name: 'id' })

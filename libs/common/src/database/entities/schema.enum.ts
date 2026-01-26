@@ -69,6 +69,12 @@ export enum EmployerType {
   ORGANIZATION = 'Organization',
 }
 
+export enum EmployerStatus {
+  ACTIVE = 'ACTIVE',
+  INACTIVE = 'INACTIVE',
+  SUSPENDED = 'SUSPENDED',
+}
+
 // Notification related enums
 export enum NotificationStatus {
   PENDING = 'pending',

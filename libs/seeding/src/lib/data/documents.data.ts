@@ -2,6 +2,11 @@ import { DocumentType } from '@app/common/database/entities/schema.enum';
 import { CONSTANT_IDS } from './constant.data';
 import { StorageProviders } from '@app/common/storage/config/storage.config';
 
+/**
+ * @deprecated This data file is no longer used directly.
+ * Documents are now uploaded from temp/docs directory via DocumentFactory.
+ * Kept for reference only.
+ */
 export const DOCUMENTS_DATA = [
   {
     id: CONSTANT_IDS.DOCUMENTS[0],
@@ -14,7 +19,7 @@ export const DOCUMENTS_DATA = [
     type: DocumentType.OTHER,
     description: 'CAC registration certificate',
     bucketType: 'private' as const,
-    provider: StorageProviders.IDRIVE,
+    provider: StorageProviders.IDRIVE, // Note: Uses S3 env vars despite enum name
     isActive: true,
   },
   {
@@ -28,7 +33,7 @@ export const DOCUMENTS_DATA = [
     type: DocumentType.OTHER,
     description: 'Tax identification certificate',
     bucketType: 'private' as const,
-    provider: StorageProviders.IDRIVE,
+    provider: StorageProviders.IDRIVE, // Note: Uses S3 env vars despite enum name
     isActive: true,
   },
   {
@@ -42,7 +47,7 @@ export const DOCUMENTS_DATA = [
     type: DocumentType.OTHER,
     description: 'CAC certificate for Digital Pulse',
     bucketType: 'private' as const,
-    provider: StorageProviders.IDRIVE,
+    provider: StorageProviders.IDRIVE, // Note: Uses S3 env vars despite enum name
     isActive: true,
   },
   {
@@ -56,7 +61,7 @@ export const DOCUMENTS_DATA = [
     type: DocumentType.OTHER,
     description: 'Proof of address',
     bucketType: 'private' as const,
-    provider: StorageProviders.IDRIVE,
+    provider: StorageProviders.IDRIVE, // Note: Uses S3 env vars despite enum name
     isActive: true,
   },
   {
@@ -70,7 +75,7 @@ export const DOCUMENTS_DATA = [
     type: DocumentType.OTHER,
     description: 'NorthStar CAC certificate',
     bucketType: 'private' as const,
-    provider: StorageProviders.IDRIVE,
+    provider: StorageProviders.IDRIVE, // Note: Uses S3 env vars despite enum name
     isActive: true,
   },
   {
@@ -84,7 +89,7 @@ export const DOCUMENTS_DATA = [
     type: DocumentType.OTHER,
     description: 'Office lease agreement',
     bucketType: 'private' as const,
-    provider: StorageProviders.IDRIVE,
+    provider: StorageProviders.IDRIVE, // Note: Uses S3 env vars despite enum name
     isActive: true,
   },
   {
@@ -98,7 +103,7 @@ export const DOCUMENTS_DATA = [
     type: DocumentType.OTHER,
     description: 'FinTrust CAC certificate',
     bucketType: 'private' as const,
-    provider: StorageProviders.IDRIVE,
+    provider: StorageProviders.IDRIVE, // Note: Uses S3 env vars despite enum name
     isActive: true,
   },
   {
@@ -112,7 +117,7 @@ export const DOCUMENTS_DATA = [
     type: DocumentType.OTHER,
     description: 'FinTrust tax certificate',
     bucketType: 'private' as const,
-    provider: StorageProviders.IDRIVE,
+    provider: StorageProviders.IDRIVE, // Note: Uses S3 env vars despite enum name
     isActive: true,
   },
   {
@@ -126,7 +131,7 @@ export const DOCUMENTS_DATA = [
     type: DocumentType.OTHER,
     description: 'GreenAgro CAC certificate',
     bucketType: 'private' as const,
-    provider: StorageProviders.IDRIVE,
+    provider: StorageProviders.IDRIVE, // Note: Uses S3 env vars despite enum name
     isActive: true,
   },
   {
@@ -140,7 +145,7 @@ export const DOCUMENTS_DATA = [
     type: DocumentType.OTHER,
     description: 'GreenAgro utility bill',
     bucketType: 'private' as const,
-    provider: StorageProviders.IDRIVE,
+    provider: StorageProviders.IDRIVE, // Note: Uses S3 env vars despite enum name
     isActive: true,
   },
   {
@@ -154,7 +159,7 @@ export const DOCUMENTS_DATA = [
     type: DocumentType.OTHER,
     description: 'HealthLink CAC certificate',
     bucketType: 'private' as const,
-    provider: StorageProviders.IDRIVE,
+    provider: StorageProviders.IDRIVE, // Note: Uses S3 env vars despite enum name
     isActive: true,
   },
   {
@@ -168,7 +173,7 @@ export const DOCUMENTS_DATA = [
     type: DocumentType.OTHER,
     description: 'HealthLink proof of address',
     bucketType: 'private' as const,
-    provider: StorageProviders.IDRIVE,
+    provider: StorageProviders.IDRIVE, // Note: Uses S3 env vars despite enum name
     isActive: true,
   },
   {
@@ -182,7 +187,7 @@ export const DOCUMENTS_DATA = [
     type: DocumentType.OTHER,
     description: 'TechBridge CAC certificate',
     bucketType: 'private' as const,
-    provider: StorageProviders.IDRIVE,
+    provider: StorageProviders.IDRIVE, // Note: Uses S3 env vars despite enum name
     isActive: true,
   },
   {
@@ -196,7 +201,7 @@ export const DOCUMENTS_DATA = [
     type: DocumentType.OTHER,
     description: 'TechBridge tax certificate',
     bucketType: 'private' as const,
-    provider: StorageProviders.IDRIVE,
+    provider: StorageProviders.IDRIVE, // Note: Uses S3 env vars despite enum name
     isActive: true,
   },
   {
@@ -210,7 +215,7 @@ export const DOCUMENTS_DATA = [
     type: DocumentType.OTHER,
     description: 'MarketVerse CAC certificate',
     bucketType: 'private' as const,
-    provider: StorageProviders.IDRIVE,
+    provider: StorageProviders.IDRIVE, // Note: Uses S3 env vars despite enum name
     isActive: true,
   },
   {
@@ -224,7 +229,7 @@ export const DOCUMENTS_DATA = [
     type: DocumentType.OTHER,
     description: 'MarketVerse office utility bill',
     bucketType: 'private' as const,
-    provider: StorageProviders.IDRIVE,
+    provider: StorageProviders.IDRIVE, // Note: Uses S3 env vars despite enum name
     isActive: true,
   },
   {
@@ -238,7 +243,7 @@ export const DOCUMENTS_DATA = [
     type: DocumentType.OTHER,
     description: 'Creative Hub CAC certificate',
     bucketType: 'private' as const,
-    provider: StorageProviders.IDRIVE,
+    provider: StorageProviders.IDRIVE, // Note: Uses S3 env vars despite enum name
     isActive: true,
   },
   {
@@ -252,7 +257,7 @@ export const DOCUMENTS_DATA = [
     type: DocumentType.OTHER,
     description: 'Creative Hub tax certificate',
     bucketType: 'private' as const,
-    provider: StorageProviders.IDRIVE,
+    provider: StorageProviders.IDRIVE, // Note: Uses S3 env vars despite enum name
     isActive: true,
   },
   {
@@ -266,7 +271,7 @@ export const DOCUMENTS_DATA = [
     type: DocumentType.OTHER,
     description: 'LogXpress CAC certificate',
     bucketType: 'private' as const,
-    provider: StorageProviders.IDRIVE,
+    provider: StorageProviders.IDRIVE, // Note: Uses S3 env vars despite enum name
     isActive: true,
   },
   {
@@ -280,7 +285,7 @@ export const DOCUMENTS_DATA = [
     type: DocumentType.OTHER,
     description: 'LogXpress warehouse address proof',
     bucketType: 'private' as const,
-    provider: StorageProviders.IDRIVE,
+    provider: StorageProviders.IDRIVE, // Note: Uses S3 env vars despite enum name
     isActive: true,
   },
   {
@@ -294,7 +299,7 @@ export const DOCUMENTS_DATA = [
     type: DocumentType.OTHER,
     description: 'Memorandum and articles of association',
     bucketType: 'private' as const,
-    provider: StorageProviders.IDRIVE,
+    provider: StorageProviders.IDRIVE, // Note: Uses S3 env vars despite enum name
     isActive: true,
   },
   {
@@ -308,7 +313,7 @@ export const DOCUMENTS_DATA = [
     type: DocumentType.OTHER,
     description: 'Home Support address verification',
     bucketType: 'private' as const,
-    provider: StorageProviders.IDRIVE,
+    provider: StorageProviders.IDRIVE, // Note: Uses S3 env vars despite enum name
     isActive: true,
   },
   {
@@ -322,7 +327,7 @@ export const DOCUMENTS_DATA = [
     type: DocumentType.OTHER,
     description: 'Sahel Security CAC certificate',
     bucketType: 'private' as const,
-    provider: StorageProviders.IDRIVE,
+    provider: StorageProviders.IDRIVE, // Note: Uses S3 env vars despite enum name
     isActive: true,
   },
   {
@@ -336,7 +341,7 @@ export const DOCUMENTS_DATA = [
     type: DocumentType.OTHER,
     description: 'Sahel Security tax certificate',
     bucketType: 'private' as const,
-    provider: StorageProviders.IDRIVE,
+    provider: StorageProviders.IDRIVE, // Note: Uses S3 env vars despite enum name
     isActive: true,
   },
 ];

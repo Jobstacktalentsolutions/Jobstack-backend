@@ -17,7 +17,7 @@ import {
   JobSeekerProfile,
 } from '@app/common/database/entities';
 import { VerificationStatus } from '@app/common/shared/enums/employer-docs.enum';
-import { ApprovalStatus } from '@app/common/database/entities/schema.enum';
+import { ApprovalStatus, EmployerStatus } from '@app/common/database/entities/schema.enum';
 import { AdminRole } from '@app/common/shared/enums/roles.enum';
 import * as bcrypt from 'bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
@@ -236,54 +236,95 @@ export class AdminService {
   }
 
   /**
-   * Suspend an employer account
+   * Update employer status (ACTIVE, INACTIVE, SUSPENDED)
    */
-  async suspendEmployer(
+  async updateEmployerStatus(
     adminId: string,
     employerId: string,
+    status: EmployerStatus,
     reason?: string,
-  ): Promise<{ success: boolean; employerId: string }> {
-    const employerAuth = await this.employerAuthRepo.findOne({
+  ): Promise<{ success: boolean; employerId: string; status: EmployerStatus }> {
+    const employerProfile = await this.employerProfileRepo.findOne({
       where: { id: employerId },
-      relations: ['profile'],
+      relations: ['verification', 'auth'],
     });
 
-    if (!employerAuth) {
+    if (!employerProfile) {
       throw new NotFoundException('Employer not found');
     }
 
-    if (employerAuth.suspended) {
-      throw new BadRequestException('Employer is already suspended');
+    // Validate: Can only activate if verification is APPROVED
+    if (status === EmployerStatus.ACTIVE) {
+      if (!employerProfile.verification || employerProfile.verification.status !== VerificationStatus.APPROVED) {
+        throw new BadRequestException(
+          'Cannot activate employer: Verification must be APPROVED first'
+        );
+      }
     }
 
-    employerAuth.suspended = true;
-    employerAuth.suspendedAt = new Date();
-    employerAuth.suspensionReason = reason || null;
+    // Update status
+    employerProfile.status = status;
+    if (status === EmployerStatus.SUSPENDED) {
+      employerProfile.suspensionReason = reason || null;
+    } else {
+      employerProfile.suspensionReason = null;
+    }
 
-    await this.employerAuthRepo.save(employerAuth);
+    await this.employerProfileRepo.save(employerProfile);
 
     // Send notification email
-    if (employerAuth.profile) {
+    const email = employerProfile.auth?.email || employerProfile.email;
+    if (email) {
+      let subject = '';
+      let message = '';
+      
+      switch (status) {
+        case EmployerStatus.ACTIVE:
+          subject = 'Account Activated';
+          message = 'Your account has been activated. You can now post jobs and manage applications.';
+          break;
+        case EmployerStatus.INACTIVE:
+          subject = 'Account Deactivated';
+          message = 'Your account has been deactivated. Please contact support if you have questions.';
+          break;
+        case EmployerStatus.SUSPENDED:
+          subject = 'Account Suspended';
+          message = reason
+            ? `Your account has been suspended. Reason: ${reason}`
+            : 'Your account has been suspended. Please contact support for assistance.';
+          break;
+      }
+
       await this.notificationService.sendEmail({
-        to: employerAuth.email,
-        subject: 'Account Suspension Notice',
+        to: email,
+        subject,
         template: 'general-notification',
         context: {
-          firstName: employerAuth.profile.firstName || 'Employer',
-          message: reason
-            ? `Your account has been suspended. Reason: ${reason}`
-            : 'Your account has been suspended. Please contact support for assistance.',
+          firstName: employerProfile.firstName || 'Employer',
+          message,
           actionText: 'Contact Support',
           actionUrl: process.env.SUPPORT_URL || 'https://jobstack.ng/support',
         },
       });
     }
 
+    return { success: true, employerId, status };
+  }
+
+  /**
+   * Suspend an employer account (deprecated - use updateEmployerStatus instead)
+   */
+  async suspendEmployer(
+    adminId: string,
+    employerId: string,
+    reason?: string,
+  ): Promise<{ success: boolean; employerId: string }> {
+    await this.updateEmployerStatus(adminId, employerId, EmployerStatus.SUSPENDED, reason);
     return { success: true, employerId };
   }
 
   /**
-   * Unsuspend an employer account
+   * Unsuspend an employer account (deprecated - use updateEmployerStatus instead)
    */
   async unsuspendEmployer(
     adminId: string,

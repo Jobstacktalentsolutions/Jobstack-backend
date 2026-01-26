@@ -20,17 +20,14 @@ export class IDriveProvider implements IStorageProvider {
   private region: string;
 
   constructor(private readonly configService: ConfigService) {
-    this.endpoint = this.configService.get<string>(
-      ENV.IDRIVE_ENDPOINT,
-    ) as string;
+    this.endpoint = this.configService.get<string>(ENV.S3_ENDPOINT) as string;
     this.region =
-      (this.configService.get<string>(ENV.IDRIVE_REGION) as string) ||
-      'us-east-1';
+      (this.configService.get<string>(ENV.S3_REGION) as string) || 'auto';
     const accessKeyId = this.configService.get<string>(
-      ENV.IDRIVE_ACCESS_KEY_ID,
+      ENV.S3_ACCESS_KEY_ID,
     ) as string;
     const secretAccessKey = this.configService.get<string>(
-      ENV.IDRIVE_SECRET_ACCESS_KEY,
+      ENV.S3_SECRET_ACCESS_KEY,
     ) as string;
 
     // Ensure endpoint has proper protocol
@@ -144,7 +141,7 @@ export class IDriveProvider implements IStorageProvider {
 
   getPublicFileUrl(fileKey: string, bucket: string): string {
     if (!this.endpoint) {
-      throw new Error('IDrive endpoint is not configured');
+      throw new Error('S3 endpoint is not configured');
     }
     if (!bucket) {
       throw new Error('Bucket name is required');
