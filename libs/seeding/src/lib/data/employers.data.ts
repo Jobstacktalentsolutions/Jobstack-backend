@@ -22,6 +22,11 @@ export const EMPLOYERS_DATA = [
     verification: {
       companyName: 'Lagos Builds Ltd',
       companyAddress: '12 Admiralty Way, Lekki, Lagos',
+      companyWebsite: 'https://lagosbuilds.com',
+      companyDescription: 'Leading construction and real estate development company in Lagos, specializing in residential and commercial projects.',
+      companySize: '50-200',
+      city: 'Lagos',
+      state: 'Lagos',
       status: VerificationStatus.APPROVED,
       documents: [
         {
@@ -53,6 +58,11 @@ export const EMPLOYERS_DATA = [
     verification: {
       companyName: 'Digital Pulse Nigeria',
       companyAddress: '3 Saka Tinubu, Victoria Island, Lagos',
+      companyWebsite: 'https://digitalpulse.ng',
+      companyDescription: 'Digital marketing and web development agency serving SMEs across Nigeria.',
+      companySize: '10-50',
+      city: 'Lagos',
+      state: 'Lagos',
       status: VerificationStatus.APPROVED,
       documents: [
         {
@@ -84,6 +94,11 @@ export const EMPLOYERS_DATA = [
     verification: {
       companyName: 'NorthStar Ventures',
       companyAddress: '22 Gana Street, Maitama, Abuja',
+      companyWebsite: 'https://northstar.com',
+      companyDescription: 'Investment and venture capital firm focused on tech startups and innovative businesses in Nigeria.',
+      companySize: '20-100',
+      city: 'Abuja',
+      state: 'FCT',
       status: VerificationStatus.APPROVED,
       documents: [
         {
@@ -115,6 +130,11 @@ export const EMPLOYERS_DATA = [
     verification: {
       companyName: 'FinTrust Capital',
       companyAddress: '7 Ozumba Mbadiwe, Victoria Island, Lagos',
+      companyWebsite: 'https://fintrust.com',
+      companyDescription: 'Financial services and investment management company providing wealth management and advisory services.',
+      companySize: '100-500',
+      city: 'Lagos',
+      state: 'Lagos',
       status: VerificationStatus.APPROVED,
       documents: [
         {
@@ -177,6 +197,11 @@ export const EMPLOYERS_DATA = [
     verification: {
       companyName: 'HealthLink Clinics',
       companyAddress: '18 Herbert Macaulay Way, Yaba, Lagos',
+      companyWebsite: 'https://healthlink.ng',
+      companyDescription: 'Healthcare provider network offering primary care, specialist consultations, and diagnostic services.',
+      companySize: '50-200',
+      city: 'Lagos',
+      state: 'Lagos',
       status: VerificationStatus.APPROVED,
       documents: [
         {
@@ -208,6 +233,11 @@ export const EMPLOYERS_DATA = [
     verification: {
       companyName: 'TechBridge Africa',
       companyAddress: '15 Admiralty Road, Lekki Phase 1, Lagos',
+      companyWebsite: 'https://techbridge.africa',
+      companyDescription: 'Technology consulting and software development firm building solutions for African businesses.',
+      companySize: '20-100',
+      city: 'Lagos',
+      state: 'Lagos',
       status: VerificationStatus.APPROVED,
       documents: [
         {
@@ -270,6 +300,11 @@ export const EMPLOYERS_DATA = [
     verification: {
       companyName: 'Creative Hub Studios',
       companyAddress: '14 Tafawa Balewa Way, Abuja',
+      companyWebsite: 'https://creativehub.ng',
+      companyDescription: 'Creative agency specializing in branding, graphic design, and multimedia production.',
+      companySize: '10-50',
+      city: 'Abuja',
+      state: 'FCT',
       status: VerificationStatus.APPROVED,
       documents: [
         {
@@ -301,6 +336,11 @@ export const EMPLOYERS_DATA = [
     verification: {
       companyName: 'LogXpress Logistics',
       companyAddress: '88 Kaduna Road, Kano',
+      companyWebsite: 'https://logxpress.ng',
+      companyDescription: 'Logistics and courier services provider offering nationwide delivery solutions.',
+      companySize: '20-100',
+      city: 'Kano',
+      state: 'Kano',
       status: VerificationStatus.APPROVED,
       documents: [
         {
@@ -332,6 +372,9 @@ export const EMPLOYERS_DATA = [
     verification: {
       companyName: 'Home Support Services',
       companyAddress: '6 Opebi Road, Ikeja, Lagos',
+      companyDescription: 'Individual service provider offering home maintenance, cleaning, and support services.',
+      city: 'Lagos',
+      state: 'Lagos',
       status: VerificationStatus.APPROVED,
       documents: [
         {
@@ -362,6 +405,11 @@ export const EMPLOYERS_DATA = [
     verification: {
       companyName: 'Sahel Security Group',
       companyAddress: '3 Ahmadu Bello Way, Kaduna',
+      companyWebsite: 'https://sahelsecurity.com',
+      companyDescription: 'Security services provider offering manned guarding, surveillance, and security consulting.',
+      companySize: '100-500',
+      city: 'Kaduna',
+      state: 'Kaduna',
       status: VerificationStatus.APPROVED,
       documents: [
         {

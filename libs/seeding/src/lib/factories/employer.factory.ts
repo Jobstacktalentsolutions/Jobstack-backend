@@ -89,6 +89,11 @@ export class EmployerFactory extends BaseFactory<EmployerAuth> {
         employerId: auth.id,
         companyName: verification.companyName,
         companyAddress: verification.companyAddress,
+        companyWebsite: verification.companyWebsite,
+        companyDescription: verification.companyDescription,
+        companySize: verification.companySize,
+        city: verification.city,
+        state: verification.state,
         status: verification.status,
       };
 

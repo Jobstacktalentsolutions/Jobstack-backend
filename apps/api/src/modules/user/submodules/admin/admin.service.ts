@@ -244,7 +244,7 @@ export class AdminService {
     status: EmployerStatus,
     reason?: string,
   ): Promise<{ success: boolean; employerId: string; status: EmployerStatus }> {
-    const employerProfile = await this.employerProfileRepo.findOne({
+    const employerProfile = await this.profileRepo.findOne({
       where: { id: employerId },
       relations: ['verification', 'auth'],
     });
@@ -270,7 +270,7 @@ export class AdminService {
       employerProfile.suspensionReason = null;
     }
 
-    await this.employerProfileRepo.save(employerProfile);
+    await this.profileRepo.save(employerProfile);
 
     // Send notification email
     const email = employerProfile.auth?.email || employerProfile.email;

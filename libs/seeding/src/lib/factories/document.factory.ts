@@ -83,7 +83,7 @@ export class DocumentFactory extends BaseFactory<Document> {
     }
   }
 
-  // Upload a file to S3 and return document data
+  // Upload a file to S3 and return document data (skips if already exists)
   private async uploadFileToS3(
     file: { name: string; buffer: Buffer },
     documentId: string,
@@ -91,6 +91,39 @@ export class DocumentFactory extends BaseFactory<Document> {
     description: string,
   ): Promise<Partial<Document>> {
     try {
+      // Determine bucket (use private for employer verification documents)
+      const bucket =
+        this.configService.get<string>(ENV.S3_PRIVATE_BUCKET) || '';
+      const fileKey = `seed/documents/${documentId}.pdf`;
+
+      // Check if file already exists in bucket
+      const fileExists = await this.storageProvider.fileExists(fileKey, bucket);
+      
+      if (fileExists) {
+        console.log(`⏭️  File already exists in bucket: ${fileKey}, skipping upload`);
+        
+        // Generate signed URL for existing file
+        const url = await this.storageProvider.getSignedFileUrl(
+          fileKey,
+          bucket,
+          60 * 60 * 24 * 7, // 7 days expiry
+        );
+
+        return {
+          fileKey,
+          fileName: `${documentId}.pdf`,
+          originalName: file.name,
+          mimeType: 'application/pdf',
+          size: file.buffer.length, // Use actual file size from buffer
+          url,
+          type: DocumentType.OTHER,
+          description,
+          bucketType: 'private' as const,
+          provider: StorageProviders.IDRIVE,
+          isActive: true,
+        };
+      }
+
       // Create MulterFile-like object
       const multerFile = {
         buffer: file.buffer,
@@ -100,10 +133,6 @@ export class DocumentFactory extends BaseFactory<Document> {
         fieldname: 'document',
         encoding: '7bit',
       } as any;
-
-      // Determine bucket (use private for employer verification documents)
-      const bucket =
-        this.configService.get<string>(ENV.S3_PRIVATE_BUCKET) || '';
 
       // Upload file
       const uploadResult = await this.storageProvider.uploadFile(multerFile, {

@@ -3,6 +3,7 @@ import {
   PutObjectCommand,
   GetObjectCommand,
   DeleteObjectCommand,
+  HeadObjectCommand,
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { ConfigService } from '@nestjs/config';
@@ -157,5 +158,20 @@ export class IDriveProvider implements IStorageProvider {
   async deleteFile(fileKey: string, bucket: string): Promise<void> {
     const del = new DeleteObjectCommand({ Bucket: bucket, Key: fileKey });
     await this.s3.send(del);
+  }
+
+  // Check if file exists in bucket
+  async fileExists(fileKey: string, bucket: string): Promise<boolean> {
+    try {
+      const head = new HeadObjectCommand({ Bucket: bucket, Key: fileKey });
+      await this.s3.send(head);
+      return true;
+    } catch (error) {
+      if (error.name === 'NotFound' || error.$metadata?.httpStatusCode === 404) {
+        return false;
+      }
+      // Re-throw other errors
+      throw error;
+    }
   }
 }
