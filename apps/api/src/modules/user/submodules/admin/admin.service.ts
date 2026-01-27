@@ -17,7 +17,10 @@ import {
   JobSeekerProfile,
 } from '@app/common/database/entities';
 import { VerificationStatus } from '@app/common/shared/enums/employer-docs.enum';
-import { ApprovalStatus, EmployerStatus } from '@app/common/database/entities/schema.enum';
+import {
+  ApprovalStatus,
+  EmployerStatus,
+} from '@app/common/database/entities/schema.enum';
 import { AdminRole } from '@app/common/shared/enums/roles.enum';
 import * as bcrypt from 'bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
@@ -255,9 +258,12 @@ export class AdminService {
 
     // Validate: Can only activate if verification is APPROVED
     if (status === EmployerStatus.ACTIVE) {
-      if (!employerProfile.verification || employerProfile.verification.status !== VerificationStatus.APPROVED) {
+      if (
+        !employerProfile.verification ||
+        employerProfile.verification.status !== VerificationStatus.APPROVED
+      ) {
         throw new BadRequestException(
-          'Cannot activate employer: Verification must be APPROVED first'
+          'Cannot activate employer: Verification must be APPROVED first',
         );
       }
     }
@@ -265,9 +271,9 @@ export class AdminService {
     // Update status
     employerProfile.status = status;
     if (status === EmployerStatus.SUSPENDED) {
-      employerProfile.suspensionReason = reason || null;
+      employerProfile.auth.suspensionReason = reason || null;
     } else {
-      employerProfile.suspensionReason = null;
+      employerProfile.auth.suspensionReason = null;
     }
 
     await this.profileRepo.save(employerProfile);
@@ -277,15 +283,17 @@ export class AdminService {
     if (email) {
       let subject = '';
       let message = '';
-      
+
       switch (status) {
         case EmployerStatus.ACTIVE:
           subject = 'Account Activated';
-          message = 'Your account has been activated. You can now post jobs and manage applications.';
+          message =
+            'Your account has been activated. You can now post jobs and manage applications.';
           break;
         case EmployerStatus.INACTIVE:
           subject = 'Account Deactivated';
-          message = 'Your account has been deactivated. Please contact support if you have questions.';
+          message =
+            'Your account has been deactivated. Please contact support if you have questions.';
           break;
         case EmployerStatus.SUSPENDED:
           subject = 'Account Suspended';
@@ -319,7 +327,12 @@ export class AdminService {
     employerId: string,
     reason?: string,
   ): Promise<{ success: boolean; employerId: string }> {
-    await this.updateEmployerStatus(adminId, employerId, EmployerStatus.SUSPENDED, reason);
+    await this.updateEmployerStatus(
+      adminId,
+      employerId,
+      EmployerStatus.SUSPENDED,
+      reason,
+    );
     return { success: true, employerId };
   }
 

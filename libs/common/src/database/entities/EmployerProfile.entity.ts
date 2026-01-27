@@ -63,9 +63,6 @@ export class EmployerProfile {
   })
   status: EmployerStatus;
 
-  @Column({ nullable: true })
-  suspensionReason?: string;
-
   @OneToOne(() => EmployerAuth, (auth) => auth.profile)
   @JoinColumn({ name: 'id' })
   auth: EmployerAuth;
