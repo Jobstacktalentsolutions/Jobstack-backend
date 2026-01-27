@@ -17,6 +17,8 @@ const CORS_OPTIONS: CorsOptions = {
     'https://admin.jobstack.org',
     'https://www.admin.jobstack.org',
     'https://www.jobstack.org',
+    'https://employer.jobstack.org',
+    'https://www.employer.jobstack.org',
     'https://jobstackwebsite-frontend.vercel.app',
   ],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
