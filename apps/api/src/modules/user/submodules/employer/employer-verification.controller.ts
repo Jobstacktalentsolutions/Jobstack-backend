@@ -10,6 +10,8 @@ import {
   Body,
   Param,
   BadRequestException,
+  ValidationPipe,
+  UsePipes,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { EmployerJwtGuard, AdminJwtGuard } from 'apps/api/src/guards';
@@ -157,12 +159,12 @@ export class AdminEmployerVerificationController {
   // Mark document as verified/unverified
   @Put('documents/:id/verify')
   async updateDocumentVerification(
-    @Param() params: UuidParamDto,
+    @Param('id') documentId: string,
     @CurrentUser() admin: CurrentUserPayload,
     @Body() dto: UpdateDocumentVerificationDto,
   ) {
     return this.verificationService.adminUpdateDocumentVerification(
-      params.id,
+      documentId,
       dto.verified,
       admin.id,
     );
