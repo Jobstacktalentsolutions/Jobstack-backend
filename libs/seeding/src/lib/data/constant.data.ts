@@ -145,6 +145,12 @@ export const CONSTANT_IDS = {
     'd5e6f7a8-9b0c-1d2e-3f4a-5b6c7d8e9f0a',
     'e7f8a9b0-c1d2-e3f4-a5b6-c7d8e9f0a1b2',
     'f9a0b1c2-d3e4-f5a6-b7c8-d9e0f1a2b3c4',
+    'a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d',
+    'b2c3d4e5-6f7a-8b9c-0d1e-2f3a4b5c6d7e',
+    'c3d4e5f6-7a8b-9c0d-1e2f-3a4b5c6d7e8f',
+    'd4e5f6a7-8b9c-0d1e-2f3a-4b5c6d7e8f9a',
+    'e5f6a7b8-9c0d-1e2f-3a4b-5c6d7e8f9a0b',
+    'f6a7b8c9-0d1e-2f3a-4b5c-6d7e8f9a0b1c',
   ],
   ROLES: [
     '11111111-2222-3333-4444-555555555555',

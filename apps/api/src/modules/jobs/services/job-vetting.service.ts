@@ -298,15 +298,20 @@ export class JobVettingService {
 
     // State match (if cities don't match or aren't available)
     if (job.state && profile.state) {
-      if (job.state.toLowerCase().trim() === profile.state.toLowerCase().trim()) {
+      if (
+        job.state.toLowerCase().trim() === profile.state.toLowerCase().trim()
+      ) {
         score += 50;
-        
+
         // Partial city match bonus
         if (job.city && profile.city) {
           const jobCityLower = job.city.toLowerCase();
           const profileCityLower = profile.city.toLowerCase();
           // Check if cities are related (contain each other)
-          if (jobCityLower.includes(profileCityLower) || profileCityLower.includes(jobCityLower)) {
+          if (
+            jobCityLower.includes(profileCityLower) ||
+            profileCityLower.includes(jobCityLower)
+          ) {
             score += 25;
           }
         }
@@ -316,10 +321,13 @@ export class JobVettingService {
     // Check preferred location as fallback
     if (score === 0 && profile.preferredLocation) {
       const preferredLower = profile.preferredLocation.toLowerCase();
-      
+
       if (job.city && preferredLower.includes(job.city.toLowerCase())) {
         score += 35;
-      } else if (job.state && preferredLower.includes(job.state.toLowerCase())) {
+      } else if (
+        job.state &&
+        preferredLower.includes(job.state.toLowerCase())
+      ) {
         score += 25;
       }
     }
@@ -328,10 +336,12 @@ export class JobVettingService {
     if (score < 100 && job.address && profile.address) {
       const jobAddressLower = job.address.toLowerCase();
       const profileAddressLower = profile.address.toLowerCase();
-      
+
       // Look for common locality markers in addresses
-      if (jobAddressLower.includes(profileAddressLower.split(',')[0]) || 
-          profileAddressLower.includes(jobAddressLower.split(',')[0])) {
+      if (
+        jobAddressLower.includes(profileAddressLower.split(',')[0]) ||
+        profileAddressLower.includes(jobAddressLower.split(',')[0])
+      ) {
         score += 15;
       }
     }

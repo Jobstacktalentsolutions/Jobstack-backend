@@ -7,6 +7,7 @@ export enum EmailTemplateType {
   NEW_JOB_POSTED = 'new-job-posted',
   INTERVIEW_SCHEDULED = 'interview-scheduled',
   GENERAL_NOTIFICATION = 'general-notification',
+  VETTING_COMPLETE = 'vetting-complete',
 }
 
 export const EMAIL_TYPE_CONFIG = {
@@ -41,5 +42,9 @@ export const EMAIL_TYPE_CONFIG = {
   [EmailTemplateType.GENERAL_NOTIFICATION]: {
     subject: 'Notification from JobStack',
     template: 'general-notification.ejs',
+  },
+  [EmailTemplateType.VETTING_COMPLETE]: {
+    subject: 'Vetting completed',
+    template: 'vetting-complete.ejs',
   },
 } as const;

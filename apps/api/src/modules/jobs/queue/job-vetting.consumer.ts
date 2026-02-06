@@ -36,7 +36,9 @@ export class JobVettingConsumer {
     const { jobId, triggeredBy } = job.data;
     const bullJobId = job.id;
 
-    this.logger.log(`Processing vetting for job ${jobId} (Bull job ${bullJobId}), triggered by: ${triggeredBy}`);
+    this.logger.log(
+      `Processing vetting for job ${jobId} (Bull job ${bullJobId}), triggered by: ${triggeredBy}`,
+    );
 
     try {
       // Check if job exists and is published
@@ -50,7 +52,9 @@ export class JobVettingConsumer {
       }
 
       if (jobEntity.status !== JobStatus.PUBLISHED) {
-        this.logger.warn(`Job ${jobId} is not published (status: ${jobEntity.status}), skipping vetting`);
+        this.logger.warn(
+          `Job ${jobId} is not published (status: ${jobEntity.status}), skipping vetting`,
+        );
         return {
           success: false,
           reason: 'Job not published',
@@ -61,9 +65,13 @@ export class JobVettingConsumer {
 
       // Check if job already has vetting completed recently
       if (jobEntity.vettingCompletedAt) {
-        const hoursSinceVetting = (Date.now() - jobEntity.vettingCompletedAt.getTime()) / (1000 * 60 * 60);
+        const hoursSinceVetting =
+          (Date.now() - jobEntity.vettingCompletedAt.getTime()) /
+          (1000 * 60 * 60);
         if (hoursSinceVetting < 1 && triggeredBy !== 'manual') {
-          this.logger.debug(`Job ${jobId} was vetted ${hoursSinceVetting.toFixed(1)} hours ago, skipping`);
+          this.logger.debug(
+            `Job ${jobId} was vetted ${hoursSinceVetting.toFixed(1)} hours ago, skipping`,
+          );
           return {
             success: false,
             reason: 'Recently vetted',
@@ -76,10 +84,23 @@ export class JobVettingConsumer {
       // Perform vetting
       const result = await this.jobVettingService.vetJobApplications(jobId);
 
-      // Send notification to admin
-      await this.jobVettingService.notifyAdminVettingComplete(jobId, result);
+      this.logger.log(
+        `Vetting completed for job ${jobId}: ${result.totalApplicants} applicants, ${result.highlightedCount} highlighted`,
+      );
 
-      this.logger.log(`Vetting completed for job ${jobId}: ${result.totalApplicants} applicants, ${result.highlightedCount} highlighted`);
+      // Try to send notification to admin (don't fail the whole job if this fails)
+      try {
+        await this.jobVettingService.notifyAdminVettingComplete(jobId, result);
+        this.logger.log(
+          `Vetting completion notification sent for job ${jobId}`,
+        );
+      } catch (notificationError) {
+        this.logger.error(
+          `Failed to send vetting completion notification for job ${jobId}`,
+          notificationError.stack,
+        );
+        // Continue with success - the vetting itself was successful
+      }
 
       return {
         success: true,
@@ -89,7 +110,10 @@ export class JobVettingConsumer {
         processedAt: new Date().toISOString(),
       };
     } catch (error) {
-      this.logger.error(`Vetting failed for job ${jobId} (Bull job ${bullJobId})`, error.stack);
+      this.logger.error(
+        `Vetting failed for job ${jobId} (Bull job ${bullJobId})`,
+        error.stack,
+      );
       throw new Error(`Vetting failed for job ${jobId}: ${error.message}`);
     }
   }
@@ -102,7 +126,9 @@ export class JobVettingConsumer {
     const { batchSize = 50, triggeredBy } = job.data;
     const bullJobId = job.id;
 
-    this.logger.log(`Processing all pending vetting jobs (Bull job ${bullJobId}), triggered by: ${triggeredBy}`);
+    this.logger.log(
+      `Processing all pending vetting jobs (Bull job ${bullJobId}), triggered by: ${triggeredBy}`,
+    );
 
     try {
       // Find published jobs that have applications and either:
@@ -115,7 +141,7 @@ export class JobVettingConsumer {
         .andWhere('application.id IS NOT NULL') // Has applications
         .andWhere(
           '(job.vettingCompletedAt IS NULL OR ' +
-          'EXISTS (SELECT 1 FROM job_applications ja WHERE ja.jobId = job.id AND ja.createdAt > job.vettingCompletedAt))'
+            'EXISTS (SELECT 1 FROM job_applications ja WHERE ja.jobId = job.id AND ja.createdAt > job.vettingCompletedAt))',
         )
         .groupBy('job.id')
         .take(batchSize)
@@ -128,20 +154,37 @@ export class JobVettingConsumer {
 
       for (const jobEntity of jobs) {
         try {
-          const result = await this.jobVettingService.vetJobApplications(jobEntity.id);
-          
-          // Send notification to admin
-          await this.jobVettingService.notifyAdminVettingComplete(jobEntity.id, result);
-          
+          const result = await this.jobVettingService.vetJobApplications(
+            jobEntity.id,
+          );
+
+          // Try to send notification to admin (don't fail the job if this fails)
+          try {
+            await this.jobVettingService.notifyAdminVettingComplete(
+              jobEntity.id,
+              result,
+            );
+          } catch (notificationError) {
+            this.logger.error(
+              `Failed to send vetting completion notification for job ${jobEntity.id}`,
+              notificationError.stack,
+            );
+            // Continue - the vetting itself was successful
+          }
+
           processed++;
-          this.logger.debug(`Vetted job ${jobEntity.id}: ${result.totalApplicants} applicants, ${result.highlightedCount} highlighted`);
+          this.logger.debug(
+            `Vetted job ${jobEntity.id}: ${result.totalApplicants} applicants, ${result.highlightedCount} highlighted`,
+          );
         } catch (error) {
           failed++;
           this.logger.error(`Failed to vet job ${jobEntity.id}`, error.stack);
         }
       }
 
-      this.logger.log(`Batch vetting completed: ${processed} processed, ${failed} failed`);
+      this.logger.log(
+        `Batch vetting completed: ${processed} processed, ${failed} failed`,
+      );
 
       return {
         success: true,
@@ -152,7 +195,10 @@ export class JobVettingConsumer {
         processedAt: new Date().toISOString(),
       };
     } catch (error) {
-      this.logger.error(`Batch vetting failed (Bull job ${bullJobId})`, error.stack);
+      this.logger.error(
+        `Batch vetting failed (Bull job ${bullJobId})`,
+        error.stack,
+      );
       throw new Error(`Batch vetting failed: ${error.message}`);
     }
   }
@@ -173,10 +219,14 @@ export class JobVettingConsumer {
    */
   @Process('failed')
   async onFailed(job: Job, error: Error) {
-    this.logger.error(`Vetting job #${job.id} failed permanently`, error.stack, {
-      jobId: job.id,
-      attempts: job.attemptsMade,
-      data: job.data,
-    });
+    this.logger.error(
+      `Vetting job #${job.id} failed permanently`,
+      error.stack,
+      {
+        jobId: job.id,
+        attempts: job.attemptsMade,
+        data: job.data,
+      },
+    );
   }
 }

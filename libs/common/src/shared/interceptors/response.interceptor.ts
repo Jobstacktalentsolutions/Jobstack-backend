@@ -20,7 +20,12 @@ export class GenericResponseInterceptor implements NestInterceptor {
         const response = ctx.getResponse<Response>();
 
         // If already in StandardResponse format, just add requestId
-        if (data && typeof data === 'object' && 'success' in data) {
+        if (
+          data &&
+          typeof data === 'object' &&
+          'success' in data &&
+          'data' in data
+        ) {
           const requestId = response.getHeader('x-request-id') as string;
           return { ...data, requestId };
         }

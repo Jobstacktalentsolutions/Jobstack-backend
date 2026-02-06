@@ -27,9 +27,6 @@ export class JobApplication extends BaseEntity {
   })
   status: JobApplicationStatus;
 
-  @Column({ type: 'text', nullable: true })
-  coverLetter?: string;
-
   @Column({ type: 'decimal', precision: 12, scale: 2, nullable: true })
   expectedSalary?: number;
 

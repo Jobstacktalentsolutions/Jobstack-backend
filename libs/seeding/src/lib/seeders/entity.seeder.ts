@@ -5,9 +5,9 @@ import { AdminFactory } from '../factories/admin.factory';
 import { SkillFactory } from '../factories/skill.factory';
 import { EmployerFactory } from '../factories/employer.factory';
 import { JobseekerFactory } from '../factories/jobseeker.factory';
-
 import { DocumentFactory } from '../factories/document.factory';
 import { JobFactory } from '../factories/job.factory';
+import { JobApplicationFactory } from '../factories/job-application.factory';
 
 /**
  * Entity seeder that handles seeding of different entities
@@ -30,6 +30,10 @@ export class EntitySeeder extends BaseSeeder {
     this.entityFactories.set('skills', new SkillFactory(dataSource));
     this.entityFactories.set('documents', new DocumentFactory(dataSource));
     this.entityFactories.set('jobs', new JobFactory(dataSource));
+    this.entityFactories.set(
+      'job-applications',
+      new JobApplicationFactory(dataSource),
+    );
   }
 
   /**
@@ -68,8 +72,9 @@ export class EntitySeeder extends BaseSeeder {
       'skills',
       'documents',
       'employers',
-      'jobs',
       'jobseekers',
+      'jobs',
+      'job-applications',
     ];
     const orderedEntities = seedingOrder.filter((entity) =>
       entityNames.includes(entity),

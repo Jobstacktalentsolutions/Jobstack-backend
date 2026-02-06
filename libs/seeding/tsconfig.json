@@ -9,8 +9,8 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true
   },
-  "files": [],
-  "include": [],
+  "files": ["src/lib/data/job-applications.data.d.ts"],
+  "include": ["src/lib/data/**/*"],
   "references": [
     {
       "path": "./tsconfig.lib.json"

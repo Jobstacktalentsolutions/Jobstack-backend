@@ -326,6 +326,9 @@ export class JobsService {
         'job.employerId',
         'job.createdAt',
         'job.updatedAt',
+        'job.vettingCompletedAt',
+        'job.vettingCompletedBy',
+        'job.highlightedCandidateCount',
       ])
       .leftJoin('job.skills', 'skill')
       .addSelect(['skill.id', 'skill.name', 'skill.description'])

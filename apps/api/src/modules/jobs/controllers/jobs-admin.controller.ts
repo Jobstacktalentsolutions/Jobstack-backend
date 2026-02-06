@@ -145,33 +145,57 @@ export class JobsAdminController {
       order: { createdAt: 'DESC' },
     });
 
-    // For now, we'll return basic info. In a real implementation, you'd store vetting results
+    // Re-run vetting to get scores (since they're not stored persistently yet)
+    const vettingResult =
+      await this.jobVettingService.vetJobApplications(jobId);
+
     return {
       success: true,
       vettingCompleted: true,
       vettingCompletedAt: job.vettingCompletedAt,
       highlightedCandidateCount: job.highlightedCandidateCount,
-      applications: applications.map((app) => ({
-        id: app.id,
-        status: app.status,
-        createdAt: app.createdAt,
-        jobseekerProfile: {
-          id: app.jobseekerProfile.id,
-          firstName: app.jobseekerProfile.firstName,
-          lastName: app.jobseekerProfile.lastName,
-          email: app.jobseekerProfile.email,
-          yearsOfExperience: app.jobseekerProfile.yearsOfExperience,
-          city: app.jobseekerProfile.city,
-          state: app.jobseekerProfile.state,
-          skills:
-            app.jobseekerProfile.userSkills?.map((us) => ({
-              id: us.skill.id,
-              name: us.skill.name,
-              proficiency: us.proficiency,
-              yearsExperience: us.yearsExperience,
-            })) || [],
-        },
-      })),
+      applications: vettingResult.vettedApplicants.map((vettedApp) => {
+        // Find the corresponding application with properly loaded relations
+        const application = applications.find(
+          (app) => app.id === vettedApp.applicationId,
+        );
+
+        if (!application) {
+          throw new Error(`Application ${vettedApp.applicationId} not found`);
+        }
+
+        return {
+          applicationId: vettedApp.applicationId,
+          jobseekerProfileId: application.jobseekerProfile.id,
+          score: vettedApp.score,
+          isHighlighted: vettedApp.isHighlighted,
+          profileCompleteness: vettedApp.profileCompleteness,
+          proximityScore: vettedApp.proximityScore,
+          experienceScore: vettedApp.experienceScore,
+          skillMatchScore: vettedApp.skillMatchScore,
+          applicationSpeedScore: vettedApp.applicationSpeedScore,
+          isEmployed: vettedApp.isEmployed,
+          status: application.status,
+          createdAt: application.createdAt,
+          jobseekerProfile: {
+            id: application.jobseekerProfile.id,
+            firstName: application.jobseekerProfile.firstName,
+            lastName: application.jobseekerProfile.lastName,
+            email: application.jobseekerProfile.email,
+            yearsOfExperience: application.jobseekerProfile.yearsOfExperience,
+            city: application.jobseekerProfile.city,
+            state: application.jobseekerProfile.state,
+            skills: (application.jobseekerProfile.userSkills || []).map(
+              (us) => ({
+                id: us.skill.id,
+                name: us.skill.name,
+                proficiency: us.proficiency,
+                yearsExperience: us.yearsExperience,
+              }),
+            ),
+          },
+        };
+      }),
     };
   }
 
