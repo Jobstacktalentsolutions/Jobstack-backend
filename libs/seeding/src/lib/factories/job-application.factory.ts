@@ -80,7 +80,9 @@ export class JobApplicationFactory extends BaseFactory<JobApplication> {
       });
 
       // Explicitly cast to unknown before casting to JobApplication
-      const savedApplication = (await this.repository.save(application)) as unknown as JobApplication;
+      const savedApplication = (await this.repository.save(
+        application,
+      )) as unknown as JobApplication;
       return savedApplication;
     }
   }
