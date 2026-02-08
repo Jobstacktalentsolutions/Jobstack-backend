@@ -4,7 +4,7 @@ Implement a financial gating system that masks candidate PII until employers pay
 
 **Key Decisions from Discovery:**
 
-- Flow: SCREENING_COMPLETED → OFFERED → AWAITING_PAYMENT (gate here) → HIRED
+- Flow: SCREENING_COMPLETED → EMPLOYER ACCEPTS CANDIDATE -> APPLICANT ACCEPT OFFER → AWAITING_PAYMENT (gate here) → EMPLOYMENT AGREEMENT(Docs) -> HIRED
 - Commission calculated on `Employee.salaryOffered` × 12 (annual basis)
 - PII unmasked when `Employee.piiUnlocked = true` after payment
 - Contract generation triggered post-payment via webhook event

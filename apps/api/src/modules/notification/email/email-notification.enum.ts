@@ -8,6 +8,7 @@ export enum EmailTemplateType {
   INTERVIEW_SCHEDULED = 'interview-scheduled',
   GENERAL_NOTIFICATION = 'general-notification',
   VETTING_COMPLETE = 'vetting-complete',
+  CANDIDATE_SELECTED_FOR_SCREENING = 'candidate-selected-for-screening',
 }
 
 export const EMAIL_TYPE_CONFIG = {
@@ -46,5 +47,9 @@ export const EMAIL_TYPE_CONFIG = {
   [EmailTemplateType.VETTING_COMPLETE]: {
     subject: 'Vetting completed',
     template: 'vetting-complete.ejs',
+  },
+  [EmailTemplateType.CANDIDATE_SELECTED_FOR_SCREENING]: {
+    subject: 'You have been selected for screening',
+    template: 'candidate-selected-for-screening.ejs',
   },
 } as const;
