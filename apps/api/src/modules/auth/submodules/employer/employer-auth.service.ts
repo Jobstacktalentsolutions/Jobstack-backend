@@ -15,11 +15,13 @@ import { v4 as uuidv4 } from 'uuid';
 import { EmployerAuth } from '@app/common/database/entities/EmployerAuth.entity';
 import { EmployerProfile } from '@app/common/database/entities/EmployerProfile.entity';
 import { EmployerSession } from '@app/common/database/entities/EmployerSession.entity';
+import { EmployerVerification } from '@app/common/database/entities/EmployerVerification.entity';
 import { RedisService } from '@app/common/redis/redis.service';
 import { REDIS_KEYS } from '@app/common/redis/redis.config';
 import { NotificationService } from '../../../notification/notification.service';
 import { EmailTemplateType } from '../../../notification/email/email-notification.enum';
 import { UserRole } from '@app/common/shared/enums/user-roles.enum';
+import { VerificationStatus } from '@app/common/shared/enums/employer-docs.enum';
 import {
   AccessTokenPayload,
   RefreshTokenPayload,
@@ -53,6 +55,8 @@ export class EmployerAuthService {
     private employerProfileRepository: Repository<EmployerProfile>,
     @InjectRepository(EmployerSession)
     private employerSessionRepository: Repository<EmployerSession>,
+    @InjectRepository(EmployerVerification)
+    private employerVerificationRepository: Repository<EmployerVerification>,
     private jwtService: JwtService,
     private redisService: RedisService,
     private notificationService: NotificationService,
@@ -103,6 +107,13 @@ export class EmployerAuthService {
         phoneNumber,
         type,
       });
+      // Create initial verification record with NOT_STARTED status
+      const verification = queryRunner.manager.create(EmployerVerification, {
+        employerId: auth.id,
+        status: VerificationStatus.NOT_STARTED,
+      });
+      await queryRunner.manager.save(verification);
+
       await queryRunner.manager.save(profile);
 
       await queryRunner.commitTransaction();
