@@ -5,8 +5,11 @@
  * This ensures type safety and prevents typos when referencing config keys.
  */
 export enum SystemConfigKey {
-  // Payment Configuration
+  // Employee Activation Payment Configuration
   EMPLOYEE_ACTIVATION_PERCENTAGE = 'EMPLOYEE_ACTIVATION_PERCENTAGE',
+  EMPLOYEE_ACTIVATION_PERCENTAGE_FLOOR = 'EMPLOYEE_ACTIVATION_PERCENTAGE_FLOOR',
+  EMPLOYEE_ACTIVATION_PERCENTAGE_CEILING = 'EMPLOYEE_ACTIVATION_PERCENTAGE_CEILING',
+  EMPLOYEE_ACTIVATION_PERCENTAGE_VAT_RATE = 'EMPLOYEE_ACTIVATION_PERCENTAGE_VAT_RATE',
 
   // Add more configuration keys here as needed
   // Example:

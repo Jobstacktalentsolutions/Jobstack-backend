@@ -9,6 +9,7 @@ import {
   Job,
   JobApplication,
   JobSeekerProfile,
+  Employee,
 } from '@app/common/database/entities';
 import {
   ApplicationQueryDto,
@@ -18,6 +19,8 @@ import {
 import {
   JobApplicationStatus,
   JobStatus,
+  EmployeeStatus,
+  EmploymentArrangement,
 } from '@app/common/database/entities/schema.enum';
 
 @Injectable()
@@ -29,6 +32,8 @@ export class JobApplicationsService {
     private readonly jobRepo: Repository<Job>,
     @InjectRepository(JobSeekerProfile)
     private readonly jobseekerRepo: Repository<JobSeekerProfile>,
+    @InjectRepository(Employee)
+    private readonly employeeRepo: Repository<Employee>,
   ) {}
 
   private readonly relations = ['job', 'jobseekerProfile'];
@@ -173,5 +178,147 @@ export class JobApplicationsService {
       .orderBy('application.createdAt', 'DESC');
     const [items, total] = await qb.getManyAndCount();
     return { items, total, page, limit };
+  }
+
+  // Employer accepts candidate after screening - creates Employee record
+  async employerAcceptCandidate(
+    employerId: string,
+    applicationId: string,
+    offerDetails: {
+      startDate?: Date;
+      notes?: string;
+    },
+  ) {
+    const application = await this.applicationRepo.findOne({
+      where: { id: applicationId },
+      relations: ['job', 'jobseekerProfile'],
+    });
+
+    if (!application || application.job?.employerId !== employerId) {
+      throw new NotFoundException('Application not found');
+    }
+
+    if (application.status !== JobApplicationStatus.SCREENING_COMPLETED) {
+      throw new BadRequestException(
+        'Can only accept candidates after screening is completed',
+      );
+    }
+
+    // Check if Employee record already exists for this application
+    const existingEmployee = await this.employeeRepo.findOne({
+      where: {
+        jobId: application.jobId,
+        jobseekerProfileId: application.jobseekerProfileId,
+      },
+    });
+
+    if (existingEmployee) {
+      throw new BadRequestException(
+        'Employee record already exists for this candidate',
+      );
+    }
+
+    // Validate that job has salary or contractFee defined
+    if (
+      application.job.employmentArrangement ===
+        EmploymentArrangement.PERMANENT_EMPLOYEE &&
+      !application.job.salary
+    ) {
+      throw new BadRequestException(
+        'Job does not have salary defined. Please update the job posting first.',
+      );
+    }
+
+    if (
+      application.job.employmentArrangement ===
+        EmploymentArrangement.CONTRACT &&
+      !application.job.contractFee
+    ) {
+      throw new BadRequestException(
+        'Job does not have contract fee defined. Please update the job posting first.',
+      );
+    }
+
+    // Create Employee record with piiUnlocked = false (gated)
+    // Salary/contractFee comes from the Job, not from the offer details
+    const employee = this.employeeRepo.create({
+      employerId,
+      jobId: application.jobId,
+      jobseekerProfileId: application.jobseekerProfileId,
+      employmentType: application.job.employmentType,
+      employmentArrangement: application.job.employmentArrangement,
+      status: EmployeeStatus.ONBOARDING,
+      salaryOffered:
+        application.job.employmentArrangement ===
+        EmploymentArrangement.PERMANENT_EMPLOYEE
+          ? application.job.salary
+          : undefined,
+      contractFeeOffered:
+        application.job.employmentArrangement === EmploymentArrangement.CONTRACT
+          ? application.job.contractFee
+          : undefined,
+      contractPaymentType:
+        application.job.employmentArrangement === EmploymentArrangement.CONTRACT
+          ? application.job.contractPaymentType
+          : undefined,
+      currency: 'NGN', // Default currency
+      startDate: offerDetails.startDate,
+      notes: offerDetails.notes,
+      piiUnlocked: false, // Gated until payment
+    });
+
+    const savedEmployee = await this.employeeRepo.save(employee);
+
+    // Update application status to EMPLOYER_ACCEPTED
+    application.status = JobApplicationStatus.EMPLOYER_ACCEPTED;
+    application.statusUpdatedAt = new Date();
+    await this.applicationRepo.save(application);
+
+    return {
+      application: await this.getApplicationById(applicationId),
+      employee: savedEmployee,
+    };
+  }
+
+  // Applicant accepts the offer from employer
+  async applicantAcceptOffer(
+    jobseekerId: string,
+    applicationId: string,
+    acceptance: {
+      accepted: boolean;
+      note?: string;
+    },
+  ) {
+    const application = await this.applicationRepo.findOne({
+      where: { id: applicationId, jobseekerProfileId: jobseekerId },
+      relations: ['job'],
+    });
+
+    if (!application) {
+      throw new NotFoundException('Application not found');
+    }
+
+    if (application.status !== JobApplicationStatus.EMPLOYER_ACCEPTED) {
+      throw new BadRequestException(
+        'Can only accept/reject offers after employer has accepted you',
+      );
+    }
+
+    if (acceptance.accepted) {
+      // Applicant accepts - move to APPLICANT_ACCEPTED
+      application.status = JobApplicationStatus.APPLICANT_ACCEPTED;
+      if (acceptance.note) {
+        application.note = acceptance.note;
+      }
+    } else {
+      // Applicant rejects - move to WITHDRAWN
+      application.status = JobApplicationStatus.WITHDRAWN;
+      application.note = acceptance.note || 'Candidate declined the offer';
+    }
+
+    application.statusUpdatedAt = new Date();
+    await this.applicationRepo.save(application);
+
+    return this.getApplicationById(applicationId);
   }
 }

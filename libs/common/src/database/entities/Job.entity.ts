@@ -42,18 +42,12 @@ export class Job extends BaseEntity {
   @Column({ type: 'enum', enum: WorkMode })
   workMode: WorkMode;
 
-  @Column({ type: 'float', nullable: true })
-  salaryMin?: number;
-
-  @Column({ type: 'float', nullable: true })
-  salaryMax?: number;
+  @Column({ type: 'decimal', precision: 12, scale: 2, nullable: true })
+  salary?: number;
 
   // Contract compensation fields (for CONTRACT employment arrangement)
-  @Column({ type: 'float', nullable: true })
-  contractFeeMin?: number;
-
-  @Column({ type: 'float', nullable: true })
-  contractFeeMax?: number;
+  @Column({ type: 'decimal', precision: 12, scale: 2, nullable: true })
+  contractFee?: number;
 
   @Column({ type: 'enum', enum: ContractPaymentType, nullable: true })
   contractPaymentType?: ContractPaymentType;

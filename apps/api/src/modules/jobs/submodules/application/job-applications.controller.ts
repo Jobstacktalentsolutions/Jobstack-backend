@@ -19,6 +19,8 @@ import {
   ApplicationQueryDto,
   CreateJobApplicationDto,
   UpdateApplicationStatusDto,
+  EmployerAcceptCandidateDto,
+  ApplicantAcceptOfferDto,
 } from '../../dto';
 import { CurrentUser, type CurrentUserPayload } from '@app/common/shared';
 
@@ -93,5 +95,38 @@ export class JobApplicationsController {
     @Param('applicationId', ParseUUIDPipe) applicationId: string,
   ) {
     return this.jobApplicationsService.getApplicationById(applicationId);
+  }
+
+  // Employer accepts candidate after screening and creates Employee record
+  @Post(':applicationId/employer-accept')
+  @UseGuards(EmployerJwtGuard)
+  employerAcceptCandidate(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('applicationId', ParseUUIDPipe) applicationId: string,
+    @Body() dto: EmployerAcceptCandidateDto,
+  ) {
+    return this.jobApplicationsService.employerAcceptCandidate(
+      user.id,
+      applicationId,
+      {
+        startDate: dto.startDate ? new Date(dto.startDate) : undefined,
+        notes: dto.notes,
+      },
+    );
+  }
+
+  // Applicant accepts or rejects the employer's offer
+  @Post(':applicationId/applicant-respond')
+  @UseGuards(JobSeekerJwtGuard)
+  applicantRespondToOffer(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('applicationId', ParseUUIDPipe) applicationId: string,
+    @Body() dto: ApplicantAcceptOfferDto,
+  ) {
+    return this.jobApplicationsService.applicantAcceptOffer(
+      user.id,
+      applicationId,
+      dto,
+    );
   }
 }

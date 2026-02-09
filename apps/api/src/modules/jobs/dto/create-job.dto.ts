@@ -47,30 +47,14 @@ export class CreateJobDto {
 
   @IsOptional()
   @Type(() => Number)
-  @IsNumber({ maxDecimalPlaces: 2 }, { message: 'salaryMin must be numeric' })
-  salaryMin?: number;
-
-  @IsOptional()
-  @Type(() => Number)
-  @IsNumber({ maxDecimalPlaces: 2 }, { message: 'salaryMax must be numeric' })
-  salaryMax?: number;
+  @IsNumber({ maxDecimalPlaces: 2 }, { message: 'salary must be numeric' })
+  salary?: number;
 
   // Contract compensation fields
   @IsOptional()
   @Type(() => Number)
-  @IsNumber(
-    { maxDecimalPlaces: 2 },
-    { message: 'contractFeeMin must be numeric' },
-  )
-  contractFeeMin?: number;
-
-  @IsOptional()
-  @Type(() => Number)
-  @IsNumber(
-    { maxDecimalPlaces: 2 },
-    { message: 'contractFeeMax must be numeric' },
-  )
-  contractFeeMax?: number;
+  @IsNumber({ maxDecimalPlaces: 2 }, { message: 'contractFee must be numeric' })
+  contractFee?: number;
 
   @IsOptional()
   @IsEnum(ContractPaymentType)

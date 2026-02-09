@@ -10,6 +10,7 @@ import {
   ContractPaymentType,
   EmployeePaymentStatus,
 } from './schema.enum';
+import { Payment } from '@app/common/database/entities/Payment.entity';
 
 @Entity('employees')
 export class Employee extends BaseEntity {
@@ -82,14 +83,18 @@ export class Employee extends BaseEntity {
   })
   paymentStatus: EmployeePaymentStatus;
 
-  @Column('uuid', { nullable: true })
-  paymentId?: string;
-
   @Column({ type: 'boolean', default: false })
   activationBlocked: boolean;
 
+  // Employee Activation Payment fields
+  @Column({ type: 'boolean', default: false })
+  piiUnlocked: boolean; // Gates candidate PII until activation payment is completed
+
+  @Column('uuid', { nullable: true })
+  activationPaymentId?: string;
+
   // Payment relation
-  @OneToOne('Payment', 'employee', { nullable: true })
-  @JoinColumn({ name: 'paymentId' })
-  payment?: any; // Using any to avoid circular import
+  @OneToOne('Payment', { nullable: true })
+  @JoinColumn({ name: 'activationPaymentId' })
+  activationPayment?: Payment;
 }

@@ -33,7 +33,6 @@ export class JobsService {
   // Creates a new job on behalf of an employer
   async createJob(employerId: string, dto: CreateJobDto) {
     await this.ensureEmployerExists(employerId);
-    this.assertSalaryRange(dto.salaryMin, dto.salaryMax);
     const skills = await this.loadSkills(dto.skillIds);
 
     const job = this.jobRepo.create({
@@ -43,10 +42,8 @@ export class JobsService {
       employmentType: dto.employmentType,
       employmentArrangement: dto.employmentArrangement,
       workMode: dto.workMode,
-      salaryMin: dto.salaryMin,
-      salaryMax: dto.salaryMax,
-      contractFeeMin: dto.contractFeeMin,
-      contractFeeMax: dto.contractFeeMax,
+      salary: dto.salary,
+      contractFee: dto.contractFee,
       contractPaymentType: dto.contractPaymentType,
       contractDurationDays: dto.contractDurationDays,
       startDate: dto.startDate ? new Date(dto.startDate) : undefined,
@@ -174,11 +171,6 @@ export class JobsService {
       throw new NotFoundException('Job not found');
     }
 
-    this.assertSalaryRange(
-      dto.salaryMin ?? job.salaryMin,
-      dto.salaryMax ?? job.salaryMax,
-    );
-
     if (dto.skillIds) {
       job.skills = await this.loadSkills(dto.skillIds);
     }
@@ -191,10 +183,8 @@ export class JobsService {
       employmentArrangement:
         dto.employmentArrangement ?? job.employmentArrangement,
       workMode: dto.workMode ?? job.workMode,
-      salaryMin: dto.salaryMin ?? job.salaryMin,
-      salaryMax: dto.salaryMax ?? job.salaryMax,
-      contractFeeMin: dto.contractFeeMin ?? job.contractFeeMin,
-      contractFeeMax: dto.contractFeeMax ?? job.contractFeeMax,
+      salary: dto.salary ?? job.salary,
+      contractFee: dto.contractFee ?? job.contractFee,
       contractPaymentType: dto.contractPaymentType ?? job.contractPaymentType,
       contractDurationDays:
         dto.contractDurationDays ?? job.contractDurationDays,
@@ -272,15 +262,6 @@ export class JobsService {
     }
   }
 
-  // Validates salary ranges when both values are provided
-  private assertSalaryRange(min?: number, max?: number) {
-    if (min !== undefined && max !== undefined && min > max) {
-      throw new BadRequestException(
-        'salaryMin cannot be greater than salaryMax',
-      );
-    }
-  }
-
   // Loads skills referenced in payload
   private async loadSkills(skillIds: string[]) {
     const skills = await this.skillRepo.find({ where: { id: In(skillIds) } });
@@ -310,8 +291,8 @@ export class JobsService {
         'job.employmentType',
         'job.employmentArrangement',
         'job.workMode',
-        'job.salaryMin',
-        'job.salaryMax',
+        'job.salary',
+        'job.contractFee',
         'job.state',
         'job.city',
         'job.address',

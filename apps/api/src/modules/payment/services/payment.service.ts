@@ -1,16 +1,21 @@
-import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, SelectQueryBuilder } from 'typeorm';
-import { 
-  Payment, 
-  Employee, 
+import {
+  Payment,
+  Employee,
   EmployerProfile,
 } from '@app/common/database/entities';
-import { 
-  PaymentStatus, 
-  PaymentType, 
+import {
+  PaymentStatus,
+  PaymentType,
   EmploymentArrangement,
-  EmployeePaymentStatus 
+  EmployeePaymentStatus,
 } from '@app/common/database/entities/schema.enum';
 import { PaystackService } from './paystack.service';
 import { SystemConfigService } from '../../system-config/services/system-config.service';
@@ -39,24 +44,31 @@ export class PaymentService {
   ) {}
 
   // Calculate payment amount based on employment arrangement
-  async calculatePaymentAmount(employee: Employee): Promise<PaymentCalculationResult> {
-    const percentage = await this.systemConfigService.getEmployeeActivationPercentage();
-    
+  async calculatePaymentAmount(
+    employee: Employee,
+  ): Promise<PaymentCalculationResult> {
+    const percentage =
+      await this.systemConfigService.getEmployeeActivationPercentage();
+
     let baseAmount: number;
-    let paymentType: PaymentType;
 
     if (employee.employmentArrangement === EmploymentArrangement.CONTRACT) {
       if (!employee.contractFeeOffered) {
-        throw new BadRequestException('Contract fee is required for contract employees');
+        throw new BadRequestException(
+          'Contract fee is required for contract employees',
+        );
       }
       baseAmount = employee.contractFeeOffered;
-      paymentType = PaymentType.CONTRACT_ACTIVATION;
-    } else if (employee.employmentArrangement === EmploymentArrangement.PERMANENT_EMPLOYEE) {
+    } else if (
+      employee.employmentArrangement ===
+      EmploymentArrangement.PERMANENT_EMPLOYEE
+    ) {
       if (!employee.salaryOffered) {
-        throw new BadRequestException('Salary is required for permanent employees');
+        throw new BadRequestException(
+          'Salary is required for permanent employees',
+        );
       }
       baseAmount = employee.salaryOffered;
-      paymentType = PaymentType.EMPLOYEE_ACTIVATION;
     } else {
       throw new BadRequestException('Invalid employment arrangement');
     }
@@ -69,12 +81,14 @@ export class PaymentService {
       percentage,
       baseAmount,
       currency,
-      paymentType,
+      paymentType: PaymentType.EMPLOYEE_ACTIVATION_FEE,
     };
   }
 
   // Initiate payment for employee activation
-  async initiatePayment(params: InitiatePaymentParams): Promise<{ paymentId: string; paymentUrl: string; reference: string }> {
+  async initiatePayment(
+    params: InitiatePaymentParams,
+  ): Promise<{ paymentId: string; paymentUrl: string; reference: string }> {
     // Get employee with employer details
     const employee = await this.employeeRepo.findOne({
       where: { id: params.employeeId, employerId: params.employerId },
@@ -87,14 +101,16 @@ export class PaymentService {
 
     // Check if payment already exists
     const existingPayment = await this.paymentRepo.findOne({
-      where: { 
+      where: {
         employeeId: params.employeeId,
         status: PaymentStatus.PENDING,
       },
     });
 
     if (existingPayment) {
-      throw new BadRequestException('Payment already initiated for this employee');
+      throw new BadRequestException(
+        'Payment already initiated for this employee',
+      );
     }
 
     // Calculate payment amount
@@ -124,7 +140,7 @@ export class PaymentService {
     // Update employee payment status
     await this.employeeRepo.update(params.employeeId, {
       paymentStatus: EmployeePaymentStatus.PENDING,
-      paymentId: savedPayment.id,
+      activationPaymentId: savedPayment.id,
     });
 
     // Initialize Paystack transaction
@@ -142,7 +158,9 @@ export class PaymentService {
       },
     });
 
-    this.logger.log(`Payment initiated for employee ${params.employeeId}: ${savedPayment.id}`);
+    this.logger.log(
+      `Payment initiated for employee ${params.employeeId}: ${savedPayment.id}`,
+    );
 
     return {
       paymentId: savedPayment.id,
@@ -163,8 +181,9 @@ export class PaymentService {
     }
 
     // Verify with Paystack
-    const paystackResponse = await this.paystackService.verifyTransaction(reference);
-    
+    const paystackResponse =
+      await this.paystackService.verifyTransaction(reference);
+
     let status: PaymentStatus;
     let paidAt: Date | undefined;
 
@@ -183,13 +202,15 @@ export class PaymentService {
     });
 
     // Update employee payment status
-    const employeePaymentStatus = status === PaymentStatus.SUCCESS 
-      ? EmployeePaymentStatus.PAID 
-      : EmployeePaymentStatus.FAILED;
+    const employeePaymentStatus =
+      status === PaymentStatus.SUCCESS
+        ? EmployeePaymentStatus.PAID
+        : EmployeePaymentStatus.FAILED;
 
     await this.employeeRepo.update(payment.employeeId, {
       paymentStatus: employeePaymentStatus,
       activationBlocked: status !== PaymentStatus.SUCCESS,
+      piiUnlocked: status === PaymentStatus.SUCCESS, // Unlock PII when payment succeeds
     });
 
     this.logger.log(`Payment verified: ${reference} - Status: ${status}`);
@@ -205,7 +226,9 @@ export class PaymentService {
   }
 
   // Check if payment is required and completed for employee activation
-  async checkPaymentStatus(employeeId: string): Promise<{ required: boolean; completed: boolean; paymentId?: string }> {
+  async checkPaymentStatus(
+    employeeId: string,
+  ): Promise<{ required: boolean; completed: boolean; paymentId?: string }> {
     const employee = await this.employeeRepo.findOne({
       where: { id: employeeId },
     });
@@ -215,8 +238,9 @@ export class PaymentService {
     }
 
     // Check if payment is required (has salary or contract fee)
-    const hasPaymentAmount = employee.salaryOffered || employee.contractFeeOffered;
-    
+    const hasPaymentAmount =
+      employee.salaryOffered || employee.contractFeeOffered;
+
     if (!hasPaymentAmount) {
       return { required: false, completed: true };
     }
@@ -227,12 +251,14 @@ export class PaymentService {
     return {
       required,
       completed,
-      paymentId: employee.paymentId,
+      paymentId: employee.activationPaymentId,
     };
   }
 
   // Get payment history for employer/employee
-  async getPaymentHistory(query: PaymentHistoryQuery): Promise<PaymentHistoryResult> {
+  async getPaymentHistory(
+    query: PaymentHistoryQuery,
+  ): Promise<PaymentHistoryResult> {
     const qb = this.paymentRepo
       .createQueryBuilder('payment')
       .leftJoinAndSelect('payment.employee', 'employee')
@@ -253,7 +279,10 @@ export class PaymentService {
   }
 
   // Get payment by ID
-  async getPaymentById(paymentId: string, employerId?: string): Promise<Payment> {
+  async getPaymentById(
+    paymentId: string,
+    employerId?: string,
+  ): Promise<Payment> {
     const whereClause: any = { id: paymentId };
     if (employerId) {
       whereClause.employerId = employerId;
@@ -275,12 +304,16 @@ export class PaymentService {
   async processWebhookEvent(event: any): Promise<void> {
     if (event.event === 'charge.success') {
       const reference = event.data.reference;
-      
+
       try {
         await this.verifyPayment(reference);
-        this.logger.log(`Webhook processed successfully for reference: ${reference}`);
+        this.logger.log(
+          `Webhook processed successfully for reference: ${reference}`,
+        );
       } catch (error) {
-        this.logger.error(`Failed to process webhook for reference ${reference}: ${error.message}`);
+        this.logger.error(
+          `Failed to process webhook for reference ${reference}: ${error.message}`,
+        );
       }
     }
   }
@@ -288,7 +321,7 @@ export class PaymentService {
   // Validate employee can be activated (payment check)
   async validateEmployeeActivation(employeeId: string): Promise<void> {
     const paymentStatus = await this.checkPaymentStatus(employeeId);
-    
+
     if (paymentStatus.required && !paymentStatus.completed) {
       throw new PaymentRequiredException(
         'Payment is required before employee can be activated',
@@ -298,13 +331,20 @@ export class PaymentService {
   }
 
   // Apply filters to payment query
-  private applyPaymentFilters(qb: SelectQueryBuilder<Payment>, query: PaymentHistoryQuery): void {
+  private applyPaymentFilters(
+    qb: SelectQueryBuilder<Payment>,
+    query: PaymentHistoryQuery,
+  ): void {
     if (query.employerId) {
-      qb.andWhere('payment.employerId = :employerId', { employerId: query.employerId });
+      qb.andWhere('payment.employerId = :employerId', {
+        employerId: query.employerId,
+      });
     }
 
     if (query.employeeId) {
-      qb.andWhere('payment.employeeId = :employeeId', { employeeId: query.employeeId });
+      qb.andWhere('payment.employeeId = :employeeId', {
+        employeeId: query.employeeId,
+      });
     }
 
     if (query.status) {
@@ -312,7 +352,9 @@ export class PaymentService {
     }
 
     if (query.paymentType) {
-      qb.andWhere('payment.paymentType = :paymentType', { paymentType: query.paymentType });
+      qb.andWhere('payment.paymentType = :paymentType', {
+        paymentType: query.paymentType,
+      });
     }
   }
 }

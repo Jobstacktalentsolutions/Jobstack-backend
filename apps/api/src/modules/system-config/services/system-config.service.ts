@@ -88,9 +88,27 @@ export class SystemConfigService {
     const defaultConfigs = [
       {
         key: SystemConfigKey.EMPLOYEE_ACTIVATION_PERCENTAGE,
-        value: 10,
+        value: 0.15,
         description:
-          'Percentage of salary/contract fee required as upfront payment for employee activation',
+          'Base percentage for employee activation/agency commission fee (15% = 0.15)',
+      },
+      {
+        key: SystemConfigKey.EMPLOYEE_ACTIVATION_PERCENTAGE_FLOOR,
+        value: 1500000,
+        description:
+          'Minimum employee activation fee amount in kobo (₦15,000 = 1,500,000 kobo)',
+      },
+      {
+        key: SystemConfigKey.EMPLOYEE_ACTIVATION_PERCENTAGE_CEILING,
+        value: 100000000,
+        description:
+          'Maximum employee activation fee amount in kobo (₦1,000,000 = 100,000,000 kobo)',
+      },
+      {
+        key: SystemConfigKey.EMPLOYEE_ACTIVATION_PERCENTAGE_VAT_RATE,
+        value: 0.075,
+        description:
+          'VAT rate applied to employee activation fee (7.5% = 0.075)',
       },
     ];
 

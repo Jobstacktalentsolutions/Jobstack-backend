@@ -6,6 +6,8 @@ export * from './job-recommendation-query.dto';
 export * from '../submodules/application/dto/create-job-application.dto';
 export * from '../submodules/application/dto/application-query.dto';
 export * from '../submodules/application/dto/update-application-status.dto';
+export * from '../submodules/application/dto/employer-accept-candidate.dto';
+export * from '../submodules/application/dto/applicant-accept-offer.dto';
 export * from '../submodules/employees/dto/create-employee.dto';
 export * from '../submodules/employees/dto/update-employee.dto';
 export * from '../submodules/employees/dto/update-employee-status.dto';
