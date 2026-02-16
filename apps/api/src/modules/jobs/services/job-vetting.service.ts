@@ -452,7 +452,9 @@ export class JobVettingService {
   }
 
   /**
-   * Update application statuses after vetting
+   * Update application statuses after vetting.
+   * Only updates APPLIED → VETTED. Preserves SELECTED_FOR_SCREENING and later
+   * statuses so admin selections are not overwritten when vetted-applicants is fetched.
    */
   private async updateApplicationStatuses(
     vettedApplicants: VettedApplicant[],
@@ -460,7 +462,10 @@ export class JobVettingService {
     const applicationIds = vettedApplicants.map((va) => va.applicationId);
 
     await this.applicationRepo.update(
-      { id: In(applicationIds) },
+      {
+        id: In(applicationIds),
+        status: JobApplicationStatus.APPLIED,
+      },
       { status: JobApplicationStatus.VETTED },
     );
   }
@@ -516,6 +521,8 @@ export class JobVettingService {
             scheduledTime: formattedTime,
             scheduledDateTime: `${formattedDate} at ${formattedTime}`,
             prepInfo: application.screeningPrepInfo || null,
+            screeningDurationMinutes:
+              application.screeningDurationMinutes ?? null,
             employerWillJoin,
           },
         });

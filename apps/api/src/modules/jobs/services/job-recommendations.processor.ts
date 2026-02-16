@@ -223,8 +223,8 @@ export class JobRecommendationsProcessor {
     const salaryOverlap = this.calculateSalaryOverlap(
       profile.minExpectedSalary,
       profile.maxExpectedSalary,
-      job.salaryMin,
-      job.salaryMax,
+      job.salary,
+      job.salary,
     );
     score += salaryOverlap * 10;
 

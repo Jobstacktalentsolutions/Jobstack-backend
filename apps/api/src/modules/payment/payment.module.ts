@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
 import {
@@ -31,6 +32,7 @@ import { AdminAuthModule } from 'apps/api/src/modules/auth/submodules/admin/admi
       JobApplication,
     ]),
     ConfigModule,
+    EventEmitterModule.forRoot(),
     SystemConfigModule,
     EmployerAuthModule,
     AdminAuthModule,

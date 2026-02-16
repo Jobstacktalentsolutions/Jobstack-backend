@@ -10,12 +10,7 @@ import { readFile } from 'fs/promises';
 import { join } from 'path';
 import * as Handlebars from 'handlebars';
 import * as puppeteer from 'puppeteer';
-import {
-  Contract,
-  ContractTemplate,
-  Employee,
-  Document,
-} from '@app/common/database/entities';
+import { Contract, ContractTemplate, Employee } from '@app/common/database/entities';
 import {
   ContractStatus,
   ContractTemplateType,
@@ -23,13 +18,14 @@ import {
 } from '@app/common/database/entities/schema.enum';
 import { StorageService } from '@app/common/storage';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import type { MulterFile } from '@app/common/shared/types';
 
 @Injectable()
 export class ContractsService {
   private readonly logger = new Logger(ContractsService.name);
   private readonly templateCache = new Map<
     string,
-    HandlebarsTemplateDelegate
+    Handlebars.TemplateDelegate
   >();
 
   constructor(
@@ -118,39 +114,46 @@ export class ContractsService {
       );
     }
 
-    // Prepare template data
+    // Prepare template data for rendering
     const templateData = await this.prepareTemplateData(employee);
 
-    // Render template
+    // Render template HTML with data
     const htmlContent = await this.renderTemplate(template, templateData);
 
-    // Generate PDF
+    // Generate PDF from rendered HTML
     const pdfBuffer = await this.generatePDF(htmlContent);
 
-    // Upload to storage
+    // Upload generated PDF to storage
     const fileName = `contract-${employee.id}-${Date.now()}.pdf`;
-    const uploadResult = await this.storageService.uploadBuffer(
-      pdfBuffer,
-      fileName,
-      'application/pdf',
-      'contracts',
-    );
+    const multerFile: MulterFile = {
+      fieldname: 'contract',
+      originalname: fileName,
+      encoding: '7bit',
+      mimetype: 'application/pdf',
+      size: pdfBuffer.length,
+      destination: '',
+      filename: fileName,
+      path: '',
+      buffer: pdfBuffer,
+    };
 
-    // Create Document record
-    const document = this.documentRepo.create({
-      type: DocumentType.OTHER,
-      name: `Employment Contract - ${employee.jobseekerProfile?.firstName} ${employee.jobseekerProfile?.lastName}`,
-      url: uploadResult.url,
-      key: uploadResult.key,
-      uploadedById: employee.employerId,
-    });
-    const savedDocument = await this.documentRepo.save(document);
+    const { document: uploadedDocument } = await this.storageService.uploadFile(
+      multerFile,
+      {
+        fileName,
+        folder: 'contracts',
+        bucketType: 'private',
+        documentType: DocumentType.OTHER,
+        uploadedBy: employee.employerId,
+        description: `Employment Contract - ${employee.jobseekerProfile?.firstName ?? ''} ${employee.jobseekerProfile?.lastName ?? ''}`.trim(),
+      },
+    );
 
     // Create Contract record
     const contract = this.contractRepo.create({
       employeeId: employee.id,
       templateId: template.id,
-      contractDocumentId: savedDocument.id,
+      contractDocumentId: uploadedDocument.id,
       templateVersion: template.version,
       status: ContractStatus.PENDING_SIGNATURES,
       metadata: {
@@ -171,10 +174,16 @@ export class ContractsService {
       employeeId,
     });
 
-    return this.contractRepo.findOne({
+    const fullContract = await this.contractRepo.findOne({
       where: { id: savedContract.id },
       relations: ['employee', 'template', 'contractDocument'],
     });
+
+    if (!fullContract) {
+      throw new NotFoundException('Generated contract not found');
+    }
+
+    return fullContract;
   }
 
   /**
@@ -315,7 +324,7 @@ export class ContractsService {
    * Generate PDF from HTML using Puppeteer
    */
   private async generatePDF(htmlContent: string): Promise<Buffer> {
-    let browser: puppeteer.Browser;
+    let browser: puppeteer.Browser | null = null;
 
     try {
       browser = await puppeteer.launch({
@@ -363,15 +372,17 @@ export class ContractsService {
       issueDate: new Date().toLocaleDateString('en-GB'),
 
       // Employer details
-      employerName: employer.companyName,
-      employerAddress: employer.companyAddress || 'N/A',
+      employerName: `${employer.firstName} ${employer.lastName}`,
+      employerAddress: employer.address || 'N/A',
       employerEmail: employer.email,
 
       // Employee details
-      employeeName: `${jobseeker.firstName} ${jobseeker.lastName}`,
-      employeeAddress: jobseeker.address || 'N/A',
-      employeeEmail: jobseeker.email,
-      employeePhone: jobseeker.phoneNumber,
+      employeeName: jobseeker
+        ? `${jobseeker.firstName} ${jobseeker.lastName}`
+        : 'N/A',
+      employeeAddress: jobseeker?.address || 'N/A',
+      employeeEmail: jobseeker?.email || 'N/A',
+      employeePhone: jobseeker?.phoneNumber || 'N/A',
 
       // Job details
       jobTitle: job.title,

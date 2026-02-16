@@ -22,6 +22,7 @@ import {
   EmployeeStatus,
   EmploymentArrangement,
 } from '@app/common/database/entities/schema.enum';
+import { NotificationService } from 'apps/api/src/modules/notification/notification.service';
 
 @Injectable()
 export class JobApplicationsService {
@@ -34,6 +35,7 @@ export class JobApplicationsService {
     private readonly jobseekerRepo: Repository<JobSeekerProfile>,
     @InjectRepository(Employee)
     private readonly employeeRepo: Repository<Employee>,
+    private readonly notificationService: NotificationService,
   ) {}
 
   private readonly relations = ['job', 'jobseekerProfile'];
@@ -280,6 +282,90 @@ export class JobApplicationsService {
     };
   }
 
+  // Handles employer response to screening schedule (accept or propose new time)
+  async employerRespondToScreeningSchedule(
+    employerId: string,
+    applicationId: string,
+    response: {
+      accepted: boolean;
+      proposedTime?: Date;
+    },
+  ) {
+    const application = await this.applicationRepo.findOne({
+      where: { id: applicationId },
+      relations: ['job'],
+    });
+
+    if (!application || application.job?.employerId !== employerId) {
+      throw new NotFoundException('Application not found');
+    }
+
+    // Only allow responses for applications that have been selected for screening
+    if (
+      application.status !== JobApplicationStatus.SELECTED_FOR_SCREENING ||
+      !application.screeningScheduledAt
+    ) {
+      throw new BadRequestException(
+        'Screening must be scheduled before employer can respond',
+      );
+    }
+
+    // Custom screening must be enabled for collaborative scheduling
+    if (!application.job.performCustomScreening) {
+      throw new BadRequestException(
+        'Employer responses are only allowed for custom screening jobs',
+      );
+    }
+
+    // Record employer decision and optional proposed time
+    if (response.accepted) {
+      application.employerAccepted = true;
+
+      if (response.proposedTime) {
+        application.employerProposedScreeningTime = response.proposedTime;
+        application.adminAccepted = false;
+      }
+    } else {
+      application.employerAccepted = false;
+    }
+
+    application.statusUpdatedAt = new Date();
+    await this.applicationRepo.save(application);
+
+    // Notify JobStack admin when employer responds (accepts or proposes)
+    try {
+      const adminEmail =
+        process.env.ADMIN_EMAIL || application.job.employer.email;
+      const isProposal = !!response.proposedTime;
+
+      await this.notificationService.sendEmail({
+        to: adminEmail,
+        subject: isProposal
+          ? `Employer proposed new screening time for ${application.job.title}`
+          : `Employer responded to screening schedule for ${application.job.title}`,
+        template: 'general-notification',
+        context: {
+          title: isProposal
+            ? 'Employer Proposed New Screening Time'
+            : 'Employer Responded to Screening Schedule',
+          message: isProposal
+            ? `The employer has proposed a new screening time for job "${application.job.title}".`
+            : `The employer has ${
+                response.accepted ? 'accepted' : 'declined'
+              } the current screening time for job "${application.job.title}".`,
+          jobTitle: application.job.title,
+          jobId: application.job.id,
+          applicationId: application.id,
+          proposedTime: response.proposedTime?.toISOString() ?? null,
+        },
+      });
+    } catch (error) {
+      // Notification failures should not block the core flow
+    }
+
+    return this.getApplicationById(applicationId);
+  }
+
   // Applicant accepts the offer from employer
   async applicantAcceptOffer(
     jobseekerId: string,
@@ -318,6 +404,66 @@ export class JobApplicationsService {
 
     application.statusUpdatedAt = new Date();
     await this.applicationRepo.save(application);
+
+    return this.getApplicationById(applicationId);
+  }
+
+  // Admin accepts employer's proposed screening time and updates the schedule
+  async adminAcceptEmployerScreeningProposal(applicationId: string) {
+    const application = await this.applicationRepo.findOne({
+      where: { id: applicationId },
+      relations: ['job', 'job.employer', 'jobseekerProfile'],
+    });
+
+    if (!application) {
+      throw new NotFoundException('Application not found');
+    }
+
+    if (!application.job.performCustomScreening) {
+      throw new BadRequestException(
+        'Admin can only accept employer proposals for custom screening jobs',
+      );
+    }
+
+    if (!application.employerProposedScreeningTime) {
+      throw new BadRequestException(
+        'No employer proposed screening time to accept',
+      );
+    }
+
+    // Apply employer-proposed time as the new official schedule
+    application.screeningScheduledAt = application.employerProposedScreeningTime;
+    application.adminProposedScreeningTime =
+      application.employerProposedScreeningTime;
+    application.adminAccepted = true;
+
+    application.statusUpdatedAt = new Date();
+    await this.applicationRepo.save(application);
+
+    // Notify employer that admin has accepted their proposed time
+    try {
+      if (application.job.employer?.email) {
+        await this.notificationService.sendEmail({
+          to: application.job.employer.email,
+          subject: `Admin accepted your proposed screening time for ${application.job.title}`,
+          template: 'employer-screening-invitation',
+          context: {
+            employerName: `${application.job.employer.firstName} ${application.job.employer.lastName}`,
+            jobTitle: application.job.title,
+            jobId: application.job.id,
+            candidateName: `${application.jobseekerProfile.firstName} ${application.jobseekerProfile.lastName}`,
+            applicationId: application.id,
+            meetingLink: application.screeningMeetingLink,
+            scheduledDate: application.screeningScheduledAt.toDateString(),
+            scheduledTime: application.screeningScheduledAt.toTimeString(),
+            scheduledDateTime: application.screeningScheduledAt.toISOString(),
+            prepInfo: application.screeningPrepInfo || null,
+          },
+        });
+      }
+    } catch (error) {
+      // Notification failures should not block the core flow
+    }
 
     return this.getApplicationById(applicationId);
   }

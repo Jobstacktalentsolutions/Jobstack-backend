@@ -78,8 +78,16 @@ This document outlines the significant updates to the automatic vetting system b
 ## 5. Implementation Requirements
 
 ### Database Changes:
-- No new schema changes required (existing fields sufficient)
-- `performCustomScreening` field on Job entity already exists
+- `JobApplication` entity extended to support collaborative scheduling and rescheduling:
+  - `employerWillJoinScreening` (boolean, nullable) – snapshot of whether employer is expected to join screening; only relevant when `performCustomScreening = true`
+  - `adminProposedScreeningTime` (timestamp, nullable) – admin's proposed/selected screening time
+  - `employerProposedScreeningTime` (timestamp, nullable) – employer's proposed alternative screening time (from employer UI)
+  - `employerAccepted` (boolean, nullable) – whether employer has accepted the current effective screening time
+  - `adminAccepted` (boolean, nullable) – whether admin has accepted the current effective screening time (including employer proposals)
+- These fields apply only to **custom screening flows** (`performCustomScreening = true`) and are used to differentiate admin vs employer proposed times and acceptance state.
+- `performCustomScreening` field on `Job` entity already exists and continues to drive whether employer can propose times.
+
+> Note: A new migration must be created and run to add these columns to the `job_applications` table in the database.
 
 ### Code Changes:
 1. **JobVettingService.notifyCandidatesForScreening()**:

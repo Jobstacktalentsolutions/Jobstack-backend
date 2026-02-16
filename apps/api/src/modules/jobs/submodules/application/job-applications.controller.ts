@@ -22,6 +22,7 @@ import {
   EmployerAcceptCandidateDto,
   ApplicantAcceptOfferDto,
 } from '../../dto';
+import { EmployerScreeningResponseDto } from 'apps/api/src/modules/jobs/submodules/application/dto/employer-screening-response.dto';
 import { CurrentUser, type CurrentUserPayload } from '@app/common/shared';
 
 @Controller('job-applications')
@@ -115,6 +116,24 @@ export class JobApplicationsController {
     );
   }
 
+  // Employer responds to screening schedule (accept or propose new time)
+  @Post(':applicationId/employer-screening-response')
+  @UseGuards(EmployerJwtGuard)
+  employerRespondToScreeningSchedule(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('applicationId', ParseUUIDPipe) applicationId: string,
+    @Body() dto: EmployerScreeningResponseDto,
+  ) {
+    return this.jobApplicationsService.employerRespondToScreeningSchedule(
+      user.id,
+      applicationId,
+      {
+        accepted: dto.accepted,
+        proposedTime: dto.proposedTime ? new Date(dto.proposedTime) : undefined,
+      },
+    );
+  }
+
   // Applicant accepts or rejects the employer's offer
   @Post(':applicationId/applicant-respond')
   @UseGuards(JobSeekerJwtGuard)
@@ -127,6 +146,17 @@ export class JobApplicationsController {
       user.id,
       applicationId,
       dto,
+    );
+  }
+
+  // Admin accepts employer's proposed screening time
+  @Post('admin/:applicationId/accept-employer-screening-time')
+  @UseGuards(AdminJwtGuard)
+  adminAcceptEmployerScreeningTime(
+    @Param('applicationId', ParseUUIDPipe) applicationId: string,
+  ) {
+    return this.jobApplicationsService.adminAcceptEmployerScreeningProposal(
+      applicationId,
     );
   }
 }

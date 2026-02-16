@@ -407,6 +407,10 @@ export class PaymentService {
       throw new NotFoundException('Employee not found');
     }
 
+    if (!employee.jobseekerProfile) {
+      throw new BadRequestException('Employee is missing jobseeker profile');
+    }
+
     // Validate status
     if (employee.status !== EmployeeStatus.ONBOARDING) {
       throw new BadRequestException(

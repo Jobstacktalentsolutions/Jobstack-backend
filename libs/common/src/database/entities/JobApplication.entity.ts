@@ -45,4 +45,27 @@ export class JobApplication extends BaseEntity {
 
   @Column({ type: 'text', nullable: true })
   screeningPrepInfo?: string; // Additional information for candidate preparation
+
+  @Column({ type: 'int', nullable: true })
+  screeningDurationMinutes?: number | null; // Duration of screening in minutes
+
+  // Indicates if employer will join screening (snapshot for custom screening jobs)
+  @Column({ type: 'boolean', nullable: true })
+  employerWillJoinScreening?: boolean;
+
+  // Admin's originally proposed screening time (authoritative schedule)
+  @Column({ type: 'timestamp', nullable: true })
+  adminProposedScreeningTime?: Date;
+
+  // Employer's proposed alternative screening time (for rescheduling)
+  @Column({ type: 'timestamp', nullable: true })
+  employerProposedScreeningTime?: Date;
+
+  // Indicates if employer has accepted the current screening time
+  @Column({ type: 'boolean', nullable: true })
+  employerAccepted?: boolean;
+
+  // Indicates if admin has accepted the current screening time (including employer proposals)
+  @Column({ type: 'boolean', nullable: true })
+  adminAccepted?: boolean;
 }

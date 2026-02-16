@@ -30,6 +30,7 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.908.0",
     "@aws-sdk/s3-request-presigner": "^3.908.0",
+    "@nestjs/event-emitter": "^3.0.0",
     "@nestjs/bull": "^11.0.4",
     "@nestjs/cache-manager": "^3.0.1",
     "@nestjs/common": "^11.1.6",
@@ -45,6 +46,7 @@
     "@types/bcryptjs": "^3.0.0",
     "@types/cache-manager": "^5.0.0",
     "axios": "^1.12.2",
+    "handlebars": "^4.7.8",
     "bcryptjs": "^3.0.2",
     "bull": "^4.16.5",
     "cache-manager": "^7.2.5",
@@ -64,6 +66,7 @@
     "nestjs-pino": "^4.4.1",
     "paystack": "^2.0.1",
     "pg": "^8.16.3",
+    "puppeteer": "^22.15.0",
     "pino-pretty": "^13.1.2",
     "reflect-metadata": "^0.2.2",
     "resend": "^6.1.2",

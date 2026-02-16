@@ -15,11 +15,18 @@ import { AdminRole } from '@app/common/shared/enums/roles.enum';
 import { JobsService } from '../services/jobs.service';
 import { JobVettingService } from '../services/job-vetting.service';
 import { JobVettingProducer } from '../queue/job-vetting.producer';
-import { JobQueryDto, UpdateJobDto, UpdateJobStatusDto } from '../dto';
+import {
+  AdjustHighlightedCountDto,
+  CompleteScreeningDto,
+  JobQueryDto,
+  SelectCandidatesForScreeningDto,
+  UpdateJobDto,
+  UpdateJobStatusDto,
+} from '../dto';
 import { JobApplicationStatus } from '@app/common/database/entities/schema.enum';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
-import { JobApplication } from '@app/common/database/entities';
+import { Job, JobApplication } from '@app/common/database/entities';
 
 @Controller('jobs/admin')
 export class JobsAdminController {
@@ -29,6 +36,8 @@ export class JobsAdminController {
     private readonly jobVettingProducer: JobVettingProducer,
     @InjectRepository(JobApplication)
     private readonly applicationRepo: Repository<JobApplication>,
+    @InjectRepository(Job)
+    private readonly jobRepo: Repository<Job>,
   ) {}
 
   // Get job statistics
@@ -109,6 +118,14 @@ export class JobsAdminController {
       id: app.id,
       status: app.status,
       appliedAt: app.createdAt,
+      screeningMeetingLink: app.screeningMeetingLink,
+      screeningScheduledAt: app.screeningScheduledAt,
+      screeningDurationMinutes: app.screeningDurationMinutes,
+      employerWillJoinScreening: app.employerWillJoinScreening,
+      adminProposedScreeningTime: app.adminProposedScreeningTime,
+      employerProposedScreeningTime: app.employerProposedScreeningTime,
+      employerAccepted: app.employerAccepted,
+      adminAccepted: app.adminAccepted,
       jobseeker: {
         id: app.jobseekerProfile.id,
         firstName: app.jobseekerProfile.firstName,
@@ -176,6 +193,15 @@ export class JobsAdminController {
           applicationSpeedScore: vettedApp.applicationSpeedScore,
           isEmployed: vettedApp.isEmployed,
           status: application.status,
+          screeningMeetingLink: application.screeningMeetingLink,
+          screeningScheduledAt: application.screeningScheduledAt,
+          screeningDurationMinutes: application.screeningDurationMinutes,
+          employerWillJoinScreening: application.employerWillJoinScreening,
+          adminProposedScreeningTime: application.adminProposedScreeningTime,
+          employerProposedScreeningTime:
+            application.employerProposedScreeningTime,
+          employerAccepted: application.employerAccepted,
+          adminAccepted: application.adminAccepted,
           createdAt: application.createdAt,
           jobseekerProfile: {
             id: application.jobseekerProfile.id,
@@ -204,9 +230,9 @@ export class JobsAdminController {
   @UseGuards(AdminJwtGuard)
   async adjustHighlightedCount(
     @Param('jobId', ParseUUIDPipe) jobId: string,
-    @Body() body: { count: number },
+    @Body() dto: AdjustHighlightedCountDto,
   ) {
-    const { count } = body;
+    const { count } = dto;
 
     if (count < 1 || count > 10) {
       return {
@@ -231,17 +257,9 @@ export class JobsAdminController {
   @UseGuards(AdminJwtGuard)
   async selectCandidatesForScreening(
     @Param('jobId', ParseUUIDPipe) jobId: string,
-    @Body()
-    body: {
-      candidates: Array<{
-        applicationId: string;
-        meetingLink: string;
-        scheduledAt: string; // ISO date string
-        prepInfo?: string;
-      }>;
-    },
+    @Body() dto: SelectCandidatesForScreeningDto,
   ) {
-    const { candidates } = body;
+    const { candidates } = dto;
 
     if (!candidates || candidates.length === 0) {
       return {
@@ -250,22 +268,28 @@ export class JobsAdminController {
       };
     }
 
-    // Validate all required fields
+    // Validate all required fields (including durationMinutes)
     for (const candidate of candidates) {
       if (
         !candidate.applicationId ||
         !candidate.meetingLink ||
-        !candidate.scheduledAt
+        !candidate.scheduledAt ||
+        candidate.durationMinutes === undefined ||
+        candidate.durationMinutes === null
       ) {
         return {
           success: false,
           message:
-            'Each candidate must have applicationId, meetingLink, and scheduledAt',
+            'Each candidate must have applicationId, meetingLink, scheduledAt, and durationMinutes',
         };
       }
     }
 
-    // Update each application with screening details
+    // Load job once to determine if employer will join screening (custom screening)
+    const job = await this.jobsService.getJobById(jobId);
+    const employerWillJoinScreening = !!job.performCustomScreening;
+
+    // Update each application with screening details and admin proposal snapshot
     for (const candidate of candidates) {
       await this.applicationRepo.update(
         { id: candidate.applicationId },
@@ -274,6 +298,10 @@ export class JobsAdminController {
           screeningMeetingLink: candidate.meetingLink,
           screeningScheduledAt: new Date(candidate.scheduledAt),
           screeningPrepInfo: candidate.prepInfo ?? undefined,
+          screeningDurationMinutes: candidate.durationMinutes,
+          employerWillJoinScreening,
+          adminProposedScreeningTime: new Date(candidate.scheduledAt),
+          adminAccepted: true,
         },
       );
     }
@@ -295,9 +323,9 @@ export class JobsAdminController {
   @UseGuards(AdminJwtGuard)
   async completeScreening(
     @Param('jobId', ParseUUIDPipe) jobId: string,
-    @Body() body: { applicationIds: string[] },
+    @Body() dto: CompleteScreeningDto,
   ) {
-    const { applicationIds } = body;
+    const { applicationIds } = dto;
 
     if (!applicationIds || applicationIds.length === 0) {
       return {
