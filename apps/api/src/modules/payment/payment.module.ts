@@ -5,6 +5,7 @@ import {
   Payment,
   Employee,
   EmployerProfile,
+  JobApplication,
 } from '@app/common/database/entities';
 import { SystemConfigModule } from '../system-config/system-config.module';
 import { EmployerAuthModule } from 'apps/api/src/modules/auth/submodules/employer/employer-auth.module';
@@ -12,27 +13,43 @@ import { EmployerAuthModule } from 'apps/api/src/modules/auth/submodules/employe
 // Services
 import { PaymentService } from './services/payment.service';
 import { PaystackService } from './services/paystack.service';
+import { EmployeeActivationCommissionService } from './services/commission.service';
 
 // Controllers
 import { PaymentController } from './controllers/payment.controller';
 import { PaymentWebhookController } from './controllers/payment-webhook.controller';
 import { PaymentAdminController } from './controllers/payment-admin.controller';
+import { EmployeeActivationPaymentController } from './controllers/employee-activation-payment.controller';
 import { AdminAuthModule } from 'apps/api/src/modules/auth/submodules/admin/admin-auth.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Payment, Employee, EmployerProfile]),
+    TypeOrmModule.forFeature([
+      Payment,
+      Employee,
+      EmployerProfile,
+      JobApplication,
+    ]),
     ConfigModule,
     SystemConfigModule,
     EmployerAuthModule,
     AdminAuthModule,
   ],
-  providers: [PaymentService, PaystackService],
+  providers: [
+    PaymentService,
+    PaystackService,
+    EmployeeActivationCommissionService,
+  ],
   controllers: [
     PaymentController,
     PaymentWebhookController,
     PaymentAdminController,
+    EmployeeActivationPaymentController,
   ],
-  exports: [PaymentService, PaystackService],
+  exports: [
+    PaymentService,
+    PaystackService,
+    EmployeeActivationCommissionService,
+  ],
 })
 export class PaymentModule {}

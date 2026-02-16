@@ -6,19 +6,24 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, SelectQueryBuilder } from 'typeorm';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
   Payment,
   Employee,
   EmployerProfile,
+  JobApplication,
 } from '@app/common/database/entities';
 import {
   PaymentStatus,
   PaymentType,
   EmploymentArrangement,
   EmployeePaymentStatus,
+  EmployeeStatus,
+  JobApplicationStatus,
 } from '@app/common/database/entities/schema.enum';
 import { PaystackService } from './paystack.service';
 import { SystemConfigService } from '../../system-config/services/system-config.service';
+import { EmployeeActivationCommissionService } from './commission.service';
 import {
   PaymentCalculationResult,
   InitiatePaymentParams,
@@ -39,8 +44,12 @@ export class PaymentService {
     private readonly employeeRepo: Repository<Employee>,
     @InjectRepository(EmployerProfile)
     private readonly employerRepo: Repository<EmployerProfile>,
+    @InjectRepository(JobApplication)
+    private readonly jobApplicationRepo: Repository<JobApplication>,
     private readonly paystackService: PaystackService,
     private readonly systemConfigService: SystemConfigService,
+    private readonly commissionService: EmployeeActivationCommissionService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   // Calculate payment amount based on employment arrangement
@@ -306,10 +315,30 @@ export class PaymentService {
       const reference = event.data.reference;
 
       try {
-        await this.verifyPayment(reference);
-        this.logger.log(
-          `Webhook processed successfully for reference: ${reference}`,
-        );
+        // Find payment by reference to determine type
+        const payment = await this.paymentRepo.findOne({
+          where: { paystackReference: reference },
+        });
+
+        if (!payment) {
+          this.logger.warn(`Payment not found for reference: ${reference}`);
+          return;
+        }
+
+        // Handle based on payment type
+        if (payment.paymentType === PaymentType.EMPLOYEE_ACTIVATION_FEE) {
+          // Process activation payment
+          await this.processActivationPaymentSuccess(payment.id);
+          this.logger.log(
+            `Activation payment processed successfully: ${payment.id}`,
+          );
+        } else {
+          // Legacy payment verification
+          await this.verifyPayment(reference);
+          this.logger.log(
+            `Webhook processed successfully for reference: ${reference}`,
+          );
+        }
       } catch (error) {
         this.logger.error(
           `Failed to process webhook for reference ${reference}: ${error.message}`,
@@ -356,5 +385,191 @@ export class PaymentService {
         paymentType: query.paymentType,
       });
     }
+  }
+
+  // ==================== NEW ACTIVATION PAYMENT METHODS ====================
+
+  /**
+   * Initiate employee activation payment with commission calculation
+   */
+  async initiateActivationPayment(
+    employeeId: string,
+    employerId: string,
+    callbackUrl?: string,
+  ): Promise<{ paymentId: string; paymentUrl: string; reference: string }> {
+    // Load employee with relations
+    const employee = await this.employeeRepo.findOne({
+      where: { id: employeeId, employerId },
+      relations: ['employer', 'job', 'jobseekerProfile'],
+    });
+
+    if (!employee) {
+      throw new NotFoundException('Employee not found');
+    }
+
+    // Validate status
+    if (employee.status !== EmployeeStatus.ONBOARDING) {
+      throw new BadRequestException(
+        `Employee must be in ONBOARDING status. Current status: ${employee.status}`,
+      );
+    }
+
+    // Validate PII not already unlocked
+    if (employee.piiUnlocked) {
+      throw new BadRequestException('Employee PII already unlocked');
+    }
+
+    // Check for existing pending payment
+    const existingPayment = await this.paymentRepo.findOne({
+      where: {
+        employeeId,
+        paymentType: PaymentType.EMPLOYEE_ACTIVATION_FEE,
+        status: PaymentStatus.PENDING,
+      },
+    });
+
+    if (existingPayment) {
+      throw new BadRequestException(
+        'Payment already initiated for this employee',
+      );
+    }
+
+    // Calculate commission using CommissionService
+    const isContract =
+      employee.employmentArrangement === EmploymentArrangement.CONTRACT;
+    const baseAmount = isContract
+      ? employee.contractFeeOffered
+      : employee.salaryOffered;
+
+    if (!baseAmount) {
+      throw new BadRequestException(
+        'Employee must have salary or contract fee defined',
+      );
+    }
+
+    const commission = await this.commissionService.calculateCommissionFee(
+      baseAmount,
+      isContract,
+    );
+
+    // Generate payment reference
+    const reference = this.paystackService.generateReference('ACT');
+
+    // Create payment record
+    const payment = this.paymentRepo.create({
+      employeeId,
+      employerId,
+      amount: commission.totalAmount,
+      percentage: commission.percentage * 100, // Store as percentage
+      currency: employee.currency || 'NGN',
+      status: PaymentStatus.PENDING,
+      paymentType: PaymentType.EMPLOYEE_ACTIVATION_FEE,
+      paystackReference: reference,
+      metadata: {
+        commissionBreakdown: commission,
+        employmentArrangement: employee.employmentArrangement,
+        jobTitle: employee.job.title,
+        employeeName: `${employee.jobseekerProfile.firstName} ${employee.jobseekerProfile.lastName}`,
+      },
+    });
+
+    const savedPayment = await this.paymentRepo.save(payment);
+
+    // Update employee
+    await this.employeeRepo.update(employeeId, {
+      paymentStatus: EmployeePaymentStatus.PENDING,
+      activationPaymentId: savedPayment.id,
+    });
+
+    // Initialize Paystack transaction
+    const paystackResponse = await this.paystackService.initializeTransaction({
+      email: employee.employer.email,
+      amount: this.paystackService.convertToKobo(commission.totalAmount),
+      reference,
+      currency: employee.currency || 'NGN',
+      callback_url: callbackUrl,
+      metadata: {
+        paymentId: savedPayment.id,
+        employeeId,
+        employerId,
+        paymentType: PaymentType.EMPLOYEE_ACTIVATION_FEE,
+        commissionBreakdown: commission.breakdown,
+      },
+    });
+
+    this.logger.log(
+      `Activation payment initiated for employee ${employeeId}: ${savedPayment.id} (${commission.totalAmount})`,
+    );
+
+    return {
+      paymentId: savedPayment.id,
+      paymentUrl: paystackResponse.data.authorization_url,
+      reference,
+    };
+  }
+
+  /**
+   * Process successful activation payment (called by webhook)
+   */
+  async processActivationPaymentSuccess(paymentId: string): Promise<void> {
+    // Load payment with relations
+    const payment = await this.paymentRepo.findOne({
+      where: { id: paymentId },
+      relations: ['employee'],
+    });
+
+    if (!payment) {
+      throw new NotFoundException('Payment not found');
+    }
+
+    if (payment.paymentType !== PaymentType.EMPLOYEE_ACTIVATION_FEE) {
+      throw new BadRequestException('Payment is not an activation payment');
+    }
+
+    if (payment.status === PaymentStatus.SUCCESS) {
+      this.logger.warn(
+        `Payment ${paymentId} already marked as successful. Skipping.`,
+      );
+      return;
+    }
+
+    // Update payment status
+    await this.paymentRepo.update(paymentId, {
+      status: PaymentStatus.SUCCESS,
+      paidAt: new Date(),
+    });
+
+    // Update employee - unlock PII and mark payment as paid
+    await this.employeeRepo.update(payment.employeeId, {
+      paymentStatus: EmployeePaymentStatus.PAID,
+      piiUnlocked: true,
+      activationBlocked: false,
+    });
+
+    // Find associated job application and update status
+    const jobApplication = await this.jobApplicationRepo.findOne({
+      where: {
+        jobId: payment.employee.jobId,
+        jobseekerProfileId: payment.employee.jobseekerProfileId,
+      },
+    });
+
+    if (jobApplication) {
+      await this.jobApplicationRepo.update(jobApplication.id, {
+        status: JobApplicationStatus.HIRED,
+        statusUpdatedAt: new Date(),
+      });
+    }
+
+    this.logger.log(
+      `Activation payment successful for employee ${payment.employeeId}. PII unlocked.`,
+    );
+
+    // Emit event for contract generation
+    this.eventEmitter.emit('employee-activation-payment.confirmed', {
+      paymentId,
+      employeeId: payment.employeeId,
+      employerId: payment.employerId,
+    });
   }
 }

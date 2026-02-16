@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Confirmed - Employee Activation</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+    <div style="background-color: #e8f5e9; padding: 20px; border-radius: 5px; margin-bottom: 20px;">
+        <h1 style="color: #2e7d32; margin-top: 0;">✓ Payment Confirmed!</h1>
+    </div>
+
+    <div style="background-color: #ffffff; padding: 20px; border: 1px solid #e0e0e0; border-radius: 5px;">
+        <p>Dear <%= employerName %>,</p>
+
+        <p>Your payment has been successfully processed! You now have full access to <strong><%= candidateName %></strong>'s contact information.</p>
+
+        <h3 style="color: #2c3e50; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px;">Payment Details</h3>
+        
+        <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+            <tr style="background-color: #f8f9fa;">
+                <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>Payment Reference</strong></td>
+                <td style="padding: 10px; border: 1px solid #e0e0e0;"><%= paymentReference %></td>
+            </tr>
+            <tr>
+                <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>Amount Paid</strong></td>
+                <td style="padding: 10px; border: 1px solid #e0e0e0;"><%= currency %> <%= totalAmount %></td>
+            </tr>
+            <tr style="background-color: #f8f9fa;">
+                <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>Payment Date</strong></td>
+                <td style="padding: 10px; border: 1px solid #e0e0e0;"><%= paidAt %></td>
+            </tr>
+            <tr>
+                <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>Status</strong></td>
+                <td style="padding: 10px; border: 1px solid #e0e0e0;"><span style="color: #2e7d32; font-weight: bold;">✓ Successful</span></td>
+            </tr>
+        </table>
+
+        <h3 style="color: #2c3e50; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px;">Candidate Contact Information</h3>
+        
+        <table style="width: 100%; border-collapse: collapse; margin: 20px 0; background-color: #f8f9fa; border: 2px solid #4CAF50;">
+            <tr>
+                <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>Name</strong></td>
+                <td style="padding: 10px; border: 1px solid #e0e0e0;"><%= candidateName %></td>
+            </tr>
+            <tr>
+                <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>Email</strong></td>
+                <td style="padding: 10px; border: 1px solid #e0e0e0;"><a href="mailto:<%= candidateEmail %>" style="color: #2196F3;"><%= candidateEmail %></a></td>
+            </tr>
+            <tr>
+                <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>Phone</strong></td>
+                <td style="padding: 10px; border: 1px solid #e0e0e0;"><%= candidatePhone %></td>
+            </tr>
+            <tr>
+                <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>Position</strong></td>
+                <td style="padding: 10px; border: 1px solid #e0e0e0;"><%= jobTitle %></td>
+            </tr>
+        </table>
+
+        <h3 style="color: #2c3e50; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px;">Next Steps</h3>
+        
+        <ol style="line-height: 2;">
+            <li><strong>Contract Generation:</strong> An employment contract has been automatically generated and is ready for your review</li>
+            <li><strong>Contract Signing:</strong> Access your dashboard to review and sign the employment contract</li>
+            <li><strong>Contact the Candidate:</strong> Reach out to <%= candidateName %> using the contact information above to coordinate the start date</li>
+            <li><strong>Onboarding:</strong> Begin your onboarding process once both parties have signed the contract</li>
+        </ol>
+
+        <div style="text-align: center; margin: 30px 0;">
+            <a href="<%= dashboardUrl %>" style="background-color: #2196F3; color: white; padding: 15px 40px; text-decoration: none; border-radius: 5px; font-size: 16px; font-weight: bold; display: inline-block;">
+                View Contract & Dashboard
+            </a>
+        </div>
+
+        <div style="background-color: #fff3cd; padding: 15px; border-left: 4px solid #ffc107; margin: 20px 0;">
+            <p style="margin: 0;"><strong>⚠️ Important:</strong> Please ensure that both you and the candidate sign the employment contract before the official start date.</p>
+        </div>
+
+        <p style="margin-top: 30px;">Thank you for using JobStack Talent Solutions. We're here to support you throughout the hiring process.</p>
+
+        <p>Best regards,<br>
+        <strong>JobStack Talent Solutions Team</strong></p>
+    </div>
+
+    <div style="background-color: #f8f9fa; padding: 15px; text-align: center; margin-top: 20px; border-radius: 5px;">
+        <p style="margin: 0; font-size: 12px; color: #666;">
+            This is an automated email from JobStack Talent Solutions.<br>
+            For support, contact us at support@jobstack.ng
+        </p>
+    </div>
+</body>
+</html>

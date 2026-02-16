@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contract Ready for Signature</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+    <div style="background-color: #fff3cd; padding: 20px; border-radius: 5px; margin-bottom: 20px;">
+        <h1 style="color: #856404; margin-top: 0;">📄 Employment Contract Ready for Signature</h1>
+    </div>
+
+    <div style="background-color: #ffffff; padding: 20px; border: 1px solid #e0e0e0; border-radius: 5px;">
+        <p>Dear <%= recipientName %>,</p>
+
+        <p>The employment contract for the position of <strong><%= jobTitle %></strong> has been generated and is now ready for your review and signature.</p>
+
+        <h3 style="color: #2c3e50; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px;">Contract Details</h3>
+        
+        <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+            <tr style="background-color: #f8f9fa;">
+                <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>Contract ID</strong></td>
+                <td style="padding: 10px; border: 1px solid #e0e0e0;"><%= contractId %></td>
+            </tr>
+            <tr>
+                <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>Position</strong></td>
+                <td style="padding: 10px; border: 1px solid #e0e0e0;"><%= jobTitle %></td>
+            </tr>
+            <tr style="background-color: #f8f9fa;">
+                <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>Employer</strong></td>
+                <td style="padding: 10px; border: 1px solid #e0e0e0;"><%= employerName %></td>
+            </tr>
+            <tr>
+                <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>Employee</strong></td>
+                <td style="padding: 10px; border: 1px solid #e0e0e0;"><%= candidateName %></td>
+            </tr>
+            <tr style="background-color: #f8f9fa;">
+                <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>Start Date</strong></td>
+                <td style="padding: 10px; border: 1px solid #e0e0e0;"><%= startDate %></td>
+            </tr>
+        </table>
+
+        <div style="background-color: #fff3cd; padding: 15px; border-left: 4px solid #ffc107; margin: 20px 0;">
+            <p style="margin: 0; font-weight: bold;">⚠️ Action Required: Review and Sign Contract</p>
+        </div>
+
+        <h3 style="color: #2c3e50; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px;">Next Steps</h3>
+        
+        <ol style="line-height: 2;">
+            <li><strong>Review the Contract:</strong> Carefully read through all terms and conditions</li>
+            <li><strong>Contact Support:</strong> If you have questions or need clarifications, contact our support team</li>
+            <li><strong>Sign Electronically:</strong> Use the button below to access the contract and sign electronically</li>
+            <li><strong>Wait for Counter-Signature:</strong> Once both parties have signed, the contract becomes fully executed</li>
+        </ol>
+
+        <div style="text-align: center; margin: 30px 0;">
+            <a href="<%= contractUrl %>" style="background-color: #4CAF50; color: white; padding: 15px 40px; text-decoration: none; border-radius: 5px; font-size: 16px; font-weight: bold; display: inline-block;">
+                Review & Sign Contract
+            </a>
+        </div>
+
+        <div style="background-color: #e3f2fd; padding: 15px; border-left: 4px solid #2196F3; margin: 20px 0;">
+            <p style="margin: 0;"><strong>💡 Digital Signature:</strong> Your electronic signature is legally binding and equivalent to a handwritten signature. By signing, you agree to all terms and conditions outlined in the contract.</p>
+        </div>
+
+        <h3 style="color: #2c3e50; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px;">Important Information</h3>
+        
+        <ul style="line-height: 2;">
+            <li>The contract document is stored securely and can be downloaded from your dashboard at any time</li>
+            <li>Your signature timestamp and IP address will be recorded for legal purposes</li>
+            <li>Once both parties sign, you'll receive a fully executed copy via email</li>
+            <li>If you need to make any changes to the contract terms, please contact the other party before signing</li>
+        </ul>
+
+        <p style="margin-top: 30px;">If you have any questions or need assistance, please don't hesitate to contact our support team.</p>
+
+        <p>Best regards,<br>
+        <strong>JobStack Talent Solutions Team</strong></p>
+    </div>
+
+    <div style="background-color: #f8f9fa; padding: 15px; text-align: center; margin-top: 20px; border-radius: 5px;">
+        <p style="margin: 0; font-size: 12px; color: #666;">
+            This is an automated email from JobStack Talent Solutions.<br>
+            Contract Reference: <%= contractId %>
+        </p>
+    </div>
+</body>
+</html>

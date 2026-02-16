@@ -1,5 +1,6 @@
 export * from './common.module';
 export * from './common.service';
+export * from './services/pii-masking.service';
 export * from './logger/logger.module';
 export * from './redis/redis.module';
 export * from './redis/redis.service';

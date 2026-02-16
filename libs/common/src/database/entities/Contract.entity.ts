@@ -2,6 +2,7 @@ import { Column, Entity, JoinColumn, ManyToOne, OneToOne } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { Employee } from './Employee.entity';
 import { Document } from './Document.entity';
+import { ContractTemplate } from './ContractTemplate.entity';
 import { ContractStatus } from './schema.enum';
 
 @Entity('contracts')
@@ -12,6 +13,13 @@ export class Contract extends BaseEntity {
 
   @Column('uuid')
   employeeId: string;
+
+  @ManyToOne(() => ContractTemplate, { nullable: true })
+  @JoinColumn({ name: 'templateId' })
+  template?: ContractTemplate;
+
+  @Column('uuid', { nullable: true })
+  templateId?: string;
 
   @OneToOne(() => Document, { nullable: true })
   @JoinColumn({ name: 'contractDocumentId' })

@@ -1,0 +1,202 @@
+<html lang='en'>
+  <head>
+    <meta charset='UTF-8' />
+    <meta name='viewport' content='width=device-width, initial-scale=1.0' />
+    <title>Fixed-Term Contract</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        line-height: 1.6;
+        color: #333;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      .header {
+        text-align: center;
+        margin-bottom: 30px;
+        border-bottom: 2px solid #333;
+        padding-bottom: 10px;
+      }
+      .header h1 {
+        margin: 0;
+        color: #2c3e50;
+      }
+      .section {
+        margin-bottom: 20px;
+      }
+      .section-title {
+        font-weight: bold;
+        color: #2c3e50;
+        margin-bottom: 10px;
+        font-size: 1.1em;
+      }
+      .signature-block {
+        margin-top: 50px;
+        display: flex;
+        justify-content: space-between;
+      }
+      .signature {
+        width: 45%;
+      }
+      .signature-line {
+        border-top: 1px solid #333;
+        margin-top: 40px;
+        padding-top: 5px;
+      }
+      .highlight {
+        background-color: #fff3cd;
+        padding: 2px 5px;
+        border-radius: 3px;
+      }
+      .footer {
+        margin-top: 50px;
+        text-align: center;
+        font-size: 0.9em;
+        color: #666;
+      }
+    </style>
+  </head>
+  <body>
+    <div class='header'>
+      <h1>FIXED-TERM CONTRACT AGREEMENT</h1>
+      <p>Between {{employerName}} and {{employeeName}}</p>
+    </div>
+
+    <div class='section'>
+      <div class='section-title'>CONTRACT REFERENCE</div>
+      <p>Contract ID: {{contractId}}</p>
+      <p>Date of Issue: {{issueDate}}</p>
+    </div>
+
+    <div class='section'>
+      <div class='section-title'>1. PARTIES</div>
+      <p><strong>Employer:</strong>
+        {{employerName}}<br />
+        Address:
+        {{employerAddress}}<br />
+        Email:
+        {{employerEmail}}</p>
+
+      <p><strong>Contractor:</strong>
+        {{employeeName}}<br />
+        Address:
+        {{employeeAddress}}<br />
+        Email:
+        {{employeeEmail}}<br />
+        Phone:
+        {{employeePhone}}</p>
+    </div>
+
+    <div class='section'>
+      <div class='section-title'>2. SCOPE OF WORK</div>
+      <p>The Employer hereby engages the Contractor for the position/role of
+        <strong>{{jobTitle}}</strong>.</p>
+      <p><strong>Project Description:</strong> {{jobDescription}}</p>
+      <p><strong>Contract Type:</strong> {{contractPaymentType}}</p>
+      <p><strong>Work Mode:</strong> {{workMode}}</p>
+    </div>
+
+    <div class='section'>
+      <div class='section-title'>3. CONTRACT PERIOD</div>
+      <p class='highlight'>This is a fixed-term contract.</p>
+      <p><strong>Start Date:</strong> {{startDate}}</p>
+      <p><strong>End Date:</strong> {{endDate}}</p>
+      <p><strong>Duration:</strong> {{contractDuration}}</p>
+      <p>This contract will automatically terminate on the end date unless
+        renewed in writing by both parties.</p>
+    </div>
+
+    <div class='section'>
+      <div class='section-title'>4. COMPENSATION</div>
+      <p><strong>Contract Fee:</strong> {{currency}} {{contractFee}}</p>
+      <p><strong>Payment Terms:</strong> {{contractPaymentType}}</p>
+      <p>Payment shall be made according to the agreed schedule upon submission
+        of invoices and completion of milestones.</p>
+    </div>
+
+    <div class='section'>
+      <div class='section-title'>5. WORKING ARRANGEMENTS</div>
+      <p>The Contractor agrees to dedicate sufficient time and effort to
+        complete the contracted work within the specified timeframe.</p>
+      <p><strong>Expected Availability:</strong>
+        As agreed between parties for project needs.</p>
+    </div>
+
+    <div class='section'>
+      <div class='section-title'>6. INDEPENDENT CONTRACTOR STATUS</div>
+      <p>The Contractor is engaged as an independent contractor and not as an
+        employee. The Contractor is responsible for their own tax obligations
+        and social security contributions.</p>
+    </div>
+
+    <div class='section'>
+      <div class='section-title'>7. INTELLECTUAL PROPERTY</div>
+      <p>All work product, deliverables, and intellectual property created
+        during the course of this contract shall be the exclusive property of
+        the Employer.</p>
+    </div>
+
+    <div class='section'>
+      <div class='section-title'>8. CONFIDENTIALITY</div>
+      <p>The Contractor agrees to maintain confidentiality of all proprietary
+        information and trade secrets of the Employer both during and after the
+        contract period.</p>
+    </div>
+
+    <div class='section'>
+      <div class='section-title'>9. TERMINATION</div>
+      <p>Either party may terminate this contract with written notice:</p>
+      <ul>
+        <li>By mutual agreement at any time</li>
+        <li>For cause (breach of contract): Immediate termination</li>
+        <li>Without cause: 2 weeks written notice</li>
+      </ul>
+    </div>
+
+    <div class='section'>
+      <div class='section-title'>10. GOVERNING LAW</div>
+      <p>This contract shall be governed by and construed in accordance with the
+        laws of the Federal Republic of Nigeria.</p>
+    </div>
+
+    <div class='signature-block'>
+      <div class='signature'>
+        <div class='signature-line'>
+          <strong>Employer Signature</strong><br />
+          Name:
+          {{employerName}}<br />
+          {{#if employerSignedAt}}
+            Date:
+            {{employerSignedAt}}<br />
+            IP:
+            {{employerSignatureIp}}
+          {{else}}
+            Date: _________________
+          {{/if}}
+        </div>
+      </div>
+      <div class='signature'>
+        <div class='signature-line'>
+          <strong>Contractor Signature</strong><br />
+          Name:
+          {{employeeName}}<br />
+          {{#if employeeSignedAt}}
+            Date:
+            {{employeeSignedAt}}<br />
+            IP:
+            {{employeeSignatureIp}}
+          {{else}}
+            Date: _________________
+          {{/if}}
+        </div>
+      </div>
+    </div>
+
+    <div class='footer'>
+      <p>Contract processed through JobStack Talent Solutions</p>
+      <p>This is a legally binding document. Please read carefully before
+        signing.</p>
+    </div>
+  </body>
+</html>
