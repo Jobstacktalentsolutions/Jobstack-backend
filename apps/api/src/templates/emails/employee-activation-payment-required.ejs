@@ -1,89 +1,178 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="supported-color-schemes" content="light dark" />
     <title>Payment Required - Employee Activation</title>
-</head>
-<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-    <div style="background-color: #f8f9fa; padding: 20px; border-radius: 5px; margin-bottom: 20px;">
-        <h1 style="color: #2c3e50; margin-top: 0;">Payment Required - Employee Activation</h1>
-    </div>
-
-    <div style="background-color: #ffffff; padding: 20px; border: 1px solid #e0e0e0; border-radius: 5px;">
-        <p>Dear <%= employerName %>,</p>
-
-        <p>Congratulations! <strong><%= candidateName %></strong> has accepted your employment offer for the position of <strong><%= jobTitle %></strong>.</p>
-
-        <div style="background-color: #fff3cd; padding: 15px; border-left: 4px solid #ffc107; margin: 20px 0;">
-            <p style="margin: 0; font-weight: bold;">⚠️ Action Required: Complete Payment to Unlock Candidate Contact</p>
-        </div>
-
-        <p>To access the candidate's full contact details and proceed with onboarding, please complete the agency commission payment.</p>
-
-        <h3 style="color: #2c3e50; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px;">Payment Breakdown</h3>
-        
-        <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
-            <tr style="background-color: #f8f9fa;">
-                <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>Candidate</strong></td>
-                <td style="padding: 10px; border: 1px solid #e0e0e0;"><%= candidateName %></td>
-            </tr>
+    <style>
+      :root {
+        color-scheme: light dark;
+        supported-color-schemes: light dark;
+      }
+      @media (prefers-color-scheme: dark) {
+        .email-container { background-color: #1a1a1a !important; }
+        .email-content { background-color: #2d2d2d !important; color: #e0e0e0 !important; }
+        .text-primary { color: #e0e0e0 !important; }
+        .text-secondary { color: #b0b0b0 !important; }
+        .header-text { color: #ffffff !important; }
+        .footer { background-color: #2d2d2d !important; color: #b0b0b0 !important; }
+        .footer a { color: #60a5fa !important; }
+        .info-box { background-color: #374151 !important; }
+      }
+    </style>
+  </head>
+  <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #e8eef3;">
+    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" class="email-container" style="background-color: #e8eef3;">
+      <tr>
+        <td style="padding: 40px 20px;">
+          <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="max-width: 600px; margin: 0 auto;">
+            <!-- Main Content Container -->
             <tr>
-                <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>Position</strong></td>
-                <td style="padding: 10px; border: 1px solid #e0e0e0;"><%= jobTitle %></td>
-            </tr>
-            <tr style="background-color: #f8f9fa;">
-                <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>Base Compensation</strong></td>
-                <td style="padding: 10px; border: 1px solid #e0e0e0;"><%= currency %> <%= baseAmount %></td>
-            </tr>
-            <tr>
-                <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>Commission Rate</strong></td>
-                <td style="padding: 10px; border: 1px solid #e0e0e0;"><%= commissionRate %>%</td>
-            </tr>
-            <tr style="background-color: #f8f9fa;">
-                <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>Commission Amount</strong></td>
-                <td style="padding: 10px; border: 1px solid #e0e0e0;"><%= currency %> <%= commissionAmount %></td>
-            </tr>
-            <tr>
-                <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>VAT (7.5%)</strong></td>
-                <td style="padding: 10px; border: 1px solid #e0e0e0;"><%= currency %> <%= vatAmount %></td>
-            </tr>
-            <tr style="background-color: #e8f5e9;">
-                <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>Total Amount Due</strong></td>
-                <td style="padding: 10px; border: 1px solid #e0e0e0; font-size: 1.2em; font-weight: bold; color: #2e7d32;"><%= currency %> <%= totalAmount %></td>
-            </tr>
-        </table>
+              <td class="email-content" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                
+                <!-- Logo Header -->
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                  <tr>
+                    <td style="padding: 32px 32px 24px 32px; text-align: center;">
+                      <img src="https://jobstack.org/email-assets/logo.svg" alt="Jobstack" width="120" height="58" style="display: block; margin: 0 auto;" />
+                    </td>
+                  </tr>
+                </table>
 
-        <div style="text-align: center; margin: 30px 0;">
-            <a href="<%= paymentUrl %>" style="background-color: #4CAF50; color: white; padding: 15px 40px; text-decoration: none; border-radius: 5px; font-size: 16px; font-weight: bold; display: inline-block;">
-                Complete Payment Now
-            </a>
-        </div>
+                <!-- Content -->
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                  <tr>
+                    <td style="padding: 0 32px 32px 32px;">
+                      
+                      <h1 class="header-text" style="margin: 0 0 16px 0; font-size: 28px; font-weight: 600; color: #1a1a1a; line-height: 1.3;">Payment Required - Employee Activation</h1>
+                      
+                      <p class="text-primary" style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.5; color: #4a4a4a;">
+                        Dear <%= employerName %>,
+                      </p>
 
-        <h3 style="color: #2c3e50; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px;">What Happens Next?</h3>
-        
-        <ol style="line-height: 2;">
-            <li>Click the button above to securely complete your payment via Paystack</li>
-            <li>Once payment is confirmed, you'll immediately gain access to the candidate's contact details</li>
-            <li>An employment contract will be automatically generated for both parties to review and sign</li>
-            <li>You can then proceed with onboarding and finalize the employment arrangement</li>
-        </ol>
+                      <p class="text-primary" style="margin: 0 0 24px 0; font-size: 16px; line-height: 1.5; color: #4a4a4a;">
+                        Congratulations! <strong><%= candidateName %></strong> has accepted your employment offer for the position of <strong><%= jobTitle %></strong>.
+                      </p>
 
-        <div style="background-color: #e3f2fd; padding: 15px; border-left: 4px solid #2196F3; margin: 20px 0;">
-            <p style="margin: 0;"><strong>💡 Note:</strong> The candidate's personal contact information (email and phone number) will remain masked until payment is successfully completed.</p>
-        </div>
+                      <!-- Action Required Notice -->
+                      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 24px 0;">
+                        <tr>
+                          <td style="padding: 16px; background-color: #fff3cd; border-radius: 8px; border-left: 4px solid #ffc107;">
+                            <p style="margin: 0; font-size: 15px; font-weight: 600; color: #856404;">⚠️ Action Required: Complete Payment to Unlock Candidate Contact</p>
+                          </td>
+                        </tr>
+                      </table>
 
-        <p style="margin-top: 30px;">If you have any questions or need assistance, please contact our support team.</p>
+                      <p class="text-primary" style="margin: 0 0 24px 0; font-size: 16px; line-height: 1.5; color: #4a4a4a;">
+                        To access the candidate's full contact details and proceed with onboarding, please complete the agency commission payment.
+                      </p>
 
-        <p>Best regards,<br>
-        <strong>JobStack Talent Solutions Team</strong></p>
-    </div>
+                      <!-- Payment Breakdown -->
+                      <h3 style="margin: 0 0 16px 0; font-size: 18px; font-weight: 600; color: #1a1a1a; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">Payment Breakdown</h3>
+                      
+                      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; margin: 0 0 24px 0;">
+                        <tr style="background-color: #f9fafb;">
+                          <td style="padding: 12px 16px; border-bottom: 1px solid #e5e7eb; font-weight: 600; color: #1a1a1a;">Candidate</td>
+                          <td style="padding: 12px 16px; border-bottom: 1px solid #e5e7eb; color: #4a4a4a;"><%= candidateName %></td>
+                        </tr>
+                        <tr>
+                          <td style="padding: 12px 16px; border-bottom: 1px solid #e5e7eb; font-weight: 600; color: #1a1a1a;">Position</td>
+                          <td style="padding: 12px 16px; border-bottom: 1px solid #e5e7eb; color: #4a4a4a;"><%= jobTitle %></td>
+                        </tr>
+                        <tr style="background-color: #f9fafb;">
+                          <td style="padding: 12px 16px; border-bottom: 1px solid #e5e7eb; font-weight: 600; color: #1a1a1a;">Base Compensation</td>
+                          <td style="padding: 12px 16px; border-bottom: 1px solid #e5e7eb; color: #4a4a4a;"><%= currency %> <%= baseAmount %></td>
+                        </tr>
+                        <tr>
+                          <td style="padding: 12px 16px; border-bottom: 1px solid #e5e7eb; font-weight: 600; color: #1a1a1a;">Commission Rate</td>
+                          <td style="padding: 12px 16px; border-bottom: 1px solid #e5e7eb; color: #4a4a4a;"><%= commissionRate %>%</td>
+                        </tr>
+                        <tr style="background-color: #f9fafb;">
+                          <td style="padding: 12px 16px; border-bottom: 1px solid #e5e7eb; font-weight: 600; color: #1a1a1a;">Commission Amount</td>
+                          <td style="padding: 12px 16px; border-bottom: 1px solid #e5e7eb; color: #4a4a4a;"><%= currency %> <%= commissionAmount %></td>
+                        </tr>
+                        <tr>
+                          <td style="padding: 12px 16px; border-bottom: 1px solid #e5e7eb; font-weight: 600; color: #1a1a1a;">VAT (7.5%)</td>
+                          <td style="padding: 12px 16px; border-bottom: 1px solid #e5e7eb; color: #4a4a4a;"><%= currency %> <%= vatAmount %></td>
+                        </tr>
+                        <tr style="background-color: #d4edda;">
+                          <td style="padding: 12px 16px; font-weight: 700; font-size: 16px; color: #155724;">Total Amount Due</td>
+                          <td style="padding: 12px 16px; font-weight: 700; font-size: 18px; color: #155724;"><%= currency %> <%= totalAmount %></td>
+                        </tr>
+                      </table>
 
-    <div style="background-color: #f8f9fa; padding: 15px; text-align: center; margin-top: 20px; border-radius: 5px;">
-        <p style="margin: 0; font-size: 12px; color: #666;">
-            This is an automated email from JobStack Talent Solutions.<br>
-            Payment Reference: <%= paymentReference %>
-        </p>
-    </div>
-</body>
+                      <!-- Payment Button -->
+                      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 24px 0;">
+                        <tr>
+                          <td style="text-align: center;">
+                            <a href="<%= paymentUrl %>" style="display: inline-block; background-color: #28a745; color: #ffffff; font-size: 16px; font-weight: 600; text-decoration: none; padding: 16px 48px; border-radius: 6px;">Complete Payment Now</a>
+                          </td>
+                        </tr>
+                      </table>
+
+                      <!-- What Happens Next -->
+                      <h3 style="margin: 0 0 16px 0; font-size: 18px; font-weight: 600; color: #1a1a1a; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">What Happens Next?</h3>
+                      
+                      <ol style="margin: 0 0 24px 0; padding-left: 24px; color: #4a4a4a; line-height: 1.8;">
+                        <li>Click the button above to securely complete your payment via Paystack</li>
+                        <li>Once payment is confirmed, you'll immediately gain access to the candidate's contact details</li>
+                        <li>An employment contract will be automatically generated for both parties to review and sign</li>
+                        <li>You can then proceed with onboarding and finalize the employment arrangement</li>
+                      </ol>
+
+                      <!-- Note -->
+                      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 24px 0;">
+                        <tr>
+                          <td style="padding: 16px; background-color: #e3f2fd; border-radius: 8px; border-left: 4px solid #2563eb;">
+                            <p style="margin: 0; font-size: 14px; color: #1565c0;">
+                              <strong>💡 Note:</strong> The candidate's personal contact information (email and phone number) will remain masked until payment is successfully completed.
+                            </p>
+                          </td>
+                        </tr>
+                      </table>
+
+                      <p class="text-primary" style="margin: 0; font-size: 16px; line-height: 1.5; color: #4a4a4a;">
+                        If you have any questions or need assistance, please contact our support team.
+                      </p>
+
+                    </td>
+                  </tr>
+                </table>
+
+                <!-- Footer -->
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" class="footer" style="background-color: #f9fafb; border-top: 1px solid #e5e7eb;">
+                  <tr>
+                    <td style="padding: 32px 32px 24px 32px;">
+                      
+                      <p class="text-secondary" style="margin: 0 0 8px 0; font-size: 14px; line-height: 1.5; color: #6b7280; text-align: center;">
+                        This is an automated email from Jobstack Talent Solutions.<br>
+                        Payment Reference: <%= paymentReference %>
+                      </p>
+
+                      <p class="text-secondary" style="margin: 0 0 16px 0; font-size: 14px; line-height: 1.5; color: #6b7280; text-align: center;">
+                        Questions or need support? Get in touch with us at 
+                        <a href="mailto:support@jobstack.org" style="color: #2563eb; text-decoration: underline;">support@jobstack.org</a>.<br>
+                        Follow us on 
+                        <a href="https://twitter.com/jobstack" style="color: #2563eb; text-decoration: none;">Twitter</a>, 
+                        <a href="https://facebook.com/jobstack" style="color: #2563eb; text-decoration: none;">Facebook</a> and 
+                        <a href="https://instagram.com/jobstack" style="color: #2563eb; text-decoration: none;">Instagram</a>.
+                      </p>
+
+                      <p class="text-secondary" style="margin: 0; font-size: 12px; line-height: 1.5; color: #9ca3af; text-align: center;">
+                        Don't want any more emails from Jobstack? <a href="https://jobstack.org/unsubscribe" style="color: #2563eb; text-decoration: underline;">Unsubscribe</a>.
+                      </p>
+
+                    </td>
+                  </tr>
+                </table>
+
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
 </html>

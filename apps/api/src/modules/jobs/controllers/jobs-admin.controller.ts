@@ -25,7 +25,7 @@ import {
 } from '../dto';
 import { JobApplicationStatus } from '@app/common/database/entities/schema.enum';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, In } from 'typeorm';
+import { Repository, In, MoreThan } from 'typeorm';
 import { Job, JobApplication } from '@app/common/database/entities';
 
 @Controller('jobs/admin')
@@ -151,7 +151,7 @@ export class JobsAdminController {
       };
     }
 
-    // Get all applications with jobseeker profiles
+    // Get all applications with jobseeker profiles (for response shaping)
     const applications = await this.applicationRepo.find({
       where: { jobId },
       relations: [
@@ -162,36 +162,43 @@ export class JobsAdminController {
       order: { createdAt: 'DESC' },
     });
 
-    // Re-run vetting to get scores (since they're not stored persistently yet)
-    const vettingResult =
+    // Check if there are new or unvetted applications that require re-vetting
+    const hasNewApplications =
+      job.vettingCompletedAt &&
+      (await this.applicationRepo.count({
+        where: {
+          jobId,
+          createdAt: MoreThan(job.vettingCompletedAt),
+        },
+      })) > 0;
+
+    const hasUnvettedApplications = applications.some(
+      (app) => !app.vettingScore || !app.vettedAt,
+    );
+
+    // Only rerun vetting when needed; otherwise rely on stored scores
+    if (hasNewApplications || hasUnvettedApplications) {
       await this.jobVettingService.vetJobApplications(jobId);
+    }
 
     return {
       success: true,
       vettingCompleted: true,
       vettingCompletedAt: job.vettingCompletedAt,
       highlightedCandidateCount: job.highlightedCandidateCount,
-      applications: vettingResult.vettedApplicants.map((vettedApp) => {
-        // Find the corresponding application with properly loaded relations
-        const application = applications.find(
-          (app) => app.id === vettedApp.applicationId,
-        );
-
-        if (!application) {
-          throw new Error(`Application ${vettedApp.applicationId} not found`);
-        }
-
-        return {
-          applicationId: vettedApp.applicationId,
+      applications: applications
+        .filter((app) => app.vettingScore !== null && app.vettingScore !== undefined)
+        .map((application) => ({
+          applicationId: application.id,
           jobseekerProfileId: application.jobseekerProfile.id,
-          score: vettedApp.score,
-          isHighlighted: vettedApp.isHighlighted,
-          profileCompleteness: vettedApp.profileCompleteness,
-          proximityScore: vettedApp.proximityScore,
-          experienceScore: vettedApp.experienceScore,
-          skillMatchScore: vettedApp.skillMatchScore,
-          applicationSpeedScore: vettedApp.applicationSpeedScore,
-          isEmployed: vettedApp.isEmployed,
+          score: application.vettingScore,
+          isHighlighted: !!application.vettingIsHighlighted,
+          profileCompleteness: application.vettingProfileCompleteness ?? 0,
+          proximityScore: application.vettingProximityScore ?? 0,
+          experienceScore: application.vettingExperienceScore ?? 0,
+          skillMatchScore: application.vettingSkillMatchScore ?? 0,
+          applicationSpeedScore: application.vettingApplicationSpeedScore ?? 0,
+          isEmployed: false, // Employment is checked during vetting; not persisted
           status: application.status,
           screeningMeetingLink: application.screeningMeetingLink,
           screeningScheduledAt: application.screeningScheduledAt,
@@ -220,8 +227,7 @@ export class JobsAdminController {
               }),
             ),
           },
-        };
-      }),
+        })),
     };
   }
 

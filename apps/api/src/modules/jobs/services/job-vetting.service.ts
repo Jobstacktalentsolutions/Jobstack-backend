@@ -56,9 +56,7 @@ export class JobVettingService {
     private readonly notificationService: NotificationService,
   ) {}
 
-  /**
-   * Main vetting method - ranks ALL applicants and highlights top N
-   */
+  // Main vetting method - orchestrates scoring and highlighting
   async vetJobApplications(jobId: string): Promise<VettingResult> {
     this.logger.log(`Starting vetting process for job ${jobId}`);
 
@@ -72,7 +70,7 @@ export class JobVettingService {
       throw new Error(`Job ${jobId} not found`);
     }
 
-    // Get all applications for this job
+    // Get all applications for this job (with profiles and skills for scoring)
     const applications = await this.applicationRepo.find({
       where: { jobId },
       relations: [
@@ -92,75 +90,21 @@ export class JobVettingService {
       };
     }
 
-    // Filter out employed applicants and score the rest
-    const vettedApplicants: VettedApplicant[] = [];
-
-    for (const application of applications) {
-      const isEmployed = await this.checkNotAlreadyEmployed(
-        application.jobseekerProfileId,
-      );
-
-      // Skip employed applicants
-      if (isEmployed) {
-        this.logger.debug(
-          `Skipping employed applicant ${application.jobseekerProfileId}`,
-        );
-        continue;
-      }
-
-      const score = await this.calculateApplicantScore(application, job);
-      const profileCompleteness = this.calculateProfileCompleteness(
-        application.jobseekerProfile,
-      );
-      const proximityScore = this.calculateProximityScore(
-        job,
-        application.jobseekerProfile,
-      );
-      const experienceScore = this.calculateExperienceScore(
-        application.jobseekerProfile,
-        job,
-      );
-      const skillMatchScore = this.calculateSkillMatchScore(
-        application.jobseekerProfile,
-        job,
-      );
-      const applicationSpeedScore = this.calculateApplicationSpeedScore(
-        application,
-        job,
-      );
-
-      vettedApplicants.push({
-        applicationId: application.id,
-        jobseekerProfileId: application.jobseekerProfileId,
-        score,
-        isHighlighted: false, // Will be set later
-        profileCompleteness,
-        proximityScore,
-        experienceScore,
-        skillMatchScore,
-        applicationSpeedScore,
-        isEmployed,
-      });
-    }
-
-    // Sort by score (highest first)
-    vettedApplicants.sort((a, b) => b.score - a.score);
-
-    // Highlight top candidates
-    const highlightedCount = getHighlightedCandidateCount(
-      job.performCustomScreening,
-      job.highlightedCandidateCount,
+    // Calculate or reuse scores for all relevant applications
+    const vettedApplicants = await this.calculateAndPersistVettingScores(
+      job,
+      applications,
     );
 
-    for (
-      let i = 0;
-      i < Math.min(highlightedCount, vettedApplicants.length);
-      i++
-    ) {
-      vettedApplicants[i].isHighlighted = true;
-    }
+    // Highlight top candidates and persist highlight flags
+    const highlightedCount = this.applyHighlighting(
+      job,
+      vettedApplicants,
+      applications,
+    );
 
-    // Update application statuses
+    // Persist updated vetting data and statuses in a single save where possible
+    await this.applicationRepo.save(applications);
     await this.updateApplicationStatuses(vettedApplicants);
 
     // Update job vetting completion
@@ -179,6 +123,125 @@ export class JobVettingService {
       highlightedCount,
       vettedApplicants,
     };
+  }
+
+  // Calculate or reuse scores for all non-employed applications and persist them on entities
+  private async calculateAndPersistVettingScores(
+    job: Job,
+    applications: JobApplication[],
+  ): Promise<VettingResult['vettedApplicants']> {
+    const vettedApplicants: VettedApplicant[] = [];
+
+    for (const application of applications) {
+      const isEmployed = await this.checkNotAlreadyEmployed(
+        application.jobseekerProfileId,
+      );
+
+      // Skip employed applicants when building vetting results
+      if (isEmployed) {
+        this.logger.debug(
+          `Skipping employed applicant ${application.jobseekerProfileId}`,
+        );
+        continue;
+      }
+
+      // Decide whether to recompute scores or reuse existing persisted scores
+      const needsRecompute =
+        !application.vettingScore ||
+        !application.vettedAt ||
+        (job.vettingCompletedAt &&
+          application.createdAt > job.vettingCompletedAt);
+
+      let score =
+        application.vettingScore !== null && application.vettingScore !== undefined
+          ? Number(application.vettingScore)
+          : 0;
+      let profileCompleteness =
+        application.vettingProfileCompleteness ?? undefined;
+      let proximityScore = application.vettingProximityScore ?? undefined;
+      let experienceScore = application.vettingExperienceScore ?? undefined;
+      let skillMatchScore = application.vettingSkillMatchScore ?? undefined;
+      let applicationSpeedScore =
+        application.vettingApplicationSpeedScore ?? undefined;
+
+      if (needsRecompute) {
+        // Recalculate scores when there is no previous vetting or this is a new application
+        profileCompleteness = this.calculateProfileCompleteness(
+          application.jobseekerProfile,
+        );
+        proximityScore = this.calculateProximityScore(
+          job,
+          application.jobseekerProfile,
+        );
+        experienceScore = this.calculateExperienceScore(
+          application.jobseekerProfile,
+          job,
+        );
+        skillMatchScore = this.calculateSkillMatchScore(
+          application.jobseekerProfile,
+          job,
+        );
+        applicationSpeedScore = this.calculateApplicationSpeedScore(
+          application,
+          job,
+        );
+        score = await this.calculateApplicantScore(application, job);
+
+        // Persist the recalculated scores on the application entity
+        application.vettingScore = score;
+        application.vettingProfileCompleteness = profileCompleteness;
+        application.vettingProximityScore = proximityScore;
+        application.vettingExperienceScore = experienceScore;
+        application.vettingSkillMatchScore = skillMatchScore;
+        application.vettingApplicationSpeedScore = applicationSpeedScore;
+        application.vettedAt = new Date();
+      }
+
+      vettedApplicants.push({
+        applicationId: application.id,
+        jobseekerProfileId: application.jobseekerProfileId,
+        score,
+        isHighlighted: false, // Will be set in highlighting step
+        profileCompleteness: profileCompleteness ?? 0,
+        proximityScore: proximityScore ?? 0,
+        experienceScore: experienceScore ?? 0,
+        skillMatchScore: skillMatchScore ?? 0,
+        applicationSpeedScore: applicationSpeedScore ?? 0,
+        isEmployed,
+      });
+    }
+
+    return vettedApplicants;
+  }
+
+  // Highlight top candidates based on score and update entities
+  private applyHighlighting(
+    job: Job,
+    vettedApplicants: VettedApplicant[],
+    applications: JobApplication[],
+  ): number {
+    // Sort by score (highest first)
+    vettedApplicants.sort((a, b) => b.score - a.score);
+
+    // Determine how many candidates should be highlighted
+    const highlightedCount = getHighlightedCandidateCount(
+      job.performCustomScreening,
+      job.highlightedCandidateCount,
+    );
+
+    for (let i = 0; i < vettedApplicants.length; i++) {
+      const va = vettedApplicants[i];
+      const isHighlighted = i < highlightedCount;
+      va.isHighlighted = isHighlighted;
+
+      // Persist highlight flag alongside scores on corresponding entity
+      const application = applications.find((app) => app.id === va.applicationId);
+      if (application) {
+        application.vettingIsHighlighted = isHighlighted;
+      }
+    }
+
+    return highlightedCount;
   }
 
   /**

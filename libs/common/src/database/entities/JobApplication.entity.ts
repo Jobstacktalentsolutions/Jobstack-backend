@@ -68,4 +68,36 @@ export class JobApplication extends BaseEntity {
   // Indicates if admin has accepted the current screening time (including employer proposals)
   @Column({ type: 'boolean', nullable: true })
   adminAccepted?: boolean;
+
+  // Overall vetting score for this application (0-100)
+  @Column({ type: 'decimal', precision: 12, scale: 2, nullable: true })
+  vettingScore?: number | null;
+
+  // Profile completeness score used during vetting (0-100)
+  @Column({ type: 'int', nullable: true })
+  vettingProfileCompleteness?: number | null;
+
+  // Proximity score used during vetting (0-100)
+  @Column({ type: 'int', nullable: true })
+  vettingProximityScore?: number | null;
+
+  // Experience score used during vetting (0-100)
+  @Column({ type: 'int', nullable: true })
+  vettingExperienceScore?: number | null;
+
+  // Skill match score used during vetting (0-100)
+  @Column({ type: 'int', nullable: true })
+  vettingSkillMatchScore?: number | null;
+
+  // Application speed score used during vetting (0-100)
+  @Column({ type: 'int', nullable: true })
+  vettingApplicationSpeedScore?: number | null;
+
+  // Whether this application is currently highlighted after vetting
+  @Column({ type: 'boolean', nullable: true })
+  vettingIsHighlighted?: boolean | null;
+
+  // Timestamp when this application was last vetted
+  @Column({ type: 'timestamp', nullable: true })
+  vettedAt?: Date | null;
 }

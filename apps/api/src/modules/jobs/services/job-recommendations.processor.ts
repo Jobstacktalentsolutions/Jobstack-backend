@@ -196,7 +196,9 @@ export class JobRecommendationsProcessor {
       }
     }
     if (profile.preferredEmploymentArrangement && job.employmentArrangement) {
-      if (profile.preferredEmploymentArrangement === job.employmentArrangement) {
+      if (
+        profile.preferredEmploymentArrangement === job.employmentArrangement
+      ) {
         employmentPreferenceScore += 4;
       }
     }
@@ -323,10 +325,3 @@ export class JobRecommendationsProcessor {
       .orderBy('job.createdAt', 'DESC'); // Add default ordering by recency
   }
 }
-
-
-
-
-
-
-

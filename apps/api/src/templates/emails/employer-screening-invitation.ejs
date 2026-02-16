@@ -1,103 +1,208 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="supported-color-schemes" content="light dark" />
     <title>Screening Scheduled - <%= jobTitle %></title>
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f8f9fa;
-        }
-        .container {
-            background-color: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        .logo {
-            font-size: 24px;
-            font-weight: bold;
-            color: #2563eb;
-            margin-bottom: 10px;
-        }
-        h1 {
-            color: #1f2937;
-            margin-bottom: 20px;
-            font-size: 24px;
-        }
-        .notification-banner {
-            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
-            color: white;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-            margin: 20px 0;
-        }
-        .job-info {
-            background-color: #f3f4f6;
-            padding: 20px;
-            border-radius: 8px;
-            margin: 20px 0;
-        }
-        .candidate-info {
-            background-color: #fef3c7;
-            border: 2px solid #f59e0b;
-            padding: 20px;
-            border-radius: 8px;
-            margin: 20px 0;
-        }
-        .candidate-info h3 {
-            margin-top: 0;
-            color: #92400e;
-        }
-        .meeting-details {
-            background-color: #f0f9ff;
-            border: 2px solid #0ea5e9;
-            padding: 20px;
-            border-radius: 8px;
-            margin: 20px 0;
-        }
-        .meeting-details h3 {
-            margin-top: 0;
-            color: #0c4a6e;
-        }
-        .meeting-link {
-            display: inline-block;
-            background-color: #0ea5e9;
-            color: white;
-            padding: 12px 24px;
-            text-decoration: none;
-            border-radius: 6px;
-            font-weight: 600;
-            margin: 10px 0;
-        }
-        .meeting-link:hover {
-            background-color: #0284c7;
-        }
-        .meeting-info {
-            margin: 15px 0;
-        }
-        .meeting-info strong {
-            color: #0c4a6e;
-        }
-        .role-info {
-            background-color: #eff6ff;
-            border-left: 4px solid #3b82f6;
-            padding: 20px;
-            margin: 20px 0;
-        }
-        .role-info h3 {
-            margin-top: 0;
+      :root {
+        color-scheme: light dark;
+        supported-color-schemes: light dark;
+      }
+      @media (prefers-color-scheme: dark) {
+        .email-container { background-color: #1a1a1a !important; }
+        .email-content { background-color: #2d2d2d !important; color: #e0e0e0 !important; }
+        .text-primary { color: #e0e0e0 !important; }
+        .text-secondary { color: #b0b0b0 !important; }
+        .header-text { color: #ffffff !important; }
+        .footer { background-color: #2d2d2d !important; color: #b0b0b0 !important; }
+        .footer a { color: #60a5fa !important; }
+        .info-box { background-color: #374151 !important; }
+      }
+    </style>
+  </head>
+  <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #e8eef3;">
+    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" class="email-container" style="background-color: #e8eef3;">
+      <tr>
+        <td style="padding: 40px 20px;">
+          <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="max-width: 600px; margin: 0 auto;">
+            <!-- Main Content Container -->
+            <tr>
+              <td class="email-content" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                
+                <!-- Logo Header -->
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                  <tr>
+                    <td style="padding: 32px 32px 24px 32px; text-align: center;">
+                      <img src="https://jobstack.org/email-assets/logo.svg" alt="Jobstack" width="120" height="58" style="display: block; margin: 0 auto;" />
+                    </td>
+                  </tr>
+                </table>
+
+                <!-- Content -->
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                  <tr>
+                    <td style="padding: 0 32px 32px 32px;">
+                      
+                      <h1 class="header-text" style="margin: 0 0 16px 0; font-size: 28px; font-weight: 600; color: #1a1a1a; line-height: 1.3;">Screening Interview Scheduled</h1>
+
+                      <!-- Notification Banner -->
+                      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 24px 0;">
+                        <tr>
+                          <td style="padding: 24px; background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); border-radius: 8px; text-align: center;">
+                            <h2 style="margin: 0 0 8px 0; font-size: 20px; font-weight: 600; color: #ffffff;">Custom Screening Invitation</h2>
+                            <p style="margin: 0; font-size: 16px; color: #ffffff;">You've been invited to screen a candidate for your position.</p>
+                          </td>
+                        </tr>
+                      </table>
+
+                      <!-- Job Info -->
+                      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" class="info-box" style="background-color: #f9fafb; border-radius: 8px; margin: 0 0 24px 0;">
+                        <tr>
+                          <td style="padding: 20px;">
+                            <h3 style="margin: 0 0 8px 0; font-size: 18px; font-weight: 600; color: #1a1a1a;">Position: <%= jobTitle %></h3>
+                            <p class="text-secondary" style="margin: 0; font-size: 14px; color: #6b7280;">Job ID: <%= jobId %></p>
+                          </td>
+                        </tr>
+                      </table>
+
+                      <!-- Candidate Info -->
+                      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 24px 0;">
+                        <tr>
+                          <td style="padding: 20px; background-color: #fff3cd; border-radius: 8px; border: 2px solid #ffc107;">
+                            <h3 style="margin: 0 0 12px 0; font-size: 18px; font-weight: 600; color: #856404;">Candidate Information</h3>
+                            <p style="margin: 0 0 8px 0; font-size: 15px; color: #856404;"><strong>Name:</strong> <%= candidateName %></p>
+                            <p style="margin: 0; font-size: 15px; color: #856404;"><strong>Application ID:</strong> <%= applicationId %></p>
+                          </td>
+                        </tr>
+                      </table>
+
+                      <!-- Meeting Details -->
+                      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 24px 0;">
+                        <tr>
+                          <td style="padding: 20px; background-color: #f0f9ff; border-radius: 8px; border: 2px solid #0ea5e9;">
+                            <h3 style="margin: 0 0 16px 0; font-size: 18px; font-weight: 600; color: #0c4a6e;">Meeting Details</h3>
+                            
+                            <div style="margin: 0 0 16px 0;">
+                              <strong style="color: #0c4a6e;">Scheduled Date & Time:</strong><br>
+                              <span style="color: #0c4a6e;"><%= scheduledDateTime %></span>
+                            </div>
+
+                            <% if (meetingLink) { %>
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin: 0;">
+                              <tr>
+                                <td style="text-align: center;">
+                                  <a href="<%= meetingLink %>" style="display: inline-block; background-color: #0ea5e9; color: #ffffff; font-size: 16px; font-weight: 600; text-decoration: none; padding: 12px 32px; border-radius: 6px;">Join Screening Interview</a>
+                                </td>
+                              </tr>
+                            </table>
+                            <% } %>
+                          </td>
+                        </tr>
+                      </table>
+
+                      <% if (prepInfo) { %>
+                      <!-- Preparation Info -->
+                      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" class="info-box" style="background-color: #f9fafb; border-radius: 8px; margin: 0 0 24px 0;">
+                        <tr>
+                          <td style="padding: 20px;">
+                            <h4 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #1a1a1a;">Preparation Information:</h4>
+                            <p style="margin: 0; font-size: 15px; color: #4a4a4a; white-space: pre-wrap;"><%= prepInfo %></p>
+                          </td>
+                        </tr>
+                      </table>
+                      <% } %>
+
+                      <!-- Role Info -->
+                      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 24px 0;">
+                        <tr>
+                          <td style="padding: 20px; background-color: #eff6ff; border-radius: 8px; border-left: 4px solid #3b82f6;">
+                            <h3 style="margin: 0 0 12px 0; font-size: 18px; font-weight: 600; color: #1e40af;">Your Role in This Screening</h3>
+                            <p style="margin: 0 0 8px 0; font-size: 15px; color: #1e40af;"><strong>As the employer, you will:</strong></p>
+                            <ul style="margin: 0 0 12px 0; padding-left: 20px; color: #1e40af;">
+                              <li style="margin: 4px 0;">Conduct the screening interview with the candidate</li>
+                              <li style="margin: 4px 0;">Assess the candidate's suitability for your position</li>
+                              <li style="margin: 4px 0;">Ask relevant questions about their experience and qualifications</li>
+                              <li style="margin: 4px 0;">Make the final decision on whether to hire this candidate</li>
+                            </ul>
+                            <p style="margin: 0 0 8px 0; font-size: 15px; color: #1e40af;"><strong>The Jobstack admin will:</strong></p>
+                            <ul style="margin: 0; padding-left: 20px; color: #1e40af;">
+                              <li style="margin: 4px 0;">Join as an invigilator representing Jobstack</li>
+                              <li style="margin: 4px 0;">Ensure the screening process is professional and fair</li>
+                              <li style="margin: 4px 0;">Provide support and facilitate the conversation</li>
+                              <li style="margin: 4px 0;">Record the outcome for Jobstack's records</li>
+                            </ul>
+                          </td>
+                        </tr>
+                      </table>
+
+                      <!-- Important Reminders -->
+                      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 24px 0;">
+                        <tr>
+                          <td style="padding: 20px; background-color: #fef2f2; border-radius: 8px; border: 1px solid #dc2626;">
+                            <h4 style="margin: 0 0 12px 0; font-size: 16px; font-weight: 600; color: #991b1b;">Important Reminders</h4>
+                            <ul style="margin: 0; padding-left: 20px; color: #991b1b;">
+                              <li style="margin: 4px 0;">Please join the meeting at the scheduled time</li>
+                              <li style="margin: 4px 0;">Prepare your questions and evaluation criteria beforehand</li>
+                              <li style="margin: 4px 0;">The admin will be present throughout the screening</li>
+                              <li style="margin: 4px 0;">If you need to reschedule, contact Jobstack support immediately</li>
+                            </ul>
+                          </td>
+                        </tr>
+                      </table>
+
+                      <!-- Thank You Banner -->
+                      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 24px 0;">
+                        <tr>
+                          <td style="padding: 16px; background-color: #d4edda; border-radius: 8px; border: 1px solid #28a745; text-align: center;">
+                            <p style="margin: 0; color: #155724;">
+                              <strong>Thank you for using Jobstack's screening service!</strong><br>
+                              We're here to help you find the perfect candidate.
+                            </p>
+                          </td>
+                        </tr>
+                      </table>
+
+                    </td>
+                  </tr>
+                </table>
+
+                <!-- Footer -->
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" class="footer" style="background-color: #f9fafb; border-top: 1px solid #e5e7eb;">
+                  <tr>
+                    <td style="padding: 32px 32px 24px 32px;">
+                      
+                      <p class="text-secondary" style="margin: 0 0 8px 0; font-size: 14px; line-height: 1.5; color: #6b7280; text-align: center;">
+                        This is an automated notification from Jobstack.
+                      </p>
+
+                      <p class="text-secondary" style="margin: 0 0 16px 0; font-size: 14px; line-height: 1.5; color: #6b7280; text-align: center;">
+                        Questions or need support? Get in touch with us at 
+                        <a href="mailto:support@jobstack.org" style="color: #2563eb; text-decoration: underline;">support@jobstack.org</a>.<br>
+                        Follow us on 
+                        <a href="https://twitter.com/jobstack" style="color: #2563eb; text-decoration: none;">Twitter</a>, 
+                        <a href="https://facebook.com/jobstack" style="color: #2563eb; text-decoration: none;">Facebook</a> and 
+                        <a href="https://instagram.com/jobstack" style="color: #2563eb; text-decoration: none;">Instagram</a>.
+                      </p>
+
+                      <p class="text-secondary" style="margin: 0; font-size: 12px; line-height: 1.5; color: #9ca3af; text-align: center;">
+                        Don't want any more emails from Jobstack? <a href="https://jobstack.org/unsubscribe" style="color: #2563eb; text-decoration: underline;">Unsubscribe</a>.
+                      </p>
+
+                    </td>
+                  </tr>
+                </table>
+
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
             color: #1e40af;
         }
         .important-note {
