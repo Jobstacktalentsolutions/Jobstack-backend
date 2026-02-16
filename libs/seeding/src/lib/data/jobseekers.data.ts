@@ -6,6 +6,10 @@ import {
   WorkMode,
   SkillCategory,
 } from '@app/common/database/entities/schema.enum';
+import { hashSync } from 'bcryptjs';
+
+// Precompute shared password hash for all seeded jobseekers
+const passwordHash = hashSync('password123', 10);
 
 // Comprehensive jobseeker data for testing the automatic vetting system
 // These profiles vary in experience, skills, completeness, and location for thorough testing
@@ -20,8 +24,7 @@ export const JOBSEEKERS_DATA: any[] = [
     address: '15 Victoria Island, Lagos',
     state: 'Lagos',
     city: 'Victoria Island',
-    passwordHash:
-      '$2a$12$LQv3c1yqBwrf8z/rjOAh4eG3i8F.EaTtLZ0eBWqz5d3J9Qx6lZ9nC',
+    passwordHash,
 
     // Profile data
     jobTitle: 'Senior Full-Stack Developer',
@@ -70,8 +73,7 @@ export const JOBSEEKERS_DATA: any[] = [
     address: '22 Wuse II, Abuja',
     state: 'FCT',
     city: 'Abuja',
-    passwordHash:
-      '$2a$12$LQv3c1yqBwrf8z/rjOAh4eG3i8F.EaTtLZ0eBWqz5d3J9Qx6lZ9nC',
+    passwordHash,
 
     jobTitle: 'Data Analyst',
     brief:
@@ -114,8 +116,7 @@ export const JOBSEEKERS_DATA: any[] = [
     address: '8 Ikeja GRA, Lagos',
     state: 'Lagos',
     city: 'Ikeja',
-    passwordHash:
-      '$2a$12$LQv3c1yqBwrf8z/rjOAh4eG3i8F.EaTtLZ0eBWqz5d3J9Qx6lZ9nC',
+    passwordHash,
 
     jobTitle: 'Frontend Developer',
     brief: 'Recent graduate passionate about modern web development',
@@ -157,8 +158,7 @@ export const JOBSEEKERS_DATA: any[] = [
     address: '45 Ikoyi, Lagos',
     state: 'Lagos',
     city: 'Ikoyi',
-    passwordHash:
-      '$2a$12$LQv3c1yqBwrf8z/rjOAh4eG3i8F.EaTtLZ0eBWqz5d3J9Qx6lZ9nC',
+    passwordHash,
 
     jobTitle: 'Financial Analyst',
     brief: 'CPA with extensive experience in financial modeling and analysis',
@@ -200,8 +200,7 @@ export const JOBSEEKERS_DATA: any[] = [
     address: '12 Wuse I, Abuja',
     state: 'FCT',
     city: 'Abuja',
-    passwordHash:
-      '$2a$12$LQv3c1yqBwrf8z/rjOAh4eG3i8F.EaTtLZ0eBWqz5d3J9Qx6lZ9nC',
+    passwordHash,
 
     jobTitle: 'Sales Manager',
     brief:
@@ -244,8 +243,7 @@ export const JOBSEEKERS_DATA: any[] = [
     address: '5 Surulere, Lagos',
     state: 'Lagos',
     city: 'Surulere',
-    passwordHash:
-      '$2a$12$LQv3c1yqBwrf8z/rjOAh4eG3i8F.EaTtLZ0eBWqz5d3J9Qx6lZ9nC',
+    passwordHash,
 
     jobTitle: 'Customer Service Representative',
     brief: 'Dedicated professional with excellent interpersonal skills',
@@ -281,8 +279,7 @@ export const JOBSEEKERS_DATA: any[] = [
     address: '18 Yaba, Lagos',
     state: 'Lagos',
     city: 'Yaba',
-    passwordHash:
-      '$2a$12$LQv3c1yqBwrf8z/rjOAh4eG3i8F.EaTtLZ0eBWqz5d3J9Qx6lZ9nC',
+    passwordHash,
 
     jobTitle: 'Housekeeper',
     brief: 'Experienced in residential cleaning and home management',
@@ -319,8 +316,7 @@ export const JOBSEEKERS_DATA: any[] = [
     address: null, // Missing address
     state: null, // Missing location data
     city: null,
-    passwordHash:
-      '$2a$12$LQv3c1yqBwrf8z/rjOAh4eG3i8F.EaTtLZ0eBWqz5d3J9Qx6lZ9nC',
+    passwordHash,
 
     jobTitle: null, // Missing job title
     brief: null, // Missing brief
@@ -346,8 +342,7 @@ export const JOBSEEKERS_DATA: any[] = [
     address: '30 Kaduna South, Kaduna',
     state: 'Kaduna',
     city: 'Kaduna',
-    passwordHash:
-      '$2a$12$LQv3c1yqBwrf8z/rjOAh4eG3i8F.EaTtLZ0eBWqz5d3J9Qx6lZ9nC',
+    passwordHash,
 
     jobTitle: 'Security Guard',
     brief: 'Professional security guard with military background',
@@ -384,8 +379,7 @@ export const JOBSEEKERS_DATA: any[] = [
     address: '7 Ojuelegba, Lagos',
     state: 'Lagos',
     city: 'Surulere',
-    passwordHash:
-      '$2a$12$LQv3c1yqBwrf8z/rjOAh4eG3i8F.EaTtLZ0eBWqz5d3J9Qx6lZ9nC',
+    passwordHash,
 
     jobTitle: 'Professional Driver',
     brief: 'Licensed professional driver with clean driving record',

@@ -67,6 +67,16 @@ export class JobApplicationsController {
     );
   }
 
+  // Lists candidate-stage applications across all jobs owned by the employer
+  @Get('employer/candidates')
+  @UseGuards(EmployerJwtGuard)
+  getEmployerCandidates(
+    @CurrentUser() user: CurrentUserPayload,
+    @Query() query: ApplicationQueryDto,
+  ) {
+    return this.jobApplicationsService.getEmployerCandidates(user.id, query);
+  }
+
   // Updates application status as an employer
   @Patch(':applicationId/status')
   @UseGuards(EmployerJwtGuard)

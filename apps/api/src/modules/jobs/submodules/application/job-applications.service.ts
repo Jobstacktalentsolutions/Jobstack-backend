@@ -110,6 +110,34 @@ export class JobApplicationsService {
     return this.executePagedApplicationQuery(qb, query);
   }
 
+  // Lists all candidate-stage applications across employer jobs
+  async getEmployerCandidates(
+    employerId: string,
+    query: ApplicationQueryDto,
+  ) {
+    // Candidate stages include screening and post-screening states
+    const candidateStatuses: JobApplicationStatus[] = [
+      JobApplicationStatus.SELECTED_FOR_SCREENING,
+      JobApplicationStatus.SCREENING_COMPLETED,
+      JobApplicationStatus.EMPLOYER_ACCEPTED,
+      JobApplicationStatus.APPLICANT_ACCEPTED,
+      JobApplicationStatus.AWAITING_PAYMENT,
+      JobApplicationStatus.HIRED,
+    ];
+
+    const qb = this.baseApplicationQuery().where(
+      'job.employerId = :employerId',
+      { employerId },
+    );
+
+    qb.andWhere('application.status IN (:...candidateStatuses)', {
+      candidateStatuses,
+    });
+
+    this.applyApplicationFilters(qb, query);
+    return this.executePagedApplicationQuery(qb, query);
+  }
+
   // Updates application status for employer-owned job
   async updateApplicationStatus(
     employerId: string,
