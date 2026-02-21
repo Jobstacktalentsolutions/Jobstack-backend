@@ -3,6 +3,7 @@ import {
   Get,
   Put,
   Body,
+  Query,
   UseGuards,
   Patch,
   Param,
@@ -15,6 +16,7 @@ import { VerificationStatus } from '@app/common/shared/enums/employer-docs.enum'
 import { ApprovalStatus, EmployerStatus } from '@app/common/database/entities/schema.enum';
 import { AdminRole } from '@app/common/shared/enums/roles.enum';
 import { CurrentUser, type CurrentUserPayload } from '@app/common/shared';
+import { GetAllAdminsQueryDto } from './dto/get-all-admins-query.dto';
 
 @Controller('admin')
 @UseGuards(AdminJwtGuard)
@@ -79,10 +81,22 @@ export class AdminController {
     return this.adminService.unsuspendAdmin(user.id, adminId);
   }
 
+  @Get('admins/:id')
+  async getAdminById(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') profileId: string,
+  ) {
+    const admin = await this.adminService.getAdminById(profileId);
+    return { success: true, data: admin };
+  }
+
   @Get('all')
-  async getAllAdmins(@CurrentUser() user: CurrentUserPayload) {
-    const admins = await this.adminService.getAllAdmins(user.id);
-    return { success: true, data: admins };
+  async getAllAdmins(
+    @CurrentUser() user: CurrentUserPayload,
+    @Query() query: GetAllAdminsQueryDto,
+  ) {
+    const result = await this.adminService.getAllAdmins(user.id, query);
+    return { success: true, ...result };
   }
 
   @Get('system-overview')

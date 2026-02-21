@@ -19,6 +19,7 @@ import {
   AdjustHighlightedCountDto,
   CompleteScreeningDto,
   JobQueryDto,
+  PickScreeningCandidateDto,
   SelectCandidatesForScreeningDto,
   UpdateJobDto,
   UpdateJobStatusDto,
@@ -187,7 +188,9 @@ export class JobsAdminController {
       vettingCompletedAt: job.vettingCompletedAt,
       highlightedCandidateCount: job.highlightedCandidateCount,
       applications: applications
-        .filter((app) => app.vettingScore !== null && app.vettingScore !== undefined)
+        .filter(
+          (app) => app.vettingScore !== null && app.vettingScore !== undefined,
+        )
         .map((application) => ({
           applicationId: application.id,
           jobseekerProfileId: application.jobseekerProfile.id,
@@ -347,6 +350,59 @@ export class JobsAdminController {
       success: true,
       message: `Screening completion notifications sent to ${applicationIds.length} candidates`,
       notifiedCount: applicationIds.length,
+    };
+  }
+
+  // Pick a single application as the screened candidate for a job
+  @Post(':jobId/pick-screening-candidate')
+  @UseGuards(AdminJwtGuard)
+  async pickScreeningCandidate(
+    @Param('jobId', ParseUUIDPipe) jobId: string,
+    @Body() dto: PickScreeningCandidateDto,
+  ) {
+    const { applicationId } = dto;
+
+    // Ensure the target application exists and belongs to this job
+    const application = await this.applicationRepo.findOne({
+      where: { id: applicationId, jobId },
+    });
+
+    if (!application) {
+      return {
+        success: false,
+        message: 'Application not found for this job',
+      };
+    }
+
+    // Ensure only one application per job is marked as SCREENING_COMPLETED
+    await this.applicationRepo.manager.transaction(async (manager) => {
+      // Clear any previously picked applications for this job
+      await manager.update(
+        JobApplication,
+        {
+          jobId,
+          status: JobApplicationStatus.SCREENING_COMPLETED,
+        },
+        {
+          status: JobApplicationStatus.VETTED,
+        },
+      );
+
+      // Mark the chosen application as screening completed
+      await manager.update(
+        JobApplication,
+        { id: applicationId },
+        {
+          status: JobApplicationStatus.SCREENING_COMPLETED,
+          statusUpdatedAt: new Date(),
+        },
+      );
+    });
+
+    return {
+      success: true,
+      message: 'Candidate picked successfully for employer review',
+      applicationId,
     };
   }
 }

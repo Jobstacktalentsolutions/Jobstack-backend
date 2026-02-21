@@ -405,4 +405,334 @@ export const JOBSEEKERS_DATA: any[] = [
       }, // Dispatch & Delivery
     ],
   },
+
+  // Additional technical and specialist candidates
+  {
+    id: CONSTANT_IDS.JOBSEEKERS[10],
+    firstName: 'Ngozi',
+    lastName: 'Eze',
+    email: 'ngozi.eze@example.com',
+    phoneNumber: '+2348160001000',
+    address: '10 Lekki Phase 1, Lagos',
+    state: 'Lagos',
+    city: 'Lekki',
+    passwordHash,
+
+    jobTitle: 'DevOps Engineer',
+    brief:
+      'DevOps engineer experienced with CI/CD, container orchestration and observability',
+    yearsOfExperience: 5,
+    preferredLocation: 'Lagos',
+    preferredEmploymentType: EmploymentType.FULL_TIME,
+    preferredWorkMode: WorkMode.REMOTE,
+    preferredEmploymentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
+    minExpectedSalary: 7000000,
+    maxExpectedSalary: 9500000,
+    approvalStatus: ApprovalStatus.APPROVED,
+
+    skills: [
+      {
+        skillId: CONSTANT_IDS.SKILLS[4],
+        proficiency: 'ADVANCED',
+        yearsExperience: 5,
+      }, // Node.js
+      {
+        skillId: CONSTANT_IDS.SKILLS[5],
+        proficiency: 'ADVANCED',
+        yearsExperience: 4,
+      }, // PostgreSQL
+      {
+        skillId: CONSTANT_IDS.SKILLS[18],
+        proficiency: 'INTERMEDIATE',
+        yearsExperience: 3,
+      }, // Operations Management
+    ],
+  },
+  {
+    id: CONSTANT_IDS.JOBSEEKERS[11],
+    firstName: 'Zainab',
+    lastName: 'Bello',
+    email: 'zainab.bello@example.com',
+    phoneNumber: '+2348170002000',
+    address: '3 Yaba, Lagos',
+    state: 'Lagos',
+    city: 'Yaba',
+    passwordHash,
+
+    jobTitle: 'Product Designer',
+    brief:
+      'Product designer focused on mobile experiences, prototyping and user research',
+    yearsOfExperience: 4,
+    preferredLocation: 'Lagos',
+    preferredEmploymentType: EmploymentType.FULL_TIME,
+    preferredWorkMode: WorkMode.HYBRID,
+    preferredEmploymentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
+    minExpectedSalary: 5200000,
+    maxExpectedSalary: 7600000,
+    approvalStatus: ApprovalStatus.APPROVED,
+
+    skills: [
+      {
+        skillId: CONSTANT_IDS.SKILLS[12],
+        proficiency: 'ADVANCED',
+        yearsExperience: 4,
+      }, // UI/UX Design
+      {
+        skillId: CONSTANT_IDS.SKILLS[13],
+        proficiency: 'INTERMEDIATE',
+        yearsExperience: 3,
+      }, // Graphic Design
+      {
+        skillId: CONSTANT_IDS.SKILLS[21],
+        proficiency: 'INTERMEDIATE',
+        yearsExperience: 3,
+      }, // Communication
+    ],
+  },
+  {
+    id: CONSTANT_IDS.JOBSEEKERS[12],
+    firstName: 'Samuel',
+    lastName: 'Okon',
+    email: 'samuel.okon@example.com',
+    phoneNumber: '+2348180003000',
+    address: 'Broad Street, Lagos Island',
+    state: 'Lagos',
+    city: 'Lagos Island',
+    passwordHash,
+
+    jobTitle: 'Operations Analyst',
+    brief:
+      'Operations analyst with experience in process mapping, SLAs and logistics',
+    yearsOfExperience: 5,
+    preferredLocation: 'Lagos',
+    preferredEmploymentType: EmploymentType.FULL_TIME,
+    preferredWorkMode: WorkMode.HYBRID,
+    preferredEmploymentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
+    minExpectedSalary: 4200000,
+    maxExpectedSalary: 6200000,
+    approvalStatus: ApprovalStatus.APPROVED,
+
+    skills: [
+      {
+        skillId: CONSTANT_IDS.SKILLS[18],
+        proficiency: 'ADVANCED',
+        yearsExperience: 5,
+      }, // Operations Management
+      {
+        skillId: CONSTANT_IDS.SKILLS[19],
+        proficiency: 'INTERMEDIATE',
+        yearsExperience: 3,
+      }, // Supply Chain Management
+      {
+        skillId: CONSTANT_IDS.SKILLS[10],
+        proficiency: 'INTERMEDIATE',
+        yearsExperience: 3,
+      }, // Data Analysis
+    ],
+  },
+  {
+    id: CONSTANT_IDS.JOBSEEKERS[13],
+    firstName: 'Ruth',
+    lastName: 'Nwosu',
+    email: 'ruth.nwosu@example.com',
+    phoneNumber: '+2348190004000',
+    address: 'Remote, Abuja',
+    state: 'FCT',
+    city: 'Abuja',
+    passwordHash,
+
+    jobTitle: 'Customer Support Specialist',
+    brief:
+      'Customer support specialist experienced with omnichannel support and ticketing tools',
+    yearsOfExperience: 4,
+    preferredLocation: 'Remote',
+    preferredEmploymentType: EmploymentType.FULL_TIME,
+    preferredWorkMode: WorkMode.REMOTE,
+    preferredEmploymentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
+    minExpectedSalary: 2600000,
+    maxExpectedSalary: 3600000,
+    approvalStatus: ApprovalStatus.APPROVED,
+
+    skills: [
+      {
+        skillId: CONSTANT_IDS.SKILLS[11],
+        proficiency: 'ADVANCED',
+        yearsExperience: 4,
+      }, // Customer Service
+      {
+        skillId: CONSTANT_IDS.SKILLS[21],
+        proficiency: 'ADVANCED',
+        yearsExperience: 4,
+      }, // Communication
+      {
+        skillId: CONSTANT_IDS.SKILLS[9],
+        proficiency: 'INTERMEDIATE',
+        yearsExperience: 2,
+      }, // Digital Marketing
+    ],
+  },
+  {
+    id: CONSTANT_IDS.JOBSEEKERS[14],
+    firstName: 'Ikechukwu',
+    lastName: 'Nnaji',
+    email: 'ikechukwu.nnaji@example.com',
+    phoneNumber: '+2348100005000',
+    address: 'Kaduna North, Kaduna',
+    state: 'Kaduna',
+    city: 'Kaduna',
+    passwordHash,
+
+    jobTitle: 'Security Supervisor',
+    brief:
+      'Security professional with experience supervising guards and handling incidents',
+    yearsOfExperience: 8,
+    preferredLocation: 'Kaduna',
+    preferredEmploymentType: EmploymentType.FULL_TIME,
+    preferredWorkMode: WorkMode.ON_SITE,
+    preferredEmploymentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
+    minExpectedSalary: 3000000,
+    maxExpectedSalary: 4500000,
+    approvalStatus: ApprovalStatus.APPROVED,
+
+    skills: [
+      {
+        skillId: CONSTANT_IDS.SKILLS[30],
+        proficiency: 'ADVANCED',
+        yearsExperience: 8,
+      }, // Security Guarding
+      {
+        skillId: CONSTANT_IDS.SKILLS[31],
+        proficiency: 'ADVANCED',
+        yearsExperience: 6,
+      }, // Gatekeeping
+      {
+        skillId: CONSTANT_IDS.SKILLS[18],
+        proficiency: 'INTERMEDIATE',
+        yearsExperience: 4,
+      }, // Operations Management
+    ],
+  },
+  {
+    id: CONSTANT_IDS.JOBSEEKERS[15],
+    firstName: 'Grace',
+    lastName: 'Afolabi',
+    email: 'grace.afolabi@example.com',
+    phoneNumber: '+2348110006000',
+    address: 'Opebi, Ikeja',
+    state: 'Lagos',
+    city: 'Ikeja',
+    passwordHash,
+
+    jobTitle: 'Housekeeping Supervisor',
+    brief:
+      'Experienced housekeeping supervisor managing residential and office cleaning teams',
+    yearsOfExperience: 6,
+    preferredLocation: 'Lagos',
+    preferredEmploymentType: EmploymentType.FULL_TIME,
+    preferredWorkMode: WorkMode.ON_SITE,
+    preferredEmploymentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
+    minExpectedSalary: 2400000,
+    maxExpectedSalary: 3600000,
+    approvalStatus: ApprovalStatus.APPROVED,
+
+    skills: [
+      {
+        skillId: CONSTANT_IDS.SKILLS[22],
+        proficiency: 'ADVANCED',
+        yearsExperience: 6,
+      }, // Housekeeping
+      {
+        skillId: CONSTANT_IDS.SKILLS[25],
+        proficiency: 'INTERMEDIATE',
+        yearsExperience: 4,
+      }, // Domestic Assistance
+      {
+        skillId: CONSTANT_IDS.SKILLS[18],
+        proficiency: 'INTERMEDIATE',
+        yearsExperience: 3,
+      }, // Operations Management
+    ],
+  },
+  {
+    id: CONSTANT_IDS.JOBSEEKERS[16],
+    firstName: 'Desmond',
+    lastName: 'Etim',
+    email: 'desmond.etim@example.com',
+    phoneNumber: '+2348120007000',
+    address: 'Lekki Phase 2, Lagos',
+    state: 'Lagos',
+    city: 'Lekki',
+    passwordHash,
+
+    jobTitle: 'Dispatch Rider',
+    brief:
+      'Professional rider experienced with last-mile deliveries and customer interactions',
+    yearsOfExperience: 4,
+    preferredLocation: 'Lagos',
+    preferredEmploymentType: EmploymentType.FULL_TIME,
+    preferredWorkMode: WorkMode.ON_SITE,
+    preferredEmploymentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
+    minExpectedSalary: 2200000,
+    maxExpectedSalary: 3200000,
+    approvalStatus: ApprovalStatus.APPROVED,
+
+    skills: [
+      {
+        skillId: CONSTANT_IDS.SKILLS[32],
+        proficiency: 'ADVANCED',
+        yearsExperience: 4,
+      }, // Professional Driving
+      {
+        skillId: CONSTANT_IDS.SKILLS[33],
+        proficiency: 'ADVANCED',
+        yearsExperience: 3,
+      }, // Dispatch & Delivery
+      {
+        skillId: CONSTANT_IDS.SKILLS[21],
+        proficiency: 'INTERMEDIATE',
+        yearsExperience: 3,
+      }, // Communication
+    ],
+  },
+  {
+    id: CONSTANT_IDS.JOBSEEKERS[17],
+    firstName: 'Hadiza',
+    lastName: 'Danladi',
+    email: 'hadiza.danladi@example.com',
+    phoneNumber: '+2348130008000',
+    address: 'Garki, Abuja',
+    state: 'FCT',
+    city: 'Abuja',
+    passwordHash,
+
+    jobTitle: 'Content Marketing Manager',
+    brief:
+      'Content marketer with experience in SEO, email and social media campaigns',
+    yearsOfExperience: 6,
+    preferredLocation: 'Abuja',
+    preferredEmploymentType: EmploymentType.FULL_TIME,
+    preferredWorkMode: WorkMode.REMOTE,
+    preferredEmploymentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
+    minExpectedSalary: 4200000,
+    maxExpectedSalary: 6200000,
+    approvalStatus: ApprovalStatus.APPROVED,
+
+    skills: [
+      {
+        skillId: CONSTANT_IDS.SKILLS[17],
+        proficiency: 'ADVANCED',
+        yearsExperience: 6,
+      }, // Content Marketing
+      {
+        skillId: CONSTANT_IDS.SKILLS[9],
+        proficiency: 'ADVANCED',
+        yearsExperience: 5,
+      }, // Digital Marketing
+      {
+        skillId: CONSTANT_IDS.SKILLS[21],
+        proficiency: 'ADVANCED',
+        yearsExperience: 5,
+      }, // Communication
+    ],
+  },
 ];

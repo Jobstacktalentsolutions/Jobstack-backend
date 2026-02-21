@@ -4,6 +4,7 @@ import {
   Delete,
   Put,
   Get,
+  Query,
   UseGuards,
   UseInterceptors,
   UploadedFile,
@@ -17,6 +18,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { JobSeekerJwtGuard, AdminJwtGuard } from 'apps/api/src/guards';
 import { JobseekerService } from './jobseeker.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
+import { GetAllJobSeekersQueryDto } from './dto/get-all-jobseekers-query.dto';
 import type { MulterFile } from '@app/common/shared/types';
 import { CurrentUser, type CurrentUserPayload } from '@app/common/shared';
 
@@ -160,13 +162,16 @@ export class JobseekerController {
     return { success: true, data: result };
   }
 
-  // Admin routes for managing job seekers
+  // Admin routes for managing job seekers (paginated)
   @Get('admin/all')
   @UseGuards(AdminJwtGuard)
   @HttpCode(HttpStatus.OK)
-  async getAllJobSeekers(@CurrentUser() admin: CurrentUserPayload) {
-    const result = await this.jobseekerService.getAllJobSeekers(admin.id);
-    return { success: true, jobSeekers: result };
+  async getAllJobSeekers(
+    @CurrentUser() admin: CurrentUserPayload,
+    @Query() query: GetAllJobSeekersQueryDto,
+  ) {
+    const result = await this.jobseekerService.getAllJobSeekers(admin.id, query);
+    return { success: true, ...result };
   }
 
   @Get('admin/:id')

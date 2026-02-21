@@ -22,6 +22,7 @@ import {
   EmployerStatus,
 } from '@app/common/database/entities/schema.enum';
 import { AdminRole } from '@app/common/shared/enums/roles.enum';
+import { GetAllAdminsQueryDto } from './dto/get-all-admins-query.dto';
 import * as bcrypt from 'bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
 import { NotificationService } from 'apps/api/src/modules/notification/notification.service';
@@ -81,6 +82,36 @@ export class AdminService {
       },
       createdAt: profile.createdAt,
       updatedAt: profile.updatedAt,
+      suspended: profile.auth.suspended,
+    };
+  }
+
+  /** Returns a single admin by profile id for management (same shape as list item) */
+  async getAdminById(profileId: string): Promise<any> {
+    const profile = await this.adminProfileRepo.findOne({
+      where: { id: profileId },
+      relations: ['auth'],
+    });
+    if (!profile) {
+      throw new NotFoundException('Admin not found');
+    }
+    return {
+      id: profile.id,
+      email: profile.auth.email,
+      roleKey: profile.auth.roleKey,
+      privilegeLevel: profile.auth.privilegeLevel,
+      managerId: profile.auth.managerId || null,
+      profile: {
+        firstName: profile.firstName,
+        lastName: profile.lastName,
+        email: profile.email,
+        phoneNumber: profile.phoneNumber,
+        profilePictureUrl: profile.profilePictureUrl,
+        address: profile.address,
+      },
+      createdAt: profile.createdAt,
+      updatedAt: profile.updatedAt,
+      suspended: profile.auth.suspended,
     };
   }
 
@@ -198,18 +229,50 @@ export class AdminService {
     return this.getAdminProfile(userId);
   }
 
-  async getAllAdmins(_userId: string): Promise<any[]> {
-    const profiles = await this.adminProfileRepo.find({
-      relations: ['auth'],
-      order: { createdAt: 'DESC' },
-    });
+  async getAllAdmins(
+    _userId: string,
+    query: GetAllAdminsQueryDto,
+  ): Promise<{
+    data: any[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }> {
+    const page = Math.max(1, query.page ?? 1);
+    const limit = Math.min(100, Math.max(1, query.limit ?? 10));
+    const skip = (page - 1) * limit;
+    const sortBy = query.sortBy ?? 'createdAt';
+    const sortOrder = (query.sortOrder ?? 'DESC') as 'ASC' | 'DESC';
+    const search = query.query?.trim();
 
-    return profiles.map((profile) => ({
+    const qb = this.adminProfileRepo
+      .createQueryBuilder('profile')
+      .leftJoinAndSelect('profile.auth', 'auth');
+
+    if (search) {
+      qb.andWhere(
+        '(profile.firstName ILIKE :search OR profile.lastName ILIKE :search OR profile.email ILIKE :search OR auth.email ILIKE :search)',
+        { search: `%${search}%` },
+      );
+    }
+
+    const orderField = ['createdAt', 'updatedAt', 'firstName', 'lastName', 'email'].includes(sortBy)
+      ? `profile.${sortBy}`
+      : 'profile.createdAt';
+    qb.orderBy(orderField, sortOrder);
+
+    const total = await qb.getCount();
+    qb.skip(skip).take(limit);
+    const profiles = await qb.getMany();
+
+    const totalPages = Math.ceil(total / limit);
+    const data = profiles.map((profile) => ({
       id: profile.id,
-      email: profile.auth.email,
-      roleKey: profile.auth.roleKey,
-      privilegeLevel: profile.auth.privilegeLevel,
-      managerId: profile.auth.managerId || null,
+      email: profile.auth?.email ?? profile.email,
+      roleKey: profile.auth?.roleKey,
+      privilegeLevel: profile.auth?.privilegeLevel,
+      managerId: profile.auth?.managerId || null,
       profile: {
         firstName: profile.firstName,
         lastName: profile.lastName,
@@ -220,8 +283,10 @@ export class AdminService {
       },
       createdAt: profile.createdAt,
       updatedAt: profile.updatedAt,
-      suspended: profile.auth.suspended,
+      suspended: profile.auth?.suspended,
     }));
+
+    return { data, total, page, limit, totalPages };
   }
 
   async getSystemOverview(_userId: string): Promise<any> {

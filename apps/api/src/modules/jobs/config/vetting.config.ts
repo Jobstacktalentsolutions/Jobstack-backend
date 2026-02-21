@@ -48,11 +48,11 @@ export const VETTING_CONFIG: VettingConfig = {
   defaultHighlightedCandidateCount: 3,
   
   highSkillWeights: {
-    yearsOfExperience: 0.30,
-    skillMatching: 0.25,
-    profileCompleteness: 0.20,
+    yearsOfExperience: 0.25,
+    skillMatching: 0.35, // Higher than profile completeness so skill fit dominates
+    profileCompleteness: 0.10,
     proximity: 0.15,
-    applicationSpeed: 0.10,
+    applicationSpeed: 0.15,
   },
   
   lowSkillWeights: {

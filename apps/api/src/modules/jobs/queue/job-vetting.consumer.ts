@@ -130,30 +130,49 @@ export class JobVettingConsumer {
       `Processing all pending vetting jobs (Bull job ${bullJobId}), triggered by: ${triggeredBy}`,
     );
 
+    let jobs: JobEntity[] = [];
+
     try {
       // Find published jobs that have applications and either:
       // 1. Haven't been vetted yet, OR
       // 2. Have new applications since last vetting
-      const jobs = await this.jobRepo
+      this.logger.debug('Building query to find jobs that need vetting');
+
+      jobs = await this.jobRepo
         .createQueryBuilder('job')
         .leftJoin('job.applications', 'application')
         .where('job.status = :status', { status: JobStatus.PUBLISHED })
         .andWhere('application.id IS NOT NULL') // Has applications
         .andWhere(
           '(job.vettingCompletedAt IS NULL OR ' +
-            'EXISTS (SELECT 1 FROM job_applications ja WHERE ja.jobId = job.id AND ja.createdAt > job.vettingCompletedAt))',
+            'EXISTS (SELECT 1 FROM job_applications ja WHERE ja."jobId" = job.id AND ja."createdAt" > job."vettingCompletedAt"))',
         )
         .groupBy('job.id')
         .take(batchSize)
         .getMany();
 
-      this.logger.log(`Found ${jobs.length} jobs that need vetting`);
+      this.logger.log(
+        `Found ${jobs.length} jobs that need vetting (batchSize: ${batchSize})`,
+      );
+    } catch (queryError) {
+      this.logger.error(
+        `Failed to query jobs for vetting (Bull job ${bullJobId})`,
+        queryError.stack,
+      );
+      throw new Error(
+        `Failed to query jobs for vetting: ${queryError.message}`,
+      );
+    }
+
+    try {
 
       let processed = 0;
       let failed = 0;
+      const errors: Array<{ jobId: string; error: string }> = [];
 
       for (const jobEntity of jobs) {
         try {
+          this.logger.debug(`Starting vetting for job ${jobEntity.id}`);
           const result = await this.jobVettingService.vetJobApplications(
             jobEntity.id,
           );
@@ -178,7 +197,12 @@ export class JobVettingConsumer {
           );
         } catch (error) {
           failed++;
-          this.logger.error(`Failed to vet job ${jobEntity.id}`, error.stack);
+          const errorMessage = error?.message || 'Unknown error';
+          errors.push({ jobId: jobEntity.id, error: errorMessage });
+          this.logger.error(
+            `Failed to vet job ${jobEntity.id}: ${errorMessage}`,
+            error.stack,
+          );
         }
       }
 
@@ -186,12 +210,19 @@ export class JobVettingConsumer {
         `Batch vetting completed: ${processed} processed, ${failed} failed`,
       );
 
+      if (errors.length > 0) {
+        this.logger.warn(
+          `Batch vetting errors summary: ${JSON.stringify(errors, null, 2)}`,
+        );
+      }
+
       return {
         success: true,
         bullJobId,
         totalFound: jobs.length,
         processed,
         failed,
+        errors: errors.length > 0 ? errors : undefined,
         processedAt: new Date().toISOString(),
       };
     } catch (error) {

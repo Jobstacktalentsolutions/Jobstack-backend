@@ -3,6 +3,8 @@ import { BaseFactory } from './base.factory';
 import { getRepositoryByName } from '../utils/repository.utils';
 import { JobApplication } from '@app/common/database/entities/JobApplication.entity';
 import { JobApplicationStatus } from '@app/common/database/entities/schema.enum';
+import { JOBSEEKERS_DATA } from '../data/jobseekers.data';
+
 const JOB_APPLICATIONS_DATA: Array<{
   jobId: string;
   jobseekerProfileId: string;
@@ -31,6 +33,20 @@ export class JobApplicationFactory extends BaseFactory<JobApplication> {
     );
   }
 
+  /** Resolve profile id from seed id or by email when DB profile has a different id (e.g. after upsert by email). */
+  private async resolveProfileId(seedProfileId: string): Promise<string | null> {
+    const byId = await this.jobseekerProfileRepository.findOne({
+      where: { id: seedProfileId },
+    });
+    if (byId) return byId.id;
+    const seedJobseeker = JOBSEEKERS_DATA.find((js: any) => js.id === seedProfileId);
+    if (!seedJobseeker?.email) return null;
+    const byEmail = await this.jobseekerProfileRepository.findOne({
+      where: { email: (seedJobseeker.email as string).toLowerCase() },
+    });
+    return byEmail?.id ?? null;
+  }
+
   /**
    * Create or update a job application
    */
@@ -41,11 +57,9 @@ export class JobApplicationFactory extends BaseFactory<JobApplication> {
       throw new Error(`Job with ID ${data.jobId} not found`);
     }
 
-    // Check if jobseeker profile exists
-    const profile = await this.jobseekerProfileRepository.findOne({
-      where: { id: data.jobseekerProfileId },
-    });
-    if (!profile) {
+    // Resolve jobseeker profile id (seed id or actual DB id when profile was upserted by email)
+    const profileId = await this.resolveProfileId(data.jobseekerProfileId);
+    if (!profileId) {
       throw new Error(
         `JobSeeker profile with ID ${data.jobseekerProfileId} not found`,
       );
@@ -55,28 +69,30 @@ export class JobApplicationFactory extends BaseFactory<JobApplication> {
     const existingApplication = await this.repository.findOne({
       where: {
         jobId: data.jobId,
-        jobseekerProfileId: data.jobseekerProfileId,
+        jobseekerProfileId: profileId,
       },
     });
+
+    const payload = {
+      ...data,
+      jobseekerProfileId: profileId,
+      updatedAt: new Date(),
+    };
 
     if (existingApplication) {
       // Update existing application
       await this.repository.update(
         { id: existingApplication.id },
-        {
-          ...data,
-          updatedAt: new Date(),
-        },
+        payload,
       );
       return (await this.repository.findOne({
         where: { id: existingApplication.id },
       })) as JobApplication;
     } else {
-      // Create new application
+      // Create new application using resolved profile id
       const application = this.repository.create({
-        ...data,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        ...payload,
+        createdAt: data.createdAt ?? new Date(),
       });
 
       // Explicitly cast to unknown before casting to JobApplication

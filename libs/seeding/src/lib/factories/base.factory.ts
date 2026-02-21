@@ -90,10 +90,11 @@ export abstract class BaseFactory<T extends ObjectLiteral> {
     }
 
     if (existingEntity) {
-      // Update existing entity
+      // Update existing entity without changing primary key (avoids FK violations)
+      const { id: _id, ...updatePayload } = attributes as any;
       await this.repository.update(
         { id: existingEntity.id } as any,
-        attributes,
+        updatePayload,
       );
       return (await this.repository.findOne({
         where: { id: existingEntity.id } as any,

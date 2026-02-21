@@ -5,6 +5,7 @@ export * from './update-job-status.dto';
 export * from './job-recommendation-query.dto';
 export * from './adjust-highlighted-count.dto';
 export * from '../submodules/application/dto/create-job-application.dto';
+export * from '../submodules/application/dto/pick-screening-candidate.dto';
 export * from '../submodules/application/dto/application-query.dto';
 export * from '../submodules/application/dto/update-application-status.dto';
 export * from '../submodules/application/dto/employer-accept-candidate.dto';

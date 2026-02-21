@@ -67,8 +67,13 @@ export class JobVettingService {
     });
 
     if (!job) {
+      this.logger.error(`Job ${jobId} not found during vetting`);
       throw new Error(`Job ${jobId} not found`);
     }
+
+    this.logger.debug(
+      `Job ${jobId} loaded with ${job.skills?.length || 0} skills and ${job.applications?.length || 0} applications`,
+    );
 
     // Get all applications for this job (with profiles and skills for scoring)
     const applications = await this.applicationRepo.find({
@@ -133,6 +138,14 @@ export class JobVettingService {
     const vettedApplicants: VettedApplicant[] = [];
 
     for (const application of applications) {
+      // Skip if profile is missing
+      if (!application.jobseekerProfile) {
+        this.logger.warn(
+          `Application ${application.id} missing jobseeker profile, skipping`,
+        );
+        continue;
+      }
+
       const isEmployed = await this.checkNotAlreadyEmployed(
         application.jobseekerProfileId,
       );
@@ -252,6 +265,13 @@ export class JobVettingService {
     job: Job,
   ): Promise<number> {
     const profile = application.jobseekerProfile;
+
+    if (!profile) {
+      this.logger.error(
+        `Cannot calculate score for application ${application.id}: missing profile`,
+      );
+      return 0;
+    }
 
     const profileCompleteness = this.calculateProfileCompleteness(profile);
     const proximityScore = this.calculateProximityScore(job, profile);
@@ -680,10 +700,24 @@ export class JobVettingService {
       return;
     }
 
+    if (!job.employer) {
+      this.logger.error(
+        `Job ${jobId} has no employer relation for admin notification`,
+      );
+      return;
+    }
+
     try {
       // For now, we'll send to a generic admin email or the employer
       // In a real system, you'd have admin user management
       const adminEmail = process.env.ADMIN_EMAIL || job.employer.email;
+
+      if (!adminEmail) {
+        this.logger.error(
+          `No admin email configured and employer has no email for job ${jobId}`,
+        );
+        return;
+      }
 
       await this.notificationService.sendEmail({
         to: adminEmail,

@@ -12,6 +12,7 @@ import { Document } from '@app/common/database/entities';
 import { StorageService } from '@app/common/storage/storage.service';
 import { SkillsService } from 'apps/api/src/modules/skills/skills.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
+import { GetAllJobSeekersQueryDto } from './dto/get-all-jobseekers-query.dto';
 import type { MulterFile } from '@app/common/shared/types';
 import {
   DocumentType,
@@ -314,27 +315,65 @@ export class JobseekerService {
     return profile;
   }
 
-  // Admin methods for managing job seekers
-  async getAllJobSeekers(adminId: string): Promise<any[]> {
-    // Verify admin has permission (you can add admin verification logic here)
-    const profiles = await this.profileRepo.find({
-      relations: [
-        'auth',
-        'userSkills',
-        'userSkills.skill',
-        'cvDocument',
-        'profilePicture',
-      ],
-      order: { createdAt: 'DESC' },
-    });
+  // Admin methods for managing job seekers (paginated, search, sort, filter)
+  async getAllJobSeekers(
+    adminId: string,
+    query: GetAllJobSeekersQueryDto,
+  ): Promise<{
+    jobSeekers: any[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }> {
+    const page = Math.max(1, query.page ?? 1);
+    const limit = Math.min(100, Math.max(1, query.limit ?? 10));
+    const skip = (page - 1) * limit;
+    const sortBy = query.sortBy ?? 'createdAt';
+    const sortOrder = (query.sortOrder ?? 'DESC') as 'ASC' | 'DESC';
+    const search = query.query?.trim();
+    const approvalStatus = query.approvalStatus;
 
-    return profiles.map((profile) => ({
+    const qb = this.profileRepo
+      .createQueryBuilder('profile')
+      .leftJoinAndSelect('profile.auth', 'auth')
+      .leftJoinAndSelect('profile.userSkills', 'userSkills')
+      .leftJoinAndSelect('userSkills.skill', 'skill')
+      .leftJoinAndSelect('profile.cvDocument', 'cvDocument')
+      .leftJoinAndSelect('profile.profilePicture', 'profilePicture');
+
+    if (search) {
+      qb.andWhere(
+        '(profile.firstName ILIKE :search OR profile.lastName ILIKE :search OR profile.email ILIKE :search OR auth.email ILIKE :search)',
+        { search: `%${search}%` },
+      );
+    }
+
+    if (approvalStatus) {
+      qb.andWhere('profile.approvalStatus = :approvalStatus', {
+        approvalStatus,
+      });
+    }
+
+    const orderField = ['createdAt', 'updatedAt', 'firstName', 'lastName', 'email'].includes(sortBy)
+      ? `profile.${sortBy}`
+      : 'profile.createdAt';
+    qb.orderBy(orderField, sortOrder);
+
+    const total = await qb.getCount();
+    qb.skip(skip).take(limit);
+    const profiles = await qb.getMany();
+
+    const totalPages = Math.ceil(total / limit);
+    const jobSeekers = profiles.map((profile) => ({
       id: profile.id,
-      email: profile.auth.email,
+      email: profile.auth?.email ?? profile.email,
       profile: profile,
       createdAt: profile.createdAt,
       updatedAt: profile.updatedAt,
     }));
+
+    return { jobSeekers, total, page, limit, totalPages };
   }
 
   async getJobSeekerById(jobSeekerId: string, adminId: string): Promise<any> {
