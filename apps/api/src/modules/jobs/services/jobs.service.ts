@@ -107,7 +107,7 @@ export class JobsService {
     }
 
     // Apply common filters (category, search, status from query)
-    // this.applyJobFilters(qb, query);
+    this.applyJobFilters(qb, query);
 
     const [items, total, page, limit] = await this.executePagedQuery(qb, query);
     return { items, total, page, limit };

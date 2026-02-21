@@ -244,7 +244,8 @@ export class AdminService {
     const skip = (page - 1) * limit;
     const sortBy = query.sortBy ?? 'createdAt';
     const sortOrder = (query.sortOrder ?? 'DESC') as 'ASC' | 'DESC';
-    const search = typeof query.query === 'string' ? query.query.trim() : undefined;
+    const search =
+      typeof query.query === 'string' ? query.query.trim() : undefined;
 
     const qb = this.adminProfileRepo
       .createQueryBuilder('profile')
@@ -257,7 +258,13 @@ export class AdminService {
       );
     }
 
-    const orderField = ['createdAt', 'updatedAt', 'firstName', 'lastName', 'email'].includes(sortBy)
+    const orderField = [
+      'createdAt',
+      'updatedAt',
+      'firstName',
+      'lastName',
+      'email',
+    ].includes(sortBy)
       ? `profile.${sortBy}`
       : 'profile.createdAt';
     qb.orderBy(orderField, sortOrder);

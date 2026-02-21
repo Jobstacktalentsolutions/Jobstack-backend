@@ -179,7 +179,8 @@ export class EmployerService {
     const skip = (page - 1) * limit;
     const type = query.type;
     const verificationStatus = query.verificationStatus;
-    const search = typeof query.search === 'string' ? query.search.trim() : undefined;
+    const search =
+      typeof query.search === 'string' ? query.search.trim() : undefined;
     const sortBy = query.sortBy ?? 'createdAt';
     const sortOrder = (query.sortOrder ?? 'DESC') as 'ASC' | 'DESC';
 
@@ -208,7 +209,13 @@ export class EmployerService {
       );
     }
 
-    const orderField = ['createdAt', 'updatedAt', 'firstName', 'lastName', 'email'].includes(sortBy)
+    const orderField = [
+      'createdAt',
+      'updatedAt',
+      'firstName',
+      'lastName',
+      'email',
+    ].includes(sortBy)
       ? `employer.${sortBy}`
       : 'employer.createdAt';
     queryBuilder.orderBy(orderField, sortOrder);

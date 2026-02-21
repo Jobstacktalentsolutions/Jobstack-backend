@@ -231,9 +231,7 @@ function getExpectedSalary(
 }
 
 // Job indices that get 8 applications each for full screening/vetting tests (5–10 jobs)
-const JOBS_WITH_8_APPLICATIONS = new Set([
-  0, 1, 2, 3, 5, 6, 12, 21,
-]); // Full Stack, Product Manager, Data Analyst, Backend, DevOps, Frontend, Financial Analyst, Data Engineer
+const JOBS_WITH_8_APPLICATIONS = new Set([0, 1, 2, 3, 5, 6, 12, 21]); // Full Stack, Product Manager, Data Analyst, Backend, DevOps, Frontend, Financial Analyst, Data Engineer
 
 // Generated applications: at least 3 per job; 8 per job for the set above
 const GENERATED_JOB_APPLICATIONS_DATA: JobApplicationSeed[] = [];
