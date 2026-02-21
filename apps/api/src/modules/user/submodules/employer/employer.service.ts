@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Like, FindOptionsWhere } from 'typeorm';
+import { Repository } from 'typeorm';
 import { EmployerProfile } from '@app/common/database/entities/EmployerProfile.entity';
 import { EmployerAuth } from '@app/common/database/entities/EmployerAuth.entity';
 import { EmployerVerification } from '@app/common/database/entities/EmployerVerification.entity';
@@ -163,7 +163,7 @@ export class EmployerService {
     return profile;
   }
 
-  // Admin methods for managing employers
+  // Admin methods for managing employers (filters, search, sort applied server-side)
   async getAllEmployers(
     adminId: string,
     query: GetAllEmployersQueryDto,
@@ -174,69 +174,47 @@ export class EmployerService {
     limit: number;
     totalPages: number;
   }> {
-    // Verify admin has permission (you can add admin verification logic here)
-    const {
-      page = 1,
-      limit = 10,
-      type,
-      verificationStatus,
-      search,
-      sortBy = 'createdAt',
-      sortOrder = 'DESC',
-    } = query;
-
+    const page = Math.max(1, Number(query.page) || 1);
+    const limit = Math.min(100, Math.max(1, Number(query.limit) || 10));
     const skip = (page - 1) * limit;
+    const type = query.type;
+    const verificationStatus = query.verificationStatus;
+    const search = typeof query.search === 'string' ? query.search.trim() : undefined;
+    const sortBy = query.sortBy ?? 'createdAt';
+    const sortOrder = (query.sortOrder ?? 'DESC') as 'ASC' | 'DESC';
 
-    // Build where clause
-    const where: FindOptionsWhere<EmployerProfile> = {};
-
-    if (type) {
-      where.type = type;
-    }
-
-    // Build query builder for complex queries
     const queryBuilder = this.profileRepo
       .createQueryBuilder('employer')
       .leftJoinAndSelect('employer.auth', 'auth')
       .leftJoinAndSelect('employer.profilePicture', 'profilePicture')
       .leftJoinAndSelect('employer.verification', 'verification');
 
-    // Apply type filter
     if (type) {
-      queryBuilder.andWhere('employer.type = :type', { type });
-    }
-
-    // Apply verification status filter
-    if (verificationStatus) {
-      queryBuilder.andWhere('verification.status = :status', {
-        status: verificationStatus,
+      queryBuilder.andWhere('employer.type = :employerType', {
+        employerType: type,
       });
     }
 
-    // Apply search filter
+    if (verificationStatus) {
+      queryBuilder.andWhere('verification.status = :verificationStatus', {
+        verificationStatus,
+      });
+    }
+
     if (search) {
       queryBuilder.andWhere(
-        '(employer.firstName LIKE :search OR employer.lastName LIKE :search OR employer.email LIKE :search OR verification.companyName LIKE :search)',
+        '(employer.firstName ILIKE :search OR employer.lastName ILIKE :search OR employer.email ILIKE :search OR verification.companyName ILIKE :search)',
         { search: `%${search}%` },
       );
     }
 
-    // Apply sorting
-    const orderField =
-      sortBy === 'createdAt' || sortBy === 'updatedAt'
-        ? `employer.${sortBy}`
-        : `employer.${sortBy}`;
+    const orderField = ['createdAt', 'updatedAt', 'firstName', 'lastName', 'email'].includes(sortBy)
+      ? `employer.${sortBy}`
+      : 'employer.createdAt';
     queryBuilder.orderBy(orderField, sortOrder);
-
-    // Get total count
-    const total = await queryBuilder.getCount();
-
-    // Apply pagination
     queryBuilder.skip(skip).take(limit);
 
-    // Execute query
-    const employers = await queryBuilder.getMany();
-
+    const [employers, total] = await queryBuilder.getManyAndCount();
     const totalPages = Math.ceil(total / limit);
 
     return {

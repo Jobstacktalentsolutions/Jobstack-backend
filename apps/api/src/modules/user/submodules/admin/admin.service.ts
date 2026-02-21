@@ -239,12 +239,12 @@ export class AdminService {
     limit: number;
     totalPages: number;
   }> {
-    const page = Math.max(1, query.page ?? 1);
-    const limit = Math.min(100, Math.max(1, query.limit ?? 10));
+    const page = Math.max(1, Number(query.page) || 1);
+    const limit = Math.min(100, Math.max(1, Number(query.limit) || 10));
     const skip = (page - 1) * limit;
     const sortBy = query.sortBy ?? 'createdAt';
     const sortOrder = (query.sortOrder ?? 'DESC') as 'ASC' | 'DESC';
-    const search = query.query?.trim();
+    const search = typeof query.query === 'string' ? query.query.trim() : undefined;
 
     const qb = this.adminProfileRepo
       .createQueryBuilder('profile')
@@ -261,11 +261,9 @@ export class AdminService {
       ? `profile.${sortBy}`
       : 'profile.createdAt';
     qb.orderBy(orderField, sortOrder);
-
-    const total = await qb.getCount();
     qb.skip(skip).take(limit);
-    const profiles = await qb.getMany();
 
+    const [profiles, total] = await qb.getManyAndCount();
     const totalPages = Math.ceil(total / limit);
     const data = profiles.map((profile) => ({
       id: profile.id,
