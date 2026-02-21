@@ -13,7 +13,10 @@ import {
 import { AdminJwtGuard, RequireAdminRole } from 'apps/api/src/guards';
 import { AdminService } from './admin.service';
 import { VerificationStatus } from '@app/common/shared/enums/employer-docs.enum';
-import { ApprovalStatus, EmployerStatus } from '@app/common/database/entities/schema.enum';
+import {
+  ApprovalStatus,
+  EmployerStatus,
+} from '@app/common/database/entities/schema.enum';
 import { AdminRole } from '@app/common/shared/enums/roles.enum';
 import { CurrentUser, type CurrentUserPayload } from '@app/common/shared';
 import { GetAllAdminsQueryDto } from './dto/get-all-admins-query.dto';
@@ -135,7 +138,11 @@ export class AdminController {
     @CurrentUser() user: CurrentUserPayload,
     @Param('id') employerId: string,
   ) {
-    return this.adminService.updateEmployerStatus(user.id, employerId, EmployerStatus.ACTIVE);
+    return this.adminService.updateEmployerStatus(
+      user.id,
+      employerId,
+      EmployerStatus.ACTIVE,
+    );
   }
 
   // Deactivate employer account
@@ -145,7 +152,11 @@ export class AdminController {
     @CurrentUser() user: CurrentUserPayload,
     @Param('id') employerId: string,
   ) {
-    return this.adminService.updateEmployerStatus(user.id, employerId, EmployerStatus.INACTIVE);
+    return this.adminService.updateEmployerStatus(
+      user.id,
+      employerId,
+      EmployerStatus.INACTIVE,
+    );
   }
 
   // Suspend employer account (Operations & Support handles user management)
@@ -156,7 +167,12 @@ export class AdminController {
     @Param('id') employerId: string,
     @Body('reason') reason?: string,
   ) {
-    return this.adminService.updateEmployerStatus(user.id, employerId, EmployerStatus.SUSPENDED, reason);
+    return this.adminService.updateEmployerStatus(
+      user.id,
+      employerId,
+      EmployerStatus.SUSPENDED,
+      reason,
+    );
   }
 
   // Unsuspend employer account (sets back to INACTIVE)
@@ -166,7 +182,11 @@ export class AdminController {
     @CurrentUser() user: CurrentUserPayload,
     @Param('id') employerId: string,
   ) {
-    return this.adminService.updateEmployerStatus(user.id, employerId, EmployerStatus.INACTIVE);
+    return this.adminService.updateEmployerStatus(
+      user.id,
+      employerId,
+      EmployerStatus.INACTIVE,
+    );
   }
 
   // Suspend jobseeker account (Operations & Support handles user management)

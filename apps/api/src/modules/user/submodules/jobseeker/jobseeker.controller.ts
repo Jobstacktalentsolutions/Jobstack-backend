@@ -170,7 +170,10 @@ export class JobseekerController {
     @CurrentUser() admin: CurrentUserPayload,
     @Query() query: GetAllJobSeekersQueryDto,
   ) {
-    const result = await this.jobseekerService.getAllJobSeekers(admin.id, query);
+    const result = await this.jobseekerService.getAllJobSeekers(
+      admin.id,
+      query,
+    );
     return { success: true, ...result };
   }
 
