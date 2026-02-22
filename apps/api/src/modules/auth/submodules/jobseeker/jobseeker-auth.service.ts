@@ -377,7 +377,7 @@ export class JobSeekerAuthService {
       // Store code
       await this.redisService.setex(codeKey, REDIS_KEYS.VERIFICATION_TTL, code);
 
-      // Send email
+      // Send email (no profile yet during signup; service defaults firstName to 'there')
       await this.notificationService.sendEmail({
         to: normalizedEmail,
         subject: 'Email Verification - JobStack',
@@ -466,10 +466,10 @@ export class JobSeekerAuthService {
     const normalizedEmail = email.trim().toLowerCase();
 
     try {
-      // Find user
-      console.log('Email to reset password ', normalizedEmail);
+      // Find user with profile for personalized email
       const auth = await this.jobseekerAuthRepository.findOne({
         where: { email: normalizedEmail },
+        relations: ['profile'],
       });
 
       if (!auth) {
@@ -502,7 +502,7 @@ export class JobSeekerAuthService {
         code,
       );
 
-      // Send email
+      // Send email (firstName from profile when available; service defaults to 'there')
       await this.notificationService.sendEmail({
         to: normalizedEmail,
         subject: 'Password Reset - JobStack',
@@ -510,6 +510,7 @@ export class JobSeekerAuthService {
         context: {
           code,
           expiryMinutes: 15,
+          firstName: auth.profile?.firstName,
         },
       });
 

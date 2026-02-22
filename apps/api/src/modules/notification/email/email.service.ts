@@ -61,9 +61,48 @@ export class EmailService extends BaseNotificationService<EmailPayloadDto> {
     );
   }
 
+  /** Build template-specific default context so EJS never sees undefined vars (avoids || in templates). */
+  private getDefaultContextForTemplate(
+    templateType: EmailTemplateType,
+    context: Record<string, unknown>,
+  ): Record<string, unknown> {
+    const c = context || {};
+    const defaults: Record<string, unknown> = {};
+    switch (templateType) {
+      case EmailTemplateType.PASSWORD_RESET:
+        defaults.firstName = c.firstName ?? 'there';
+        defaults.expiryMinutes = c.expiryMinutes ?? 15;
+        break;
+      case EmailTemplateType.EMAIL_VERIFICATION:
+        defaults.firstName = c.firstName ?? 'there';
+        defaults.expiryMinutes = c.expiryMinutes ?? 10;
+        break;
+      case EmailTemplateType.JOB_APPLICATION_RECEIVED:
+      case EmailTemplateType.JOB_APPLICATION_STATUS:
+      case EmailTemplateType.NEW_JOB_POSTED:
+      case EmailTemplateType.INTERVIEW_SCHEDULED:
+        defaults.recipientName =
+          c.firstName ?? c.name ?? (c.recipientName as string) ?? 'there';
+        if (templateType === EmailTemplateType.JOB_APPLICATION_RECEIVED) {
+          defaults.viewApplicationUrl = c.applicationUrl ?? c.actionUrl ?? '';
+        }
+        break;
+      case EmailTemplateType.WELCOME:
+        defaults.firstName = c.firstName ?? 'there';
+        defaults.userType = c.userType ?? 'jobseeker';
+        break;
+      case EmailTemplateType.GENERAL_NOTIFICATION:
+        defaults.firstName = c.firstName ?? 'there';
+        break;
+      default:
+        break;
+    }
+    return defaults;
+  }
+
   async renderTemplate<T extends EmailTemplateType>(
     templateType: T,
-    context: Record<string, string>,
+    context: Record<string, unknown>,
   ): Promise<string> {
     const templateConfig = EMAIL_TYPE_CONFIG[templateType];
     if (!templateConfig) {
@@ -72,8 +111,13 @@ export class EmailService extends BaseNotificationService<EmailPayloadDto> {
 
     const templatePath = path.join(this.templatesPath, templateConfig.template);
 
+    const templateDefaults = this.getDefaultContextForTemplate(
+      templateType as EmailTemplateType,
+      context,
+    );
     const enhancedContext = {
       subject: templateConfig.subject,
+      ...templateDefaults,
       ...context,
       companyName: this.emailConfig.companyName,
       supportEmail: this.emailConfig.supportEmail,

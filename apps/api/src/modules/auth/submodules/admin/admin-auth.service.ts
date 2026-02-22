@@ -334,9 +334,10 @@ export class AdminAuthService {
     const { email } = requestData;
 
     try {
-      // Find user
+      // Find user with profile for personalized email
       const auth = await this.adminAuthRepository.findOne({
         where: { email: email.toLowerCase() },
+        relations: ['profile'],
       });
 
       if (!auth) {
@@ -369,7 +370,7 @@ export class AdminAuthService {
         code,
       );
 
-      // Send email
+      // Send email (firstName from profile when available; service defaults to 'there')
       await this.notificationService.sendEmail({
         to: email,
         subject: 'Password Reset - JobStack Admin',
@@ -377,6 +378,7 @@ export class AdminAuthService {
         context: {
           code,
           expiryMinutes: 15,
+          firstName: auth.profile?.firstName,
         },
       });
 
