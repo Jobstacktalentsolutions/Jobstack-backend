@@ -432,6 +432,17 @@ export class JobApplicationsService {
       );
     }
 
+    // Enforce offer expiry window using statusUpdatedAt as employerAcceptedAt
+    const employerAcceptedAt = application.statusUpdatedAt;
+    if (employerAcceptedAt && acceptance.accepted) {
+      const offerExpiresAt = new Date(
+        employerAcceptedAt.getTime() + 7 * 24 * 60 * 60 * 1000,
+      );
+      if (new Date() > offerExpiresAt) {
+        throw new BadRequestException('Offer has expired');
+      }
+    }
+
     if (acceptance.accepted) {
       // Applicant accepts - move to APPLICANT_ACCEPTED
       application.status = JobApplicationStatus.APPLICANT_ACCEPTED;
@@ -500,6 +511,62 @@ export class JobApplicationsService {
             scheduledTime: application.screeningScheduledAt.toTimeString(),
             scheduledDateTime: application.screeningScheduledAt.toISOString(),
             prepInfo: application.screeningPrepInfo || null,
+          },
+        });
+      }
+    } catch (error) {
+      // Notification failures should not block the core flow
+    }
+
+    return this.getApplicationById(applicationId);
+  }
+
+  // Employer sends a reminder email for a pending offer
+  async sendOfferReminder(employerId: string, applicationId: string) {
+    const application = await this.applicationRepo.findOne({
+      where: { id: applicationId },
+      relations: ['job', 'job.employer', 'jobseekerProfile'],
+    });
+
+    if (!application || application.job?.employerId !== employerId) {
+      throw new NotFoundException('Application not found');
+    }
+
+    if (application.status !== JobApplicationStatus.EMPLOYER_ACCEPTED) {
+      throw new BadRequestException(
+        'Can only send reminders for pending offers awaiting candidate decision',
+      );
+    }
+
+    // Compute offer expiry window for informational purposes
+    const employerAcceptedAt = application.statusUpdatedAt;
+    let offerExpiresAt: Date | null = null;
+    if (employerAcceptedAt) {
+      offerExpiresAt = new Date(
+        employerAcceptedAt.getTime() + 7 * 24 * 60 * 60 * 1000,
+      );
+    }
+
+    // Notify candidate via email
+    try {
+      if (application.jobseekerProfile?.email) {
+        const websiteUrl = process.env.WEBSITE_URL ?? '';
+        const applicationsUrl = websiteUrl
+          ? `${websiteUrl}/jobseeker/dashboard/applications`
+          : undefined;
+
+        await this.notificationService.sendEmail({
+          to: application.jobseekerProfile.email,
+          subject: `Reminder: Job offer for ${application.job.title}`,
+          template: 'general-notification',
+          context: {
+            title: 'Reminder: Job Offer Pending',
+            message: `The employer for "${application.job.title}" is waiting for your response to their offer.`,
+            jobTitle: application.job.title,
+            jobId: application.job.id,
+            applicationId: application.id,
+            offerExpiresAt: offerExpiresAt?.toISOString() ?? null,
+            actionUrl: applicationsUrl ?? null,
           },
         });
       }

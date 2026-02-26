@@ -144,6 +144,16 @@ export class JobApplicationsController {
     );
   }
 
+  // Employer sends a reminder email for a pending offer
+  @Post(':applicationId/employer-offer-reminder')
+  @UseGuards(EmployerJwtGuard)
+  sendEmployerOfferReminder(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('applicationId', ParseUUIDPipe) applicationId: string,
+  ) {
+    return this.jobApplicationsService.sendOfferReminder(user.id, applicationId);
+  }
+
   // Applicant accepts or rejects the employer's offer
   @Post(':applicationId/applicant-respond')
   @UseGuards(JobSeekerJwtGuard)
