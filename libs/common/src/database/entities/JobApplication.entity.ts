@@ -100,4 +100,14 @@ export class JobApplication extends BaseEntity {
   // Timestamp when this application was last vetted
   @Column({ type: 'timestamp', nullable: true })
   vettedAt?: Date | null;
+
+  // Admin summary fields captured when a candidate is selected for hire
+  @Column({ type: 'text', nullable: true })
+  screeningStrengths?: string | null;
+
+  @Column({ type: 'text', nullable: true })
+  screeningConcerns?: string | null;
+
+  @Column({ type: 'text', nullable: true })
+  screeningInterviewFeedback?: string | null;
 }

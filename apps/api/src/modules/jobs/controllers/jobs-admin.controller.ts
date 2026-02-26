@@ -360,7 +360,7 @@ export class JobsAdminController {
     @Param('jobId', ParseUUIDPipe) jobId: string,
     @Body() dto: PickScreeningCandidateDto,
   ) {
-    const { applicationId } = dto;
+    const { applicationId, strengths, concerns, interviewFeedback } = dto;
 
     // Ensure the target application exists and belongs to this job
     const application = await this.applicationRepo.findOne({
@@ -377,16 +377,15 @@ export class JobsAdminController {
     // Ensure only one application per job is marked as SCREENING_COMPLETED
     await this.applicationRepo.manager.transaction(async (manager) => {
       // Clear any previously picked applications for this job
-      await manager.update(
-        JobApplication,
-        {
-          jobId,
-          status: JobApplicationStatus.SCREENING_COMPLETED,
-        },
-        {
-          status: JobApplicationStatus.VETTED,
-        },
-      );
+      await manager.update(JobApplication, {
+        jobId,
+        status: JobApplicationStatus.SCREENING_COMPLETED,
+      }, {
+        status: JobApplicationStatus.VETTED,
+        screeningStrengths: null,
+        screeningConcerns: null,
+        screeningInterviewFeedback: null,
+      });
 
       // Mark the chosen application as screening completed
       await manager.update(
@@ -395,6 +394,9 @@ export class JobsAdminController {
         {
           status: JobApplicationStatus.SCREENING_COMPLETED,
           statusUpdatedAt: new Date(),
+          screeningStrengths: strengths ?? null,
+          screeningConcerns: concerns ?? null,
+          screeningInterviewFeedback: interviewFeedback ?? null,
         },
       );
     });

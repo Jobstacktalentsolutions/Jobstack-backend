@@ -13,14 +13,18 @@ Auto-generates employment contracts as PDFs after payment confirmation. Both par
    - No manual action needed
    - Takes candidate data + job details → Creates PDF
 
-2. **Template Selection**
-   - System picks template based on employment type:
-     - Permanent role → "Permanent Employment Contract"
-     - Fixed-term → "Fixed-Term Contract"
-   - Admin can add new templates via database
+2. **Contract Set Selection**
+   - Employer selects which contracts apply to the role (one or more per hire),
+   - Supported base contract types (EJS templates):
+     - **Permanent Employment Contract** — full-time, indefinite
+     - **Fixed-Term Employment Contract** — defined duration
+     - **NDA (Non-Disclosure Agreement)** — confidential information
+     - **Non-Compete Agreement** — post-employment competition restrictions
+     - **IP Assignment Agreement** — IP created during employment assigned to employer
+   - MVP: only these predefined templates; no admin add/edit of templates
 
 3. **PDF Generation**
-   - Backend merges template with data (company name, salary, dates, etc.)
+   - Backend merges EJS template with data (company name, salary, dates, etc.)
    - Renders HTML → PDF
    - Stores in secure storage (S3)
    - Sends link to both parties
@@ -39,7 +43,7 @@ Auto-generates employment contracts as PDFs after payment confirmation. Both par
 
 ## Contract States
 
-| Status                         | Meaning               | Who Can Sign      |
+| Status                         | Meaning               | Who Can Sign 1    |
 | ------------------------------ | --------------------- | ----------------- |
 | `PENDING`                      | Being generated       | Nobody            |
 | `AWAITING_EMPLOYER_SIGNATURE`  | Waiting for employer  | Employer only     |
@@ -56,7 +60,6 @@ Auto-generates employment contracts as PDFs after payment confirmation. Both par
 - **Immutability**: `FULLY_EXECUTED` contracts locked (no edits)
 - **Void & Regenerate**: Only way to "edit" is void old + create new
 - **Storage Security**: PDFs stored with signed URLs (expire after viewing)
-- **Template Extensibility**: Admin can add templates without code changes
 
 ---
 
@@ -70,23 +73,18 @@ Contract {
   candidateSignedAt: timestamp | null
   candidateSignatureIp: string | null
   pdfUrl: string (signed S3 URL)
-  templateType: 'PERMANENT_EMPLOYMENT' | 'FIXED_TERM_CONTRACT'
+  templateType: 'PERMANENT_EMPLOYMENT' | 'FIXED_TERM_EMPLOYMENT' | 'NDA' | 'NON_COMPETE' | 'IP_ASSIGNMENT'
   generatedAt: timestamp
-}
-
-ContractTemplate {
-  name: string
-  type: enum
-  isActive: boolean
-  requiredVariables: string[] (which data fields needed)
 }
 ```
 
+Base contract types (MVP): predefined EJS templates only; no runtime template CRUD.
+
 ---
 
-## Template Variables
+## Template Variables (EJS)
 
-Backend injects these values into contract templates:
+Backend injects these values into EJS contract templates:
 
 - Company details (name, address, registration)
 - Candidate details (name, address, ID)
@@ -95,4 +93,4 @@ Backend injects these values into contract templates:
 - Start date, duration (for fixed-term)
 - Signature placeholders
 
-Templates are HTML files with merge tags that backend replaces with actual data.
+Templates are EJS files; backend renders with data and produces HTML → PDF.

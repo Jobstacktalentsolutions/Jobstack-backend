@@ -169,4 +169,17 @@ export class JobApplicationsController {
       applicationId,
     );
   }
+
+  // Jobseeker withdraws their application
+  @Patch(':applicationId/withdraw')
+  @UseGuards(JobSeekerJwtGuard)
+  withdrawApplication(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('applicationId', ParseUUIDPipe) applicationId: string,
+  ) {
+    return this.jobApplicationsService.withdrawApplication(
+      user.id,
+      applicationId,
+    );
+  }
 }

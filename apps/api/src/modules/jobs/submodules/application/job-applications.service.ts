@@ -186,6 +186,19 @@ export class JobApplicationsService {
       .leftJoinAndSelect('application.jobseekerProfile', 'jobseeker');
   }
 
+  // Determines if a screening window has completed based on scheduled time and duration
+  private isScreeningCompleted(application: JobApplication): boolean {
+    const { screeningScheduledAt, screeningDurationMinutes } = application;
+
+    if (!screeningScheduledAt || screeningDurationMinutes == null) {
+      return false;
+    }
+
+    const startMs = screeningScheduledAt.getTime();
+    const endMs = startMs + screeningDurationMinutes * 60 * 1000;
+    return Date.now() >= endMs;
+  }
+
   // Applies status filters to application queries
   private applyApplicationFilters(
     qb: SelectQueryBuilder<JobApplication>,
@@ -228,9 +241,10 @@ export class JobApplicationsService {
       throw new NotFoundException('Application not found');
     }
 
-    if (application.status !== JobApplicationStatus.SCREENING_COMPLETED) {
+    // Only allow acceptance after the screening window has elapsed
+    if (!this.isScreeningCompleted(application)) {
       throw new BadRequestException(
-        'Can only accept candidates after screening is completed',
+        'Can only accept candidates after the scheduled screening time has completed',
       );
     }
 
@@ -492,6 +506,37 @@ export class JobApplicationsService {
     } catch (error) {
       // Notification failures should not block the core flow
     }
+
+    return this.getApplicationById(applicationId);
+  }
+
+  // Allows jobseeker to withdraw their application
+  async withdrawApplication(jobseekerId: string, applicationId: string) {
+    const application = await this.applicationRepo.findOne({
+      where: { id: applicationId, jobseekerProfileId: jobseekerId },
+      relations: ['job'],
+    });
+
+    if (!application) {
+      throw new NotFoundException('Application not found');
+    }
+
+    // Don't allow withdrawal of already terminal states
+    if (
+      [
+        JobApplicationStatus.HIRED,
+        JobApplicationStatus.REJECTED,
+        JobApplicationStatus.WITHDRAWN,
+      ].includes(application.status)
+    ) {
+      throw new BadRequestException(
+        'Cannot withdraw an application in its current status',
+      );
+    }
+
+    application.status = JobApplicationStatus.WITHDRAWN;
+    application.statusUpdatedAt = new Date();
+    await this.applicationRepo.save(application);
 
     return this.getApplicationById(applicationId);
   }
