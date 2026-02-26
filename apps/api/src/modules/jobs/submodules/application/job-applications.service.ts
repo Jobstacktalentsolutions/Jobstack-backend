@@ -567,6 +567,7 @@ export class JobApplicationsService {
             applicationId: application.id,
             offerExpiresAt: offerExpiresAt?.toISOString() ?? null,
             actionUrl: applicationsUrl ?? null,
+            actionText: 'View application',
           },
         });
       }
