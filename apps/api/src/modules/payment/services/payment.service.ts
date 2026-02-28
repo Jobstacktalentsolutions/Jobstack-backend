@@ -478,7 +478,7 @@ export class PaymentService {
       return {
         paymentId: existingPayment.id,
         paymentUrl: '',
-        reference: existingPayment.paystackReference,
+        reference: existingPayment.paystackReference!,
       };
     }
 

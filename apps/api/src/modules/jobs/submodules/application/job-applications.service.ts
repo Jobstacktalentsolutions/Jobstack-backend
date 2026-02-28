@@ -116,9 +116,8 @@ export class JobApplicationsService {
     const candidateStatuses: JobApplicationStatus[] = [
       JobApplicationStatus.SELECTED_FOR_SCREENING,
       JobApplicationStatus.SCREENING_COMPLETED,
-      JobApplicationStatus.EMPLOYER_ACCEPTED,
+      JobApplicationStatus.OFFER_SENT,
       JobApplicationStatus.APPLICANT_ACCEPTED,
-      JobApplicationStatus.AWAITING_PAYMENT,
       JobApplicationStatus.HIRED,
     ];
 
@@ -311,7 +310,7 @@ export class JobApplicationsService {
     const savedEmployee = await this.employeeRepo.save(employee);
 
     // Update application status to EMPLOYER_ACCEPTED
-    application.status = JobApplicationStatus.EMPLOYER_ACCEPTED;
+    application.status = JobApplicationStatus.OFFER_SENT;
     application.statusUpdatedAt = new Date();
     await this.applicationRepo.save(application);
 
@@ -423,7 +422,7 @@ export class JobApplicationsService {
       throw new NotFoundException('Application not found');
     }
 
-    if (application.status !== JobApplicationStatus.EMPLOYER_ACCEPTED) {
+    if (application.status !== JobApplicationStatus.OFFER_SENT) {
       throw new BadRequestException(
         'Can only accept/reject offers after employer has accepted you',
       );
@@ -530,7 +529,7 @@ export class JobApplicationsService {
       throw new NotFoundException('Application not found');
     }
 
-    if (application.status !== JobApplicationStatus.EMPLOYER_ACCEPTED) {
+    if (application.status !== JobApplicationStatus.OFFER_SENT) {
       throw new BadRequestException(
         'Can only send reminders for pending offers awaiting candidate decision',
       );
