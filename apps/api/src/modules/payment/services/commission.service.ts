@@ -37,10 +37,10 @@ export class EmployeeActivationCommissionService {
       ),
     ]);
 
-    const percentageValue = parseFloat(percentage.value);
-    const floorValue = parseFloat(floor.value);
-    const ceilingValue = parseFloat(ceiling.value);
-    const vatRateValue = parseFloat(vatRate.value);
+    const percentageValue = Number(percentage);
+    const floorValue = Number(floor);
+    const ceilingValue = Number(ceiling);
+    const vatRateValue = Number(vatRate);
 
     // Calculate annual amount
     // For permanent employees: multiply monthly by 12

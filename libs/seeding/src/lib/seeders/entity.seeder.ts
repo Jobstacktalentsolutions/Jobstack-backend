@@ -8,6 +8,7 @@ import { JobseekerFactory } from '../factories/jobseeker.factory';
 import { DocumentFactory } from '../factories/document.factory';
 import { JobFactory } from '../factories/job.factory';
 import { JobApplicationFactory } from '../factories/job-application.factory';
+import { SystemConfigFactory } from '../factories/system-config.factory';
 
 /**
  * Entity seeder that handles seeding of different entities
@@ -33,6 +34,10 @@ export class EntitySeeder extends BaseSeeder {
     this.entityFactories.set(
       'job-applications',
       new JobApplicationFactory(dataSource),
+    );
+    this.entityFactories.set(
+      'system-config',
+      new SystemConfigFactory(dataSource),
     );
   }
 
@@ -68,6 +73,7 @@ export class EntitySeeder extends BaseSeeder {
 
     // Define seeding order to handle dependencies
     const seedingOrder = [
+      'system-config',
       'admins',
       'skills',
       'documents',

@@ -151,7 +151,10 @@ export class JobApplicationsController {
     @CurrentUser() user: CurrentUserPayload,
     @Param('applicationId', ParseUUIDPipe) applicationId: string,
   ) {
-    return this.jobApplicationsService.sendOfferReminder(user.id, applicationId);
+    return this.jobApplicationsService.sendOfferReminder(
+      user.id,
+      applicationId,
+    );
   }
 
   // Applicant accepts or rejects the employer's offer

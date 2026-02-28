@@ -111,10 +111,7 @@ export class JobApplicationsService {
   }
 
   // Lists all candidate-stage applications across employer jobs
-  async getEmployerCandidates(
-    employerId: string,
-    query: ApplicationQueryDto,
-  ) {
+  async getEmployerCandidates(employerId: string, query: ApplicationQueryDto) {
     // Candidate stages include screening and post-screening states
     const candidateStatuses: JobApplicationStatus[] = [
       JobApplicationStatus.SELECTED_FOR_SCREENING,
@@ -485,7 +482,8 @@ export class JobApplicationsService {
     }
 
     // Apply employer-proposed time as the new official schedule
-    application.screeningScheduledAt = application.employerProposedScreeningTime;
+    application.screeningScheduledAt =
+      application.employerProposedScreeningTime;
     application.adminProposedScreeningTime =
       application.employerProposedScreeningTime;
     application.adminAccepted = true;
