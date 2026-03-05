@@ -473,12 +473,33 @@ export class PaymentService {
 
     if (existingPayment) {
       this.logger.log(
-        `Reusing existing pending payment ${existingPayment.id} for employee ${employeeId}`,
+        `Re-initializing existing pending payment ${existingPayment.id} for employee ${employeeId}`,
       );
+
+      // Generate a fresh reference — Paystack rejects duplicate references
+      const freshReference = this.paystackService.generateReference('ACT');
+      await this.paymentRepo.update(existingPayment.id, {
+        paystackReference: freshReference,
+      });
+
+      const paystackResponse = await this.paystackService.initializeTransaction({
+        email: employee.employer.email,
+        amount: this.paystackService.convertToKobo(existingPayment.amount),
+        reference: freshReference,
+        currency: existingPayment.currency || 'NGN',
+        callback_url: callbackUrl,
+        metadata: {
+          paymentId: existingPayment.id,
+          employeeId,
+          employerId,
+          paymentType: PaymentType.EMPLOYEE_ACTIVATION_FEE,
+        },
+      });
+
       return {
         paymentId: existingPayment.id,
-        paymentUrl: '',
-        reference: existingPayment.paystackReference!,
+        paymentUrl: paystackResponse.data.authorization_url,
+        reference: freshReference,
         publicKey: this.paystackService.getPublicKey(),
       };
     }
