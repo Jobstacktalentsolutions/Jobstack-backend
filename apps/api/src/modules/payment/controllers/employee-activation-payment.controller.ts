@@ -44,6 +44,28 @@ export class EmployeeActivationPaymentController {
   }
 
   /**
+   * Get commission breakdown for an employee activation payment
+   * GET /payment/employee-activation/breakdown/:employeeId
+   */
+  @Get('breakdown/:employeeId')
+  async getBreakdown(
+    @Param('employeeId') employeeId: string,
+    @Req() req: any,
+  ) {
+    const employerId = req.user.profileId;
+
+    const breakdown = await this.paymentService.getActivationBreakdown(
+      employeeId,
+      employerId,
+    );
+
+    return {
+      success: true,
+      data: breakdown,
+    };
+  }
+
+  /**
    * Get activation payment status for an employee
    * GET /payment/employee-activation/status/:employeeId
    */

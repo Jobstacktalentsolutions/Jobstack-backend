@@ -144,6 +144,19 @@ export class JobApplicationsController {
     );
   }
 
+  // Employer sends a reminder email for a pending offer
+  @Post(':applicationId/employer-offer-reminder')
+  @UseGuards(EmployerJwtGuard)
+  sendEmployerOfferReminder(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('applicationId', ParseUUIDPipe) applicationId: string,
+  ) {
+    return this.jobApplicationsService.sendOfferReminder(
+      user.id,
+      applicationId,
+    );
+  }
+
   // Applicant accepts or rejects the employer's offer
   @Post(':applicationId/applicant-respond')
   @UseGuards(JobSeekerJwtGuard)
@@ -166,6 +179,29 @@ export class JobApplicationsController {
     @Param('applicationId', ParseUUIDPipe) applicationId: string,
   ) {
     return this.jobApplicationsService.adminAcceptEmployerScreeningProposal(
+      applicationId,
+    );
+  }
+
+  // Employer confirms final hire after contract is signed
+  @Post(':applicationId/confirm-hire')
+  @UseGuards(EmployerJwtGuard)
+  confirmHire(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('applicationId', ParseUUIDPipe) applicationId: string,
+  ) {
+    return this.jobApplicationsService.confirmHire(user.id, applicationId);
+  }
+
+  // Jobseeker withdraws their application
+  @Patch(':applicationId/withdraw')
+  @UseGuards(JobSeekerJwtGuard)
+  withdrawApplication(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('applicationId', ParseUUIDPipe) applicationId: string,
+  ) {
+    return this.jobApplicationsService.withdrawApplication(
+      user.id,
       applicationId,
     );
   }

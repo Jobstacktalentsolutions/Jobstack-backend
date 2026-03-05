@@ -111,17 +111,15 @@ export class JobApplicationsService {
   }
 
   // Lists all candidate-stage applications across employer jobs
-  async getEmployerCandidates(
-    employerId: string,
-    query: ApplicationQueryDto,
-  ) {
+  async getEmployerCandidates(employerId: string, query: ApplicationQueryDto) {
     // Candidate stages include screening and post-screening states
     const candidateStatuses: JobApplicationStatus[] = [
       JobApplicationStatus.SELECTED_FOR_SCREENING,
       JobApplicationStatus.SCREENING_COMPLETED,
-      JobApplicationStatus.EMPLOYER_ACCEPTED,
+      JobApplicationStatus.OFFER_SENT,
       JobApplicationStatus.APPLICANT_ACCEPTED,
-      JobApplicationStatus.AWAITING_PAYMENT,
+      JobApplicationStatus.PAYMENT_COMPLETE,
+      JobApplicationStatus.CONTRACT_SIGNED,
       JobApplicationStatus.HIRED,
     ];
 
@@ -135,7 +133,34 @@ export class JobApplicationsService {
     });
 
     this.applyApplicationFilters(qb, query);
-    return this.executePagedApplicationQuery(qb, query);
+    const result = await this.executePagedApplicationQuery(qb, query);
+
+    // Annotate each application with its associated employeeId so the
+    // frontend can use it directly for payment flows without an extra lookup.
+    if (result.items.length > 0) {
+      const employees = await this.employeeRepo.find({
+        where: result.items.map((app) => ({
+          jobId: app.jobId,
+          jobseekerProfileId: app.jobseekerProfileId,
+        })),
+        select: ['id', 'jobId', 'jobseekerProfileId'],
+      });
+
+      const employeeMap = new Map(
+        employees.map((e) => [`${e.jobId}:${e.jobseekerProfileId}`, e.id]),
+      );
+
+      return {
+        ...result,
+        items: result.items.map((app) => ({
+          ...app,
+          employeeId:
+            employeeMap.get(`${app.jobId}:${app.jobseekerProfileId}`) ?? null,
+        })),
+      };
+    }
+
+    return result;
   }
 
   // Updates application status for employer-owned job
@@ -186,6 +211,19 @@ export class JobApplicationsService {
       .leftJoinAndSelect('application.jobseekerProfile', 'jobseeker');
   }
 
+  // Determines if a screening window has completed based on scheduled time and duration
+  private isScreeningCompleted(application: JobApplication): boolean {
+    const { screeningScheduledAt, screeningDurationMinutes } = application;
+
+    if (!screeningScheduledAt || screeningDurationMinutes == null) {
+      return false;
+    }
+
+    const startMs = screeningScheduledAt.getTime();
+    const endMs = startMs + screeningDurationMinutes * 60 * 1000;
+    return Date.now() >= endMs;
+  }
+
   // Applies status filters to application queries
   private applyApplicationFilters(
     qb: SelectQueryBuilder<JobApplication>,
@@ -228,9 +266,10 @@ export class JobApplicationsService {
       throw new NotFoundException('Application not found');
     }
 
-    if (application.status !== JobApplicationStatus.SCREENING_COMPLETED) {
+    // Only allow acceptance after the screening window has elapsed
+    if (!this.isScreeningCompleted(application)) {
       throw new BadRequestException(
-        'Can only accept candidates after screening is completed',
+        'Can only accept candidates after the scheduled screening time has completed',
       );
     }
 
@@ -300,7 +339,7 @@ export class JobApplicationsService {
     const savedEmployee = await this.employeeRepo.save(employee);
 
     // Update application status to EMPLOYER_ACCEPTED
-    application.status = JobApplicationStatus.EMPLOYER_ACCEPTED;
+    application.status = JobApplicationStatus.OFFER_SENT;
     application.statusUpdatedAt = new Date();
     await this.applicationRepo.save(application);
 
@@ -412,10 +451,21 @@ export class JobApplicationsService {
       throw new NotFoundException('Application not found');
     }
 
-    if (application.status !== JobApplicationStatus.EMPLOYER_ACCEPTED) {
+    if (application.status !== JobApplicationStatus.OFFER_SENT) {
       throw new BadRequestException(
         'Can only accept/reject offers after employer has accepted you',
       );
+    }
+
+    // Enforce offer expiry window using statusUpdatedAt as employerAcceptedAt
+    const employerAcceptedAt = application.statusUpdatedAt;
+    if (employerAcceptedAt && acceptance.accepted) {
+      const offerExpiresAt = new Date(
+        employerAcceptedAt.getTime() + 7 * 24 * 60 * 60 * 1000,
+      );
+      if (new Date() > offerExpiresAt) {
+        throw new BadRequestException('Offer has expired');
+      }
     }
 
     if (acceptance.accepted) {
@@ -460,7 +510,8 @@ export class JobApplicationsService {
     }
 
     // Apply employer-proposed time as the new official schedule
-    application.screeningScheduledAt = application.employerProposedScreeningTime;
+    application.screeningScheduledAt =
+      application.employerProposedScreeningTime;
     application.adminProposedScreeningTime =
       application.employerProposedScreeningTime;
     application.adminAccepted = true;
@@ -492,6 +543,124 @@ export class JobApplicationsService {
     } catch (error) {
       // Notification failures should not block the core flow
     }
+
+    return this.getApplicationById(applicationId);
+  }
+
+  // Employer sends a reminder email for a pending offer
+  async sendOfferReminder(employerId: string, applicationId: string) {
+    const application = await this.applicationRepo.findOne({
+      where: { id: applicationId },
+      relations: ['job', 'job.employer', 'jobseekerProfile'],
+    });
+
+    if (!application || application.job?.employerId !== employerId) {
+      throw new NotFoundException('Application not found');
+    }
+
+    if (application.status !== JobApplicationStatus.OFFER_SENT) {
+      throw new BadRequestException(
+        'Can only send reminders for pending offers awaiting candidate decision',
+      );
+    }
+
+    // Compute offer expiry window for informational purposes
+    const employerAcceptedAt = application.statusUpdatedAt;
+    let offerExpiresAt: Date | null = null;
+    if (employerAcceptedAt) {
+      offerExpiresAt = new Date(
+        employerAcceptedAt.getTime() + 7 * 24 * 60 * 60 * 1000,
+      );
+    }
+
+    // Notify candidate via email
+    try {
+      if (application.jobseekerProfile?.email) {
+        const websiteUrl = process.env.WEBSITE_URL ?? '';
+        const applicationsUrl = websiteUrl
+          ? `${websiteUrl}/jobseeker/dashboard/applications`
+          : undefined;
+
+        await this.notificationService.sendEmail({
+          to: application.jobseekerProfile.email,
+          subject: `Reminder: Job offer for ${application.job.title}`,
+          template: 'general-notification',
+          context: {
+            title: 'Reminder: Job Offer Pending',
+            message: `The employer for "${application.job.title}" is waiting for your response to their offer.`,
+            jobTitle: application.job.title,
+            jobId: application.job.id,
+            applicationId: application.id,
+            offerExpiresAt: offerExpiresAt?.toISOString() ?? null,
+            actionUrl: applicationsUrl ?? null,
+            actionText: 'View application',
+          },
+        });
+      }
+    } catch (error) {
+      // Notification failures should not block the core flow
+    }
+
+    return this.getApplicationById(applicationId);
+  }
+
+  // Employer confirms final hire after contract is signed
+  async confirmHire(employerId: string, applicationId: string) {
+    const application = await this.applicationRepo.findOne({
+      where: { id: applicationId },
+      relations: ['job'],
+    });
+
+    if (!application) {
+      throw new NotFoundException('Application not found');
+    }
+
+    if (application.job.employerId !== employerId) {
+      throw new BadRequestException('You do not have access to this application');
+    }
+
+    if (application.status !== JobApplicationStatus.CONTRACT_SIGNED) {
+      throw new BadRequestException(
+        'Application must be in CONTRACT_SIGNED status to confirm hire',
+      );
+    }
+
+    application.status = JobApplicationStatus.HIRED;
+    application.statusUpdatedAt = new Date();
+    await this.applicationRepo.save(application);
+
+    return this.getApplicationById(applicationId);
+  }
+
+  // Allows jobseeker to withdraw their application
+  async withdrawApplication(jobseekerId: string, applicationId: string) {
+    const application = await this.applicationRepo.findOne({
+      where: { id: applicationId, jobseekerProfileId: jobseekerId },
+      relations: ['job'],
+    });
+
+    if (!application) {
+      throw new NotFoundException('Application not found');
+    }
+
+    // Don't allow withdrawal of already terminal states
+    if (
+      [
+        JobApplicationStatus.PAYMENT_COMPLETE,
+        JobApplicationStatus.CONTRACT_SIGNED,
+        JobApplicationStatus.HIRED,
+        JobApplicationStatus.REJECTED,
+        JobApplicationStatus.WITHDRAWN,
+      ].includes(application.status)
+    ) {
+      throw new BadRequestException(
+        'Cannot withdraw an application in its current status',
+      );
+    }
+
+    application.status = JobApplicationStatus.WITHDRAWN;
+    application.statusUpdatedAt = new Date();
+    await this.applicationRepo.save(application);
 
     return this.getApplicationById(applicationId);
   }

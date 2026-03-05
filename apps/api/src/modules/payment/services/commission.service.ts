@@ -37,10 +37,16 @@ export class EmployeeActivationCommissionService {
       ),
     ]);
 
-    const percentageValue = parseFloat(percentage.value);
-    const floorValue = parseFloat(floor.value);
-    const ceilingValue = parseFloat(ceiling.value);
-    const vatRateValue = parseFloat(vatRate.value);
+    const percentageValue = Number(percentage);
+    const floorValue = Number(floor);
+    const ceilingValue = Number(ceiling);
+    const vatRateValue = Number(vatRate);
+
+    if ([percentageValue, floorValue, ceilingValue, vatRateValue].some(isNaN)) {
+      throw new Error(
+        `Invalid system config values: percentage=${percentage}, floor=${floor}, ceiling=${ceiling}, vatRate=${vatRate}`,
+      );
+    }
 
     // Calculate annual amount
     // For permanent employees: multiply monthly by 12

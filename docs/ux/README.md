@@ -11,16 +11,41 @@ This feature protects candidate contact information behind a payment. Employers 
 ```
 1. ACCEPTANCE
    Employer accepts candidate → Candidate accepts offer
+   Status: APPLICANT_ACCEPTED
 
 2. PAYMENT
    Employer pays commission → Contact details unlock
+   Status: PAYMENT_COMPLETE (set by Paystack webhook)
 
 3. CONTRACT
    System generates employment contract → Both parties sign
+   Status: CONTRACT_SIGNED (set when both sign)
 
-4. CONFIGURATION (Admin)
+4. HIRE
+   Employer clicks "Confirm Hire" → Hire finalised
+   Status: HIRED (set by explicit employer action)
+
+5. CONFIGURATION (Admin)
    Admins adjust commission rates dynamically
 ```
+
+---
+
+## Application Status Progression
+
+```
+APPLIED
+  → VETTED
+    → SELECTED_FOR_SCREENING
+      → SCREENING_COMPLETED
+        → OFFER_SENT
+          → APPLICANT_ACCEPTED
+            → PAYMENT_COMPLETE      (payment webhook confirmed)
+              → CONTRACT_SIGNED     (both parties signed contract)
+                → HIRED             (employer explicitly confirms hire)
+```
+
+Terminal statuses (no further transitions): `HIRED`, `REJECTED`, `WITHDRAWN`
 
 ---
 
@@ -46,16 +71,17 @@ Admin controls for commission rates, floor/ceiling limits, and configuration his
 
 ## Key Concepts
 
-**PII Gating**: Phone and email masked until payment complete
+**PII Gating**: Phone and email masked until payment complete (`piiUnlocked = true`)
 
 - Before: `+234 ••• ••• •• 22` and `j•••••@gmail.com`
-- After: Full contactdetails revealed
+- After: Full contact details revealed
 
 **Commission Calculation**: `(Salary × 12 × Percentage) + VAT`
 
-- Floor: Minimum ₦15k
-- Ceiling: Maximum ₦1M
-- Rate: 10-20% (admin configured)
+- Floor: Minimum ₦15k (configurable)
+- Ceiling: Maximum ₦1M (configurable)
+- Rate: 15% base (admin configured)
+- VAT: 7.5% (admin configured)
 
 **Two-Step Acceptance**: Employer accepts → Candidate accepts → Payment required
 
@@ -64,74 +90,42 @@ Admin controls for commission rates, floor/ceiling limits, and configuration his
 
 **Auto-Generated Contracts**: Payment confirmed → Contract PDF created → Both parties sign
 
-- Template selected by employment type
-- Signatures recorded with timestamp + IP
+- Template selected by employment type (Permanent or Fixed-Term)
+- Handlebars templates rendered to HTML → PDF via Puppeteer
+- Signatures recorded with timestamp + IP address
 - Immutable after both sign
+
+**Explicit Final Hire**: Contract fully signed → Employer clicks "Confirm Hire" → `HIRED`
+
+- `HIRED` is never set automatically
+- Employer must deliberately complete the process after contract execution
 
 ---
 
 ## Common Scenarios
 
-**Multiple Offers**: Candidate accepts one → All others auto-decline
-
-**Payment Failure**: Employer can retry, application stays in "payment required" state
-
-**Offer Expiration**: Candidate has 7 days to respond, then offer expires
+**Payment Failure**: Employer can retry, application stays in `APPLICANT_ACCEPTED`
 
 **Rate Changes**: Admin updates rates → Only new payments affected (pending payments use original rate)
 
-**Contract Edits**: Cannot edit signed contracts, must void and regenerate
-
----
-
-## For Designers
-
-Focus on these user journeys:
-
-1. **Employer views application** → Sees masked contact → Accepts candidate → Waits for candidate response → Sees payment modal → Completes payment → Sees full contact details
-
-2. **Candidate receives offer** → Reviews salary/terms → Accepts → Waits for payment → Receives "payment complete" notification → Signs contract
-
-3. **Admin adjusts rates** → Views current config → Changes percentage → Sees preview calculation → Saves → Views change history
-
-Design for these key states: Pending, Accepted, Payment Required, Processing, Unlocked, Contract Ready, Signed.
-
----
-
-## For Product Managers
-
-**Business Rules:**
-
-- Payment locks contact details until confirmed
-- Both parties must accept before payment required
-- Commission rates configurable by admin (no code deployment)
-- Contracts legally binding with timestamp + IP tracking
-- Single active job per candidate (accepting one declines others)
-
-**Edge Cases Handled:**
-
-- Payment retry logic for failures
-- Offer expiration after 7 days
-- Configuration lock-in (rate changes don't affect pending payments)
-- Webhook idempotency (duplicate payment confirmations ignored)
-- Contract immutability (must void + regenerate to "edit")
+**Contract Signing Order**: Either party can sign; both required for `CONTRACT_SIGNED`
 
 ---
 
 ## Integration Checkpoints
 
-- [ ] Application status badges (5 states)
-- [ ] Masked PII display components
-- [ ] Payment modal with breakdown
-- [ ] Payment gateway redirection (Paystack)
-- [ ] Contract PDF viewer
-- [ ] Digital signature flow
-- [ ] Admin configuration interface
-- [ ] Real-time status updates (webhooks or polling)
+- [x] Application status badges (all states)
+- [x] Masked PII display components
+- [x] Payment modal with real commission breakdown
+- [x] Payment gateway redirection (Paystack)
+- [x] Contract PDF generation
+- [x] Digital signature flow (timestamp + IP)
+- [x] Confirm Hire button at contract completion
+- [x] Admin configuration interface
 
 ---
 
-**Documentation Version**: 2.0 (Concise)  
-**Last Updated**: February 2026  
-**Backend**: Implemented ✅  
-**Frontend**: Pending
+**Documentation Version**: 3.0
+**Last Updated**: March 2026
+**Backend**: Implemented ✅
+**Frontend**: Implemented ✅

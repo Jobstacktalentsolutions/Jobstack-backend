@@ -1,10 +1,10 @@
-## Plan: Selection & Gating Payment System
+## Implementation: Selection & Gating Payment System
 
-Implement a financial gating system that masks candidate PII until employers pay a configurable agency commission (10-20% of annual salary with floor/ceiling caps). The system integrates with existing Paystack infrastructure, adds a new `AWAITING_PAYMENT` status between OFFERED and HIRED, calculates fees with VAT, and unmasks contact details upon payment confirmation.
+A financial gating system that masks candidate PII until employers pay a configurable agency commission (15% of annual salary with floor/ceiling caps). The system integrates with Paystack, calculates fees with VAT, unmasks contact details upon payment confirmation, auto-generates contracts, and requires an explicit final "Confirm Hire" action from the employer.
 
-**Key Decisions from Discovery:**
+**Implemented Status Flow:**
 
-- Flow: SCREENING_COMPLETED → EMPLOYER_ACCEPTS_CANDIDATE -> APPLICANT_ACCEPTS_OFFER → AWAITING_PAYMENT (gate here) → EMPLOYMENT_AGREEMENT(Docs) -> HIRED
+- SCREENING_COMPLETED → OFFER_SENT → APPLICANT_ACCEPTED → PAYMENT_COMPLETE → CONTRACT_SIGNED → HIRED
 - Commission calculated on `Employee.salaryOffered` × 12 (annual basis) for permanent roles, or `Employee.contractFeeOffered` for contracts
 - **Salary/Contract Fee determined at Job creation**, not during acceptance (Job.salary and Job.contractFee fields)
 - PII unmasked when `Employee.piiUnlocked = true` after payment
@@ -78,7 +78,7 @@ Body: {
 
 Create migration for new entities and status enums:
 
-- ✅ Add `AWAITING_PAYMENT` to JobApplicationStatus enum
+- ✅ Add `PAYMENT_COMPLETE`, `CONTRACT_SIGNED` to JobApplicationStatus enum (replaces old `AWAITING_PAYMENT`; `HIRED` now set only by explicit employer action)
 - ✅ Add `EMPLOYEE_ACTIVATION_FEE` to PaymentType enum (agency commission with floor/ceiling/VAT for both permanent and contract employees)
 - ✅ Extend Employee entity:
   - `piiUnlocked: boolean` (default false) - gates PII until payment
@@ -150,7 +150,7 @@ Extend PaymentService:
   - Load Payment and Employee
   - Update Payment status to SUCCESS, set paidAt timestamp
   - Set `Employee.piiUnlocked = true`, `Employee.paymentStatus = PAID`
-  - Update associated JobApplication status to APPLICANT_ACCEPTED → AWAITING_PAYMENT
+  - Update associated JobApplication status to `PAYMENT_COMPLETE`
   - Emit event `EmployeeActivationPaymentConfirmed` with employeeId
   - Send email notifications to employer and admin
 
@@ -183,7 +183,8 @@ Create ContractService and ContractsModule:
   - Return Contract entity
 - Method `signContract(contractId: uuid, userId: uuid, userType: 'employer' | 'employee', ipAddress: string): Promise<Contract>`
   - Update appropriate signature fields and timestamp
-  - If both signed, update status to FULLY_EXECUTED, update JobApplication status to HIRED
+  - If both signed, status becomes `FULLY_EXECUTED`; `contract.fully-executed` event sets `JobApplication.status = CONTRACT_SIGNED`
+  - Employer must then call `POST /job-applications/:id/confirm-hire` to set status to `HIRED`
 - Signature UI is frontend responsibility (out of scope for backend plan)
 
 ### 7. API Endpoints

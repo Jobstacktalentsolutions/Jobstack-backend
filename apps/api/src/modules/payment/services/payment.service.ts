@@ -32,6 +32,7 @@ import {
   PaymentHistoryResult,
   PaymentRequiredException,
 } from '../interfaces/payment.interface';
+import { CommissionBreakdown } from '../interfaces/commission.interface';
 
 @Injectable()
 export class PaymentService {
@@ -203,24 +204,31 @@ export class PaymentService {
       status = PaymentStatus.FAILED;
     }
 
-    // Update payment record
+    // Store the Paystack transaction ID regardless of outcome
     await this.paymentRepo.update(payment.id, {
-      status,
-      paidAt,
-      paystackTransactionId: paystackResponse.data.id.toString(),
+      paystackTransactionId: paystackResponse.data.id?.toString(),
     });
 
-    // Update employee payment status
-    const employeePaymentStatus =
-      status === PaymentStatus.SUCCESS
-        ? EmployeePaymentStatus.PAID
-        : EmployeePaymentStatus.FAILED;
-
-    await this.employeeRepo.update(payment.employeeId, {
-      paymentStatus: employeePaymentStatus,
-      activationBlocked: status !== PaymentStatus.SUCCESS,
-      piiUnlocked: status === PaymentStatus.SUCCESS, // Unlock PII when payment succeeds
-    });
+    if (status === PaymentStatus.SUCCESS) {
+      // Delegate to the same method used by the webhook so both paths are identical.
+      // processActivationPaymentSuccess is idempotent — safe to call even if the
+      // webhook already ran first.
+      if (payment.paymentType === PaymentType.EMPLOYEE_ACTIVATION_FEE) {
+        await this.processActivationPaymentSuccess(payment.id);
+      } else {
+        await this.employeeRepo.update(payment.employeeId, {
+          paymentStatus: EmployeePaymentStatus.PAID,
+          activationBlocked: false,
+          piiUnlocked: true,
+        });
+      }
+    } else {
+      await this.paymentRepo.update(payment.id, { status: PaymentStatus.FAILED });
+      await this.employeeRepo.update(payment.employeeId, {
+        paymentStatus: EmployeePaymentStatus.FAILED,
+        activationBlocked: true,
+      });
+    }
 
     this.logger.log(`Payment verified: ${reference} - Status: ${status}`);
 
@@ -390,13 +398,43 @@ export class PaymentService {
   // ==================== NEW ACTIVATION PAYMENT METHODS ====================
 
   /**
+   * Get commission breakdown for an employee activation payment (preview before paying)
+   */
+  async getActivationBreakdown(
+    employeeId: string,
+    employerId: string,
+  ): Promise<CommissionBreakdown> {
+    const employee = await this.employeeRepo.findOne({
+      where: { id: employeeId, employerId },
+    });
+
+    if (!employee) {
+      throw new NotFoundException('Employee not found');
+    }
+
+    const isContract =
+      employee.employmentArrangement === EmploymentArrangement.CONTRACT;
+    const baseAmount = isContract
+      ? employee.contractFeeOffered
+      : employee.salaryOffered;
+
+    if (!baseAmount) {
+      throw new BadRequestException(
+        'Employee must have salary or contract fee defined',
+      );
+    }
+
+    return this.commissionService.calculateCommissionFee(baseAmount, isContract);
+  }
+
+  /**
    * Initiate employee activation payment with commission calculation
    */
   async initiateActivationPayment(
     employeeId: string,
     employerId: string,
     callbackUrl?: string,
-  ): Promise<{ paymentId: string; paymentUrl: string; reference: string }> {
+  ): Promise<{ paymentId: string; paymentUrl: string; reference: string; publicKey: string }> {
     // Load employee with relations
     const employee = await this.employeeRepo.findOne({
       where: { id: employeeId, employerId },
@@ -423,7 +461,8 @@ export class PaymentService {
       throw new BadRequestException('Employee PII already unlocked');
     }
 
-    // Check for existing pending payment
+    // Check for existing pending payment — reuse it instead of creating a duplicate.
+    // This handles the case where a previous popup was closed or the transaction failed.
     const existingPayment = await this.paymentRepo.findOne({
       where: {
         employeeId,
@@ -433,9 +472,36 @@ export class PaymentService {
     });
 
     if (existingPayment) {
-      throw new BadRequestException(
-        'Payment already initiated for this employee',
+      this.logger.log(
+        `Re-initializing existing pending payment ${existingPayment.id} for employee ${employeeId}`,
       );
+
+      // Generate a fresh reference — Paystack rejects duplicate references
+      const freshReference = this.paystackService.generateReference('ACT');
+      await this.paymentRepo.update(existingPayment.id, {
+        paystackReference: freshReference,
+      });
+
+      const paystackResponse = await this.paystackService.initializeTransaction({
+        email: employee.employer.email,
+        amount: this.paystackService.convertToKobo(existingPayment.amount),
+        reference: freshReference,
+        currency: existingPayment.currency || 'NGN',
+        callback_url: callbackUrl,
+        metadata: {
+          paymentId: existingPayment.id,
+          employeeId,
+          employerId,
+          paymentType: PaymentType.EMPLOYEE_ACTIVATION_FEE,
+        },
+      });
+
+      return {
+        paymentId: existingPayment.id,
+        paymentUrl: paystackResponse.data.authorization_url,
+        reference: freshReference,
+        publicKey: this.paystackService.getPublicKey(),
+      };
     }
 
     // Calculate commission using CommissionService
@@ -509,6 +575,7 @@ export class PaymentService {
       paymentId: savedPayment.id,
       paymentUrl: paystackResponse.data.authorization_url,
       reference,
+      publicKey: this.paystackService.getPublicKey(),
     };
   }
 
@@ -560,7 +627,7 @@ export class PaymentService {
 
     if (jobApplication) {
       await this.jobApplicationRepo.update(jobApplication.id, {
-        status: JobApplicationStatus.HIRED,
+        status: JobApplicationStatus.PAYMENT_COMPLETE,
         statusUpdatedAt: new Date(),
       });
     }

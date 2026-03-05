@@ -18,19 +18,37 @@ export class SystemConfigService {
   // Get configuration value by key
   async getConfig(key: SystemConfigKey | string): Promise<any> {
     const config = await this.systemConfigRepo.findOne({ where: { key } });
+
     if (!config) {
-      // Return default values for known keys
-      if (key === SystemConfigKey.EMPLOYEE_ACTIVATION_PERCENTAGE) {
-        return 10; // Default 10%
-      }
       throw new NotFoundException(`Configuration key '${key}' not found`);
     }
 
+    let parsed: any;
     try {
-      return JSON.parse(config.value);
+      parsed = JSON.parse(config.value);
     } catch {
-      return config.value;
+      parsed = config.value;
     }
+
+    // For numeric config keys, validate the value is actually a number
+    const numericKeys = [
+      SystemConfigKey.EMPLOYEE_ACTIVATION_PERCENTAGE,
+      SystemConfigKey.EMPLOYEE_ACTIVATION_PERCENTAGE_FLOOR,
+      SystemConfigKey.EMPLOYEE_ACTIVATION_PERCENTAGE_CEILING,
+      SystemConfigKey.EMPLOYEE_ACTIVATION_PERCENTAGE_VAT_RATE,
+    ] as string[];
+
+    if (numericKeys.includes(key as string)) {
+      const n = Number(parsed);
+      if (isNaN(n)) {
+        throw new BadRequestException(
+          `Configuration key '${key}' has an invalid non-numeric value: "${config.value}". Please set a valid number via the admin config endpoint.`,
+        );
+      }
+      return n;
+    }
+
+    return parsed;
   }
 
   // Update configuration (admin only)

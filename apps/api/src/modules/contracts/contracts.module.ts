@@ -5,6 +5,7 @@ import {
   ContractTemplate,
   Employee,
   Document,
+  JobApplication,
 } from '@app/common/database/entities';
 import { StorageModule } from '@app/common/storage';
 import { ContractsService } from './services/contracts.service';
@@ -16,7 +17,7 @@ import { AdminAuthModule } from '../auth/submodules/admin/admin-auth.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Contract, ContractTemplate, Employee, Document]),
+    TypeOrmModule.forFeature([Contract, ContractTemplate, Employee, Document, JobApplication]),
     StorageModule,
     EmployerAuthModule,
     JobSeekerAuthModule,
