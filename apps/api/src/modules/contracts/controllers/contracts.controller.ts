@@ -115,17 +115,34 @@ export class ContractsController {
   }
 
   /**
-   * Get contract details
-   * GET /contracts/:contractId
+   * Get all contracts for the authenticated employer
+   * GET /contracts/employer/mine
    */
-  @Get(':contractId')
+  @Get('employer/mine')
   @UseGuards(EmployerJwtGuard)
-  async getContract(@Param('contractId') contractId: string) {
-    const contract = await this.contractsService.getContractById(contractId);
+  async getEmployerContracts(@Req() req: any) {
+    const employerId = req.user.id;
+    const contracts =
+      await this.contractsService.getContractsByEmployerId(employerId);
 
     return {
       success: true,
-      data: contract,
+      data: contracts,
+    };
+  }
+
+  /**
+   * Get rendered HTML for a contract
+   * GET /contracts/:contractId/html
+   */
+  @Get(':contractId/html')
+  @UseGuards(EmployerJwtGuard)
+  async getContractHtml(@Param('contractId') contractId: string) {
+    const html = await this.contractsService.getContractHtml(contractId);
+
+    return {
+      success: true,
+      data: { html },
     };
   }
 
@@ -142,6 +159,21 @@ export class ContractsController {
     return {
       success: true,
       data: contracts,
+    };
+  }
+
+  /**
+   * Get contract details
+   * GET /contracts/:contractId
+   */
+  @Get(':contractId')
+  @UseGuards(EmployerJwtGuard)
+  async getContract(@Param('contractId') contractId: string) {
+    const contract = await this.contractsService.getContractById(contractId);
+
+    return {
+      success: true,
+      data: contract,
     };
   }
 

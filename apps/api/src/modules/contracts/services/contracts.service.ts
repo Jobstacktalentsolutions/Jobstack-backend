@@ -10,7 +10,7 @@ import { readFile } from 'fs/promises';
 import { join } from 'path';
 import * as Handlebars from 'handlebars';
 import * as puppeteer from 'puppeteer';
-import { Contract, ContractTemplate, Employee } from '@app/common/database/entities';
+import { Contract, ContractTemplate, Document, Employee } from '@app/common/database/entities';
 import {
   ContractStatus,
   ContractTemplateType,
@@ -285,6 +285,42 @@ export class ContractsService {
       relations: ['template', 'contractDocument'],
       order: { createdAt: 'DESC' },
     });
+  }
+
+  /**
+   * Get all contracts for an employer (across all their employees)
+   */
+  async getContractsByEmployerId(employerId: string): Promise<Contract[]> {
+    return this.contractRepo
+      .createQueryBuilder('contract')
+      .leftJoinAndSelect('contract.template', 'template')
+      .leftJoinAndSelect('contract.employee', 'employee')
+      .leftJoinAndSelect('employee.jobseekerProfile', 'jobseekerProfile')
+      .leftJoinAndSelect('employee.job', 'job')
+      .where('employee.employerId = :employerId', { employerId })
+      .orderBy('contract.createdAt', 'DESC')
+      .getMany();
+  }
+
+  /**
+   * Re-render contract HTML from stored template data
+   */
+  async getContractHtml(contractId: string): Promise<string> {
+    const contract = await this.contractRepo.findOne({
+      where: { id: contractId },
+      relations: ['template'],
+    });
+
+    if (!contract) {
+      throw new NotFoundException('Contract not found');
+    }
+
+    if (!contract.template) {
+      throw new NotFoundException('Contract template not found');
+    }
+
+    const templateData = contract.metadata?.templateData ?? {};
+    return this.renderTemplate(contract.template, templateData);
   }
 
   /**

@@ -1,12 +1,22 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { ContractsService } from '../services/contracts.service';
+import { JobApplication, Employee } from '@app/common/database/entities';
+import { JobApplicationStatus } from '@app/common/database/entities/schema.enum';
 
 @Injectable()
 export class ContractEventListener {
   private readonly logger = new Logger(ContractEventListener.name);
 
-  constructor(private readonly contractsService: ContractsService) {}
+  constructor(
+    private readonly contractsService: ContractsService,
+    @InjectRepository(JobApplication)
+    private readonly jobApplicationRepo: Repository<JobApplication>,
+    @InjectRepository(Employee)
+    private readonly employeeRepo: Repository<Employee>,
+  ) {}
 
   /**
    * Listen for employee activation payment confirmation
@@ -43,7 +53,7 @@ export class ContractEventListener {
 
   /**
    * Listen for contract fully executed event
-   * Update job application status to HIRED
+   * Update job application status to CONTRACT_SIGNED
    */
   @OnEvent('contract.fully-executed')
   async handleContractFullyExecuted(payload: {
@@ -54,6 +64,37 @@ export class ContractEventListener {
       `Contract ${payload.contractId} fully executed for employee ${payload.employeeId}`,
     );
 
-    // Additional actions can be added here (e.g., notify parties, update analytics)
+    try {
+      const employee = await this.employeeRepo.findOne({
+        where: { id: payload.employeeId },
+      });
+
+      if (!employee) {
+        this.logger.warn(`Employee ${payload.employeeId} not found for contract fully-executed event`);
+        return;
+      }
+
+      const jobApplication = await this.jobApplicationRepo.findOne({
+        where: {
+          jobId: employee.jobId,
+          jobseekerProfileId: employee.jobseekerProfileId,
+        },
+      });
+
+      if (jobApplication) {
+        await this.jobApplicationRepo.update(jobApplication.id, {
+          status: JobApplicationStatus.CONTRACT_SIGNED,
+          statusUpdatedAt: new Date(),
+        });
+        this.logger.log(
+          `Job application ${jobApplication.id} updated to CONTRACT_SIGNED`,
+        );
+      }
+    } catch (error) {
+      this.logger.error(
+        `Failed to update application status for contract ${payload.contractId}: ${error.message}`,
+        error.stack,
+      );
+    }
   }
 }

@@ -13,6 +13,7 @@ export * from './factories/employer.factory';
 export * from './factories/jobseeker.factory';
 export * from './factories/skill.factory';
 export * from './factories/system-config.factory';
+export * from './factories/contract-template.factory';
 
 // Seeders
 export * from './seeders/base.seeder';

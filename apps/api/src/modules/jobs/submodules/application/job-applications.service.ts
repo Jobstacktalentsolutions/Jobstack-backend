@@ -118,6 +118,8 @@ export class JobApplicationsService {
       JobApplicationStatus.SCREENING_COMPLETED,
       JobApplicationStatus.OFFER_SENT,
       JobApplicationStatus.APPLICANT_ACCEPTED,
+      JobApplicationStatus.PAYMENT_COMPLETE,
+      JobApplicationStatus.CONTRACT_SIGNED,
       JobApplicationStatus.HIRED,
     ];
 
@@ -131,7 +133,34 @@ export class JobApplicationsService {
     });
 
     this.applyApplicationFilters(qb, query);
-    return this.executePagedApplicationQuery(qb, query);
+    const result = await this.executePagedApplicationQuery(qb, query);
+
+    // Annotate each application with its associated employeeId so the
+    // frontend can use it directly for payment flows without an extra lookup.
+    if (result.items.length > 0) {
+      const employees = await this.employeeRepo.find({
+        where: result.items.map((app) => ({
+          jobId: app.jobId,
+          jobseekerProfileId: app.jobseekerProfileId,
+        })),
+        select: ['id', 'jobId', 'jobseekerProfileId'],
+      });
+
+      const employeeMap = new Map(
+        employees.map((e) => [`${e.jobId}:${e.jobseekerProfileId}`, e.id]),
+      );
+
+      return {
+        ...result,
+        items: result.items.map((app) => ({
+          ...app,
+          employeeId:
+            employeeMap.get(`${app.jobId}:${app.jobseekerProfileId}`) ?? null,
+        })),
+      };
+    }
+
+    return result;
   }
 
   // Updates application status for employer-owned job
@@ -575,6 +604,34 @@ export class JobApplicationsService {
     return this.getApplicationById(applicationId);
   }
 
+  // Employer confirms final hire after contract is signed
+  async confirmHire(employerId: string, applicationId: string) {
+    const application = await this.applicationRepo.findOne({
+      where: { id: applicationId },
+      relations: ['job'],
+    });
+
+    if (!application) {
+      throw new NotFoundException('Application not found');
+    }
+
+    if (application.job.employerId !== employerId) {
+      throw new BadRequestException('You do not have access to this application');
+    }
+
+    if (application.status !== JobApplicationStatus.CONTRACT_SIGNED) {
+      throw new BadRequestException(
+        'Application must be in CONTRACT_SIGNED status to confirm hire',
+      );
+    }
+
+    application.status = JobApplicationStatus.HIRED;
+    application.statusUpdatedAt = new Date();
+    await this.applicationRepo.save(application);
+
+    return this.getApplicationById(applicationId);
+  }
+
   // Allows jobseeker to withdraw their application
   async withdrawApplication(jobseekerId: string, applicationId: string) {
     const application = await this.applicationRepo.findOne({
@@ -589,6 +646,8 @@ export class JobApplicationsService {
     // Don't allow withdrawal of already terminal states
     if (
       [
+        JobApplicationStatus.PAYMENT_COMPLETE,
+        JobApplicationStatus.CONTRACT_SIGNED,
         JobApplicationStatus.HIRED,
         JobApplicationStatus.REJECTED,
         JobApplicationStatus.WITHDRAWN,

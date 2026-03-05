@@ -11,8 +11,6 @@ if (!databaseUrl) {
   throw new Error('DATABASE_URL environment variable is not set');
 }
 
-console.log('database url', databaseUrl);
-
 export const typeOrmConfig: DataSourceOptions = {
   type: 'postgres',
   url: databaseUrl,

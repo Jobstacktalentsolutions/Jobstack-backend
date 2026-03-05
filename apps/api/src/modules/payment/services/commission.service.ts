@@ -42,6 +42,12 @@ export class EmployeeActivationCommissionService {
     const ceilingValue = Number(ceiling);
     const vatRateValue = Number(vatRate);
 
+    if ([percentageValue, floorValue, ceilingValue, vatRateValue].some(isNaN)) {
+      throw new Error(
+        `Invalid system config values: percentage=${percentage}, floor=${floor}, ceiling=${ceiling}, vatRate=${vatRate}`,
+      );
+    }
+
     // Calculate annual amount
     // For permanent employees: multiply monthly by 12
     // For contracts: use as-is (already project/duration-based)

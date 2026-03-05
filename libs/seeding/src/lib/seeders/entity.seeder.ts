@@ -9,6 +9,7 @@ import { DocumentFactory } from '../factories/document.factory';
 import { JobFactory } from '../factories/job.factory';
 import { JobApplicationFactory } from '../factories/job-application.factory';
 import { SystemConfigFactory } from '../factories/system-config.factory';
+import { ContractTemplateFactory } from '../factories/contract-template.factory';
 
 /**
  * Entity seeder that handles seeding of different entities
@@ -38,6 +39,10 @@ export class EntitySeeder extends BaseSeeder {
     this.entityFactories.set(
       'system-config',
       new SystemConfigFactory(dataSource),
+    );
+    this.entityFactories.set(
+      'contract-templates',
+      new ContractTemplateFactory(dataSource),
     );
   }
 

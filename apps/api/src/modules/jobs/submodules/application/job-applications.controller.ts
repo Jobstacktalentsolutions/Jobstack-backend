@@ -183,6 +183,16 @@ export class JobApplicationsController {
     );
   }
 
+  // Employer confirms final hire after contract is signed
+  @Post(':applicationId/confirm-hire')
+  @UseGuards(EmployerJwtGuard)
+  confirmHire(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('applicationId', ParseUUIDPipe) applicationId: string,
+  ) {
+    return this.jobApplicationsService.confirmHire(user.id, applicationId);
+  }
+
   // Jobseeker withdraws their application
   @Patch(':applicationId/withdraw')
   @UseGuards(JobSeekerJwtGuard)
