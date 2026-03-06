@@ -49,6 +49,10 @@ export type QueueName = (typeof QUEUE_NAMES)[keyof typeof QUEUE_NAMES];
             password: url.password || undefined,
             username: url.username || undefined,
             tls: url.protocol === 'rediss:' ? {} : undefined,
+            connectTimeout: 15000,
+            maxRetriesPerRequest: null,
+            enableOfflineQueue: true,
+            retryStrategy: (times: number) => Math.min(times * 500, 5000),
           },
           prefix: `${redisKeyPrefix}bull`,
           defaultJobOptions: {
