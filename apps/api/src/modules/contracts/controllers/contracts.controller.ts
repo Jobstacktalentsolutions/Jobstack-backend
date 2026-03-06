@@ -10,12 +10,17 @@ import {
   HttpStatus,
   Ip,
 } from '@nestjs/common';
+import { IsString, IsUUID, IsOptional } from 'class-validator';
 import { ContractsService } from '../services/contracts.service';
 import { EmployerJwtGuard } from 'apps/api/src/guards';
 import { JobSeekerJwtGuard } from 'apps/api/src/guards';
 
 class GenerateContractDto {
+  @IsUUID()
   employeeId: string;
+
+  @IsOptional()
+  @IsString()
   templateId?: string;
 }
 
@@ -177,29 +182,4 @@ export class ContractsController {
     };
   }
 
-  /**
-   * Download contract PDF
-   * GET /contracts/:contractId/download
-   * Returns the signed URL to the contract document
-   */
-  @Get(':contractId/download')
-  @UseGuards(EmployerJwtGuard)
-  async downloadContract(@Param('contractId') contractId: string) {
-    const contract = await this.contractsService.getContractById(contractId);
-
-    if (!contract.contractDocument) {
-      return {
-        success: false,
-        message: 'Contract document not found',
-      };
-    }
-
-    return {
-      success: true,
-      data: {
-        url: contract.contractDocument.url,
-        name: contract.contractDocument.originalName,
-      },
-    };
-  }
 }

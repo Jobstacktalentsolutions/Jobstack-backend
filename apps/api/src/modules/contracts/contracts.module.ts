@@ -4,10 +4,8 @@ import {
   Contract,
   ContractTemplate,
   Employee,
-  Document,
   JobApplication,
 } from '@app/common/database/entities';
-import { StorageModule } from '@app/common/storage';
 import { ContractsService } from './services/contracts.service';
 import { ContractsController } from './controllers/contracts.controller';
 import { ContractEventListener } from './listeners/contract-event.listener';
@@ -17,8 +15,7 @@ import { AdminAuthModule } from '../auth/submodules/admin/admin-auth.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Contract, ContractTemplate, Employee, Document, JobApplication]),
-    StorageModule,
+    TypeOrmModule.forFeature([Contract, ContractTemplate, Employee, JobApplication]),
     EmployerAuthModule,
     JobSeekerAuthModule,
     AdminAuthModule,

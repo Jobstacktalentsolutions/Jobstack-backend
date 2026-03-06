@@ -434,7 +434,7 @@ export class PaymentService {
     employeeId: string,
     employerId: string,
     callbackUrl?: string,
-  ): Promise<{ paymentId: string; paymentUrl: string; reference: string; publicKey: string }> {
+  ): Promise<{ paymentId: string; paymentUrl: string; reference: string; accessCode: string; publicKey: string }> {
     // Load employee with relations
     const employee = await this.employeeRepo.findOne({
       where: { id: employeeId, employerId },
@@ -500,6 +500,7 @@ export class PaymentService {
         paymentId: existingPayment.id,
         paymentUrl: paystackResponse.data.authorization_url,
         reference: freshReference,
+        accessCode: paystackResponse.data.access_code,
         publicKey: this.paystackService.getPublicKey(),
       };
     }
@@ -575,6 +576,7 @@ export class PaymentService {
       paymentId: savedPayment.id,
       paymentUrl: paystackResponse.data.authorization_url,
       reference,
+      accessCode: paystackResponse.data.access_code,
       publicKey: this.paystackService.getPublicKey(),
     };
   }

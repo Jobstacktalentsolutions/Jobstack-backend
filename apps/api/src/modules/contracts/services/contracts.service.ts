@@ -9,16 +9,16 @@ import { Repository } from 'typeorm';
 import { readFile } from 'fs/promises';
 import { join } from 'path';
 import * as Handlebars from 'handlebars';
-import * as puppeteer from 'puppeteer';
-import { Contract, ContractTemplate, Document, Employee } from '@app/common/database/entities';
+import {
+  Contract,
+  ContractTemplate,
+  Employee,
+} from '@app/common/database/entities';
 import {
   ContractStatus,
   ContractTemplateType,
-  DocumentType,
 } from '@app/common/database/entities/schema.enum';
-import { StorageService } from '@app/common/storage';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import type { MulterFile } from '@app/common/shared/types';
 
 @Injectable()
 export class ContractsService {
@@ -35,9 +35,6 @@ export class ContractsService {
     private readonly templateRepo: Repository<ContractTemplate>,
     @InjectRepository(Employee)
     private readonly employeeRepo: Repository<Employee>,
-    @InjectRepository(Document)
-    private readonly documentRepo: Repository<Document>,
-    private readonly storageService: StorageService,
     private readonly eventEmitter: EventEmitter2,
   ) {
     // Register Handlebars helpers
@@ -81,7 +78,6 @@ export class ContractsService {
       where: { id: employeeId },
       relations: [
         'employer',
-        'employer.employerProfile',
         'jobseekerProfile',
         'job',
         'activationPayment',
@@ -117,48 +113,19 @@ export class ContractsService {
     // Prepare template data for rendering
     const templateData = await this.prepareTemplateData(employee);
 
-    // Render template HTML with data
+    // Render template HTML and store it directly — no PDF/storage needed
     const htmlContent = await this.renderTemplate(template, templateData);
 
-    // Generate PDF from rendered HTML
-    const pdfBuffer = await this.generatePDF(htmlContent);
-
-    // Upload generated PDF to storage
-    const fileName = `contract-${employee.id}-${Date.now()}.pdf`;
-    const multerFile: MulterFile = {
-      fieldname: 'contract',
-      originalname: fileName,
-      encoding: '7bit',
-      mimetype: 'application/pdf',
-      size: pdfBuffer.length,
-      destination: '',
-      filename: fileName,
-      path: '',
-      buffer: pdfBuffer,
-    };
-
-    const { document: uploadedDocument } = await this.storageService.uploadFile(
-      multerFile,
-      {
-        fileName,
-        folder: 'contracts',
-        bucketType: 'private',
-        documentType: DocumentType.OTHER,
-        uploadedBy: employee.employerId,
-        description: `Employment Contract - ${employee.jobseekerProfile?.firstName ?? ''} ${employee.jobseekerProfile?.lastName ?? ''}`.trim(),
-      },
-    );
-
-    // Create Contract record
+    // Create Contract record with HTML stored in metadata
     const contract = this.contractRepo.create({
       employeeId: employee.id,
       templateId: template.id,
-      contractDocumentId: uploadedDocument.id,
       templateVersion: template.version,
       status: ContractStatus.PENDING_SIGNATURES,
       metadata: {
         generatedAt: new Date().toISOString(),
         templateData,
+        html: htmlContent,
       },
     });
 
@@ -176,7 +143,7 @@ export class ContractsService {
 
     const fullContract = await this.contractRepo.findOne({
       where: { id: savedContract.id },
-      relations: ['employee', 'template', 'contractDocument'],
+      relations: ['employee', 'template'],
     });
 
     if (!fullContract) {
@@ -260,13 +227,7 @@ export class ContractsService {
   async getContractById(contractId: string): Promise<Contract> {
     const contract = await this.contractRepo.findOne({
       where: { id: contractId },
-      relations: [
-        'employee',
-        'employee.employer',
-        'employee.jobseekerProfile',
-        'template',
-        'contractDocument',
-      ],
+      relations: ['employee', 'employee.employer', 'employee.jobseekerProfile', 'template'],
     });
 
     if (!contract) {
@@ -282,7 +243,7 @@ export class ContractsService {
   async getContractsByEmployeeId(employeeId: string): Promise<Contract[]> {
     return this.contractRepo.find({
       where: { employeeId },
-      relations: ['template', 'contractDocument'],
+      relations: ['template'],
       order: { createdAt: 'DESC' },
     });
   }
@@ -290,20 +251,40 @@ export class ContractsService {
   /**
    * Get all contracts for an employer (across all their employees)
    */
-  async getContractsByEmployerId(employerId: string): Promise<Contract[]> {
-    return this.contractRepo
-      .createQueryBuilder('contract')
-      .leftJoinAndSelect('contract.template', 'template')
-      .leftJoinAndSelect('contract.employee', 'employee')
+  async getContractsByEmployerId(
+    employerId: string,
+  ): Promise<Array<Employee & { contract: Contract | null }>> {
+    // Fetch all paid employees for this employer
+    const employees = await this.employeeRepo
+      .createQueryBuilder('employee')
       .leftJoinAndSelect('employee.jobseekerProfile', 'jobseekerProfile')
       .leftJoinAndSelect('employee.job', 'job')
       .where('employee.employerId = :employerId', { employerId })
+      .andWhere('employee.piiUnlocked = true')
+      .orderBy('employee.createdAt', 'DESC')
+      .getMany();
+
+    if (employees.length === 0) return [];
+
+    // Fetch contracts for these employees in one query
+    const employeeIds = employees.map((e) => e.id);
+    const contracts = await this.contractRepo
+      .createQueryBuilder('contract')
+      .leftJoinAndSelect('contract.template', 'template')
+      .where('contract.employeeId IN (:...employeeIds)', { employeeIds })
       .orderBy('contract.createdAt', 'DESC')
       .getMany();
+
+    const contractByEmployee = new Map(contracts.map((c) => [c.employeeId, c]));
+
+    return employees.map((e) => ({
+      ...e,
+      contract: contractByEmployee.get(e.id) ?? null,
+    }));
   }
 
   /**
-   * Re-render contract HTML from stored template data
+   * Return contract HTML — serves stored HTML from metadata, re-renders as fallback
    */
   async getContractHtml(contractId: string): Promise<string> {
     const contract = await this.contractRepo.findOne({
@@ -315,6 +296,12 @@ export class ContractsService {
       throw new NotFoundException('Contract not found');
     }
 
+    // Serve stored HTML directly (fast path)
+    if (contract.metadata?.html) {
+      return contract.metadata.html as string;
+    }
+
+    // Fallback: re-render from stored template data
     if (!contract.template) {
       throw new NotFoundException('Contract template not found');
     }
@@ -330,7 +317,7 @@ export class ContractsService {
     template: ContractTemplate,
     data: Record<string, any>,
   ): Promise<string> {
-    // Check cache
+    // Cheeck cache
     let compiledTemplate = this.templateCache.get(template.id);
 
     if (!compiledTemplate) {
@@ -354,43 +341,6 @@ export class ContractsService {
     }
 
     return compiledTemplate(data);
-  }
-
-  /**
-   * Generate PDF from HTML using Puppeteer
-   */
-  private async generatePDF(htmlContent: string): Promise<Buffer> {
-    let browser: puppeteer.Browser | null = null;
-
-    try {
-      browser = await puppeteer.launch({
-        headless: true,
-        args: ['--no-sandbox', '--disable-setuid-sandbox'],
-      });
-
-      const page = await browser.newPage();
-      await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
-
-      const pdfBuffer = await page.pdf({
-        format: 'A4',
-        margin: {
-          top: '20px',
-          right: '20px',
-          bottom: '20px',
-          left: '20px',
-        },
-        printBackground: true,
-      });
-
-      return Buffer.from(pdfBuffer);
-    } catch (error) {
-      this.logger.error(`Failed to generate PDF: ${error.message}`);
-      throw new BadRequestException('Failed to generate contract PDF');
-    } finally {
-      if (browser) {
-        await browser.close();
-      }
-    }
   }
 
   /**
@@ -427,12 +377,16 @@ export class ContractsService {
       employmentArrangement: employee.employmentArrangement,
       workMode: job.workMode,
 
-      // Compensation
-      salary: employee.salaryOffered?.toLocaleString() || 'N/A',
-      annualSalary: employee.salaryOffered
-        ? (employee.salaryOffered * 12).toLocaleString()
+      // Compensation — TypeORM returns decimals as strings, so parse before arithmetic
+      salary: employee.salaryOffered
+        ? parseFloat(String(employee.salaryOffered)).toLocaleString()
         : 'N/A',
-      contractFee: employee.contractFeeOffered?.toLocaleString() || 'N/A',
+      annualSalary: employee.salaryOffered
+        ? (parseFloat(String(employee.salaryOffered)) * 12).toLocaleString()
+        : 'N/A',
+      contractFee: employee.contractFeeOffered
+        ? parseFloat(String(employee.contractFeeOffered)).toLocaleString()
+        : 'N/A',
       contractPaymentType: employee.contractPaymentType || 'N/A',
       currency: employee.currency || 'NGN',
 

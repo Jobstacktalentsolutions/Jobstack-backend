@@ -1,0 +1,179 @@
+<html lang='en'>
+  <head>
+    <meta charset='UTF-8' />
+    <meta name='viewport' content='width=device-width, initial-scale=1.0' />
+    <title>Intellectual Property Assignment Agreement</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        line-height: 1.6;
+        color: #333;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      .header {
+        text-align: center;
+        margin-bottom: 30px;
+        border-bottom: 2px solid #333;
+        padding-bottom: 10px;
+      }
+      .header h1 { margin: 0; color: #2c3e50; }
+      .section { margin-bottom: 20px; }
+      .section-title {
+        font-weight: bold;
+        color: #2c3e50;
+        margin-bottom: 10px;
+        font-size: 1.1em;
+      }
+      .signature-block {
+        margin-top: 50px;
+        display: flex;
+        justify-content: space-between;
+      }
+      .signature { width: 45%; }
+      .signature-line {
+        border-top: 1px solid #333;
+        margin-top: 40px;
+        padding-top: 5px;
+      }
+      .footer {
+        margin-top: 50px;
+        text-align: center;
+        font-size: 0.9em;
+        color: #666;
+      }
+    </style>
+  </head>
+  <body>
+    <div class='header'>
+      <h1>INTELLECTUAL PROPERTY ASSIGNMENT AGREEMENT</h1>
+      <p>Between {{employerName}} and {{employeeName}}</p>
+    </div>
+
+    <div class='section'>
+      <div class='section-title'>CONTRACT REFERENCE</div>
+      <p>Contract ID: {{contractId}}</p>
+      <p>Date of Issue: {{issueDate}}</p>
+    </div>
+
+    <div class='section'>
+      <div class='section-title'>1. PARTIES</div>
+      <p><strong>Assignee (Employer):</strong>
+        {{employerName}}<br />
+        Address: {{employerAddress}}<br />
+        Email: {{employerEmail}}</p>
+      <p><strong>Assignor (Employee):</strong>
+        {{employeeName}}<br />
+        Address: {{employeeAddress}}<br />
+        Email: {{employeeEmail}}</p>
+    </div>
+
+    <div class='section'>
+      <div class='section-title'>2. BACKGROUND</div>
+      <p>The Employee is engaged as <strong>{{jobTitle}}</strong> commencing
+        <strong>{{startDate}}</strong>. In the course of employment, the Employee
+        may create, develop, or contribute to intellectual property. This Agreement
+        governs the ownership of such intellectual property.</p>
+    </div>
+
+    <div class='section'>
+      <div class='section-title'>3. ASSIGNMENT OF INTELLECTUAL PROPERTY</div>
+      <p>The Employee hereby irrevocably assigns to the Employer all right, title,
+        and interest (including all intellectual property rights) in and to any
+        Work Product created during the course of employment. "Work Product" includes:</p>
+      <ul>
+        <li>Software, code, algorithms, and technical documentation</li>
+        <li>Inventions, discoveries, and innovations (whether or not patentable)</li>
+        <li>Designs, graphics, and creative works</li>
+        <li>Research, reports, data, and analyses</li>
+        <li>Business methods, processes, and strategies</li>
+        <li>Any other work created using the Employer's resources, time, or information</li>
+      </ul>
+    </div>
+
+    <div class='section'>
+      <div class='section-title'>4. SCOPE OF ASSIGNMENT</div>
+      <p>This assignment covers Work Product that:</p>
+      <ul>
+        <li>Relates to the Employer's current or reasonably anticipated business</li>
+        <li>Results from any work performed by the Employee for the Employer</li>
+        <li>Is made using the Employer's equipment, facilities, or resources</li>
+        <li>Is developed during working hours</li>
+      </ul>
+    </div>
+
+    <div class='section'>
+      <div class='section-title'>5. MORAL RIGHTS WAIVER</div>
+      <p>To the maximum extent permitted by applicable law, the Employee hereby
+        waives all moral rights in any Work Product assigned to the Employer,
+        including the right to be identified as author and the right to object
+        to derogatory treatment.</p>
+    </div>
+
+    <div class='section'>
+      <div class='section-title'>6. PRIOR INVENTIONS</div>
+      <p>The Employee shall disclose to the Employer, prior to commencement of
+        employment, any inventions, works, or intellectual property created before
+        employment that the Employee wishes to exclude from this Agreement. Any
+        undisclosed prior invention that relates to the Employer's business shall
+        be deemed included in this assignment.</p>
+    </div>
+
+    <div class='section'>
+      <div class='section-title'>7. ASSISTANCE AND COOPERATION</div>
+      <p>The Employee agrees to:</p>
+      <ul>
+        <li>Execute all documents necessary to perfect the Employer's ownership</li>
+        <li>Assist with registration of patents, copyrights, or trademarks</li>
+        <li>Provide information required to support any intellectual property filing</li>
+      </ul>
+      <p>These obligations survive termination of employment.</p>
+    </div>
+
+    <div class='section'>
+      <div class='section-title'>8. CONSIDERATION</div>
+      <p>The Employee acknowledges that their salary and employment benefits
+        constitute full and adequate consideration for the assignments made
+        under this Agreement.</p>
+    </div>
+
+    <div class='section'>
+      <div class='section-title'>9. GOVERNING LAW</div>
+      <p>This Agreement shall be governed by the laws of the Federal Republic
+        of Nigeria, including the Copyright Act and Patents and Designs Act.</p>
+    </div>
+
+    <div class='signature-block'>
+      <div class='signature'>
+        <div class='signature-line'>
+          <strong>Employer Signature</strong><br />
+          Name: {{employerName}}<br />
+          {{#if employerSignedAt}}
+            Date: {{employerSignedAt}}<br />
+            IP: {{employerSignatureIp}}
+          {{else}}
+            Date: _________________
+          {{/if}}
+        </div>
+      </div>
+      <div class='signature'>
+        <div class='signature-line'>
+          <strong>Employee Signature</strong><br />
+          Name: {{employeeName}}<br />
+          {{#if employeeSignedAt}}
+            Date: {{employeeSignedAt}}<br />
+            IP: {{employeeSignatureIp}}
+          {{else}}
+            Date: _________________
+          {{/if}}
+        </div>
+      </div>
+    </div>
+
+    <div class='footer'>
+      <p>Contract processed through JobStack Talent Solutions</p>
+      <p>This is a legally binding document. Please read carefully before signing.</p>
+    </div>
+  </body>
+</html>
