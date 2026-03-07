@@ -345,6 +345,20 @@ export class ContractsService {
       ...(contract.metadata?.templateData ?? {}),
     };
 
+    // Inject live signature metadata from the entity (not stored in templateData)
+    if (contract.employerSignedAt) {
+      templateData.employerSignedAt = new Date(
+        contract.employerSignedAt,
+      ).toLocaleDateString('en-GB');
+      templateData.employerSignatureIp = contract.employerSignatureIp ?? '';
+    }
+    if (contract.employeeSignedAt) {
+      templateData.employeeSignedAt = new Date(
+        contract.employeeSignedAt,
+      ).toLocaleDateString('en-GB');
+      templateData.employeeSignatureIp = contract.employeeSignatureIp ?? '';
+    }
+
     // Inject fresh signed URLs for signature images (1-hour expiry)
     if (contract.employerSignatureFileKey) {
       templateData.employerSignatureImageUrl =
