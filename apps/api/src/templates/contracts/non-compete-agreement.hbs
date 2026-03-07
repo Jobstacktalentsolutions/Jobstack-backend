@@ -33,9 +33,12 @@
       }
       .signature { width: 45%; }
       .signature-line {
-        border-top: 1px solid #333;
         margin-top: 40px;
         padding-top: 5px;
+      }
+      .signature-underline {
+        border-top: 1px solid #333;
+        margin-bottom: 6px;
       }
       .footer {
         margin-top: 50px;
@@ -138,25 +141,33 @@
     <div class='signature-block'>
       <div class='signature'>
         <div class='signature-line'>
-          <strong>Employer Signature</strong><br />
-          Name: {{employerName}}<br />
-          {{#if employerSignedAt}}
-            Date: {{employerSignedAt}}<br />
-            IP: {{employerSignatureIp}}
+          {{#if employerSignatureImageUrl}}
+            <img src='{{employerSignatureImageUrl}}' alt='Employer Signature' style='max-height:60px;max-width:200px;display:block;margin-bottom:6px;' />
           {{else}}
-            Date: _________________
+            <div class='signature-underline'></div>
+          {{/if}}
+          <strong>Employer Signature</strong><br />
+          <strong>Name:</strong> {{employerName}}<br />
+          {{#if employerSignedAt}}
+            <strong>Date:</strong> {{employerSignedAt}}
+          {{else}}
+            <strong>Date:</strong> _________________
           {{/if}}
         </div>
       </div>
       <div class='signature'>
         <div class='signature-line'>
-          <strong>Employee Signature</strong><br />
-          Name: {{employeeName}}<br />
-          {{#if employeeSignedAt}}
-            Date: {{employeeSignedAt}}<br />
-            IP: {{employeeSignatureIp}}
+          {{#if employeeSignatureImageUrl}}
+            <img src='{{employeeSignatureImageUrl}}' alt='Employee Signature' style='max-height:60px;max-width:200px;display:block;margin-bottom:6px;' />
           {{else}}
-            Date: _________________
+            <div class='signature-underline'></div>
+          {{/if}}
+          <strong>Employee Signature</strong><br />
+          <strong>Name:</strong> {{employeeName}}<br />
+          {{#if employeeSignedAt}}
+            <strong>Date:</strong> {{employeeSignedAt}}
+          {{else}}
+            <strong>Date:</strong> _________________
           {{/if}}
         </div>
       </div>

@@ -48,6 +48,9 @@ export class Contract extends BaseEntity {
   @Column('uuid', { nullable: true })
   employerSignedById?: string;
 
+  @Column({ nullable: true })
+  employerSignatureFileKey?: string;
+
   // Employee signature details
   @Column({ type: 'timestamp', nullable: true })
   employeeSignedAt?: Date;
@@ -57,6 +60,9 @@ export class Contract extends BaseEntity {
 
   @Column('uuid', { nullable: true })
   employeeSignedById?: string;
+
+  @Column({ nullable: true })
+  employeeSignatureFileKey?: string;
 
   // Contract metadata
   @Column({ type: 'jsonb', nullable: true })

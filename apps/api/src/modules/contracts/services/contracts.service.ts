@@ -17,8 +17,11 @@ import {
 import {
   ContractStatus,
   ContractTemplateType,
+  DocumentType,
 } from '@app/common/database/entities/schema.enum';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { StorageService } from '@app/common/storage';
+import type { MulterFile } from '@app/common/shared/types';
 
 @Injectable()
 export class ContractsService {
@@ -36,6 +39,7 @@ export class ContractsService {
     @InjectRepository(Employee)
     private readonly employeeRepo: Repository<Employee>,
     private readonly eventEmitter: EventEmitter2,
+    private readonly storageService: StorageService,
   ) {
     // Register Handlebars helpers
     this.registerHandlebarsHelpers();
@@ -161,14 +165,30 @@ export class ContractsService {
     userId: string,
     userType: 'employer' | 'employee',
     ipAddress: string,
+    signatureImageFile?: MulterFile,
   ): Promise<Contract> {
     const contract = await this.contractRepo.findOne({
       where: { id: contractId },
-      relations: ['employee', 'employee.employer'],
+      relations: ['employee', 'employee.employer', 'template'],
     });
 
     if (!contract) {
       throw new NotFoundException('Contract not found');
+    }
+
+    // Upload signature image to private S3 bucket and store the fileKey
+    let signatureFileKey: string | undefined;
+    if (signatureImageFile) {
+      const upload = await this.storageService.uploadFile(
+        signatureImageFile,
+        {
+          folder: 'contract-signatures',
+          documentType: DocumentType.SIGNATURE,
+          bucketType: 'private',
+          uploadedBy: userId,
+        },
+      );
+      signatureFileKey = upload.fileKey;
     }
 
     // Update signature fields
@@ -182,6 +202,9 @@ export class ContractsService {
       contract.employerSignedAt = now;
       contract.employerSignatureIp = ipAddress;
       contract.employerSignedById = userId;
+      if (signatureFileKey) {
+        contract.employerSignatureFileKey = signatureFileKey;
+      }
       contract.status = ContractStatus.EMPLOYER_SIGNED;
     } else {
       if (contract.employeeSignedAt) {
@@ -192,6 +215,9 @@ export class ContractsService {
       contract.employeeSignedAt = now;
       contract.employeeSignatureIp = ipAddress;
       contract.employeeSignedById = userId;
+      if (signatureFileKey) {
+        contract.employeeSignatureFileKey = signatureFileKey;
+      }
 
       // Update status based on employer signature
       if (contract.employerSignedAt) {
@@ -210,6 +236,12 @@ export class ContractsService {
         contractId: contract.id,
         employeeId: contract.employeeId,
       });
+    }
+
+    // Re-render and update stored HTML so the signature images appear immediately
+    if (contract.template && contract.metadata?.templateData) {
+      const updatedHtml = await this.renderContractHtmlWithSignatures(contract);
+      contract.metadata = { ...contract.metadata, html: updatedHtml };
     }
 
     await this.contractRepo.save(contract);
@@ -284,7 +316,7 @@ export class ContractsService {
   }
 
   /**
-   * Return contract HTML — serves stored HTML from metadata, re-renders as fallback
+   * Return contract HTML — always re-renders with fresh signed URLs for signature images
    */
   async getContractHtml(contractId: string): Promise<string> {
     const contract = await this.contractRepo.findOne({
@@ -296,17 +328,47 @@ export class ContractsService {
       throw new NotFoundException('Contract not found');
     }
 
-    // Serve stored HTML directly (fast path)
-    if (contract.metadata?.html) {
-      return contract.metadata.html as string;
-    }
-
-    // Fallback: re-render from stored template data
     if (!contract.template) {
       throw new NotFoundException('Contract template not found');
     }
 
-    const templateData = contract.metadata?.templateData ?? {};
+    return this.renderContractHtmlWithSignatures(contract);
+  }
+
+  /**
+   * Render contract HTML, injecting fresh signed URLs for any uploaded signature images
+   */
+  private async renderContractHtmlWithSignatures(
+    contract: Contract,
+  ): Promise<string> {
+    const templateData: Record<string, any> = {
+      ...(contract.metadata?.templateData ?? {}),
+    };
+
+    // Inject fresh signed URLs for signature images (1-hour expiry)
+    if (contract.employerSignatureFileKey) {
+      templateData.employerSignatureImageUrl =
+        await this.storageService.getSignedUrl(
+          contract.employerSignatureFileKey,
+          3600,
+          false,
+          'private',
+        );
+    }
+    if (contract.employeeSignatureFileKey) {
+      templateData.employeeSignatureImageUrl =
+        await this.storageService.getSignedUrl(
+          contract.employeeSignatureFileKey,
+          3600,
+          false,
+          'private',
+        );
+    }
+
+    if (!contract.template) {
+      throw new NotFoundException('Contract template not found');
+    }
+
     return this.renderTemplate(contract.template, templateData);
   }
 

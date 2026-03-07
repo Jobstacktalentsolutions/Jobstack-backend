@@ -5,15 +5,19 @@ import {
   Param,
   Body,
   UseGuards,
+  UseInterceptors,
+  UploadedFile,
   Req,
   HttpCode,
   HttpStatus,
   Ip,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { IsString, IsUUID, IsOptional } from 'class-validator';
 import { ContractsService } from '../services/contracts.service';
 import { EmployerJwtGuard } from 'apps/api/src/guards';
 import { JobSeekerJwtGuard } from 'apps/api/src/guards';
+import type { MulterFile } from '@app/common/shared/types';
 
 class GenerateContractDto {
   @IsUUID()
@@ -69,11 +73,13 @@ export class ContractsController {
    */
   @Post(':contractId/sign/employer')
   @UseGuards(EmployerJwtGuard)
+  @UseInterceptors(FileInterceptor('signatureImage'))
   @HttpCode(HttpStatus.OK)
   async employerSignContract(
     @Param('contractId') contractId: string,
     @Req() req: any,
     @Ip() ipAddress: string,
+    @UploadedFile() signatureImage?: MulterFile,
   ) {
     const userId = req.user.id;
 
@@ -82,6 +88,7 @@ export class ContractsController {
       userId,
       'employer',
       ipAddress,
+      signatureImage,
     );
 
     return {
@@ -97,11 +104,13 @@ export class ContractsController {
    */
   @Post(':contractId/sign/employee')
   @UseGuards(JobSeekerJwtGuard)
+  @UseInterceptors(FileInterceptor('signatureImage'))
   @HttpCode(HttpStatus.OK)
   async employeeSignContract(
     @Param('contractId') contractId: string,
     @Req() req: any,
     @Ip() ipAddress: string,
+    @UploadedFile() signatureImage?: MulterFile,
   ) {
     const userId = req.user.id;
 
@@ -110,6 +119,7 @@ export class ContractsController {
       userId,
       'employee',
       ipAddress,
+      signatureImage,
     );
 
     return {
