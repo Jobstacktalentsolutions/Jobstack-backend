@@ -5,17 +5,26 @@ import {
   Param,
   Body,
   UseGuards,
+  UseInterceptors,
+  UploadedFile,
   Req,
   HttpCode,
   HttpStatus,
   Ip,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { IsString, IsUUID, IsOptional } from 'class-validator';
 import { ContractsService } from '../services/contracts.service';
 import { EmployerJwtGuard } from 'apps/api/src/guards';
 import { JobSeekerJwtGuard } from 'apps/api/src/guards';
+import type { MulterFile } from '@app/common/shared/types';
 
 class GenerateContractDto {
+  @IsUUID()
   employeeId: string;
+
+  @IsOptional()
+  @IsString()
   templateId?: string;
 }
 
@@ -64,11 +73,13 @@ export class ContractsController {
    */
   @Post(':contractId/sign/employer')
   @UseGuards(EmployerJwtGuard)
+  @UseInterceptors(FileInterceptor('signatureImage'))
   @HttpCode(HttpStatus.OK)
   async employerSignContract(
     @Param('contractId') contractId: string,
     @Req() req: any,
     @Ip() ipAddress: string,
+    @UploadedFile() signatureImage?: MulterFile,
   ) {
     const userId = req.user.id;
 
@@ -77,6 +88,7 @@ export class ContractsController {
       userId,
       'employer',
       ipAddress,
+      signatureImage,
     );
 
     return {
@@ -92,11 +104,13 @@ export class ContractsController {
    */
   @Post(':contractId/sign/employee')
   @UseGuards(JobSeekerJwtGuard)
+  @UseInterceptors(FileInterceptor('signatureImage'))
   @HttpCode(HttpStatus.OK)
   async employeeSignContract(
     @Param('contractId') contractId: string,
     @Req() req: any,
     @Ip() ipAddress: string,
+    @UploadedFile() signatureImage?: MulterFile,
   ) {
     const userId = req.user.id;
 
@@ -105,6 +119,7 @@ export class ContractsController {
       userId,
       'employee',
       ipAddress,
+      signatureImage,
     );
 
     return {
@@ -132,12 +147,66 @@ export class ContractsController {
   }
 
   /**
-   * Get rendered HTML for a contract
+   * Get all contracts for the authenticated jobseeker
+   * GET /contracts/jobseeker/mine
+   */
+  @Get('jobseeker/mine')
+  @UseGuards(JobSeekerJwtGuard)
+  async getJobseekerContracts(@Req() req: any) {
+    const jobseekerProfileId = req.user.profileId ?? req.user.id;
+    const contracts =
+      await this.contractsService.getContractsByJobseekerId(jobseekerProfileId);
+
+    return {
+      success: true,
+      data: contracts,
+    };
+  }
+
+  /**
+   * Get contract for a specific job application (jobseeker-facing)
+   * GET /contracts/jobseeker/by-application/:applicationId
+   */
+  @Get('jobseeker/by-application/:applicationId')
+  @UseGuards(JobSeekerJwtGuard)
+  async getContractsByApplication(
+    @Param('applicationId') applicationId: string,
+    @Req() req: any,
+  ) {
+    const jobseekerProfileId = req.user.profileId ?? req.user.id;
+    const contracts = await this.contractsService.getContractsByApplicationId(
+      applicationId,
+      jobseekerProfileId,
+    );
+
+    return {
+      success: true,
+      data: contracts,
+    };
+  }
+
+  /**
+   * Get rendered HTML for a contract (employer)
    * GET /contracts/:contractId/html
    */
   @Get(':contractId/html')
   @UseGuards(EmployerJwtGuard)
   async getContractHtml(@Param('contractId') contractId: string) {
+    const html = await this.contractsService.getContractHtml(contractId);
+
+    return {
+      success: true,
+      data: { html },
+    };
+  }
+
+  /**
+   * Get rendered HTML for a contract (jobseeker)
+   * GET /contracts/:contractId/html/jobseeker
+   */
+  @Get(':contractId/html/jobseeker')
+  @UseGuards(JobSeekerJwtGuard)
+  async getContractHtmlForJobseeker(@Param('contractId') contractId: string) {
     const html = await this.contractsService.getContractHtml(contractId);
 
     return {
@@ -177,29 +246,4 @@ export class ContractsController {
     };
   }
 
-  /**
-   * Download contract PDF
-   * GET /contracts/:contractId/download
-   * Returns the signed URL to the contract document
-   */
-  @Get(':contractId/download')
-  @UseGuards(EmployerJwtGuard)
-  async downloadContract(@Param('contractId') contractId: string) {
-    const contract = await this.contractsService.getContractById(contractId);
-
-    if (!contract.contractDocument) {
-      return {
-        success: false,
-        message: 'Contract document not found',
-      };
-    }
-
-    return {
-      success: true,
-      data: {
-        url: contract.contractDocument.url,
-        name: contract.contractDocument.originalName,
-      },
-    };
-  }
 }

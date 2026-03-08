@@ -79,6 +79,7 @@ export class EntitySeeder extends BaseSeeder {
     // Define seeding order to handle dependencies
     const seedingOrder = [
       'system-config',
+      'contract-templates',
       'admins',
       'skills',
       'documents',
