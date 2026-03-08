@@ -164,6 +164,28 @@ export class ContractsController {
   }
 
   /**
+   * Get contract for a specific job application (jobseeker-facing)
+   * GET /contracts/jobseeker/by-application/:applicationId
+   */
+  @Get('jobseeker/by-application/:applicationId')
+  @UseGuards(JobSeekerJwtGuard)
+  async getContractsByApplication(
+    @Param('applicationId') applicationId: string,
+    @Req() req: any,
+  ) {
+    const jobseekerProfileId = req.user.profileId ?? req.user.id;
+    const contracts = await this.contractsService.getContractsByApplicationId(
+      applicationId,
+      jobseekerProfileId,
+    );
+
+    return {
+      success: true,
+      data: contracts,
+    };
+  }
+
+  /**
    * Get rendered HTML for a contract (employer)
    * GET /contracts/:contractId/html
    */

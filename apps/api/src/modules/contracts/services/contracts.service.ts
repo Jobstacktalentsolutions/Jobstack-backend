@@ -13,6 +13,7 @@ import {
   Contract,
   ContractTemplate,
   Employee,
+  JobApplication,
 } from '@app/common/database/entities';
 import {
   ContractStatus,
@@ -38,6 +39,8 @@ export class ContractsService {
     private readonly templateRepo: Repository<ContractTemplate>,
     @InjectRepository(Employee)
     private readonly employeeRepo: Repository<Employee>,
+    @InjectRepository(JobApplication)
+    private readonly jobApplicationRepo: Repository<JobApplication>,
     private readonly eventEmitter: EventEmitter2,
     private readonly storageService: StorageService,
   ) {
@@ -297,6 +300,41 @@ export class ContractsService {
       })
       .orderBy('contract.createdAt', 'DESC')
       .getMany();
+  }
+
+  /**
+   * Get the contract for a specific job application (jobseeker-facing).
+   * Looks up the application by ID, verifies ownership, then finds the
+   * Employee record matching that job + jobseeker, and returns its contract.
+   */
+  async getContractsByApplicationId(
+    applicationId: string,
+    jobseekerProfileId: string,
+  ): Promise<Contract[]> {
+    const application = await this.jobApplicationRepo.findOne({
+      where: { id: applicationId, jobseekerProfileId },
+    });
+
+    if (!application) {
+      throw new NotFoundException('Application not found');
+    }
+
+    const employee = await this.employeeRepo.findOne({
+      where: {
+        jobId: application.jobId,
+        jobseekerProfileId: application.jobseekerProfileId,
+      },
+    });
+
+    if (!employee) {
+      return [];
+    }
+
+    return this.contractRepo.find({
+      where: { employeeId: employee.id },
+      relations: ['template'],
+      order: { createdAt: 'DESC' },
+    });
   }
 
   /**
