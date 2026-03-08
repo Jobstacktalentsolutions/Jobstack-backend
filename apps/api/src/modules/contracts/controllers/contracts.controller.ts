@@ -147,12 +147,44 @@ export class ContractsController {
   }
 
   /**
-   * Get rendered HTML for a contract
+   * Get all contracts for the authenticated jobseeker
+   * GET /contracts/jobseeker/mine
+   */
+  @Get('jobseeker/mine')
+  @UseGuards(JobSeekerJwtGuard)
+  async getJobseekerContracts(@Req() req: any) {
+    const jobseekerProfileId = req.user.profileId ?? req.user.id;
+    const contracts =
+      await this.contractsService.getContractsByJobseekerId(jobseekerProfileId);
+
+    return {
+      success: true,
+      data: contracts,
+    };
+  }
+
+  /**
+   * Get rendered HTML for a contract (employer)
    * GET /contracts/:contractId/html
    */
   @Get(':contractId/html')
   @UseGuards(EmployerJwtGuard)
   async getContractHtml(@Param('contractId') contractId: string) {
+    const html = await this.contractsService.getContractHtml(contractId);
+
+    return {
+      success: true,
+      data: { html },
+    };
+  }
+
+  /**
+   * Get rendered HTML for a contract (jobseeker)
+   * GET /contracts/:contractId/html/jobseeker
+   */
+  @Get(':contractId/html/jobseeker')
+  @UseGuards(JobSeekerJwtGuard)
+  async getContractHtmlForJobseeker(@Param('contractId') contractId: string) {
     const html = await this.contractsService.getContractHtml(contractId);
 
     return {

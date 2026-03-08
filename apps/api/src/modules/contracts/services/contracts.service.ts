@@ -281,6 +281,25 @@ export class ContractsService {
   }
 
   /**
+   * Get all contracts belonging to a jobseeker (via their employee records)
+   */
+  async getContractsByJobseekerId(
+    jobseekerProfileId: string,
+  ): Promise<Contract[]> {
+    return this.contractRepo
+      .createQueryBuilder('contract')
+      .innerJoin('contract.employee', 'employee')
+      .innerJoinAndSelect('contract.template', 'template')
+      .leftJoinAndSelect('employee.employer', 'employer')
+      .leftJoinAndSelect('employee.job', 'job')
+      .where('employee.jobseekerProfileId = :jobseekerProfileId', {
+        jobseekerProfileId,
+      })
+      .orderBy('contract.createdAt', 'DESC')
+      .getMany();
+  }
+
+  /**
    * Get all contracts for an employer (across all their employees)
    */
   async getContractsByEmployerId(

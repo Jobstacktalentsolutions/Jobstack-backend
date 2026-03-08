@@ -94,6 +94,10 @@ export class Job extends BaseEntity {
   })
   status: JobStatus;
 
+  /**
+   * @deprecated This counter is stale and not reliably updated.
+   * Do not use this field to display applicant counts — query job_applications directly instead.
+   */
   @Column({ type: 'int', default: 0 })
   applicantsCount: number;
 

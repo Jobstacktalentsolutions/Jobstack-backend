@@ -115,10 +115,19 @@ export class JobsService {
 
   // Retrieves a single employer job ensuring ownership
   async getEmployerJobById(employerId: string, jobId: string) {
-    const job = await this.jobRepo.findOne({
-      where: { id: jobId, employerId },
-      relations: this.jobRelations,
-    });
+    const job = await this.jobRepo
+      .createQueryBuilder('job')
+      .addSelect(
+        '(SELECT COUNT(*)::int FROM job_applications ja WHERE ja."jobId" = job.id)',
+        'job_applicantsCount',
+      )
+      .leftJoinAndSelect('job.skills', 'skill')
+      .leftJoinAndSelect('job.employer', 'employer')
+      .where('job.id = :jobId AND job.employerId = :employerId', {
+        jobId,
+        employerId,
+      })
+      .getOne();
     if (!job) {
       throw new NotFoundException('Job not found');
     }
@@ -127,10 +136,16 @@ export class JobsService {
 
   // Retrieves a single job by ID (public endpoint)
   async getJobById(jobId: string) {
-    const job = await this.jobRepo.findOne({
-      where: { id: jobId },
-      relations: this.jobRelations,
-    });
+    const job = await this.jobRepo
+      .createQueryBuilder('job')
+      .addSelect(
+        '(SELECT COUNT(*)::int FROM job_applications ja WHERE ja."jobId" = job.id)',
+        'job_applicantsCount',
+      )
+      .leftJoinAndSelect('job.skills', 'skill')
+      .leftJoinAndSelect('job.employer', 'employer')
+      .where('job.id = :jobId', { jobId })
+      .getOne();
     if (!job) {
       throw new NotFoundException('Job not found');
     }
@@ -275,6 +290,10 @@ export class JobsService {
   private baseJobQuery(): SelectQueryBuilder<Job> {
     return this.jobRepo
       .createQueryBuilder('job')
+      .addSelect(
+        '(SELECT COUNT(*)::int FROM job_applications ja WHERE ja."jobId" = job.id)',
+        'job_applicantsCount',
+      )
       .leftJoinAndSelect('job.skills', 'skill')
       .leftJoinAndSelect('job.employer', 'employer');
   }
@@ -302,7 +321,6 @@ export class JobsService {
         'job.tags',
         'job.applicationDeadline',
         'job.status',
-        'job.applicantsCount',
         'job.performCustomScreening',
         'job.employerId',
         'job.createdAt',
@@ -311,6 +329,10 @@ export class JobsService {
         'job.vettingCompletedBy',
         'job.highlightedCandidateCount',
       ])
+      .addSelect(
+        '(SELECT COUNT(*)::int FROM job_applications ja WHERE ja."jobId" = job.id)',
+        'job_applicantsCount',
+      )
       .leftJoin('job.skills', 'skill')
       .addSelect(['skill.id', 'skill.name', 'skill.description'])
       .leftJoin('job.employer', 'employer')
