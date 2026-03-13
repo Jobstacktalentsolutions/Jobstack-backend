@@ -15,9 +15,15 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { IsString, IsUUID, IsOptional } from 'class-validator';
 import { ContractsService } from '../services/contracts.service';
-import { EmployerJwtGuard } from 'apps/api/src/guards';
+import { EmployerJwtGuard, AdminJwtGuard } from 'apps/api/src/guards';
 import { JobSeekerJwtGuard } from 'apps/api/src/guards';
 import type { MulterFile } from '@app/common/shared/types';
+
+class CancelContractDto {
+  @IsOptional()
+  @IsString()
+  reason?: string;
+}
 
 class GenerateContractDto {
   @IsUUID()
@@ -242,6 +248,58 @@ export class ContractsController {
 
     return {
       success: true,
+      data: contract,
+    };
+  }
+
+  // ─── Admin Endpoints ───────────────────────────────────────────────────────
+
+  /**
+   * Get all contracts (admin)
+   * GET /contracts/admin/all
+   */
+  @Get('admin/all')
+  @UseGuards(AdminJwtGuard)
+  async getAllContracts() {
+    const contracts = await this.contractsService.getAllContracts();
+
+    return {
+      success: true,
+      data: contracts,
+    };
+  }
+
+  /**
+   * Get rendered HTML for a contract (admin)
+   * GET /contracts/:contractId/html/admin
+   */
+  @Get(':contractId/html/admin')
+  @UseGuards(AdminJwtGuard)
+  async getContractHtmlForAdmin(@Param('contractId') contractId: string) {
+    const html = await this.contractsService.getContractHtml(contractId);
+
+    return {
+      success: true,
+      data: { html },
+    };
+  }
+
+  /**
+   * Cancel (void) a contract — admin action
+   * POST /contracts/:contractId/cancel
+   */
+  @Post(':contractId/cancel')
+  @UseGuards(AdminJwtGuard)
+  @HttpCode(HttpStatus.OK)
+  async cancelContract(
+    @Param('contractId') contractId: string,
+    @Body() dto: CancelContractDto,
+  ) {
+    const contract = await this.contractsService.cancelContract(contractId, dto.reason);
+
+    return {
+      success: true,
+      message: 'Contract cancelled successfully',
       data: contract,
     };
   }

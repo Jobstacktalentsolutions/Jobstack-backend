@@ -373,6 +373,50 @@ export class ContractsService {
   }
 
   /**
+   * Get all contracts (admin view)
+   */
+  async getAllContracts(): Promise<Contract[]> {
+    return this.contractRepo
+      .createQueryBuilder('contract')
+      .leftJoinAndSelect('contract.template', 'template')
+      .leftJoinAndSelect('contract.employee', 'employee')
+      .leftJoinAndSelect('employee.jobseekerProfile', 'jobseekerProfile')
+      .leftJoinAndSelect('employee.employer', 'employer')
+      .leftJoinAndSelect('employee.job', 'job')
+      .orderBy('contract.createdAt', 'DESC')
+      .getMany();
+  }
+
+  /**
+   * Cancel (void) a contract — admin action
+   */
+  async cancelContract(contractId: string, reason?: string): Promise<Contract> {
+    const contract = await this.contractRepo.findOne({
+      where: { id: contractId },
+      relations: ['employee', 'employee.employer', 'employee.jobseekerProfile', 'template'],
+    });
+
+    if (!contract) {
+      throw new NotFoundException('Contract not found');
+    }
+
+    if (contract.status === ContractStatus.CANCELLED) {
+      throw new BadRequestException('Contract is already cancelled');
+    }
+
+    contract.status = ContractStatus.CANCELLED;
+    if (reason) {
+      contract.notes = reason;
+    }
+
+    await this.contractRepo.save(contract);
+
+    this.logger.log(`Contract ${contractId} cancelled by admin. Reason: ${reason ?? 'N/A'}`);
+
+    return contract;
+  }
+
+  /**
    * Return contract HTML — always re-renders with fresh signed URLs for signature images
    */
   async getContractHtml(contractId: string): Promise<string> {
