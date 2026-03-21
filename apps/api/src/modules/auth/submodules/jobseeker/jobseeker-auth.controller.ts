@@ -8,6 +8,12 @@ import {
   Delete,
 } from '@nestjs/common';
 import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
+import {
   ReqDeviceInfo,
   CurrentUser,
   type RequestDeviceInfo,
@@ -26,12 +32,15 @@ import {
 } from './dto/jobseeker-auth.dto';
 import { JobSeekerJwtGuard } from 'apps/api/src/guards';
 
+@ApiTags('Auth (jobseeker)')
 @Controller('auth/jobseeker')
 export class JobSeekerAuthController {
   constructor(private jobseekerAuthService: JobSeekerAuthService) {}
 
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Register jobseeker account' })
+  @ApiBody({ type: JobSeekerRegistrationDto })
   async register(
     @Body() registrationData: JobSeekerRegistrationDto,
     @ReqDeviceInfo() deviceInfo: RequestDeviceInfo,
@@ -49,6 +58,8 @@ export class JobSeekerAuthController {
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Jobseeker login' })
+  @ApiBody({ type: LoginDto })
   async login(
     @Body() loginData: LoginDto,
     @ReqDeviceInfo() deviceInfo: RequestDeviceInfo,
@@ -58,6 +69,8 @@ export class JobSeekerAuthController {
 
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Refresh access token' })
+  @ApiBody({ type: RefreshTokenDto })
   async refreshToken(
     @Body() refreshTokenDto: RefreshTokenDto,
     @ReqDeviceInfo() deviceInfo: RequestDeviceInfo,
@@ -71,12 +84,16 @@ export class JobSeekerAuthController {
   @UseGuards(JobSeekerJwtGuard)
   @Delete('logout')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Logout current session' })
   async logout(@CurrentUser() user: CurrentUserPayload) {
     await this.jobseekerAuthService.logout(user.sessionId, user.jti);
   }
 
   @Post('send-verification-email')
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Send email verification code' })
+  @ApiBody({ type: EmailVerificationRequestDto })
   async sendVerificationEmail(
     @Body() requestData: EmailVerificationRequestDto,
   ) {
@@ -87,6 +104,8 @@ export class JobSeekerAuthController {
 
   @Post('verify-email')
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Confirm email with code' })
+  @ApiBody({ type: EmailVerificationConfirmDto })
   async verifyEmail(
     @Body() confirmData: EmailVerificationConfirmDto,
     @ReqDeviceInfo() deviceInfo: RequestDeviceInfo,
@@ -100,12 +119,16 @@ export class JobSeekerAuthController {
 
   @Post('send-password-reset-code')
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Request password reset code' })
+  @ApiBody({ type: PasswordResetRequestDto })
   async sendPasswordResetCode(@Body() requestData: PasswordResetRequestDto) {
     return await this.jobseekerAuthService.sendPasswordResetCode(requestData);
   }
 
   @Post('confirm-password-reset-code')
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Confirm reset code from email' })
+  @ApiBody({ type: PasswordResetConfirmCodeDto })
   async confirmPasswordResetCode(
     @Body() confirmData: PasswordResetConfirmCodeDto,
   ) {
@@ -116,6 +139,8 @@ export class JobSeekerAuthController {
 
   @Post('reset-password')
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Set new password with reset token' })
+  @ApiBody({ type: PasswordResetDto })
   async resetPassword(@Body() resetData: PasswordResetDto) {
     return await this.jobseekerAuthService.resetPassword(resetData);
   }

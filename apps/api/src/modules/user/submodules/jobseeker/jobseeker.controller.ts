@@ -14,6 +14,13 @@ import {
   BadRequestException,
   Param,
 } from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiConsumes,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { JobSeekerJwtGuard, AdminJwtGuard } from 'apps/api/src/guards';
 import { JobseekerService } from './jobseeker.service';
@@ -22,6 +29,8 @@ import { GetAllJobSeekersQueryDto } from './dto/get-all-jobseekers-query.dto';
 import type { MulterFile } from '@app/common/shared/types';
 import { CurrentUser, type CurrentUserPayload } from '@app/common/shared';
 
+@ApiTags('Users (jobseeker)')
+@ApiBearerAuth()
 @Controller('/user/jobseeker')
 export class JobseekerController {
   constructor(protected readonly jobseekerService: JobseekerService) {}
@@ -31,6 +40,8 @@ export class JobseekerController {
   @UseGuards(JobSeekerJwtGuard)
   @UseInterceptors(FileInterceptor('file'))
   @HttpCode(HttpStatus.OK)
+  @ApiConsumes('multipart/form-data')
+  @ApiOperation({ summary: 'Upload CV PDF' })
   async uploadCv(
     @CurrentUser() user: CurrentUserPayload,
     @UploadedFile() file: MulterFile,
@@ -85,6 +96,8 @@ export class JobseekerController {
   @UseGuards(JobSeekerJwtGuard)
   @UseInterceptors(FileInterceptor('file'))
   @HttpCode(HttpStatus.OK)
+  @ApiConsumes('multipart/form-data')
+  @ApiOperation({ summary: 'Upload profile picture' })
   async uploadProfilePicture(
     @CurrentUser() user: CurrentUserPayload,
     @UploadedFile() file: MulterFile,
@@ -141,6 +154,8 @@ export class JobseekerController {
   @Put('profile')
   @UseGuards(JobSeekerJwtGuard)
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Update jobseeker profile' })
+  @ApiBody({ type: UpdateProfileDto })
   async updateProfile(
     @CurrentUser() user: CurrentUserPayload,
     @Body() updateProfileDto: UpdateProfileDto,

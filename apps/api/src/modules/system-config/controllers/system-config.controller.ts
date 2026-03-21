@@ -1,4 +1,10 @@
 import { Controller, Get, Put, Body, UseGuards } from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 import { SystemConfigService } from '../services/system-config.service';
 import { UpdateSystemConfigDto } from '../dto';
 import { AdminJwtGuard } from '../../../guards/admin-jwt.guard';
@@ -6,6 +12,8 @@ import { RequireAdminRole } from '../../../guards/require-admin-role.decorator';
 import { CurrentUser } from '@app/common/shared/decorators/current-user.decorator';
 import { AdminRole } from '@app/common/shared/enums/roles.enum';
 
+@ApiTags('System config')
+@ApiBearerAuth()
 @Controller('admin/system-config')
 @UseGuards(AdminJwtGuard)
 @RequireAdminRole(AdminRole.SUPER_ADMIN.role)
@@ -25,6 +33,8 @@ export class SystemConfigController {
 
   // Update system configuration
   @Put()
+  @ApiOperation({ summary: 'Upsert a system config entry' })
+  @ApiBody({ type: UpdateSystemConfigDto })
   async updateSystemConfig(
     @CurrentUser('id') adminId: string,
     @Body() dto: UpdateSystemConfigDto,

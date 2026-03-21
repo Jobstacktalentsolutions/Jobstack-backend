@@ -1,11 +1,2 @@
-import { IsEnum, IsOptional, IsString } from 'class-validator';
-import { EmployerDocumentType } from '@app/common/shared/enums/employer-docs.enum';
-
-export class UploadEmployerVerificationDocumentDto {
-  @IsEnum(EmployerDocumentType)
-  documentType: EmployerDocumentType;
-
-  @IsOptional()
-  @IsString()
-  documentNumber?: string;
-}
+// Legacy alias for multipart body fields (besides file)
+export { UploadEmployerVerificationDocumentDto as UploadVerificationDocumentDto } from './upload-employer-verification-document.dto';

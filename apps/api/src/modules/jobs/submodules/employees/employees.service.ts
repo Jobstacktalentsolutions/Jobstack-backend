@@ -106,6 +106,21 @@ export class EmployeesService {
     return employee;
   }
 
+  // Retrieves a single employee ensuring jobseeker ownership
+  async getJobseekerEmployeeById(
+    jobseekerProfileId: string,
+    employeeId: string,
+  ) {
+    const employee = await this.employeeRepo.findOne({
+      where: { id: employeeId, jobseekerProfileId },
+      relations: this.relations,
+    });
+    if (!employee) {
+      throw new NotFoundException('Employee not found');
+    }
+    return employee;
+  }
+
   // Updates employee metadata
   async updateEmployee(
     employerId: string,

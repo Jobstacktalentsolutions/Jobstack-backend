@@ -144,9 +144,20 @@ export enum JobApplicationStatus {
   APPLICANT_ACCEPTED = 'APPLICANT_ACCEPTED',
   PAYMENT_COMPLETE = 'PAYMENT_COMPLETE',
   CONTRACT_SIGNED = 'CONTRACT_SIGNED',
+  // Job contract is fully executed and the employee is now in a probation period.
+  // (Employer confirms hire after contract signature; Day 90 ends probation automatically.)
+  PLACED_PROBATION = 'PLACED_PROBATION',
+  // Probation period completed automatically on Day 90.
+  CONFIRMED = 'CONFIRMED',
   HIRED = 'HIRED',
   REJECTED = 'REJECTED',
   WITHDRAWN = 'WITHDRAWN',
+}
+
+export enum ProbationStatus {
+  ACTIVE = 'ACTIVE',
+  CONFIRMED = 'CONFIRMED',
+  TERMINATED = 'TERMINATED',
 }
 
 export enum EmployeeStatus {

@@ -15,6 +15,7 @@ import { JobsController } from './jobs.controller';
 import { JobsEmployerController } from './controllers/jobs-employer.controller';
 import { JobsJobseekerController } from './controllers/jobs-jobseeker.controller';
 import { JobsAdminController } from './controllers/jobs-admin.controller';
+import { ProbationAdminController } from './controllers/probation-admin.controller';
 import { JobApplicationsController } from './submodules/application/job-applications.controller';
 import { EmployeesController } from './submodules/employees/employees.controller';
 import { JobsService } from './services/jobs.service';
@@ -30,14 +31,21 @@ import {
 import { JobVettingProducer } from './queue/job-vetting.producer';
 import { JobVettingConsumer } from './queue/job-vetting.consumer';
 import {
+  ProbationTrackingConsumer,
+  ProbationTrackingProducer,
+} from './queue';
+import {
   AdminJwtGuard,
   EmployerJwtGuard,
   JobSeekerJwtGuard,
+  EmployeeProbationAccessGuard,
 } from 'apps/api/src/guards';
 import { AdminAuthModule } from '../auth/submodules/admin/admin-auth.module';
 import { EmployerAuthModule } from '../auth/submodules/employer/employer-auth.module';
 import { JobSeekerAuthModule } from '../auth/submodules/jobseeker/jobseeker-auth.module';
 import { NotificationModule } from '../notification/notification.module';
+import { ProbationTrackingService } from './services/probation-tracking.service';
+import { AdminReplacementService } from './services/admin-replacement.service';
 
 @Module({
   imports: [
@@ -67,6 +75,19 @@ import { NotificationModule } from '../notification/notification.module';
         removeOnFail: 5,
       },
     }),
+    // Register probation tracking queue (per-employee delayed jobs).
+    BullModule.registerQueue({
+      name: QUEUE_NAMES.JOB_PROBATION_TRACKING,
+      defaultJobOptions: {
+        attempts: 3,
+        backoff: {
+          type: 'exponential',
+          delay: 2000,
+        },
+        removeOnComplete: true,
+        removeOnFail: false,
+      },
+    }),
     forwardRef(() => AdminAuthModule),
     forwardRef(() => EmployerAuthModule),
     forwardRef(() => JobSeekerAuthModule),
@@ -79,6 +100,7 @@ import { NotificationModule } from '../notification/notification.module';
     JobsController, // Public routes registered last to avoid conflicts
     JobApplicationsController,
     EmployeesController,
+    ProbationAdminController,
   ],
   providers: [
     JobsService,
@@ -90,11 +112,16 @@ import { NotificationModule } from '../notification/notification.module';
     JobRecommendationsProducer,
     JobVettingConsumer,
     JobVettingProducer,
+    ProbationTrackingConsumer,
+    ProbationTrackingProducer,
+    ProbationTrackingService,
+    AdminReplacementService,
     JobApplicationsService,
     EmployeesService,
     AdminJwtGuard,
     EmployerJwtGuard,
     JobSeekerJwtGuard,
+    EmployeeProbationAccessGuard,
   ],
   exports: [JobsService, JobRecommendationsProducer, JobVettingProducer, JobVettingService],
 })

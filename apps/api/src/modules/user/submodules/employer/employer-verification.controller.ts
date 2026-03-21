@@ -13,6 +13,13 @@ import {
   ValidationPipe,
   UsePipes,
 } from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiConsumes,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { EmployerJwtGuard, AdminJwtGuard } from 'apps/api/src/guards';
 import { EmployerVerificationService } from './employer-verification.service';
@@ -26,6 +33,8 @@ import {
 } from './dto';
 import type { MulterFile } from '@app/common/shared/types';
 
+@ApiTags('Employer verification')
+@ApiBearerAuth()
 @Controller('employers/verification')
 @UseGuards(EmployerJwtGuard)
 export class EmployerVerificationController {
@@ -41,6 +50,8 @@ export class EmployerVerificationController {
 
   // Update verification information
   @Put()
+  @ApiOperation({ summary: 'Update company verification details' })
+  @ApiBody({ type: UpdateVerificationInfoDto })
   async updateInfo(
     @CurrentUser() user: CurrentUserPayload,
     @Body() dto: UpdateVerificationInfoDto,
@@ -69,6 +80,9 @@ export class EmployerVerificationController {
   // Upload a single verification document
   @Post('documents')
   @UseInterceptors(FileInterceptor('file'))
+  @ApiConsumes('multipart/form-data')
+  @ApiOperation({ summary: 'Upload a verification document' })
+  @ApiBody({ type: UploadVerificationDocumentDto })
   async uploadDocument(
     @CurrentUser() user: CurrentUserPayload,
     @UploadedFile() file: MulterFile,
@@ -120,6 +134,8 @@ export class EmployerVerificationController {
 }
 
 // Admin routes for managing employer verification documents
+@ApiTags('Employer verification (admin)')
+@ApiBearerAuth()
 @Controller('admin/employers/:employerId/verification')
 @UseGuards(AdminJwtGuard)
 export class AdminEmployerVerificationController {
@@ -143,6 +159,8 @@ export class AdminEmployerVerificationController {
 
   // Update verification status
   @Put('status')
+  @ApiOperation({ summary: 'Set employer verification status' })
+  @ApiBody({ type: UpdateVerificationStatusDto })
   async updateVerificationStatus(
     @Param('employerId') employerId: string,
     @CurrentUser() admin: CurrentUserPayload,
@@ -158,6 +176,8 @@ export class AdminEmployerVerificationController {
 
   // Mark document as verified/unverified
   @Put('documents/:id/verify')
+  @ApiOperation({ summary: 'Mark document verified or unverified' })
+  @ApiBody({ type: UpdateDocumentVerificationDto })
   async updateDocumentVerification(
     @Param('id') documentId: string,
     @CurrentUser() admin: CurrentUserPayload,

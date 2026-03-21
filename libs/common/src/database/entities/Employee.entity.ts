@@ -9,6 +9,7 @@ import {
   EmploymentType,
   ContractPaymentType,
   EmployeePaymentStatus,
+  ProbationStatus,
 } from './schema.enum';
 import { Payment } from '@app/common/database/entities/Payment.entity';
 
@@ -57,6 +58,18 @@ export class Employee extends BaseEntity {
 
   @Column({ type: 'timestamp', nullable: true })
   endDate?: Date;
+
+  @Column({ type: 'enum', enum: ProbationStatus, nullable: true })
+  probationStatus?: ProbationStatus;
+
+  @Column({ type: 'timestamp', nullable: true })
+  probationEndDate?: Date;
+
+  @Column({ type: 'timestamp', nullable: true })
+  pulse30SentAt?: Date | null;
+
+  @Column({ type: 'timestamp', nullable: true })
+  pulse60SentAt?: Date | null;
 
   // Salary for permanent employees
   @Column({ type: 'decimal', precision: 12, scale: 2, nullable: true })

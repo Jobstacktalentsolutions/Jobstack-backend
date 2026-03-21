@@ -10,6 +10,12 @@ import {
   Post,
   Delete,
 } from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 import { AdminJwtGuard, RequireAdminRole } from 'apps/api/src/guards';
 import { AdminService } from './admin.service';
 import { VerificationStatus } from '@app/common/shared/enums/employer-docs.enum';
@@ -21,6 +27,8 @@ import { AdminRole } from '@app/common/shared/enums/roles.enum';
 import { CurrentUser, type CurrentUserPayload } from '@app/common/shared';
 import { GetAllAdminsQueryDto } from './dto/get-all-admins-query.dto';
 
+@ApiTags('Admin')
+@ApiBearerAuth()
 @Controller('admin')
 @UseGuards(AdminJwtGuard)
 export class AdminController {
@@ -38,6 +46,12 @@ export class AdminController {
   }
 
   @Put('profile')
+  @ApiOperation({ summary: 'Update current admin profile' })
+  @ApiBody({
+    schema: {
+      example: { firstName: 'Jane', lastName: 'Doe', phoneNumber: '+2348012345678' },
+    },
+  })
   async updateProfile(
     @CurrentUser() user: CurrentUserPayload,
     @Body() updateData: any,
@@ -47,6 +61,18 @@ export class AdminController {
 
   @Post('admins')
   @RequireAdminRole(AdminRole.SUPER_ADMIN.role)
+  @ApiOperation({ summary: 'Create another admin (super admin)' })
+  @ApiBody({
+    schema: {
+      example: {
+        email: 'ops@jobstack.ng',
+        password: 'Str0ngP@ss',
+        firstName: 'Ops',
+        lastName: 'Lead',
+        role: 'OPERATIONS_SUPPORT',
+      },
+    },
+  })
   async createAdmin(
     @CurrentUser() user: CurrentUserPayload,
     @Body() body: any,

@@ -11,12 +11,19 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 import { SkillsService } from './skills.service';
 import { AdminJwtGuard, JobSeekerJwtGuard, RequireAdminRole } from 'apps/api/src/guards';
 import { AdminRole } from '@app/common/shared/enums/roles.enum';
 import { Skill } from '@app/common/database/entities/Skill.entity';
 import { CreateSkillDto, UpdateSkillDto, SuggestSkillDto } from './dto';
 
+@ApiTags('Skills')
 @Controller('skills')
 export class SkillsController {
   constructor(private skillsService: SkillsService) {}
@@ -30,6 +37,8 @@ export class SkillsController {
   // Public / Jobseeker: suggest a new skill (creates SUGGESTED)
   @Post('suggest')
   @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Suggest a new skill name' })
+  @ApiBody({ type: SuggestSkillDto })
   async suggest(@Body() body: SuggestSkillDto): Promise<Skill> {
     return this.skillsService.suggestSkill(body.name);
   }
@@ -39,6 +48,9 @@ export class SkillsController {
   @RequireAdminRole(AdminRole.VETTING_SPECIALIST.role)
   @Post()
   @HttpCode(HttpStatus.CREATED)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Create skill (vetting specialist)' })
+  @ApiBody({ type: CreateSkillDto })
   async create(@Body() body: CreateSkillDto): Promise<Skill> {
     return this.skillsService.createSkill(body);
   }
@@ -47,6 +59,9 @@ export class SkillsController {
   @UseGuards(AdminJwtGuard)
   @RequireAdminRole(AdminRole.VETTING_SPECIALIST.role)
   @Patch(':id')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Update skill (vetting specialist)' })
+  @ApiBody({ type: UpdateSkillDto })
   async update(
     @Param('id') id: string,
     @Body() body: UpdateSkillDto,
@@ -59,6 +74,8 @@ export class SkillsController {
   @RequireAdminRole(AdminRole.VETTING_SPECIALIST.role)
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Delete skill (vetting specialist)' })
   async remove(@Param('id') id: string): Promise<void> {
     await this.skillsService.deleteSkill(id);
   }

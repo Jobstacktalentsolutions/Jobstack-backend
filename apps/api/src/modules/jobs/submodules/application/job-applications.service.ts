@@ -21,8 +21,10 @@ import {
   JobStatus,
   EmployeeStatus,
   EmploymentArrangement,
+  ProbationStatus,
 } from '@app/common/database/entities/schema.enum';
 import { NotificationService } from 'apps/api/src/modules/notification/notification.service';
+import { ProbationTrackingProducer } from '../../queue';
 
 @Injectable()
 export class JobApplicationsService {
@@ -36,6 +38,7 @@ export class JobApplicationsService {
     @InjectRepository(Employee)
     private readonly employeeRepo: Repository<Employee>,
     private readonly notificationService: NotificationService,
+    private readonly probationTrackingProducer: ProbationTrackingProducer,
   ) {}
 
   private readonly relations = ['job', 'jobseekerProfile'];
@@ -87,7 +90,34 @@ export class JobApplicationsService {
       { jobseekerId },
     );
     this.applyApplicationFilters(qb, query);
-    return this.executePagedApplicationQuery(qb, query);
+    const result = await this.executePagedApplicationQuery(qb, query);
+
+    // Annotate each application with its associated employeeId so the frontend
+    // can fetch probation progress without an extra lookup.
+    if (result.items.length > 0) {
+      const employees = await this.employeeRepo.find({
+        where: result.items.map((app) => ({
+          jobId: app.jobId,
+          jobseekerProfileId: app.jobseekerProfileId,
+        })),
+        select: ['id', 'jobId', 'jobseekerProfileId'],
+      });
+
+      const employeeMap = new Map(
+        employees.map((e) => [`${e.jobId}:${e.jobseekerProfileId}`, e.id]),
+      );
+
+      return {
+        ...result,
+        items: result.items.map((app) => ({
+          ...app,
+          employeeId:
+            employeeMap.get(`${app.jobId}:${app.jobseekerProfileId}`) ?? null,
+        })),
+      };
+    }
+
+    return result;
   }
 
   // Lists applications for a specific job under an employer
@@ -120,6 +150,7 @@ export class JobApplicationsService {
       JobApplicationStatus.APPLICANT_ACCEPTED,
       JobApplicationStatus.PAYMENT_COMPLETE,
       JobApplicationStatus.CONTRACT_SIGNED,
+      JobApplicationStatus.PLACED_PROBATION,
       JobApplicationStatus.HIRED,
     ];
 
@@ -625,9 +656,44 @@ export class JobApplicationsService {
       );
     }
 
-    application.status = JobApplicationStatus.HIRED;
+    application.status = JobApplicationStatus.PLACED_PROBATION;
     application.statusUpdatedAt = new Date();
     await this.applicationRepo.save(application);
+
+    const employee = await this.employeeRepo.findOne({
+      where: {
+        jobId: application.jobId,
+        jobseekerProfileId: application.jobseekerProfileId,
+        employerId,
+      },
+    });
+
+    if (!employee) {
+      throw new NotFoundException('Employee record not found for application');
+    }
+
+    if (!employee.startDate) {
+      throw new BadRequestException(
+        'Employee startDate is missing; cannot start probation',
+      );
+    }
+
+    // Activate employee + start probation tracking immediately after contract confirmation.
+    employee.status = EmployeeStatus.ACTIVE;
+    employee.probationStatus = ProbationStatus.ACTIVE;
+    employee.probationEndDate = new Date(
+      employee.startDate.getTime() + 90 * 24 * 60 * 60 * 1000,
+    );
+    employee.pulse30SentAt = null;
+    employee.pulse60SentAt = null;
+    await this.employeeRepo.save(employee);
+
+    await this.probationTrackingProducer.scheduleEmployeeProbationMilestones(
+      {
+        employeeId: employee.id,
+        startDate: employee.startDate,
+      },
+    );
 
     return this.getApplicationById(applicationId);
   }
@@ -648,6 +714,8 @@ export class JobApplicationsService {
       [
         JobApplicationStatus.PAYMENT_COMPLETE,
         JobApplicationStatus.CONTRACT_SIGNED,
+        JobApplicationStatus.PLACED_PROBATION,
+        JobApplicationStatus.CONFIRMED,
         JobApplicationStatus.HIRED,
         JobApplicationStatus.REJECTED,
         JobApplicationStatus.WITHDRAWN,

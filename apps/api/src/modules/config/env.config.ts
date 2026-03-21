@@ -22,11 +22,6 @@ export enum ENV {
   SUPPORT_EMAIL = 'SUPPORT_EMAIL',
   WEBSITE_URL = 'WEBSITE_URL',
 
-  // Resend Email Configuration
-  RESEND_API_KEY = 'RESEND_API_KEY',
-  RESEND_FROM_EMAIL = 'RESEND_FROM_EMAIL',
-  RESEND_FROM_NAME = 'RESEND_FROM_NAME',
-
   // Storage Configuration (S3)
   S3_ENDPOINT = 'S3_ENDPOINT',
   S3_REGION = 'S3_REGION',

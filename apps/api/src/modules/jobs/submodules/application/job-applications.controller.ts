@@ -10,6 +10,12 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
+import {
   AdminJwtGuard,
   EmployerJwtGuard,
   JobSeekerJwtGuard,
@@ -25,6 +31,8 @@ import {
 import { EmployerScreeningResponseDto } from 'apps/api/src/modules/jobs/submodules/application/dto/employer-screening-response.dto';
 import { CurrentUser, type CurrentUserPayload } from '@app/common/shared';
 
+@ApiTags('Job applications')
+@ApiBearerAuth()
 @Controller('job-applications')
 export class JobApplicationsController {
   constructor(
@@ -34,6 +42,8 @@ export class JobApplicationsController {
   // Allows a jobseeker to apply to a job
   @Post(':jobId')
   @UseGuards(JobSeekerJwtGuard)
+  @ApiOperation({ summary: 'Apply to a job' })
+  @ApiBody({ type: CreateJobApplicationDto })
   applyToJob(
     @CurrentUser() user: CurrentUserPayload,
     @Param('jobId', ParseUUIDPipe) jobId: string,
@@ -80,6 +90,8 @@ export class JobApplicationsController {
   // Updates application status as an employer
   @Patch(':applicationId/status')
   @UseGuards(EmployerJwtGuard)
+  @ApiOperation({ summary: 'Update application status (employer)' })
+  @ApiBody({ type: UpdateApplicationStatusDto })
   updateApplicationStatus(
     @CurrentUser() user: CurrentUserPayload,
     @Param('applicationId', ParseUUIDPipe) applicationId: string,
@@ -111,6 +123,8 @@ export class JobApplicationsController {
   // Employer accepts candidate after screening and creates Employee record
   @Post(':applicationId/employer-accept')
   @UseGuards(EmployerJwtGuard)
+  @ApiOperation({ summary: 'Accept candidate after screening (creates employee)' })
+  @ApiBody({ type: EmployerAcceptCandidateDto })
   employerAcceptCandidate(
     @CurrentUser() user: CurrentUserPayload,
     @Param('applicationId', ParseUUIDPipe) applicationId: string,
@@ -129,6 +143,8 @@ export class JobApplicationsController {
   // Employer responds to screening schedule (accept or propose new time)
   @Post(':applicationId/employer-screening-response')
   @UseGuards(EmployerJwtGuard)
+  @ApiOperation({ summary: 'Accept or propose new screening time' })
+  @ApiBody({ type: EmployerScreeningResponseDto })
   employerRespondToScreeningSchedule(
     @CurrentUser() user: CurrentUserPayload,
     @Param('applicationId', ParseUUIDPipe) applicationId: string,
@@ -160,6 +176,8 @@ export class JobApplicationsController {
   // Applicant accepts or rejects the employer's offer
   @Post(':applicationId/applicant-respond')
   @UseGuards(JobSeekerJwtGuard)
+  @ApiOperation({ summary: 'Accept or reject employer offer' })
+  @ApiBody({ type: ApplicantAcceptOfferDto })
   applicantRespondToOffer(
     @CurrentUser() user: CurrentUserPayload,
     @Param('applicationId', ParseUUIDPipe) applicationId: string,

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="supported-color-schemes" content="light dark" />
+    <title><%= subject %></title>
+  </head>
+  <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #e8eef3;">
+    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color:#e8eef3;">
+      <tr>
+        <td style="padding: 40px 20px;">
+          <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="max-width:600px; margin:0 auto;">
+            <tr>
+              <td style="background-color:#ffffff; border-radius:10px; padding: 28px 26px;">
+                <h1 style="margin:0 0 16px 0; font-size: 22px; font-weight:800; color:#0f172a;">
+                  <%= subject %>
+                </h1>
+
+                <p style="margin:0 0 12px 0; font-size: 15px; line-height: 1.6; color:#0f172a;">
+                  Hi <%= employerFirstName %>,
+                </p>
+
+                <p style="margin:0 0 18px 0; font-size: 15px; line-height: 1.6; color:#0f172a;">
+                  We&apos;ve successfully replaced your probation employee on
+                  <strong><%= jobTitle %></strong>.
+                </p>
+
+                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:14px 16px; margin: 0 0 18px 0;">
+                  <p style="margin:0; font-size: 14px; line-height: 1.5; color:#0f172a;">
+                    New candidate: <strong><%= candidateFullName %></strong>
+                  </p>
+                  <p style="margin:8px 0 0 0; font-size: 14px; line-height: 1.5; color:#0f172a;">
+                    Email: <strong><%= candidateEmail %></strong>
+                  </p>
+                  <p style="margin:8px 0 0 0; font-size: 14px; line-height: 1.5; color:#0f172a;">
+                    Phone: <strong><%= candidatePhoneNumber %></strong>
+                  </p>
+                </div>
+
+                <p style="margin:0; font-size: 14px; line-height: 1.6; color:#475569;">
+                  The new candidate can start immediately and will be placed on a fresh 90-day probation period.
+                </p>
+
+                <p style="margin:18px 0 0 0; font-size: 14px; line-height: 1.6; color:#475569;">
+                  — The Jobstack Team
+                </p>
+              </td>
+            </tr>
+
+            <tr>
+              <td style="padding: 18px 10px 0 10px; text-align:center; color:#64748b; font-size: 12px;">
+                This is an automated notification from Jobstack.
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
+

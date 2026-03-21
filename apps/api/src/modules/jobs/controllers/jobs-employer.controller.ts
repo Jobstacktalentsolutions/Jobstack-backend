@@ -10,6 +10,12 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 import { EmployerJwtGuard } from 'apps/api/src/guards';
 import { JobsService } from '../services/jobs.service';
 import {
@@ -20,6 +26,8 @@ import {
 } from '../dto';
 import { CurrentUser, type CurrentUserPayload } from '@app/common/shared';
 
+@ApiTags('Jobs (employer)')
+@ApiBearerAuth()
 @Controller('jobs/employer')
 export class JobsEmployerController {
   constructor(private readonly jobsService: JobsService) {}
@@ -27,6 +35,8 @@ export class JobsEmployerController {
   // Creates a job for the authenticated employer
   @Post()
   @UseGuards(EmployerJwtGuard)
+  @ApiOperation({ summary: 'Create a job' })
+  @ApiBody({ type: CreateJobDto })
   createJob(
     @CurrentUser() user: CurrentUserPayload,
     @Body() dto: CreateJobDto,
@@ -57,6 +67,8 @@ export class JobsEmployerController {
   // Updates employer job data
   @Patch(':jobId')
   @UseGuards(EmployerJwtGuard)
+  @ApiOperation({ summary: 'Update a job' })
+  @ApiBody({ type: UpdateJobDto })
   updateJob(
     @CurrentUser() user: CurrentUserPayload,
     @Param('jobId', ParseUUIDPipe) jobId: string,
@@ -68,6 +80,8 @@ export class JobsEmployerController {
   // Updates only the job status
   @Patch(':jobId/status')
   @UseGuards(EmployerJwtGuard)
+  @ApiOperation({ summary: 'Update job status' })
+  @ApiBody({ type: UpdateJobStatusDto })
   updateJobStatus(
     @CurrentUser() user: CurrentUserPayload,
     @Param('jobId', ParseUUIDPipe) jobId: string,

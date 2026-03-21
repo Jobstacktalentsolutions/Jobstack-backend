@@ -8,9 +8,11 @@ import {
   Logger,
   BadRequestException,
 } from '@nestjs/common';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { PaystackService } from '../services/paystack.service';
 import { PaymentService } from '../services/payment.service';
 
+@ApiTags('Payment webhooks')
 @Controller('payment/webhook')
 export class PaymentWebhookController {
   private readonly logger = new Logger(PaymentWebhookController.name);
@@ -23,6 +25,7 @@ export class PaymentWebhookController {
   // Handle Paystack webhook events
   @Post()
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Paystack webhook ingress' })
   async handleWebhook(
     @Body() rawBody: any,
     @Headers('x-paystack-signature') signature: string,
