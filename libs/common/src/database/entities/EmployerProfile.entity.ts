@@ -8,6 +8,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   OneToMany,
+  Index,
 } from 'typeorm';
 import { EmployerAuth } from './EmployerAuth.entity';
 import { EmployerVerification } from './EmployerVerification.entity';
@@ -36,6 +37,14 @@ export class EmployerProfile {
 
   @Column()
   lastName: string;
+
+  @Index({ unique: true })
+  @Column({ type: 'varchar', length: 160, nullable: true })
+  /**
+   * Public URL slug (jobstack.org/public/employers/[slug]).
+   * Generated from `${firstName}_${lastName}` and de-duplicated with random suffix.
+   */
+  slug?: string;
 
   @Column()
   email: string;

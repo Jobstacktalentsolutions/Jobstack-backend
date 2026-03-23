@@ -6,6 +6,7 @@ import { JobseekerSkill } from '@app/common/database/entities/JobseekerSkill.ent
 import { Document } from '@app/common/database/entities';
 import { JobseekerController } from './jobseeker.controller';
 import { JobseekerService } from './jobseeker.service';
+import { PublicJobseekerController } from './public-jobseeker.controller';
 import { StorageService } from '@app/common/storage/storage.service';
 import { JobSeekerJwtGuard } from 'apps/api/src/guards';
 import { JobSeekerAuthModule } from 'apps/api/src/modules/auth/submodules/jobseeker/jobseeker-auth.module';
@@ -24,7 +25,7 @@ import { AuthModule } from 'apps/api/src/modules/auth/auth.module';
     SkillsModule,
     AuthModule,
   ],
-  controllers: [JobseekerController],
+  controllers: [JobseekerController, PublicJobseekerController],
   providers: [JobseekerService, StorageService, JobSeekerJwtGuard],
 })
 export class JobseekerModule {}

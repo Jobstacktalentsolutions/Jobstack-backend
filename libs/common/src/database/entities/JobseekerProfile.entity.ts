@@ -7,6 +7,7 @@ import {
   PrimaryColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  Index,
 } from 'typeorm';
 import { JobseekerSkill } from './JobseekerSkill.entity';
 import { JobseekerAuth } from './JobseekerAuth.entity';
@@ -40,6 +41,14 @@ export class JobSeekerProfile {
 
   @Column()
   lastName: string;
+
+  @Index({ unique: true })
+  @Column({ type: 'varchar', length: 160, nullable: true })
+  /**
+   * Public URL slug (jobstack.org/public/jobseekers/[slug]).
+   * Generated from `${firstName}_${lastName}` and de-duplicated with random suffix.
+   */
+  slug?: string;
 
   @Column()
   email: string;
@@ -118,6 +127,18 @@ export class JobSeekerProfile {
     nullable: true,
   })
   preferredEmploymentArrangement?: EmploymentArrangement;
+
+  @Column({ type: 'jsonb', nullable: true })
+  /**
+   * Work experience entries stored as JSON array.
+   * Each entry: { company: string, role: string, duration: string, description: string }
+   */
+  workExperience?: Array<{
+    company: string;
+    role: string;
+    duration: string;
+    description: string;
+  }>;
 
   @OneToOne(() => JobseekerAuth, (auth) => auth.profile)
   @JoinColumn({ name: 'id' })

@@ -68,6 +68,7 @@ export class JobSeekerAuthService {
   ): Promise<AuthResult> {
     const { email, password, firstName, lastName, phoneNumber } =
       registrationData;
+    const baseSlug = this.buildBaseSlug(firstName, lastName);
 
     // Check if email already exists
     const existingAuth = await this.jobseekerAuthRepository.findOne({
@@ -104,6 +105,9 @@ export class JobSeekerAuthService {
       await queryRunner.manager.save(auth);
 
       // Create profile with same ID as auth
+      const profileRepo =
+        queryRunner.manager.getRepository<JobSeekerProfile>(JobSeekerProfile);
+      const slug = await this.generateUniqueSlug(baseSlug, profileRepo);
       const profile = queryRunner.manager.create(JobSeekerProfile, {
         id: auth.id,
         email: email.toLowerCase(),
@@ -111,6 +115,7 @@ export class JobSeekerAuthService {
         lastName,
         phoneNumber,
         approvalStatus: ApprovalStatus.PENDING,
+        slug,
       });
       await queryRunner.manager.save(profile);
 
@@ -132,6 +137,33 @@ export class JobSeekerAuthService {
     } finally {
       await queryRunner.release();
     }
+  }
+
+  /** Builds a base slug for a profile from first/last names. */
+  private buildBaseSlug(firstName: string, lastName: string): string {
+    const normalize = (v: string) => v.trim().toLowerCase().replace(/\s+/g, "");
+    return `${normalize(firstName)}_${normalize(lastName)}`;
+  }
+
+  /** Generates a unique slug by de-duping with random numeric suffixes. */
+  private async generateUniqueSlug(
+    baseSlug: string,
+    repo: Repository<JobSeekerProfile>,
+  ): Promise<string> {
+    const maxAttempts = 10;
+    let candidate = baseSlug;
+
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      const existing = await repo.findOne({ where: { slug: candidate } });
+      if (!existing) return candidate;
+
+      // Add a random numeric suffix and retry.
+      const suffix = Math.floor(Math.random() * 9000) + 1000;
+      candidate = `${baseSlug}_${suffix}`;
+    }
+
+    // Fallback: time-based suffix to avoid infinite loops.
+    return `${baseSlug}_${Date.now().toString(36)}`;
   }
 
   /**

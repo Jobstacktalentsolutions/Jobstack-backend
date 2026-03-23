@@ -133,7 +133,90 @@ export class EmployerService {
       throw new NotFoundException('Employer not found');
     }
 
+    // Backfill slug for legacy profiles (created before slug existed).
+    if (!profile.slug) {
+      profile.slug = await this.generateUniqueSlug(
+        this.buildBaseSlug(profile.firstName, profile.lastName),
+      );
+      await this.profileRepo.save(profile);
+    }
+
     return profile;
+  }
+
+  /** Builds a base slug for a profile from first/last names. */
+  private buildBaseSlug(firstName: string, lastName: string): string {
+    const normalize = (v: string) => v.trim().toLowerCase().replace(/\s+/g, "");
+    return `${normalize(firstName)}_${normalize(lastName)}`;
+  }
+
+  /** Generates a unique slug by de-duping with random numeric suffixes. */
+  private async generateUniqueSlug(baseSlug: string): Promise<string> {
+    const maxAttempts = 10;
+    let candidate = baseSlug;
+
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      const existing = await this.profileRepo.findOne({
+        where: { slug: candidate },
+        select: ['id'],
+      });
+      if (!existing) return candidate;
+
+      const suffix = Math.floor(Math.random() * 9000) + 1000;
+      candidate = `${baseSlug}_${suffix}`;
+    }
+
+    return `${baseSlug}_${Date.now().toString(36)}`;
+  }
+
+  /**
+   * Get a sanitized employer profile intended for public pages.
+   * This endpoint must NOT expose private fields like email/phone or documents.
+   */
+  async getEmployerPublicProfileBySlug(slug: string): Promise<any | null> {
+    const profile = await this.profileRepo.findOne({
+      where: { slug },
+      relations: ['profilePicture', 'verification'],
+    });
+
+    if (!profile) return null;
+
+    const verification = profile.verification;
+    const companyName =
+      verification?.companyName ||
+      `${profile.firstName} ${profile.lastName}`.trim();
+
+    const city = verification?.city;
+    const state = verification?.state;
+    const location =
+      (city && state && `${city}, ${state}`) ||
+      profile.address ||
+      'Location not specified';
+
+    let logoUrl: string | null = null;
+    if (profile.profilePicture) {
+      const signedUrl = await this.storageService.getSignedUrl(
+        profile.profilePicture.fileKey,
+        3600,
+        false,
+        profile.profilePicture.bucketType,
+      );
+      logoUrl = signedUrl;
+    }
+
+    return {
+      slug: profile.slug,
+      companyName,
+      location,
+      companyDescription: verification?.companyDescription,
+      companySize: verification?.companySize,
+      website:
+        verification?.socialOrWebsiteUrl ||
+        verification?.companyWebsite ||
+        null,
+      logoUrl,
+      verificationStatus: verification?.status ?? null,
+    };
   }
 
   /**

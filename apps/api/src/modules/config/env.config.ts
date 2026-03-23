@@ -12,7 +12,12 @@ export enum ENV {
   JWT_ISSUER = 'JWT_ISSUER',
   JWT_AUDIENCE = 'JWT_AUDIENCE',
 
-  // Brevo Email Configuration
+  // Resend Email Configuration (primary)
+  RESEND_API_KEY = 'RESEND_API_KEY',
+  RESEND_FROM_EMAIL = 'RESEND_FROM_EMAIL',
+  RESEND_FROM_NAME = 'RESEND_FROM_NAME',
+
+  // Brevo Email Configuration (fallback)
   BREVO_API_KEY = 'BREVO_API_KEY',
   BREVO_FROM_EMAIL = 'BREVO_FROM_EMAIL',
   BREVO_FROM_NAME = 'BREVO_FROM_NAME',

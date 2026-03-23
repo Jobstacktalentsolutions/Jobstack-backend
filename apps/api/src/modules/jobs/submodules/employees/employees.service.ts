@@ -36,7 +36,15 @@ export class EmployeesService {
     private readonly employerRepo: Repository<EmployerProfile>,
   ) {}
 
-  private readonly relations = ['job', 'jobseekerProfile'];
+  // Relations needed by employer/admin views to render profile data.
+  private readonly relations = [
+    'job',
+    'jobseekerProfile',
+    'jobseekerProfile.userSkills',
+    'jobseekerProfile.userSkills.skill',
+    'jobseekerProfile.profilePicture',
+    'jobseekerProfile.cvDocument',
+  ];
 
   // Creates a new employee record tied to a job and jobseeker
   async createEmployee(employerId: string, dto: CreateEmployeeDto) {

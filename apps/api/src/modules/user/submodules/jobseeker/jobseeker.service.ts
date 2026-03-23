@@ -211,6 +211,87 @@ export class JobseekerService {
     return { document, signedUrl };
   }
 
+  /**
+   * Get a sanitized jobseeker profile intended for public pages.
+   * This endpoint must NOT expose private fields like email/phone.
+   * CV access is provided as an expiring signed URL when available.
+   */
+  async getJobSeekerPublicProfileBySlug(
+    slug: string,
+  ): Promise<any | null> {
+    const profile = await this.profileRepo.findOne({
+      where: { slug },
+      relations: [
+        'profilePicture',
+        'cvDocument',
+        'userSkills',
+        'userSkills.skill',
+      ],
+    });
+
+    if (!profile) return null;
+
+    const fullName = `${profile.firstName} ${profile.lastName}`.trim();
+
+    const city = profile.city;
+    const state = profile.state;
+    const location =
+      (city && state && `${city}, ${state}`) ||
+      profile.preferredLocation ||
+      city ||
+      state ||
+      'Location not specified';
+
+    const skills = Array.from(
+      new Set(
+        (profile.userSkills ?? [])
+          .map((js) => js.skill?.name)
+          .filter((n): n is string => Boolean(n)),
+      ),
+    );
+
+    let profilePictureUrl: string | null = null;
+    if (profile.profilePicture) {
+      const signedUrl = await this.storageService.getSignedUrl(
+        profile.profilePicture.fileKey,
+        3600, // 1 hour expiry
+        false, // not for download, just viewing
+        profile.profilePicture.bucketType,
+      );
+      profilePictureUrl = signedUrl;
+    }
+
+    let cvDocumentUrl: string | null = null;
+    let cvDocumentName: string | null = null;
+    let cvDocumentSize: number | null = null;
+    if (profile.cvDocument) {
+      const signedUrl = await this.storageService.getSignedUrl(
+        profile.cvDocument.fileKey,
+        3600, // 1 hour expiry
+        false, // viewing (not forcing download)
+        profile.cvDocument.bucketType,
+      );
+      cvDocumentUrl = signedUrl;
+      cvDocumentName =
+        profile.cvDocument.originalName || profile.cvDocument.fileName;
+      cvDocumentSize = profile.cvDocument.size ?? null;
+    }
+
+    return {
+      slug: profile.slug,
+      fullName,
+      jobTitle: profile.jobTitle ?? null,
+      brief: profile.brief ?? null,
+      location,
+      skills: skills.slice(0, 12),
+      profilePictureUrl,
+      workExperience: profile.workExperience ?? [],
+      cvDocumentUrl,
+      cvDocumentName,
+      cvDocumentSize,
+    };
+  }
+
   // Update jobseeker profile with smart skills handling
   async updateProfile(
     userId: string,
@@ -257,6 +338,9 @@ export class JobseekerService {
     }
     if (updateData.yearsOfExperience !== undefined) {
       profile.yearsOfExperience = updateData.yearsOfExperience;
+    }
+    if (updateData.workExperience !== undefined) {
+      profile.workExperience = updateData.workExperience;
     }
 
     // Handle skills smartly
@@ -312,7 +396,40 @@ export class JobseekerService {
     });
     if (!profile) throw new NotFoundException('Jobseeker not found');
 
+    // Backfill slug for legacy profiles (created before slug existed).
+    if (!profile.slug) {
+      profile.slug = await this.generateUniqueSlug(
+        this.buildBaseSlug(profile.firstName, profile.lastName),
+      );
+      await this.profileRepo.save(profile);
+    }
+
     return profile;
+  }
+
+  /** Builds a base slug for a profile from first/last names. */
+  private buildBaseSlug(firstName: string, lastName: string): string {
+    const normalize = (v: string) => v.trim().toLowerCase().replace(/\s+/g, "");
+    return `${normalize(firstName)}_${normalize(lastName)}`;
+  }
+
+  /** Generates a unique slug by de-duping with random numeric suffixes. */
+  private async generateUniqueSlug(baseSlug: string): Promise<string> {
+    const maxAttempts = 10;
+    let candidate = baseSlug;
+
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      const existing = await this.profileRepo.findOne({
+        where: { slug: candidate },
+        select: ['id'],
+      });
+      if (!existing) return candidate;
+
+      const suffix = Math.floor(Math.random() * 9000) + 1000;
+      candidate = `${baseSlug}_${suffix}`;
+    }
+
+    return `${baseSlug}_${Date.now().toString(36)}`;
   }
 
   // Admin methods for managing job seekers (paginated, search, sort, filter)

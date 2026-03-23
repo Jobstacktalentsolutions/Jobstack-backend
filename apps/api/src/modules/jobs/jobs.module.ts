@@ -46,6 +46,7 @@ import { JobSeekerAuthModule } from '../auth/submodules/jobseeker/jobseeker-auth
 import { NotificationModule } from '../notification/notification.module';
 import { ProbationTrackingService } from './services/probation-tracking.service';
 import { AdminReplacementService } from './services/admin-replacement.service';
+import { EmployerDashboardStatsService } from './services/employer-dashboard-stats.service';
 
 @Module({
   imports: [
@@ -104,6 +105,7 @@ import { AdminReplacementService } from './services/admin-replacement.service';
   ],
   providers: [
     JobsService,
+    EmployerDashboardStatsService,
     JobRecommendationsProcessor,
     JobRecommendationsService,
     JobVettingService,

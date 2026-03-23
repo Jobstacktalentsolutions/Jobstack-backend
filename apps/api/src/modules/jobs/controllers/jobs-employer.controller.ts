@@ -18,6 +18,7 @@ import {
 } from '@nestjs/swagger';
 import { EmployerJwtGuard } from 'apps/api/src/guards';
 import { JobsService } from '../services/jobs.service';
+import { EmployerDashboardStatsService } from '../services/employer-dashboard-stats.service';
 import {
   CreateJobDto,
   JobQueryDto,
@@ -30,7 +31,10 @@ import { CurrentUser, type CurrentUserPayload } from '@app/common/shared';
 @ApiBearerAuth()
 @Controller('jobs/employer')
 export class JobsEmployerController {
-  constructor(private readonly jobsService: JobsService) {}
+  constructor(
+    private readonly jobsService: JobsService,
+    private readonly employerDashboardStatsService: EmployerDashboardStatsService,
+  ) {}
 
   // Creates a job for the authenticated employer
   @Post()
@@ -98,5 +102,14 @@ export class JobsEmployerController {
     @Param('jobId', ParseUUIDPipe) jobId: string,
   ) {
     return this.jobsService.deleteJob(jobId, user.id);
+  }
+
+  // Returns dashboard KPIs for the authenticated employer (no pagination limits).
+  @Get('stats/dashboard')
+  @UseGuards(EmployerJwtGuard)
+  getEmployerDashboardStats(@CurrentUser() user: CurrentUserPayload) {
+    return this.employerDashboardStatsService.getEmployerDashboardStats(
+      user.id,
+    );
   }
 }

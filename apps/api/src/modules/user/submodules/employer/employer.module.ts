@@ -16,6 +16,7 @@ import { StorageService } from '@app/common/storage/storage.service';
 import { EmployerJwtGuard } from 'apps/api/src/guards';
 import { EmployerAuthModule } from 'apps/api/src/modules/auth/submodules/employer/employer-auth.module';
 import { AuthModule } from 'apps/api/src/modules/auth/auth.module';
+import { PublicEmployerController } from './public-employer.controller';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { AuthModule } from 'apps/api/src/modules/auth/auth.module';
     EmployerController,
     EmployerVerificationController,
     AdminEmployerVerificationController,
+    PublicEmployerController,
   ],
   providers: [
     EmployerService,

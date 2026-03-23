@@ -6,8 +6,11 @@ import {
   IsPhoneNumber,
   IsInt,
   Min,
+  ValidateNested,
 } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
+import { WorkExperienceDto } from './work-experience.dto';
 
 export class UpdateProfileDto {
   @ApiPropertyOptional({ example: 'Chidi' })
@@ -88,4 +91,23 @@ export class UpdateProfileDto {
   @IsInt()
   @Min(0)
   yearsOfExperience?: number;
+
+  @ApiPropertyOptional({
+    type: [WorkExperienceDto],
+    description: 'Array of work experience entries',
+    example: [
+      {
+        company: 'Fashion Hub Ltd.',
+        role: 'Sales Assistant',
+        duration: 'Jan 2022 - Present',
+        description:
+          'Managing customer inquiries, processing sales transactions, and maintaining store inventory. Achieved 95% customer satisfaction rating.',
+      },
+    ],
+  })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => WorkExperienceDto)
+  workExperience?: WorkExperienceDto[];
 }
