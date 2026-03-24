@@ -23,6 +23,9 @@ import {
   getAllDocuments,
   isDocumentMandatory,
 } from '@app/common/shared/config/employer-document-requirements';
+import { NotificationService } from 'apps/api/src/modules/notification/notification.service';
+import { UserRole } from '@app/common/shared/enums/user-roles.enum';
+import { NotificationPriority } from '@app/common/database/entities/schema.enum';
 
 @Injectable()
 export class EmployerVerificationService {
@@ -34,6 +37,7 @@ export class EmployerVerificationService {
     @InjectRepository(EmployerProfile)
     private readonly profileRepo: Repository<EmployerProfile>,
     private readonly storageService: StorageService,
+    private readonly notificationService: NotificationService,
   ) {}
 
   // Get current user's verification with all documents
@@ -359,6 +363,19 @@ export class EmployerVerificationService {
       verification.reviewedAt = new Date();
       await this.verificationRepo.save(verification);
 
+      // Notify employer that they are verified
+      try {
+        await this.notificationService.createAppNotification(
+          profile.id,
+          UserRole.EMPLOYER,
+          {
+            title: '✅ Account Verified!',
+            message: 'Congratulations! Your employer account has been verified. You can now post jobs and hire candidates.',
+            priority: NotificationPriority.HIGH,
+          },
+        );
+      } catch (_) { /* non-blocking */ }
+
       return {
         verified: true,
         message: 'Employer automatically verified successfully',
@@ -395,6 +412,31 @@ export class EmployerVerificationService {
     }
 
     await this.verificationRepo.save(verification);
+
+    // Notify employer of the decision
+    try {
+      if (status === VerificationStatus.APPROVED) {
+        await this.notificationService.createAppNotification(
+          employerId,
+          UserRole.EMPLOYER,
+          {
+            title: '✅ Your Account is Verified',
+            message: 'Your employer account has been manually reviewed and approved. You can now post jobs and hire candidates.',
+            priority: NotificationPriority.HIGH,
+          },
+        );
+      } else if (status === VerificationStatus.REJECTED) {
+        await this.notificationService.createAppNotification(
+          employerId,
+          UserRole.EMPLOYER,
+          {
+            title: '❌ Verification Rejected',
+            message: `Your employer verification was rejected.${ rejectionReason ? ` Reason: ${rejectionReason}` : '' } Please review and resubmit your documents.`,
+            priority: NotificationPriority.HIGH,
+          },
+        );
+      }
+    } catch (_) { /* non-blocking */ }
 
     return verification;
   }

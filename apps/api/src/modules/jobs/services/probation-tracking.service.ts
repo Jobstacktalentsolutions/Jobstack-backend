@@ -6,7 +6,9 @@ import { Employee, JobApplication } from '@app/common/database/entities';
 import {
   JobApplicationStatus,
   ProbationStatus,
+  NotificationPriority,
 } from '@app/common/database/entities/schema.enum';
+import { UserRole } from '@app/common/shared/enums/user-roles.enum';
 
 export type ProbationMailtoContext = {
   recipientName: string;
@@ -102,6 +104,19 @@ export class ProbationTrackingService {
       },
     });
 
+    try {
+      await this.notificationService.createAppNotification(
+        employee.employerId,
+        UserRole.EMPLOYER,
+        {
+          title: 'Day 30 Probation Check-in',
+          message: `How is ${candidateFirstName} settling into the "${jobTitle}" role? Let us know if you have any feedback or concerns!`,
+          priority: NotificationPriority.MEDIUM,
+          metadata: { employeeId: employee.id, jobId: employee.jobId },
+        },
+      );
+    } catch (_) {}
+
     employee.pulse30SentAt = new Date();
     await this.employeeRepo.save(employee);
   }
@@ -155,6 +170,19 @@ export class ProbationTrackingService {
         supportMailto,
       },
     });
+
+    try {
+      await this.notificationService.createAppNotification(
+        employee.employerId,
+        UserRole.EMPLOYER,
+        {
+          title: 'Day 60 Probation Check-in',
+          message: `${candidateFirstName}'s probation for "${jobTitle}" ends on ${this.formatDate(probationEndDate)}. How are things going?`,
+          priority: NotificationPriority.HIGH,
+          metadata: { employeeId: employee.id, jobId: employee.jobId },
+        },
+      );
+    } catch (_) {}
 
     employee.pulse60SentAt = new Date();
     await this.employeeRepo.save(employee);
@@ -223,6 +251,30 @@ export class ProbationTrackingService {
         },
       });
     }
+
+    try {
+      await this.notificationService.createAppNotification(
+        employee.employerId,
+        UserRole.EMPLOYER,
+        {
+          title: '🎉 Placement Confirmed!',
+          message: `${candidateFirstName} has successfully completed their probation for "${jobTitle}".`,
+          priority: NotificationPriority.HIGH,
+          metadata: { employeeId: employee.id, jobId: employee.jobId },
+        },
+      );
+
+      await this.notificationService.createAppNotification(
+        employee.jobseekerProfileId as string,
+        UserRole.JOB_SEEKER,
+        {
+          title: '🎉 Placement Confirmed!',
+          message: `Congratulations! You have successfully completed your probation for "${jobTitle}" at ${employerName}.`,
+          priority: NotificationPriority.HIGH,
+          metadata: { employeeId: employee.id, jobId: employee.jobId },
+        },
+      );
+    } catch (_) {}
   }
 }
 

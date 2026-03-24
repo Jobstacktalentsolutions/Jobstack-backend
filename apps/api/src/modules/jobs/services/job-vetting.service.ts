@@ -13,12 +13,14 @@ import {
   EmployeeStatus,
   SkillType,
   getSkillTypeFromCategory,
+  NotificationPriority,
 } from '@app/common/database/entities/schema.enum';
 import {
   VETTING_CONFIG,
   getHighlightedCandidateCount,
 } from '../config/vetting.config';
 import { NotificationService } from '../../notification/notification.service';
+import { UserRole } from '@app/common/shared/enums/user-roles.enum';
 
 export interface VettingResult {
   jobId: string;
@@ -610,6 +612,27 @@ export class JobVettingService {
           },
         });
 
+        // Also create in-app notification for the jobseeker
+        try {
+          await this.notificationService.createAppNotification(
+            application.jobseekerProfileId,
+            UserRole.JOB_SEEKER,
+            {
+              title: '🌟 Selected for Screening!',
+              message: `You have been selected for a screening interview for "${application.job.title}" scheduled for ${formattedDate} at ${formattedTime}.`,
+              priority: NotificationPriority.HIGH,
+              metadata: {
+                jobId: application.job.id,
+                applicationId: application.id,
+                meetingLink: application.screeningMeetingLink,
+                scheduledAt: application.screeningScheduledAt,
+              },
+            },
+          );
+        } catch (appNotifErr) {
+          this.logger.warn(`Failed to create in-app screening notification: ${appNotifErr.message}`);
+        }
+
         this.logger.log(
           `Screening notification sent to candidate ${application.jobseekerProfile.email}`,
         );
@@ -670,6 +693,22 @@ export class JobVettingService {
             jobId: application.job.id,
           },
         });
+
+        // Also create in-app notification
+        try {
+          await this.notificationService.createAppNotification(
+            application.jobseekerProfileId,
+            UserRole.JOB_SEEKER,
+            {
+              title: 'Screening Completed',
+              message: `Your screening for "${application.job.title}" is complete. Stay tuned for next steps from the employer.`,
+              priority: NotificationPriority.MEDIUM,
+              metadata: { jobId: application.job.id, applicationId: application.id },
+            },
+          );
+        } catch (appNotifErr) {
+          this.logger.warn(`Failed to create in-app screening-complete notification: ${appNotifErr.message}`);
+        }
 
         this.logger.log(
           `Screening completion notification sent to ${application.jobseekerProfile.email}`,

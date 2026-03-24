@@ -17,6 +17,7 @@ import { EmployerJwtGuard } from 'apps/api/src/guards';
 import { EmployerAuthModule } from 'apps/api/src/modules/auth/submodules/employer/employer-auth.module';
 import { AuthModule } from 'apps/api/src/modules/auth/auth.module';
 import { PublicEmployerController } from './public-employer.controller';
+import { NotificationModule } from 'apps/api/src/modules/notification/notification.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { PublicEmployerController } from './public-employer.controller';
     ]),
     EmployerAuthModule,
     AuthModule,
+    NotificationModule,
   ],
   controllers: [
     EmployerController,

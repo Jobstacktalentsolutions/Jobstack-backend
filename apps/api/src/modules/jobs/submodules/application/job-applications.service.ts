@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -25,9 +26,12 @@ import {
 } from '@app/common/database/entities/schema.enum';
 import { NotificationService } from 'apps/api/src/modules/notification/notification.service';
 import { ProbationTrackingProducer } from '../../queue';
+import { UserRole } from '@app/common/shared/enums/user-roles.enum';
+import { NotificationPriority } from '@app/common/database/entities/schema.enum';
 
 @Injectable()
 export class JobApplicationsService {
+  private readonly logger = new Logger(JobApplicationsService.name);
   constructor(
     @InjectRepository(JobApplication)
     private readonly applicationRepo: Repository<JobApplication>,
@@ -77,6 +81,23 @@ export class JobApplicationsService {
     });
 
     const saved = await this.applicationRepo.save(application);
+
+    // Notify jobseeker that their application was received
+    try {
+      await this.notificationService.createAppNotification(
+        jobseekerId,
+        UserRole.JOB_SEEKER,
+        {
+          title: 'Application Submitted',
+          message: `Your application for "${job.title}" has been submitted successfully. We'll keep you updated.`,
+          priority: NotificationPriority.MEDIUM,
+          metadata: { jobId: job.id, applicationId: saved.id },
+        },
+      );
+    } catch (err) {
+      this.logger.warn(`Failed to create app notification for jobseeker application: ${err.message}`);
+    }
+
     return this.getApplicationById(saved.id);
   }
 
@@ -374,6 +395,22 @@ export class JobApplicationsService {
     application.statusUpdatedAt = new Date();
     await this.applicationRepo.save(application);
 
+    // Notify jobseeker about the offer
+    try {
+      await this.notificationService.createAppNotification(
+        application.jobseekerProfileId,
+        UserRole.JOB_SEEKER,
+        {
+          title: '🎉 Job Offer Received!',
+          message: `You have received a job offer for "${application.job.title}". Please review and respond within 7 days.`,
+          priority: NotificationPriority.HIGH,
+          metadata: { jobId: application.jobId, applicationId },
+        },
+      );
+    } catch (err) {
+      this.logger.warn(`Failed to notify jobseeker of offer: ${err.message}`);
+    }
+
     return {
       application: await this.getApplicationById(applicationId),
       employee: savedEmployee,
@@ -514,6 +551,36 @@ export class JobApplicationsService {
     application.statusUpdatedAt = new Date();
     await this.applicationRepo.save(application);
 
+    // Notify employer of candidate's decision
+    try {
+      const employerId = application.job.employerId;
+      if (acceptance.accepted) {
+        await this.notificationService.createAppNotification(
+          employerId,
+          UserRole.EMPLOYER,
+          {
+            title: '✅ Candidate Accepted Your Offer',
+            message: `A candidate has accepted your offer for "${application.job.title}". Proceed with payment to unlock their contact details.`,
+            priority: NotificationPriority.HIGH,
+            metadata: { jobId: application.jobId, applicationId },
+          },
+        );
+      } else {
+        await this.notificationService.createAppNotification(
+          employerId,
+          UserRole.EMPLOYER,
+          {
+            title: 'Candidate Declined Offer',
+            message: `A candidate has declined your offer for "${application.job.title}".`,
+            priority: NotificationPriority.MEDIUM,
+            metadata: { jobId: application.jobId, applicationId },
+          },
+        );
+      }
+    } catch (err) {
+      this.logger.warn(`Failed to notify employer of candidate decision: ${err.message}`);
+    }
+
     return this.getApplicationById(applicationId);
   }
 
@@ -571,6 +638,17 @@ export class JobApplicationsService {
           },
         });
       }
+
+      await this.notificationService.createAppNotification(
+        application.job.employerId,
+        UserRole.EMPLOYER,
+        {
+          title: '🗓️ Screening Proposal Accepted',
+          message: `Your proposed screening time for candidate ${application.jobseekerProfile.firstName} (${application.job.title}) has been approved.`,
+          priority: NotificationPriority.MEDIUM,
+          metadata: { jobId: application.job.id, applicationId },
+        },
+      );
     } catch (error) {
       // Notification failures should not block the core flow
     }
@@ -604,7 +682,7 @@ export class JobApplicationsService {
       );
     }
 
-    // Notify candidate via email
+    // Notify candidate via email + in-app
     try {
       if (application.jobseekerProfile?.email) {
         const websiteUrl = process.env.WEBSITE_URL ?? '';
@@ -628,6 +706,18 @@ export class JobApplicationsService {
           },
         });
       }
+
+      // In-app notification for the reminder
+      await this.notificationService.createAppNotification(
+        application.jobseekerProfileId,
+        UserRole.JOB_SEEKER,
+        {
+          title: '⏰ Reminder: Pending Job Offer',
+          message: `The employer for "${application.job.title}" is still waiting for your response. Don't let the offer expire!`,
+          priority: NotificationPriority.HIGH,
+          metadata: { jobId: application.jobId, applicationId },
+        },
+      );
     } catch (error) {
       // Notification failures should not block the core flow
     }
@@ -695,6 +785,22 @@ export class JobApplicationsService {
         startDate: employee.startDate,
       },
     );
+
+    // Notify jobseeker they are hired
+    try {
+      await this.notificationService.createAppNotification(
+        application.jobseekerProfileId,
+        UserRole.JOB_SEEKER,
+        {
+          title: '🎊 You have been Hired!',
+          message: `Congratulations! Your employment for "${application.job.title}" has been confirmed. Your probation period starts now.`,
+          priority: NotificationPriority.HIGH,
+          metadata: { jobId: application.jobId, applicationId, employeeId: employee.id },
+        },
+      );
+    } catch (err) {
+      this.logger.warn(`Failed to notify jobseeker of hire: ${err.message}`);
+    }
 
     return this.getApplicationById(applicationId);
   }

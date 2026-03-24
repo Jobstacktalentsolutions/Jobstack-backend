@@ -16,6 +16,7 @@ import { EmailNotificationProcessor } from './email/email.processor';
 
 // Provider Configuration
 import { ALL_NOTIFICATION_PROVIDERS } from './notification.config';
+import { NotificationController } from './controllers/notification.controller';
 
 /**
  * Notification module - handles email notifications with queue processing
@@ -41,6 +42,7 @@ import { ALL_NOTIFICATION_PROVIDERS } from './notification.config';
     }),
     ConfigModule,
   ],
+  controllers: [NotificationController],
   providers: [
     // Core Services
     NotificationService,
@@ -57,3 +59,4 @@ import { ALL_NOTIFICATION_PROVIDERS } from './notification.config';
   exports: [NotificationService, TypeOrmModule],
 })
 export class NotificationModule {}
+

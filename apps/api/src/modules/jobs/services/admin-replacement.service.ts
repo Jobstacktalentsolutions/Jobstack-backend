@@ -1,11 +1,26 @@
-import { BadRequestException, Injectable, NotFoundException, Logger } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+  Logger,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { DataSource, In } from 'typeorm';
-import { Employee, JobApplication, JobSeekerProfile } from '@app/common/database/entities';
-import { EmployeeStatus, JobApplicationStatus, ProbationStatus } from '@app/common/database/entities/schema.enum';
+import {
+  Employee,
+  JobApplication,
+  JobSeekerProfile,
+} from '@app/common/database/entities';
+import {
+  EmployeeStatus,
+  JobApplicationStatus,
+  ProbationStatus,
+  NotificationPriority,
+} from '@app/common/database/entities/schema.enum';
 import { NotificationService } from 'apps/api/src/modules/notification/notification.service';
 import { ProbationTrackingProducer } from '../queue';
+import { UserRole } from '@app/common/shared/enums/user-roles.enum';
 
 type CurrentEmployeeResponse = {
   employeeId: string;
@@ -59,7 +74,10 @@ export class AdminReplacementService {
     private readonly probationTrackingProducer: ProbationTrackingProducer,
   ) {}
 
-  private formatFullName(profile?: { firstName?: string; lastName?: string }): string {
+  private formatFullName(profile?: {
+    firstName?: string;
+    lastName?: string;
+  }): string {
     const first = profile?.firstName ?? '';
     const last = profile?.lastName ?? '';
     return `${first} ${last}`.trim();
@@ -172,12 +190,9 @@ export class AdminReplacementService {
       if (app.jobseekerProfileId === oldJobseekerProfileId) continue;
       if (employedIds.has(app.jobseekerProfileId as string)) continue;
 
-      const jobVetted =
-        app.vettingScore != null &&
-        app.vettedAt != null;
+      const jobVetted = app.vettingScore != null && app.vettedAt != null;
 
-      const platformVetted =
-        platformVettedScore.has(app.jobseekerProfileId);
+      const platformVetted = platformVettedScore.has(app.jobseekerProfileId);
 
       const profile = app.jobseekerProfile;
       if (!profile) continue;
@@ -195,7 +210,9 @@ export class AdminReplacementService {
       else if (platformVetted) otherVettedOptions.push(option);
     }
 
-    jobVettedOptions.sort((a, b) => (b.jobVettingScore ?? 0) - (a.jobVettingScore ?? 0));
+    jobVettedOptions.sort(
+      (a, b) => (b.jobVettingScore ?? 0) - (a.jobVettingScore ?? 0),
+    );
     otherVettedOptions.sort(
       (a, b) =>
         (platformVettedScore.get(b.jobseekerProfileId) ?? 0) -
@@ -217,7 +234,11 @@ export class AdminReplacementService {
       relations: ['job', 'employer', 'jobseekerProfile'],
     });
 
-    if (!currentEmployee?.jobseekerProfile || !currentEmployee.employer || !currentEmployee.job) {
+    if (
+      !currentEmployee?.jobseekerProfile ||
+      !currentEmployee.employer ||
+      !currentEmployee.job
+    ) {
       throw new NotFoundException('No active employee found for this job');
     }
 
@@ -236,7 +257,9 @@ export class AdminReplacementService {
       },
     });
     if (alreadyEmployed) {
-      throw new BadRequestException('Selected candidate is already active on another job');
+      throw new BadRequestException(
+        'Selected candidate is already active on another job',
+      );
     }
 
     const newCandidateProfile = await this.jobseekerRepo.findOne({
@@ -257,7 +280,8 @@ export class AdminReplacementService {
       const newCandidate = await jobseekerManager.findOne({
         where: { id: newJobseekerProfileId },
       });
-      if (!newCandidate) throw new NotFoundException('New candidate profile not found');
+      if (!newCandidate)
+        throw new NotFoundException('New candidate profile not found');
 
       // Detach old job application (if it exists).
       const oldApp = await applicationManager.findOne({
@@ -276,7 +300,9 @@ export class AdminReplacementService {
       });
 
       if (!newApp) {
-        throw new NotFoundException('New candidate does not have a job application for this job');
+        throw new NotFoundException(
+          'New candidate does not have a job application for this job',
+        );
       }
 
       // Employer wants the new candidate to work immediately.
@@ -314,7 +340,8 @@ export class AdminReplacementService {
       const oldEmployeeInTx = await employeeManager.findOne({
         where: { id: currentEmployee.id },
       });
-      if (!oldEmployeeInTx) throw new NotFoundException('Old employee missing during swap');
+      if (!oldEmployeeInTx)
+        throw new NotFoundException('Old employee missing during swap');
       oldEmployeeInTx.status = EmployeeStatus.TERMINATED;
       oldEmployeeInTx.probationStatus = ProbationStatus.TERMINATED;
       await employeeManager.save(oldEmployeeInTx);
@@ -336,7 +363,9 @@ export class AdminReplacementService {
     });
 
     if (!current?.jobseekerProfile || !current.employer || !current.job) {
-      this.logger.error(`replaceCandidate: failed to load new active employee for job ${jobId}`);
+      this.logger.error(
+        `replaceCandidate: failed to load new active employee for job ${jobId}`,
+      );
       return;
     }
 
@@ -375,7 +404,33 @@ export class AdminReplacementService {
       },
     });
 
+    // In-app notifications
+    try {
+      await this.notificationService.createAppNotification(
+        employer.id,
+        UserRole.EMPLOYER,
+        {
+          title: 'Candidate Replacement Confirmed',
+          message: `${candidateFullName} has been assigned to "${job.title}". You can view their details in your dashboard.`,
+          priority: NotificationPriority.HIGH,
+          metadata: { jobId: job.id, employeeId: current.id },
+        },
+      );
+
+      await this.notificationService.createAppNotification(
+        current.jobseekerProfileId as string,
+        UserRole.JOB_SEEKER,
+        {
+          title: '🎉 You have been Hired! (Replacement)',
+          message: `Congratulations! You have been assigned to the role of "${job.title}". Check your dashboard to view your new employment details.`,
+          priority: NotificationPriority.HIGH,
+          metadata: { jobId: job.id, employeeId: current.id },
+        },
+      );
+    } catch (_) {
+      /* non-blocking */
+    }
+
     return { success: true };
   }
 }
-
