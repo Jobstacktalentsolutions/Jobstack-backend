@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, SelectQueryBuilder } from 'typeorm';
+import { StorageService } from '@app/common/storage/storage.service';
 import {
   Employee,
   EmployerProfile,
@@ -34,6 +35,7 @@ export class EmployeesService {
     private readonly jobseekerRepo: Repository<JobSeekerProfile>,
     @InjectRepository(EmployerProfile)
     private readonly employerRepo: Repository<EmployerProfile>,
+    protected readonly storageService: StorageService,
   ) {}
 
   // Relations needed by employer/admin views to render profile data.
@@ -111,6 +113,20 @@ export class EmployeesService {
     if (!employee) {
       throw new NotFoundException('Employee not found');
     }
+
+    // Ensure employer-facing document URLs are signed before returning to the frontend.
+    const cvDocument = employee.jobseekerProfile?.cvDocument;
+    if (cvDocument?.fileKey) {
+      const signedUrl = await this.storageService.getSignedUrl(
+        cvDocument.fileKey,
+        3600, // 1 hour expiry
+        false, // view (not forced download)
+        cvDocument.bucketType,
+        cvDocument.provider,
+      );
+      cvDocument.url = signedUrl;
+    }
+
     return employee;
   }
 

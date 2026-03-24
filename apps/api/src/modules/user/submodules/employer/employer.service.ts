@@ -133,40 +133,7 @@ export class EmployerService {
       throw new NotFoundException('Employer not found');
     }
 
-    // Backfill slug for legacy profiles (created before slug existed).
-    if (!profile.slug) {
-      profile.slug = await this.generateUniqueSlug(
-        this.buildBaseSlug(profile.firstName, profile.lastName),
-      );
-      await this.profileRepo.save(profile);
-    }
-
     return profile;
-  }
-
-  /** Builds a base slug for a profile from first/last names. */
-  private buildBaseSlug(firstName: string, lastName: string): string {
-    const normalize = (v: string) => v.trim().toLowerCase().replace(/\s+/g, "");
-    return `${normalize(firstName)}_${normalize(lastName)}`;
-  }
-
-  /** Generates a unique slug by de-duping with random numeric suffixes. */
-  private async generateUniqueSlug(baseSlug: string): Promise<string> {
-    const maxAttempts = 10;
-    let candidate = baseSlug;
-
-    for (let attempt = 0; attempt < maxAttempts; attempt++) {
-      const existing = await this.profileRepo.findOne({
-        where: { slug: candidate },
-        select: ['id'],
-      });
-      if (!existing) return candidate;
-
-      const suffix = Math.floor(Math.random() * 9000) + 1000;
-      candidate = `${baseSlug}_${suffix}`;
-    }
-
-    return `${baseSlug}_${Date.now().toString(36)}`;
   }
 
   /**

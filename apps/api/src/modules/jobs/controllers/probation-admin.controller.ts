@@ -3,9 +3,8 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AdminJwtGuard } from 'apps/api/src/guards';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Employee, JobApplication } from '@app/common/database/entities';
+import { Employee } from '@app/common/database/entities';
 import {
-  JobApplicationStatus,
   ProbationStatus,
 } from '@app/common/database/entities/schema.enum';
 
@@ -39,16 +38,8 @@ export class ProbationAdminController {
       .leftJoinAndSelect('employee.job', 'job')
       .leftJoinAndSelect('employee.employer', 'employer')
       .leftJoinAndSelect('employee.jobseekerProfile', 'jobseeker')
-      .leftJoin(
-        JobApplication,
-        'application',
-        'application.jobId = employee.jobId AND application.jobseekerProfileId = employee.jobseekerProfileId',
-      )
       .where('employee.probationStatus = :probationStatus', {
         probationStatus: ProbationStatus.ACTIVE,
-      })
-      .andWhere('application.status = :applicationStatus', {
-        applicationStatus: JobApplicationStatus.PLACED_PROBATION,
       })
       .orderBy('employee.startDate', 'ASC')
       .skip(skip)

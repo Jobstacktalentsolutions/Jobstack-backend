@@ -279,7 +279,8 @@ export class AdminReplacementService {
         throw new NotFoundException('New candidate does not have a job application for this job');
       }
 
-      newApp.status = JobApplicationStatus.PLACED_PROBATION;
+      // Employer wants the new candidate to work immediately.
+      newApp.status = JobApplicationStatus.HIRED;
       newApp.statusUpdatedAt = now;
       await applicationManager.save(newApp);
 

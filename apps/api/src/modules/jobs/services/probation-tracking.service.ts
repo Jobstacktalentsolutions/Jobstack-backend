@@ -187,19 +187,7 @@ export class ProbationTrackingService {
     employee.probationStatus = ProbationStatus.CONFIRMED;
     await this.employeeRepo.save(employee);
 
-    const application = await this.applicationRepo.findOne({
-      where: {
-        jobId: employee.jobId,
-        jobseekerProfileId: employee.jobseekerProfileId,
-      },
-    });
-
-    if (application && application.status !== JobApplicationStatus.CONFIRMED) {
-      application.status = JobApplicationStatus.CONFIRMED;
-      application.statusUpdatedAt = now;
-      await this.applicationRepo.save(application);
-    }
-
+    // Probation completion does not affect application status in the simplified flow.
     const subject = `🎉 Placement Confirmed — ${candidateFirstName} at ${employerName}`;
 
     // Confirmation email to employer.

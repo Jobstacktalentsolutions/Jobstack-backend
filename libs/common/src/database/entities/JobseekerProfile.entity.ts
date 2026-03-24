@@ -36,10 +36,10 @@ export class JobSeekerProfile {
   })
   updatedAt: Date;
 
-  @Column()
+  @Column('varchar')
   firstName: string;
 
-  @Column()
+  @Column('varchar')
   lastName: string;
 
   @Index({ unique: true })
@@ -50,10 +50,10 @@ export class JobSeekerProfile {
    */
   slug?: string;
 
-  @Column()
+  @Column('varchar')
   email: string;
 
-  @Column()
+  @Column('varchar')
   phoneNumber: string;
 
   @Column('uuid', { nullable: true })
@@ -63,7 +63,7 @@ export class JobSeekerProfile {
   @JoinColumn({ name: 'profilePictureId' })
   profilePicture?: Document;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   address?: string;
 
   @OneToMany(() => JobseekerSkill, (js) => js.profile, { cascade: true })
@@ -81,10 +81,10 @@ export class JobSeekerProfile {
   @Column({ type: 'text', nullable: true })
   preferredLocation?: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   state?: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   city?: string;
 
   @Column('uuid', { nullable: true })

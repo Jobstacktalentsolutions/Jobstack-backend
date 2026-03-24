@@ -47,6 +47,7 @@ import { NotificationModule } from '../notification/notification.module';
 import { ProbationTrackingService } from './services/probation-tracking.service';
 import { AdminReplacementService } from './services/admin-replacement.service';
 import { EmployerDashboardStatsService } from './services/employer-dashboard-stats.service';
+import { StorageModule } from '@app/common/storage';
 
 @Module({
   imports: [
@@ -93,6 +94,7 @@ import { EmployerDashboardStatsService } from './services/employer-dashboard-sta
     forwardRef(() => EmployerAuthModule),
     forwardRef(() => JobSeekerAuthModule),
     NotificationModule,
+    StorageModule,
   ],
   controllers: [
     JobsEmployerController,

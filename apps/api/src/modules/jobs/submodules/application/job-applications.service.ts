@@ -99,6 +99,7 @@ export class JobApplicationsService {
         where: result.items.map((app) => ({
           jobId: app.jobId,
           jobseekerProfileId: app.jobseekerProfileId,
+          status: EmployeeStatus.ACTIVE,
         })),
         select: ['id', 'jobId', 'jobseekerProfileId'],
       });
@@ -150,7 +151,6 @@ export class JobApplicationsService {
       JobApplicationStatus.APPLICANT_ACCEPTED,
       JobApplicationStatus.PAYMENT_COMPLETE,
       JobApplicationStatus.CONTRACT_SIGNED,
-      JobApplicationStatus.PLACED_PROBATION,
       JobApplicationStatus.HIRED,
     ];
 
@@ -656,7 +656,8 @@ export class JobApplicationsService {
       );
     }
 
-    application.status = JobApplicationStatus.PLACED_PROBATION;
+    // Employer confirmation means the candidate resumes work immediately.
+    application.status = JobApplicationStatus.HIRED;
     application.statusUpdatedAt = new Date();
     await this.applicationRepo.save(application);
 
@@ -714,8 +715,6 @@ export class JobApplicationsService {
       [
         JobApplicationStatus.PAYMENT_COMPLETE,
         JobApplicationStatus.CONTRACT_SIGNED,
-        JobApplicationStatus.PLACED_PROBATION,
-        JobApplicationStatus.CONFIRMED,
         JobApplicationStatus.HIRED,
         JobApplicationStatus.REJECTED,
         JobApplicationStatus.WITHDRAWN,

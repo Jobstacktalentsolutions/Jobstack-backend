@@ -138,13 +138,14 @@ export class EmployerAuthService {
     }
   }
 
-  /** Builds a base slug for a profile from first/last names. */
+  /** Builds the normalized base slug from first/last names. */
   private buildBaseSlug(firstName: string, lastName: string): string {
-    const normalize = (v: string) => v.trim().toLowerCase().replace(/\s+/g, "");
+    const normalize = (v: string) =>
+      v.trim().toLowerCase().replace(/[^a-z0-9]+/g, "");
     return `${normalize(firstName)}_${normalize(lastName)}`;
   }
 
-  /** Generates a unique slug by de-duping with random numeric suffixes. */
+  /** Generates a unique slug by appending numeric suffixes when needed. */
   private async generateUniqueSlug(
     baseSlug: string,
     repo: Repository<EmployerProfile>,
@@ -161,7 +162,7 @@ export class EmployerAuthService {
       candidate = `${baseSlug}_${suffix}`;
     }
 
-    // Fallback: time-based suffix to avoid infinite loops.
+    // Fallback to avoid infinite loops under pathological collisions.
     return `${baseSlug}_${Date.now().toString(36)}`;
   }
 
