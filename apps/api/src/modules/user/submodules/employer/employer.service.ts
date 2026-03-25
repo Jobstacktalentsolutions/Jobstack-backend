@@ -238,7 +238,9 @@ export class EmployerService {
       .createQueryBuilder('employer')
       .leftJoinAndSelect('employer.auth', 'auth')
       .leftJoinAndSelect('employer.profilePicture', 'profilePicture')
-      .leftJoinAndSelect('employer.verification', 'verification');
+      .leftJoinAndSelect('employer.verification', 'verification')
+      .loadRelationCountAndMap('employer.jobsCount', 'employer.jobs')
+      .loadRelationCountAndMap('employer.employeesCount', 'employer.employees');
 
     if (type) {
       queryBuilder.andWhere('employer.type = :employerType', {
@@ -280,6 +282,8 @@ export class EmployerService {
         email: profile.auth?.email,
         profile: profile,
         verification: profile.verification,
+        jobsCount: (profile as any).jobsCount ?? 0,
+        employeesCount: (profile as any).employeesCount ?? 0,
         createdAt: profile.createdAt,
         updatedAt: profile.updatedAt,
       })),
