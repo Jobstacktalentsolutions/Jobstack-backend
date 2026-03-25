@@ -59,7 +59,11 @@ export class Employee extends BaseEntity {
   @Column({ type: 'timestamp', nullable: true })
   endDate?: Date;
 
-  @Column({ type: 'enum', enum: ProbationStatus, nullable: true })
+  @Column({
+    type: 'enum',
+    enum: ProbationStatus,
+    default: ProbationStatus.ACTIVE,
+  })
   probationStatus?: ProbationStatus;
 
   @Column({ type: 'timestamp', nullable: true })

@@ -22,7 +22,9 @@ import {
   EmployeeStatus,
   EmploymentArrangement,
   EmploymentType,
+  ProbationStatus,
 } from '@app/common/database/entities/schema.enum';
+import { ProbationTrackingProducer } from '../../queue';
 
 @Injectable()
 export class EmployeesService {
@@ -36,6 +38,7 @@ export class EmployeesService {
     @InjectRepository(EmployerProfile)
     private readonly employerRepo: Repository<EmployerProfile>,
     protected readonly storageService: StorageService,
+    private readonly probationTrackingProducer: ProbationTrackingProducer,
   ) {}
 
   // Relations needed by employer/admin views to render profile data.
@@ -185,6 +188,7 @@ export class EmployeesService {
     dto: UpdateEmployeeStatusDto,
   ) {
     const employee = await this.getEmployerEmployeeById(employerId, employeeId);
+    const previousStatus = employee.status;
 
     // Check payment requirement before allowing activation
     if (
@@ -203,7 +207,39 @@ export class EmployeesService {
     }
 
     employee.status = dto.status;
+
+    // When activation is finalized, initialize probation fields if missing/outdated.
+    if (dto.status === EmployeeStatus.ACTIVE) {
+      if (!employee.startDate) {
+        throw new BadRequestException(
+          'Employee startDate is required before activation',
+        );
+      }
+
+      const probationEndDate = new Date(
+        employee.startDate.getTime() + 90 * 24 * 60 * 60 * 1000,
+      );
+
+      employee.probationStatus = ProbationStatus.ACTIVE;
+      employee.probationEndDate = probationEndDate;
+      employee.pulse30SentAt = null;
+      employee.pulse60SentAt = null;
+    }
+
     await this.employeeRepo.save(employee);
+
+    // Queue probation milestones only on transition into ACTIVE.
+    if (
+      dto.status === EmployeeStatus.ACTIVE &&
+      previousStatus !== EmployeeStatus.ACTIVE &&
+      employee.startDate
+    ) {
+      await this.probationTrackingProducer.scheduleEmployeeProbationMilestones({
+        employeeId: employee.id,
+        startDate: employee.startDate,
+      });
+    }
+
     return this.getEmployerEmployeeById(employerId, employeeId);
   }
 
