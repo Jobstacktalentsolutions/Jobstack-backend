@@ -6,20 +6,24 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Between, Repository } from 'typeorm';
 import { AdminAuth } from '@app/common/database/entities/AdminAuth.entity';
 import { AdminProfile } from '@app/common/database/entities/AdminProfile.entity';
 import {
+  Employee,
   EmployerVerification,
   EmployerProfile,
   EmployerAuth,
+  Job,
   JobseekerAuth,
   JobSeekerProfile,
+  Payment,
 } from '@app/common/database/entities';
 import { VerificationStatus } from '@app/common/shared/enums/employer-docs.enum';
 import {
   ApprovalStatus,
   EmployerStatus,
+  PaymentStatus,
 } from '@app/common/database/entities/schema.enum';
 import { AdminRole } from '@app/common/shared/enums/roles.enum';
 import { GetAllAdminsQueryDto } from './dto/get-all-admins-query.dto';
@@ -54,8 +58,33 @@ export class AdminService {
     private readonly jobseekerAuthRepo: Repository<JobseekerAuth>,
     @InjectRepository(JobSeekerProfile)
     private readonly jobseekerProfileRepo: Repository<JobSeekerProfile>,
+    @InjectRepository(Job)
+    private readonly jobRepo: Repository<Job>,
+    @InjectRepository(Employee)
+    private readonly employeeRepo: Repository<Employee>,
+    @InjectRepository(Payment)
+    private readonly paymentRepo: Repository<Payment>,
     private readonly notificationService: NotificationService,
   ) {}
+
+  private buildMonthlyTrend(current: number, previous: number) {
+    if (!Number.isFinite(current) || !Number.isFinite(previous)) {
+      return { value: 0, percent: 0 };
+    }
+
+    const value = current - previous;
+    if (previous <= 0) {
+      return {
+        value,
+        percent: current > 0 ? 100 : 0,
+      };
+    }
+
+    return {
+      value,
+      percent: Math.round((value / previous) * 100),
+    };
+  }
 
   async getAdminProfile(userId: string): Promise<any> {
     const profile = await this.adminProfileRepo.findOne({
@@ -305,6 +334,175 @@ export class AdminService {
       lastBackup: new Date().toISOString(),
       activeSessions: 0,
       storageUsed: '0 MB',
+    };
+  }
+
+  async getDashboardOverview(pendingLimit = 5): Promise<any> {
+    const now = new Date();
+    const startOfCurrentMonth = new Date(
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1, 0, 0, 0, 0),
+    );
+    const startOfNextMonth = new Date(
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1, 0, 0, 0, 0),
+    );
+    const startOfPreviousMonth = new Date(
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1, 0, 0, 0, 0),
+    );
+
+    const [
+      totalVettedTalent,
+      vettedThisMonth,
+      vettedLastMonth,
+      totalJobsPosted,
+      jobsThisMonth,
+      jobsLastMonth,
+      totalSuccessfulHires,
+      hiresThisMonth,
+      hiresLastMonth,
+      totalAgencyFeesRaw,
+      feesThisMonthRaw,
+      feesLastMonthRaw,
+      pendingEmployerVerifications,
+      pendingEmployerVerificationsTotal,
+      pendingJobseekerApprovals,
+      pendingJobseekerApprovalsTotal,
+    ] = await Promise.all([
+      this.jobseekerProfileRepo.count({
+        where: { approvalStatus: ApprovalStatus.APPROVED },
+      }),
+      this.jobseekerProfileRepo.count({
+        where: {
+          approvalStatus: ApprovalStatus.APPROVED,
+          updatedAt: Between(startOfCurrentMonth, startOfNextMonth),
+        },
+      }),
+      this.jobseekerProfileRepo.count({
+        where: {
+          approvalStatus: ApprovalStatus.APPROVED,
+          updatedAt: Between(startOfPreviousMonth, startOfCurrentMonth),
+        },
+      }),
+      this.jobRepo.count(),
+      this.jobRepo.count({
+        where: { createdAt: Between(startOfCurrentMonth, startOfNextMonth) },
+      }),
+      this.jobRepo.count({
+        where: { createdAt: Between(startOfPreviousMonth, startOfCurrentMonth) },
+      }),
+      this.employeeRepo.count(),
+      this.employeeRepo.count({
+        where: { createdAt: Between(startOfCurrentMonth, startOfNextMonth) },
+      }),
+      this.employeeRepo.count({
+        where: { createdAt: Between(startOfPreviousMonth, startOfCurrentMonth) },
+      }),
+      this.paymentRepo
+        .createQueryBuilder('payment')
+        .select('COALESCE(SUM(payment.amount), 0)', 'amount')
+        .where('payment.status = :status', { status: PaymentStatus.SUCCESS })
+        .getRawOne<{ amount: string | number }>(),
+      this.paymentRepo
+        .createQueryBuilder('payment')
+        .select('COALESCE(SUM(payment.amount), 0)', 'amount')
+        .where('payment.status = :status', { status: PaymentStatus.SUCCESS })
+        .andWhere('payment.createdAt >= :start AND payment.createdAt < :end', {
+          start: startOfCurrentMonth,
+          end: startOfNextMonth,
+        })
+        .getRawOne<{ amount: string | number }>(),
+      this.paymentRepo
+        .createQueryBuilder('payment')
+        .select('COALESCE(SUM(payment.amount), 0)', 'amount')
+        .where('payment.status = :status', { status: PaymentStatus.SUCCESS })
+        .andWhere('payment.createdAt >= :start AND payment.createdAt < :end', {
+          start: startOfPreviousMonth,
+          end: startOfCurrentMonth,
+        })
+        .getRawOne<{ amount: string | number }>(),
+      this.verificationRepo.find({
+        where: { status: VerificationStatus.PENDING },
+        relations: ['employer'],
+        order: { createdAt: 'DESC' },
+        take: pendingLimit,
+      }),
+      this.verificationRepo.count({
+        where: { status: VerificationStatus.PENDING },
+      }),
+      this.jobseekerProfileRepo.find({
+        where: { approvalStatus: ApprovalStatus.PENDING },
+        order: { updatedAt: 'DESC' },
+        take: pendingLimit,
+      }),
+      this.jobseekerProfileRepo.count({
+        where: { approvalStatus: ApprovalStatus.PENDING },
+      }),
+    ]);
+
+    const totalAgencyFees = Number(totalAgencyFeesRaw?.amount ?? 0);
+    const feesThisMonth = Number(feesThisMonthRaw?.amount ?? 0);
+    const feesLastMonth = Number(feesLastMonthRaw?.amount ?? 0);
+
+    const vettedTrend = this.buildMonthlyTrend(vettedThisMonth, vettedLastMonth);
+    const jobsTrend = this.buildMonthlyTrend(jobsThisMonth, jobsLastMonth);
+    const hiresTrend = this.buildMonthlyTrend(hiresThisMonth, hiresLastMonth);
+    const agencyFeesTrend = this.buildMonthlyTrend(feesThisMonth, feesLastMonth);
+
+    return {
+      stats: {
+        totalVettedTalent: {
+          value: totalVettedTalent,
+          changePercent: vettedTrend.percent,
+          changeValue: vettedTrend.value,
+          period: 'month',
+        },
+        jobsPosted: {
+          value: totalJobsPosted,
+          changePercent: jobsTrend.percent,
+          changeValue: jobsTrend.value,
+          period: 'month',
+        },
+        successfulHires: {
+          value: totalSuccessfulHires,
+          changePercent: hiresTrend.percent,
+          changeValue: hiresTrend.value,
+          period: 'month',
+        },
+        totalAgencyFees: {
+          value: Number.isFinite(totalAgencyFees) ? totalAgencyFees : 0,
+          changePercent: agencyFeesTrend.percent,
+          changeValue: Number.isFinite(agencyFeesTrend.value)
+            ? agencyFeesTrend.value
+            : 0,
+          period: 'month',
+        },
+      },
+      pendingApprovals: {
+        employerVerification: {
+          total: pendingEmployerVerificationsTotal,
+          items: pendingEmployerVerifications.map((item) => ({
+            id: item.id,
+            employerId: item.employerId,
+            companyName:
+              item.companyName ||
+              `${item.employer?.firstName ?? ''} ${item.employer?.lastName ?? ''}`.trim() ||
+              'Unspecified company',
+            contactName:
+              `${item.employer?.firstName ?? ''} ${item.employer?.lastName ?? ''}`.trim(),
+            email: item.employer?.email,
+            submittedAt: item.createdAt,
+          })),
+        },
+        jobseekerApproval: {
+          total: pendingJobseekerApprovalsTotal,
+          items: pendingJobseekerApprovals.map((item) => ({
+            id: item.id,
+            fullName: `${item.firstName} ${item.lastName}`.trim(),
+            email: item.email,
+            title: item.jobTitle,
+            submittedAt: item.updatedAt,
+          })),
+        },
+      },
     };
   }
 

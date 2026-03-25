@@ -133,6 +133,17 @@ export class AdminController {
     return this.adminService.getSystemOverview(user.id);
   }
 
+  @Get('dashboard/overview')
+  async getDashboardOverview(@Query('pendingLimit') pendingLimit?: string) {
+    const parsedLimit = Number(pendingLimit);
+    const limit =
+      Number.isFinite(parsedLimit) && parsedLimit > 0
+        ? Math.min(20, Math.floor(parsedLimit))
+        : 5;
+
+    return this.adminService.getDashboardOverview(limit);
+  }
+
   // Approve employer verification (Operations & Support handles new employer accounts)
   @Patch('employers/:id/verification/approve')
   @RequireAdminRole(AdminRole.OPERATIONS_SUPPORT.role)

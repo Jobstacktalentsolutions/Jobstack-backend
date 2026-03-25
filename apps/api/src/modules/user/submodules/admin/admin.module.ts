@@ -8,11 +8,14 @@ import { AdminAuthModule } from 'apps/api/src/modules/auth/submodules/admin/admi
 import { NotificationModule } from 'apps/api/src/modules/notification/notification.module';
 import {
   AdminProfile,
+  Employee,
   EmployerVerification,
   EmployerProfile,
   EmployerAuth,
+  Job,
   JobseekerAuth,
   JobSeekerProfile,
+  Payment,
 } from '@app/common/database/entities';
 
 @Module({
@@ -25,6 +28,9 @@ import {
       EmployerAuth,
       JobseekerAuth,
       JobSeekerProfile,
+      Job,
+      Employee,
+      Payment,
     ]),
     AdminAuthModule,
     NotificationModule,

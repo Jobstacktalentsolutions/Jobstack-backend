@@ -258,6 +258,11 @@ export class EmployeesService {
         employerId: query.employerId,
       });
     }
+    if (query.jobseekerProfileId) {
+      qb.andWhere('employee.jobseekerProfileId = :jobseekerProfileId', {
+        jobseekerProfileId: query.jobseekerProfileId,
+      });
+    }
   }
 
   // Executes pagination on employees
