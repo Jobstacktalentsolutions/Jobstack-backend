@@ -14,6 +14,11 @@ export class EmployeeQueryDto {
   @IsUUID()
   jobId?: string;
 
+  @ApiPropertyOptional({ example: 'c3b2b0c8-1a23-4f6e-9a8b-1234567890ab' })
+  @IsOptional()
+  @IsUUID()
+  employerId?: string;
+
   @ApiPropertyOptional({ example: 1 })
   @IsOptional()
   @Type(() => Number)

@@ -249,6 +249,11 @@ export class EmployeesService {
     if (query.jobId) {
       qb.andWhere('employee.jobId = :jobId', { jobId: query.jobId });
     }
+    if (query.employerId) {
+      qb.andWhere('employee.employerId = :employerId', {
+        employerId: query.employerId,
+      });
+    }
   }
 
   // Executes pagination on employees

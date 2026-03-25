@@ -95,7 +95,9 @@ export class JobApplicationsService {
         },
       );
     } catch (err) {
-      this.logger.warn(`Failed to create app notification for jobseeker application: ${err.message}`);
+      this.logger.warn(
+        `Failed to create app notification for jobseeker application: ${err.message}`,
+      );
     }
 
     return this.getApplicationById(saved.id);
@@ -243,6 +245,18 @@ export class JobApplicationsService {
     return this.executePagedApplicationQuery(qb, query);
   }
 
+  // Retrieves a single application for the current jobseeker.
+  async getJobseekerApplicationById(
+    jobseekerId: string,
+    applicationId: string,
+  ) {
+    const application = await this.getApplicationById(applicationId);
+    if (application.jobseekerProfileId !== jobseekerId) {
+      throw new NotFoundException('Application not found');
+    }
+    return application;
+  }
+
   // Retrieves single application for admin or internal use
   async getApplicationById(applicationId: string) {
     const application = await this.applicationRepo.findOne({
@@ -252,7 +266,39 @@ export class JobApplicationsService {
     if (!application) {
       throw new NotFoundException('Application not found');
     }
-    return application;
+
+    const employee = await this.employeeRepo.findOne({
+      where: {
+        jobId: application.jobId,
+        jobseekerProfileId: application.jobseekerProfileId,
+      },
+      order: { updatedAt: 'DESC' },
+      select: [
+        'id',
+        'status',
+        'probationStatus',
+        'probationEndDate',
+        'startDate',
+        'pulse30SentAt',
+        'pulse60SentAt',
+      ],
+    });
+
+    return {
+      ...application,
+      employeeId: employee?.id ?? null,
+      employee: employee
+        ? {
+            id: employee.id,
+            status: employee.status,
+            probationStatus: employee.probationStatus ?? null,
+            probationEndDate: employee.probationEndDate ?? null,
+            startDate: employee.startDate ?? null,
+            pulse30SentAt: employee.pulse30SentAt ?? null,
+            pulse60SentAt: employee.pulse60SentAt ?? null,
+          }
+        : null,
+    };
   }
 
   // Base query for applications with joined relations
@@ -578,7 +624,9 @@ export class JobApplicationsService {
         );
       }
     } catch (err) {
-      this.logger.warn(`Failed to notify employer of candidate decision: ${err.message}`);
+      this.logger.warn(
+        `Failed to notify employer of candidate decision: ${err.message}`,
+      );
     }
 
     return this.getApplicationById(applicationId);
@@ -737,7 +785,9 @@ export class JobApplicationsService {
     }
 
     if (application.job.employerId !== employerId) {
-      throw new BadRequestException('You do not have access to this application');
+      throw new BadRequestException(
+        'You do not have access to this application',
+      );
     }
 
     if (application.status !== JobApplicationStatus.CONTRACT_SIGNED) {
@@ -779,12 +829,10 @@ export class JobApplicationsService {
     employee.pulse60SentAt = null;
     await this.employeeRepo.save(employee);
 
-    await this.probationTrackingProducer.scheduleEmployeeProbationMilestones(
-      {
-        employeeId: employee.id,
-        startDate: employee.startDate,
-      },
-    );
+    await this.probationTrackingProducer.scheduleEmployeeProbationMilestones({
+      employeeId: employee.id,
+      startDate: employee.startDate,
+    });
 
     // Notify jobseeker they are hired
     try {
@@ -795,7 +843,11 @@ export class JobApplicationsService {
           title: '🎊 You have been Hired!',
           message: `Congratulations! Your employment for "${application.job.title}" has been confirmed. Your probation period starts now.`,
           priority: NotificationPriority.HIGH,
-          metadata: { jobId: application.jobId, applicationId, employeeId: employee.id },
+          metadata: {
+            jobId: application.jobId,
+            applicationId,
+            employeeId: employee.id,
+          },
         },
       );
     } catch (err) {

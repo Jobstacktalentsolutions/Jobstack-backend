@@ -62,6 +62,19 @@ export class JobApplicationsController {
     return this.jobApplicationsService.getJobseekerApplications(user.id, query);
   }
 
+  // Retrieves a single application owned by the current jobseeker
+  @Get(':applicationId')
+  @UseGuards(JobSeekerJwtGuard)
+  getMyApplicationById(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('applicationId', ParseUUIDPipe) applicationId: string,
+  ) {
+    return this.jobApplicationsService.getJobseekerApplicationById(
+      user.id,
+      applicationId,
+    );
+  }
+
   // Lists applications for a job owned by the employer
   @Get('job/:jobId')
   @UseGuards(EmployerJwtGuard)
