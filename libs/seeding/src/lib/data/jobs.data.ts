@@ -30,7 +30,7 @@ export const JOBS_DATA = [
     title: 'Full Stack Engineer (React/Node)',
     description:
       'Build customer-facing web experiences, own API integrations, and ensure performance for high-traffic commerce flows.',
-    category: SkillCategory.TECHNICAL,
+    category: SkillCategory.SOFTWARE_DEVELOPMENT,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.HYBRID,
@@ -57,7 +57,7 @@ export const JOBS_DATA = [
     title: 'Product Manager (Payments)',
     description:
       'Drive roadmap for digital payments, gather user feedback, and coordinate launches with engineering and design.',
-    category: SkillCategory.BUSINESS,
+    category: SkillCategory.BUSINESS_ADMIN,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.HYBRID,
@@ -84,7 +84,7 @@ export const JOBS_DATA = [
     title: 'Data Analyst (FinTech)',
     description:
       'Analyze product usage, build dashboards, and create data stories that influence lending decisions.',
-    category: SkillCategory.BUSINESS,
+    category: SkillCategory.BUSINESS_ADMIN,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.REMOTE,
@@ -111,7 +111,7 @@ export const JOBS_DATA = [
     title: 'Senior Backend Engineer (Node.js)',
     description:
       'Own microservices, event-driven architecture, and performance tuning for core transaction pipelines.',
-    category: SkillCategory.TECHNICAL,
+    category: SkillCategory.SOFTWARE_DEVELOPMENT,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.REMOTE,
@@ -161,7 +161,7 @@ export const JOBS_DATA = [
     title: 'DevOps Engineer',
     description:
       'Manage CI/CD, container orchestration, and observability for clinical platforms with strict uptime SLAs.',
-    category: SkillCategory.TECHNICAL,
+    category: SkillCategory.SOFTWARE_DEVELOPMENT,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.REMOTE,
@@ -188,7 +188,7 @@ export const JOBS_DATA = [
     title: 'Frontend Engineer (TypeScript)',
     description:
       'Ship performant interfaces, improve design system adoption, and collaborate closely with product designers.',
-    category: SkillCategory.TECHNICAL,
+    category: SkillCategory.SOFTWARE_DEVELOPMENT,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.HYBRID,
@@ -292,7 +292,7 @@ export const JOBS_DATA = [
     title: 'Housekeeping Supervisor',
     description:
       'Oversee housekeeping team schedules, quality checks, and client satisfaction for premium homes.',
-    category: SkillCategory.HOME_SUPPORT,
+    category: SkillCategory.MAINTENANCE_TRADES,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.ON_SITE,
@@ -338,7 +338,7 @@ export const JOBS_DATA = [
     title: 'Financial Analyst',
     description:
       'Develop financial models, monitor KPIs, and support investor reporting for a growing fintech portfolio.',
-    category: SkillCategory.FINANCE_ACCOUNTING,
+    category: SkillCategory.ACCOUNTINg,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.HYBRID,
@@ -526,7 +526,7 @@ export const JOBS_DATA = [
     title: 'Customer Support Specialist',
     description:
       'Handle omnichannel support, troubleshoot product issues, and relay user feedback to product teams.',
-    category: SkillCategory.COMMUNICATION,
+    category: SkillCategory.CUSTOMER_SERVICE,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.REMOTE,
@@ -549,7 +549,7 @@ export const JOBS_DATA = [
     title: 'Data Engineer',
     description:
       'Design and maintain data pipelines, ensure data quality, and support analytics workloads.',
-    category: SkillCategory.TECHNICAL,
+    category: SkillCategory.SOFTWARE_DEVELOPMENT,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.HYBRID,
@@ -576,7 +576,7 @@ export const JOBS_DATA = [
     title: 'React Native Engineer',
     description:
       'Ship mobile features, improve performance, and maintain shared component libraries across apps.',
-    category: SkillCategory.TECHNICAL,
+    category: SkillCategory.SOFTWARE_DEVELOPMENT,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.REMOTE,
@@ -626,7 +626,7 @@ export const JOBS_DATA = [
     title: 'Junior QA Engineer',
     description:
       'Write and execute test plans for web and mobile apps; own regression test suites.',
-    category: SkillCategory.TECHNICAL,
+    category: SkillCategory.SOFTWARE_DEVELOPMENT,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.HYBRID,
@@ -653,7 +653,7 @@ export const JOBS_DATA = [
     title: 'Machine Learning Engineer',
     description:
       'Build and deploy ML models for recommendations; optimize feature pipelines.',
-    category: SkillCategory.TECHNICAL,
+    category: SkillCategory.SOFTWARE_DEVELOPMENT,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.HYBRID,
@@ -730,7 +730,7 @@ export const JOBS_DATA = [
     title: 'Customer Success Manager',
     description:
       'Drive adoption, manage renewals, and coordinate success plans for enterprise accounts.',
-    category: SkillCategory.COMMUNICATION,
+    category: SkillCategory.CUSTOMER_SERVICE,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.HYBRID,
@@ -753,7 +753,7 @@ export const JOBS_DATA = [
     title: 'HR Business Partner',
     description:
       'Partner with leadership on org design, talent management, and performance processes.',
-    category: SkillCategory.BUSINESS,
+    category: SkillCategory.BUSINESS_ADMIN,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.HYBRID,
@@ -822,7 +822,7 @@ export const JOBS_DATA = [
     title: 'Technical Writer',
     description:
       'Produce developer docs, API references, and release notes for platform teams.',
-    category: SkillCategory.COMMUNICATION,
+    category: SkillCategory.CUSTOMER_SERVICE,
     employmentType: EmploymentType.PART_TIME,
     employmentArrangement: EmploymentArrangement.CONTRACT,
     workMode: WorkMode.REMOTE,
@@ -872,7 +872,7 @@ export const JOBS_DATA = [
     title: 'Data Visualization Specialist',
     description:
       'Create dashboards and visual stories that communicate insights to executives.',
-    category: SkillCategory.BUSINESS,
+    category: SkillCategory.BUSINESS_ADMIN,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.REMOTE,
@@ -899,7 +899,7 @@ export const JOBS_DATA = [
     title: 'Cloud Infrastructure Engineer',
     description:
       'Own IaC, networking, and observability for multi-region cloud workloads.',
-    category: SkillCategory.TECHNICAL,
+    category: SkillCategory.SOFTWARE_DEVELOPMENT,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.REMOTE,
@@ -949,7 +949,7 @@ export const JOBS_DATA = [
     title: 'Finance Operations Analyst',
     description:
       'Reconcile payouts, manage payables/receivables, and improve finance processes.',
-    category: SkillCategory.FINANCE_ACCOUNTING,
+    category: SkillCategory.ACCOUNTINg,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.HYBRID,
@@ -1049,7 +1049,7 @@ export const JOBS_DATA = [
     title: 'Technical Recruiter',
     description:
       'Source and close technical talent; manage pipelines and hiring manager partnerships.',
-    category: SkillCategory.COMMUNICATION,
+    category: SkillCategory.CUSTOMER_SERVICE,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.HYBRID,
@@ -1072,7 +1072,7 @@ export const JOBS_DATA = [
     title: 'Legal Counsel',
     description:
       'Draft and review commercial contracts; advise on compliance and risk.',
-    category: SkillCategory.BUSINESS,
+    category: SkillCategory.BUSINESS_ADMIN,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.HYBRID,
@@ -1095,7 +1095,7 @@ export const JOBS_DATA = [
     title: 'Corporate Trainer',
     description:
       'Develop and deliver training programs for sales and support teams.',
-    category: SkillCategory.COMMUNICATION,
+    category: SkillCategory.CUSTOMER_SERVICE,
     employmentType: EmploymentType.PART_TIME,
     employmentArrangement: EmploymentArrangement.CONTRACT,
     workMode: WorkMode.HYBRID,
@@ -1118,7 +1118,7 @@ export const JOBS_DATA = [
     title: 'Office Administrator',
     description:
       'Manage office supplies, coordinate meetings, and support daily operations.',
-    category: SkillCategory.COMMUNICATION,
+    category: SkillCategory.CUSTOMER_SERVICE,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.ON_SITE,

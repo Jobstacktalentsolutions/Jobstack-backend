@@ -16,7 +16,7 @@ export const SYSTEM_SKILLS = [
     description: 'Programming language for web development',
     synonyms: ['JS', 'ECMAScript', 'Node.js'],
     status: SkillStatus.ACTIVE,
-    category: SkillCategory.TECHNICAL,
+    category: SkillCategory.SOFTWARE_DEVELOPMENT,
   },
   {
     id: CONSTANT_IDS.SKILLS[1],
@@ -24,7 +24,7 @@ export const SYSTEM_SKILLS = [
     description: 'High-level programming language',
     synonyms: ['Python3', 'Django', 'Flask'],
     status: SkillStatus.ACTIVE,
-    category: SkillCategory.TECHNICAL,
+    category: SkillCategory.SOFTWARE_DEVELOPMENT,
   },
   {
     id: CONSTANT_IDS.SKILLS[2],
@@ -32,7 +32,7 @@ export const SYSTEM_SKILLS = [
     description: 'JavaScript library for building user interfaces',
     synonyms: ['ReactJS', 'React.js'],
     status: SkillStatus.ACTIVE,
-    category: SkillCategory.TECHNICAL,
+    category: SkillCategory.SOFTWARE_DEVELOPMENT,
   },
   {
     id: CONSTANT_IDS.SKILLS[3],
@@ -40,7 +40,7 @@ export const SYSTEM_SKILLS = [
     description: 'Typed superset of JavaScript',
     synonyms: ['TS'],
     status: SkillStatus.ACTIVE,
-    category: SkillCategory.TECHNICAL,
+    category: SkillCategory.SOFTWARE_DEVELOPMENT,
   },
   {
     id: CONSTANT_IDS.SKILLS[4],
@@ -48,7 +48,7 @@ export const SYSTEM_SKILLS = [
     description: 'JavaScript runtime for server-side development',
     synonyms: ['NodeJS', 'Node'],
     status: SkillStatus.ACTIVE,
-    category: SkillCategory.TECHNICAL,
+    category: SkillCategory.SOFTWARE_DEVELOPMENT,
   },
 
   // Database Skills
@@ -84,7 +84,7 @@ export const SYSTEM_SKILLS = [
     description: 'Planning and executing projects effectively',
     synonyms: ['PM', 'Agile', 'Scrum'],
     status: SkillStatus.ACTIVE,
-    category: SkillCategory.BUSINESS,
+    category: SkillCategory.BUSINESS_ADMIN,
   },
   {
     id: CONSTANT_IDS.SKILLS[9],
@@ -92,7 +92,7 @@ export const SYSTEM_SKILLS = [
     description: 'Marketing products and services using digital channels',
     synonyms: ['Online Marketing', 'Internet Marketing'],
     status: SkillStatus.ACTIVE,
-    category: SkillCategory.BUSINESS,
+    category: SkillCategory.BUSINESS_ADMIN,
   },
   {
     id: CONSTANT_IDS.SKILLS[10],
@@ -100,7 +100,7 @@ export const SYSTEM_SKILLS = [
     description: 'Analyzing data to extract insights',
     synonyms: ['Analytics', 'Data Science'],
     status: SkillStatus.ACTIVE,
-    category: SkillCategory.BUSINESS,
+    category: SkillCategory.BUSINESS_ADMIN,
   },
   {
     id: CONSTANT_IDS.SKILLS[11],
@@ -108,7 +108,7 @@ export const SYSTEM_SKILLS = [
     description: 'Providing support and assistance to customers',
     synonyms: ['Customer Support', 'Client Relations'],
     status: SkillStatus.ACTIVE,
-    category: SkillCategory.BUSINESS,
+    category: SkillCategory.CUSTOMER_SERVICE,
   },
 
   // Design Skills
@@ -136,7 +136,7 @@ export const SYSTEM_SKILLS = [
     description: 'Financial record keeping and analysis',
     synonyms: ['Bookkeeping', 'Financial Accounting'],
     status: SkillStatus.ACTIVE,
-    category: SkillCategory.FINANCE_ACCOUNTING,
+    category: SkillCategory.ACCOUNTING_FINANCE,
   },
   {
     id: CONSTANT_IDS.SKILLS[15],
@@ -144,7 +144,7 @@ export const SYSTEM_SKILLS = [
     description: 'Analyzing financial data and performance',
     synonyms: ['Financial Planning', 'Budget Analysis'],
     status: SkillStatus.ACTIVE,
-    category: SkillCategory.FINANCE_ACCOUNTING,
+    category: SkillCategory.ACCOUNTING_FINANCE,
   },
 
   // Sales & Marketing
@@ -190,7 +190,7 @@ export const SYSTEM_SKILLS = [
     description: 'Effective verbal and written communication',
     synonyms: ['Public Speaking', 'Presentation Skills'],
     status: SkillStatus.ACTIVE,
-    category: SkillCategory.COMMUNICATION,
+    category: SkillCategory.CUSTOMER_SERVICE,
   },
   {
     id: CONSTANT_IDS.SKILLS[21],
@@ -198,7 +198,7 @@ export const SYSTEM_SKILLS = [
     description: 'Proficiency in English language',
     synonyms: ['English Proficiency', 'Business English'],
     status: SkillStatus.ACTIVE,
-    category: SkillCategory.COMMUNICATION,
+    category: SkillCategory.CUSTOMER_SERVICE,
   },
 
   // Home Support & Domestic
@@ -208,7 +208,7 @@ export const SYSTEM_SKILLS = [
     description: 'Cleaning and maintaining living spaces',
     synonyms: ['Cleaning', 'Domestic Cleaning', 'Janitorial'],
     status: SkillStatus.ACTIVE,
-    category: SkillCategory.HOME_SUPPORT,
+    category: SkillCategory.MAINTENANCE_TRADES,
   },
   {
     id: CONSTANT_IDS.SKILLS[23],
@@ -216,7 +216,7 @@ export const SYSTEM_SKILLS = [
     description: 'Caring for infants and children in the home',
     synonyms: ['Childcare', 'Nanny', 'Babysitting'],
     status: SkillStatus.ACTIVE,
-    category: SkillCategory.HOME_SUPPORT,
+    category: SkillCategory.MAINTENANCE_TRADES,
   },
   {
     id: CONSTANT_IDS.SKILLS[24],
@@ -224,7 +224,7 @@ export const SYSTEM_SKILLS = [
     description: 'General household help including errands and chores',
     synonyms: ['House Help', 'Domestic Staff'],
     status: SkillStatus.ACTIVE,
-    category: SkillCategory.HOME_SUPPORT,
+    category: SkillCategory.MAINTENANCE_TRADES,
   },
 
   // Maintenance & Trades

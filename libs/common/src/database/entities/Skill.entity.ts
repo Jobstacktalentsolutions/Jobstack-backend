@@ -17,7 +17,7 @@ export class Skill extends BaseEntity {
   @Column({
     type: 'enum',
     enum: SkillCategory,
-    default: SkillCategory.OTHERS,
+    default: SkillCategory.SOFTWARE_DEVELOPMENT,
   })
   category: SkillCategory;
 

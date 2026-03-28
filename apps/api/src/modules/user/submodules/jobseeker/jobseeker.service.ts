@@ -321,6 +321,18 @@ export class JobseekerService {
     if (updateData.preferredLocation !== undefined) {
       profile.preferredLocation = updateData.preferredLocation;
     }
+    if (updateData.preferredEmploymentType !== undefined) {
+      profile.preferredEmploymentType = updateData.preferredEmploymentType;
+    }
+    if (updateData.preferredWorkMode !== undefined) {
+      profile.preferredWorkMode = updateData.preferredWorkMode;
+    }
+    if (updateData.preferredEmploymentArrangement !== undefined) {
+      profile.preferredEmploymentArrangement = updateData.preferredEmploymentArrangement;
+    }
+    if (updateData.workSector !== undefined) {
+      profile.workSector = updateData.workSector;
+    }
     if (updateData.address !== undefined) {
       profile.address = updateData.address;
     }

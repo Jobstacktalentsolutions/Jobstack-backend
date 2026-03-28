@@ -6,11 +6,13 @@ import {
   IsPhoneNumber,
   IsInt,
   Min,
+  IsEnum,
   ValidateNested,
 } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { WorkExperienceDto } from './work-experience.dto';
+import { EmploymentArrangement, EmploymentType, SkillCategory, WorkMode } from '@app/common/database/entities/schema.enum';
 
 export class UpdateProfileDto {
   @ApiPropertyOptional({ example: 'Chidi' })
@@ -44,6 +46,26 @@ export class UpdateProfileDto {
   @IsString()
   @IsOptional()
   preferredLocation?: string;
+
+  @ApiPropertyOptional({ enum: EmploymentType, example: EmploymentType.FULL_TIME })
+  @IsEnum(EmploymentType)
+  @IsOptional()
+  preferredEmploymentType?: EmploymentType;
+
+  @ApiPropertyOptional({ enum: WorkMode, example: WorkMode.HYBRID })
+  @IsEnum(WorkMode)
+  @IsOptional()
+  preferredWorkMode?: WorkMode;
+
+  @ApiPropertyOptional({ enum: EmploymentArrangement, example: EmploymentArrangement.PERMANENT_EMPLOYEE })
+  @IsEnum(EmploymentArrangement)
+  @IsOptional()
+  preferredEmploymentArrangement?: EmploymentArrangement;
+
+  @ApiPropertyOptional({ enum: SkillCategory, example: SkillCategory.SOFTWARE_DEVELOPMENT })
+  @IsEnum(SkillCategory)
+  @IsOptional()
+  workSector?: SkillCategory;
 
   @ApiPropertyOptional({ example: '15 Allen Avenue' })
   @IsString()

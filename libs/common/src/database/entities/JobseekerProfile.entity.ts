@@ -16,6 +16,7 @@ import {
   ApprovalStatus,
   EmploymentArrangement,
   EmploymentType,
+  SkillCategory,
   WorkMode,
 } from './schema.enum';
 import { JobApplication } from './JobApplication.entity';
@@ -127,6 +128,13 @@ export class JobSeekerProfile {
     nullable: true,
   })
   preferredEmploymentArrangement?: EmploymentArrangement;
+
+  @Column({
+    type: 'enum',
+    enum: SkillCategory,
+    nullable: true,
+  })
+  workSector?: SkillCategory;
 
   @Column({ type: 'jsonb', nullable: true })
   /**
