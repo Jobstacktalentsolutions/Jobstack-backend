@@ -142,7 +142,10 @@ export class JobSeekerAuthService {
   /** Builds the normalized base slug from first/last names. */
   private buildBaseSlug(firstName: string, lastName: string): string {
     const normalize = (v: string) =>
-      v.trim().toLowerCase().replace(/[^a-z0-9]+/g, "");
+      v
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '');
     return `${normalize(firstName)}_${normalize(lastName)}`;
   }
 

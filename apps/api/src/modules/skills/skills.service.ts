@@ -101,7 +101,10 @@ export class SkillsService {
    * Internal helper used when a profile update references a skill name that
    * doesn't exist yet. Creates it as ACTIVE with a fallback category.
    */
-  async insertActiveSkill(name: string, category?: SkillCategory): Promise<Skill> {
+  async insertActiveSkill(
+    name: string,
+    category?: SkillCategory,
+  ): Promise<Skill> {
     const trimmed = name.trim();
     if (!trimmed) throw new BadRequestException('Name required');
     const existing = await this.skillRepo.findOne({

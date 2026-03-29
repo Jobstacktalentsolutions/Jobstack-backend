@@ -48,7 +48,9 @@ export class JobVettingProducer implements OnModuleInit {
       for (const job of existingJobs) {
         if (job.key.includes(this.DAILY_VETTING_JOB_KEY)) {
           await this.vettingQueue.removeRepeatableByKey(job.key);
-          this.logger.log(`Removed existing repeatable vetting job: ${job.key}`);
+          this.logger.log(
+            `Removed existing repeatable vetting job: ${job.key}`,
+          );
         }
       }
 
@@ -71,9 +73,7 @@ export class JobVettingProducer implements OnModuleInit {
         },
       );
 
-      this.logger.log(
-        'Daily job vetting scheduled (2 AM UTC)',
-      );
+      this.logger.log('Daily job vetting scheduled (2 AM UTC)');
     } catch (error) {
       this.logger.error(
         `Failed to setup daily vetting job: ${error.message}`,
@@ -193,7 +193,9 @@ export class JobVettingProducer implements OnModuleInit {
       | 'failed' = 'completed',
   ): Promise<Bull.Job[]> {
     const removed = await this.vettingQueue.clean(grace, status);
-    this.logger.log(`Cleaned ${removed.length} ${status} jobs from vetting queue`);
+    this.logger.log(
+      `Cleaned ${removed.length} ${status} jobs from vetting queue`,
+    );
     return removed;
   }
 }

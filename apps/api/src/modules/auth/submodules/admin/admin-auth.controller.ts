@@ -8,12 +8,7 @@ import {
   UseGuards,
   Delete,
 } from '@nestjs/common';
-import {
-  ApiBearerAuth,
-  ApiBody,
-  ApiOperation,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ReqDeviceInfo, type RequestDeviceInfo } from 'libs/common/src/shared';
 import { AdminAuthService } from './admin-auth.service';
 import {

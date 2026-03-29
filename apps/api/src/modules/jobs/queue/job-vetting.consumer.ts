@@ -165,7 +165,6 @@ export class JobVettingConsumer {
     }
 
     try {
-
       let processed = 0;
       let failed = 0;
       const errors: Array<{ jobId: string; error: string }> = [];

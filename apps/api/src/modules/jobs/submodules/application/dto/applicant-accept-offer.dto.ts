@@ -2,7 +2,10 @@ import { IsBoolean, IsOptional, IsString } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class ApplicantAcceptOfferDto {
-  @ApiProperty({ description: 'Whether the candidate accepts the offer', example: true })
+  @ApiProperty({
+    description: 'Whether the candidate accepts the offer',
+    example: true,
+  })
   @IsBoolean()
   accepted: boolean;
 

@@ -232,7 +232,7 @@ export class EmployerService {
     const search =
       typeof query.search === 'string' ? query.search.trim() : undefined;
     const sortBy = query.sortBy ?? 'createdAt';
-    const sortOrder = (query.sortOrder ?? 'DESC') as 'ASC' | 'DESC';
+    const sortOrder = query.sortOrder ?? 'DESC';
 
     const queryBuilder = this.profileRepo
       .createQueryBuilder('employer')

@@ -30,10 +30,7 @@ import {
 } from './queue';
 import { JobVettingProducer } from './queue/job-vetting.producer';
 import { JobVettingConsumer } from './queue/job-vetting.consumer';
-import {
-  ProbationTrackingConsumer,
-  ProbationTrackingProducer,
-} from './queue';
+import { ProbationTrackingConsumer, ProbationTrackingProducer } from './queue';
 import {
   AdminJwtGuard,
   EmployerJwtGuard,
@@ -127,6 +124,11 @@ import { StorageModule } from '@app/common/storage';
     JobSeekerJwtGuard,
     EmployeeProbationAccessGuard,
   ],
-  exports: [JobsService, JobRecommendationsProducer, JobVettingProducer, JobVettingService],
+  exports: [
+    JobsService,
+    JobRecommendationsProducer,
+    JobVettingProducer,
+    JobVettingService,
+  ],
 })
 export class JobsModule {}

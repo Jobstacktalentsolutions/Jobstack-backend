@@ -10,12 +10,7 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import {
-  ApiBearerAuth,
-  ApiBody,
-  ApiOperation,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import {
   AdminJwtGuard,
   EmployerJwtGuard,
@@ -128,10 +123,31 @@ export class EmployeesController {
         now.getUTCMonth(),
         now.getUTCDate(),
       );
-      return Math.max(0, Math.floor((nowUtcMidnight - startUtcMidnight) / 86400000));
+      return Math.max(
+        0,
+        Math.floor((nowUtcMidnight - startUtcMidnight) / 86400000),
+      );
     })();
 
-    const daysRemaining = Math.max(0, 90 - daysElapsed);
+    const daysRemaining = (() => {
+      if (!probationEndDate) return null;
+
+      const probationEndUtcMidnight = Date.UTC(
+        probationEndDate.getUTCFullYear(),
+        probationEndDate.getUTCMonth(),
+        probationEndDate.getUTCDate(),
+      );
+      const nowUtcMidnight = Date.UTC(
+        now.getUTCFullYear(),
+        now.getUTCMonth(),
+        now.getUTCDate(),
+      );
+
+      return Math.max(
+        0,
+        Math.ceil((probationEndUtcMidnight - nowUtcMidnight) / 86400000),
+      );
+    })();
 
     return {
       probationStatus,
@@ -139,8 +155,7 @@ export class EmployeesController {
       probationEndDate,
       daysElapsed,
       daysRemaining,
-      pulse30SentAt: employee.pulse30SentAt ?? null,
-      pulse60SentAt: employee.pulse60SentAt ?? null,
+      reminderSentAt: employee.pulse30SentAt ?? null,
     };
   }
 

@@ -112,7 +112,7 @@ export class EmailService extends BaseNotificationService<EmailPayloadDto> {
     const templatePath = path.join(this.templatesPath, templateConfig.template);
 
     const templateDefaults = this.getDefaultContextForTemplate(
-      templateType as EmailTemplateType,
+      templateType,
       context,
     );
     const enhancedContext = {

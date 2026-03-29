@@ -94,15 +94,16 @@ function hydrateSwaggerExamples(document: OpenAPIObject): void {
     for (const operation of Object.values(pathItem)) {
       if (!operation || typeof operation !== 'object') continue;
 
-      const requestContent = (operation as any).requestBody?.content ?? {};
-      for (const media of Object.values(requestContent) as any[]) {
+      const requestContent = operation.requestBody?.content ?? {};
+      for (const media of Object.values(requestContent)) {
         if (!media?.schema) continue;
-        if (media.example !== undefined || media.examples !== undefined) continue;
+        if (media.example !== undefined || media.examples !== undefined)
+          continue;
         const generated = schemaToExample(media.schema, schemas);
         if (generated !== undefined) media.example = generated;
       }
 
-      const responses = ((operation as any).responses ??= {});
+      const responses = (operation.responses ??= {});
       if (Object.keys(responses).length === 0) {
         responses['200'] = {
           description: 'Successful response',
@@ -118,11 +119,12 @@ function hydrateSwaggerExamples(document: OpenAPIObject): void {
         };
       }
 
-      for (const response of Object.values(responses) as any[]) {
+      for (const response of Object.values(responses)) {
         const content = response?.content ?? {};
-        for (const media of Object.values(content) as any[]) {
+        for (const media of Object.values(content)) {
           if (!media) continue;
-          if (media.example !== undefined || media.examples !== undefined) continue;
+          if (media.example !== undefined || media.examples !== undefined)
+            continue;
 
           const generated = schemaToExample(media.schema, schemas);
           if (generated !== undefined) {

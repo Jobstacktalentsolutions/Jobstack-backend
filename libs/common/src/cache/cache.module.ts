@@ -48,4 +48,3 @@ import type { RedisStore } from 'cache-manager-redis-store';
   exports: [NestCacheModule],
 })
 export class CacheModule {}
-

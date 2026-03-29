@@ -3,7 +3,10 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 // Captures employer response to a scheduled screening (accept or propose new time)
 export class EmployerScreeningResponseDto {
-  @ApiProperty({ description: 'True if the proposed time works', example: true })
+  @ApiProperty({
+    description: 'True if the proposed time works',
+    example: true,
+  })
   @IsBoolean()
   accepted: boolean;
 

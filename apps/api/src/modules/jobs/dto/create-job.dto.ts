@@ -159,12 +159,18 @@ export class CreateJobDto {
   @IsEnum(DayOfWeek, { each: true })
   workDays?: DayOfWeek[];
 
-  @ApiPropertyOptional({ description: 'Daily start time (local)', example: '09:00' })
+  @ApiPropertyOptional({
+    description: 'Daily start time (local)',
+    example: '09:00',
+  })
   @IsOptional()
   @IsString()
   startTime?: string;
 
-  @ApiPropertyOptional({ description: 'Daily end time (local)', example: '17:00' })
+  @ApiPropertyOptional({
+    description: 'Daily end time (local)',
+    example: '17:00',
+  })
   @IsOptional()
   @IsString()
   endTime?: string;

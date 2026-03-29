@@ -11,9 +11,8 @@ export class PublicEmployerController {
    */
   @Get(':slug')
   async getPublicEmployer(@Param('slug') slug: string) {
-    const profile = await this.employerService.getEmployerPublicProfileBySlug(
-      slug,
-    );
+    const profile =
+      await this.employerService.getEmployerPublicProfileBySlug(slug);
 
     if (!profile) {
       throw new NotFoundException('Employer not found');
@@ -22,4 +21,3 @@ export class PublicEmployerController {
     return profile;
   }
 }
-

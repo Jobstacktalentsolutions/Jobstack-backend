@@ -10,12 +10,7 @@ import {
   Post,
   Delete,
 } from '@nestjs/common';
-import {
-  ApiBearerAuth,
-  ApiBody,
-  ApiOperation,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AdminJwtGuard, RequireAdminRole } from 'apps/api/src/guards';
 import { AdminService } from './admin.service';
 import { VerificationStatus } from '@app/common/shared/enums/employer-docs.enum';
@@ -49,7 +44,11 @@ export class AdminController {
   @ApiOperation({ summary: 'Update current admin profile' })
   @ApiBody({
     schema: {
-      example: { firstName: 'Jane', lastName: 'Doe', phoneNumber: '+2348012345678' },
+      example: {
+        firstName: 'Jane',
+        lastName: 'Doe',
+        phoneNumber: '+2348012345678',
+      },
     },
   })
   async updateProfile(

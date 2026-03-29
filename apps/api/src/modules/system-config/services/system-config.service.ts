@@ -38,7 +38,7 @@ export class SystemConfigService {
       SystemConfigKey.EMPLOYEE_ACTIVATION_PERCENTAGE_VAT_RATE,
     ] as string[];
 
-    if (numericKeys.includes(key as string)) {
+    if (numericKeys.includes(key)) {
       const n = Number(parsed);
       if (isNaN(n)) {
         throw new BadRequestException(

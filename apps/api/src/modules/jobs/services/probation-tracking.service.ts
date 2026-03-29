@@ -27,8 +27,7 @@ export type ProbationMailtoContext = {
 export class ProbationTrackingService {
   private readonly logger = new Logger(ProbationTrackingService.name);
 
-  private readonly TEMPLATE_DAY30 = 'probation-day30-pulse-employer';
-  private readonly TEMPLATE_DAY60 = 'probation-day60-pulse-employer';
+  private readonly TEMPLATE_PROBATION_REMINDER = 'probation-reminder-employer';
   private readonly TEMPLATE_CONFIRMED = 'probation-confirmed';
 
   constructor(
@@ -56,31 +55,35 @@ export class ProbationTrackingService {
     return d.toLocaleDateString('en-GB');
   }
 
-  async sendDay30Pulse(employeeId: string): Promise<void> {
+  async sendProbationReminder(employeeId: string): Promise<void> {
     const employee = await this.employeeRepo.findOne({
       where: { id: employeeId },
       relations: ['employer', 'job', 'jobseekerProfile'],
     });
 
     if (!employee) {
-      this.logger.warn(`Day30 pulse: employee ${employeeId} not found`);
+      this.logger.warn(`Probation reminder: employee ${employeeId} not found`);
       return;
     }
 
     if (employee.probationStatus !== ProbationStatus.ACTIVE) return;
     if (employee.pulse30SentAt) return;
     if (!employee.startDate) {
-      this.logger.warn(`Day30 pulse: employee ${employeeId} missing startDate`);
+      this.logger.warn(
+        `Probation reminder: employee ${employeeId} missing startDate`,
+      );
       return;
     }
 
-    const employerName = `${employee.employer.firstName} ${employee.employer.lastName}`.trim();
+    const employerName =
+      `${employee.employer.firstName} ${employee.employer.lastName}`.trim();
     const candidateFirstName = employee.jobseekerProfile?.firstName ?? '';
     const candidateLastName = employee.jobseekerProfile?.lastName ?? '';
-    const candidateFullName = `${candidateFirstName} ${candidateLastName}`.trim();
+    const candidateFullName =
+      `${candidateFirstName} ${candidateLastName}`.trim();
     const jobTitle = employee.job?.title ?? '';
 
-    const subject = `How is ${candidateFirstName} settling in? (Day 30 Check-in)`;
+    const subject = `Probation Check-in: How is ${candidateFirstName} doing?`;
 
     const supportMailto = this.buildSupportMailto({
       subject: `Probation Concern - ${candidateFullName}`,
@@ -90,7 +93,7 @@ export class ProbationTrackingService {
     await this.notificationService.sendEmail({
       to: employee.employer.email,
       subject,
-      template: this.TEMPLATE_DAY30,
+      template: this.TEMPLATE_PROBATION_REMINDER,
       context: {
         // Ensure EJS <%= subject %> reflects the computed subject.
         subject,
@@ -121,74 +124,7 @@ export class ProbationTrackingService {
     await this.employeeRepo.save(employee);
   }
 
-  async sendDay60Pulse(employeeId: string): Promise<void> {
-    const employee = await this.employeeRepo.findOne({
-      where: { id: employeeId },
-      relations: ['employer', 'job', 'jobseekerProfile'],
-    });
-
-    if (!employee) {
-      this.logger.warn(`Day60 pulse: employee ${employeeId} not found`);
-      return;
-    }
-
-    if (employee.probationStatus !== ProbationStatus.ACTIVE) return;
-    if (employee.pulse60SentAt) return;
-    if (!employee.startDate) {
-      this.logger.warn(`Day60 pulse: employee ${employeeId} missing startDate`);
-      return;
-    }
-
-    const employerName = `${employee.employer.firstName} ${employee.employer.lastName}`.trim();
-    const candidateFirstName = employee.jobseekerProfile?.firstName ?? '';
-    const candidateLastName = employee.jobseekerProfile?.lastName ?? '';
-    const candidateFullName = `${candidateFirstName} ${candidateLastName}`.trim();
-    const jobTitle = employee.job?.title ?? '';
-    const probationEndDate = employee.probationEndDate;
-
-    const subject = `60-Day Check-in: How is ${candidateFirstName} doing?`;
-
-    const supportMailto = this.buildSupportMailto({
-      subject: `Probation Concern - ${candidateFullName}`,
-      body: `Hi Jobstack, I have a concern about ${candidateFullName} who started on ${this.formatDate(employee.startDate)}...`,
-    });
-
-    await this.notificationService.sendEmail({
-      to: employee.employer.email,
-      subject,
-      template: this.TEMPLATE_DAY60,
-      context: {
-        // Ensure EJS <%= subject %> reflects the computed subject.
-        subject,
-        employerFirstName: employee.employer.firstName,
-        candidateFirstName,
-        candidateFullName,
-        jobTitle,
-        companyName: employerName || undefined,
-        startDate: this.formatDate(employee.startDate),
-        probationEndDate: this.formatDate(probationEndDate),
-        supportMailto,
-      },
-    });
-
-    try {
-      await this.notificationService.createAppNotification(
-        employee.employerId,
-        UserRole.EMPLOYER,
-        {
-          title: 'Day 60 Probation Check-in',
-          message: `${candidateFirstName}'s probation for "${jobTitle}" ends on ${this.formatDate(probationEndDate)}. How are things going?`,
-          priority: NotificationPriority.HIGH,
-          metadata: { employeeId: employee.id, jobId: employee.jobId },
-        },
-      );
-    } catch (_) {}
-
-    employee.pulse60SentAt = new Date();
-    await this.employeeRepo.save(employee);
-  }
-
-  async confirmProbationDay90(employeeId: string): Promise<void> {
+  async confirmProbation(employeeId: string): Promise<void> {
     const now = new Date();
 
     const employee = await this.employeeRepo.findOne({
@@ -197,7 +133,7 @@ export class ProbationTrackingService {
     });
 
     if (!employee) {
-      this.logger.warn(`Day90 confirm: employee ${employeeId} not found`);
+      this.logger.warn(`Probation confirm: employee ${employeeId} not found`);
       return;
     }
 
@@ -205,10 +141,12 @@ export class ProbationTrackingService {
     if (!employee.probationEndDate) return;
     if (employee.probationEndDate > now) return;
 
-    const employerName = `${employee.employer.firstName} ${employee.employer.lastName}`.trim();
+    const employerName =
+      `${employee.employer.firstName} ${employee.employer.lastName}`.trim();
     const candidateFirstName = employee.jobseekerProfile?.firstName ?? '';
     const candidateLastName = employee.jobseekerProfile?.lastName ?? '';
-    const candidateFullName = `${candidateFirstName} ${candidateLastName}`.trim();
+    const candidateFullName =
+      `${candidateFirstName} ${candidateLastName}`.trim();
     const jobTitle = employee.job?.title ?? '';
 
     // Update probation status first, so retries won't double-confirm.
@@ -277,4 +215,3 @@ export class ProbationTrackingService {
     } catch (_) {}
   }
 }
-

@@ -7,12 +7,7 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import {
-  ApiBearerAuth,
-  ApiBody,
-  ApiOperation,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { PaymentService } from '../services/payment.service';
 import { SystemConfigService } from '../../system-config/services/system-config.service';
 import { SystemConfigKey } from '../../system-config/system-config-keys.enum';

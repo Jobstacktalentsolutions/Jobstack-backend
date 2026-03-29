@@ -17,7 +17,13 @@ import { StorageModule } from '@app/common/storage';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Contract, ContractTemplate, Document, Employee, JobApplication]),
+    TypeOrmModule.forFeature([
+      Contract,
+      ContractTemplate,
+      Document,
+      Employee,
+      JobApplication,
+    ]),
     StorageModule,
     EmployerAuthModule,
     JobSeekerAuthModule,

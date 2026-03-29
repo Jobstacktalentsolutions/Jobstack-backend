@@ -42,7 +42,10 @@ export class AddSkillDto {
   @MaxLength(100)
   name: string;
 
-  @ApiProperty({ enum: SkillCategory, example: SkillCategory.SOFTWARE_DEVELOPMENT })
+  @ApiProperty({
+    enum: SkillCategory,
+    example: SkillCategory.SOFTWARE_DEVELOPMENT,
+  })
   @IsEnum(SkillCategory)
   category: SkillCategory;
 }

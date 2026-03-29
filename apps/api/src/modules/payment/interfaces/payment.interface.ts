@@ -1,4 +1,7 @@
-import { PaymentStatus, PaymentType } from '@app/common/database/entities/schema.enum';
+import {
+  PaymentStatus,
+  PaymentType,
+} from '@app/common/database/entities/schema.enum';
 
 export interface PaymentCalculationResult {
   amount: number;
@@ -40,7 +43,10 @@ export interface PaymentHistoryResult {
 }
 
 export class PaymentRequiredException extends Error {
-  constructor(message: string, public readonly paymentId?: string) {
+  constructor(
+    message: string,
+    public readonly paymentId?: string,
+  ) {
     super(message);
     this.name = 'PaymentRequiredException';
   }

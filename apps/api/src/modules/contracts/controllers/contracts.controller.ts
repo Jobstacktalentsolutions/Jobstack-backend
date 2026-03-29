@@ -349,7 +349,10 @@ export class ContractsController {
     @Param('contractId') contractId: string,
     @Body() dto: CancelContractDto,
   ) {
-    const contract = await this.contractsService.cancelContract(contractId, dto.reason);
+    const contract = await this.contractsService.cancelContract(
+      contractId,
+      dto.reason,
+    );
 
     return {
       success: true,
@@ -357,5 +360,4 @@ export class ContractsController {
       data: contract,
     };
   }
-
 }

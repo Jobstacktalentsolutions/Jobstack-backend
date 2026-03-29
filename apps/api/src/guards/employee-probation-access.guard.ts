@@ -1,4 +1,9 @@
-import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  CanActivate,
+  ExecutionContext,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { AdminJwtGuard } from './admin-jwt.guard';
 import { EmployerJwtGuard } from './employer-jwt.guard';
 import { JobSeekerJwtGuard } from './jobseeker-jwt.guard';
@@ -16,7 +21,11 @@ export class EmployeeProbationAccessGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     // Try role-specific guards as OR (any accepted role grants access).
-    const guards = [this.adminJwtGuard, this.employerJwtGuard, this.jobSeekerJwtGuard];
+    const guards = [
+      this.adminJwtGuard,
+      this.employerJwtGuard,
+      this.jobSeekerJwtGuard,
+    ];
 
     let lastError: unknown;
     for (const guard of guards) {
@@ -33,4 +42,3 @@ export class EmployeeProbationAccessGuard implements CanActivate {
     );
   }
 }
-

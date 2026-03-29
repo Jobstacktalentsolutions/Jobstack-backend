@@ -9,12 +9,7 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import {
-  ApiBearerAuth,
-  ApiBody,
-  ApiOperation,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import {
   AdminJwtGuard,
   EmployerJwtGuard,
@@ -136,7 +131,9 @@ export class JobApplicationsController {
   // Employer accepts candidate after screening and creates Employee record
   @Post(':applicationId/employer-accept')
   @UseGuards(EmployerJwtGuard)
-  @ApiOperation({ summary: 'Accept candidate after screening (creates employee)' })
+  @ApiOperation({
+    summary: 'Accept candidate after screening (creates employee)',
+  })
   @ApiBody({ type: EmployerAcceptCandidateDto })
   employerAcceptCandidate(
     @CurrentUser() user: CurrentUserPayload,

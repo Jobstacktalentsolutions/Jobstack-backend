@@ -28,6 +28,7 @@ import { NotificationService } from 'apps/api/src/modules/notification/notificat
 import { ProbationTrackingProducer } from '../../queue';
 import { UserRole } from '@app/common/shared/enums/user-roles.enum';
 import { NotificationPriority } from '@app/common/database/entities/schema.enum';
+import { buildProbationSchedule } from '../../utils/probation-policy.util';
 
 @Injectable()
 export class JobApplicationsService {
@@ -280,7 +281,6 @@ export class JobApplicationsService {
         'probationEndDate',
         'startDate',
         'pulse30SentAt',
-        'pulse60SentAt',
       ],
     });
 
@@ -294,8 +294,7 @@ export class JobApplicationsService {
             probationStatus: employee.probationStatus ?? null,
             probationEndDate: employee.probationEndDate ?? null,
             startDate: employee.startDate ?? null,
-            pulse30SentAt: employee.pulse30SentAt ?? null,
-            pulse60SentAt: employee.pulse60SentAt ?? null,
+            reminderSentAt: employee.pulse30SentAt ?? null,
           }
         : null,
     };
@@ -819,19 +818,33 @@ export class JobApplicationsService {
       );
     }
 
-    // Activate employee + start probation tracking immediately after contract confirmation.
+    if (
+      employee.employmentArrangement === EmploymentArrangement.CONTRACT &&
+      !employee.endDate
+    ) {
+      throw new BadRequestException(
+        'Contract endDate is required before confirming hire',
+      );
+    }
+
+    const probationSchedule = buildProbationSchedule({
+      employmentArrangement: employee.employmentArrangement,
+      startDate: employee.startDate,
+      endDate: employee.endDate,
+    });
+
+    // Activate employee and initialize adaptive probation tracking.
     employee.status = EmployeeStatus.ACTIVE;
     employee.probationStatus = ProbationStatus.ACTIVE;
-    employee.probationEndDate = new Date(
-      employee.startDate.getTime() + 90 * 24 * 60 * 60 * 1000,
-    );
+    employee.probationEndDate = probationSchedule.probationEndDate;
     employee.pulse30SentAt = null;
     employee.pulse60SentAt = null;
     await this.employeeRepo.save(employee);
 
     await this.probationTrackingProducer.scheduleEmployeeProbationMilestones({
       employeeId: employee.id,
-      startDate: employee.startDate,
+      reminderAt: probationSchedule.reminderAt,
+      confirmAt: probationSchedule.confirmAt,
     });
 
     // Notify jobseeker they are hired

@@ -12,7 +12,12 @@ import {
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { WorkExperienceDto } from './work-experience.dto';
-import { EmploymentArrangement, EmploymentType, SkillCategory, WorkMode } from '@app/common/database/entities/schema.enum';
+import {
+  EmploymentArrangement,
+  EmploymentType,
+  SkillCategory,
+  WorkMode,
+} from '@app/common/database/entities/schema.enum';
 
 export class UpdateProfileDto {
   @ApiPropertyOptional({ example: 'Chidi' })
@@ -47,7 +52,10 @@ export class UpdateProfileDto {
   @IsOptional()
   preferredLocation?: string;
 
-  @ApiPropertyOptional({ enum: EmploymentType, example: EmploymentType.FULL_TIME })
+  @ApiPropertyOptional({
+    enum: EmploymentType,
+    example: EmploymentType.FULL_TIME,
+  })
   @IsEnum(EmploymentType)
   @IsOptional()
   preferredEmploymentType?: EmploymentType;
@@ -57,12 +65,18 @@ export class UpdateProfileDto {
   @IsOptional()
   preferredWorkMode?: WorkMode;
 
-  @ApiPropertyOptional({ enum: EmploymentArrangement, example: EmploymentArrangement.PERMANENT_EMPLOYEE })
+  @ApiPropertyOptional({
+    enum: EmploymentArrangement,
+    example: EmploymentArrangement.PERMANENT_EMPLOYEE,
+  })
   @IsEnum(EmploymentArrangement)
   @IsOptional()
   preferredEmploymentArrangement?: EmploymentArrangement;
 
-  @ApiPropertyOptional({ enum: SkillCategory, example: SkillCategory.SOFTWARE_DEVELOPMENT })
+  @ApiPropertyOptional({
+    enum: SkillCategory,
+    example: SkillCategory.SOFTWARE_DEVELOPMENT,
+  })
   @IsEnum(SkillCategory)
   @IsOptional()
   workSector?: SkillCategory;

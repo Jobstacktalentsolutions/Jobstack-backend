@@ -223,7 +223,9 @@ export class PaymentService {
         });
       }
     } else {
-      await this.paymentRepo.update(payment.id, { status: PaymentStatus.FAILED });
+      await this.paymentRepo.update(payment.id, {
+        status: PaymentStatus.FAILED,
+      });
       await this.employeeRepo.update(payment.employeeId, {
         paymentStatus: EmployeePaymentStatus.FAILED,
         activationBlocked: true,
@@ -424,7 +426,10 @@ export class PaymentService {
       );
     }
 
-    return this.commissionService.calculateCommissionFee(baseAmount, isContract);
+    return this.commissionService.calculateCommissionFee(
+      baseAmount,
+      isContract,
+    );
   }
 
   /**
@@ -434,7 +439,13 @@ export class PaymentService {
     employeeId: string,
     employerId: string,
     callbackUrl?: string,
-  ): Promise<{ paymentId: string; paymentUrl: string; reference: string; accessCode: string; publicKey: string }> {
+  ): Promise<{
+    paymentId: string;
+    paymentUrl: string;
+    reference: string;
+    accessCode: string;
+    publicKey: string;
+  }> {
     // Load employee with relations
     const employee = await this.employeeRepo.findOne({
       where: { id: employeeId, employerId },
@@ -478,7 +489,10 @@ export class PaymentService {
 
       // Reuse the stored access_code so Paystack can restore pre-filled
       // payment method/wallet from the previous session.
-      if (existingPayment.paystackAccessCode && existingPayment.paystackReference) {
+      if (
+        existingPayment.paystackAccessCode &&
+        existingPayment.paystackReference
+      ) {
         return {
           paymentId: existingPayment.id,
           paymentUrl: `https://checkout.paystack.com/${existingPayment.paystackAccessCode}`,
@@ -490,19 +504,21 @@ export class PaymentService {
 
       // No stored access_code (legacy record) — initialize a fresh Paystack transaction
       const freshReference = this.paystackService.generateReference('ACT');
-      const paystackResponse = await this.paystackService.initializeTransaction({
-        email: employee.employer.email,
-        amount: this.paystackService.convertToKobo(existingPayment.amount),
-        reference: freshReference,
-        currency: existingPayment.currency || 'NGN',
-        callback_url: callbackUrl,
-        metadata: {
-          paymentId: existingPayment.id,
-          employeeId,
-          employerId,
-          paymentType: PaymentType.EMPLOYEE_ACTIVATION_FEE,
+      const paystackResponse = await this.paystackService.initializeTransaction(
+        {
+          email: employee.employer.email,
+          amount: this.paystackService.convertToKobo(existingPayment.amount),
+          reference: freshReference,
+          currency: existingPayment.currency || 'NGN',
+          callback_url: callbackUrl,
+          metadata: {
+            paymentId: existingPayment.id,
+            employeeId,
+            employerId,
+            paymentType: PaymentType.EMPLOYEE_ACTIVATION_FEE,
+          },
         },
-      });
+      );
 
       await this.paymentRepo.update(existingPayment.id, {
         paystackReference: freshReference,

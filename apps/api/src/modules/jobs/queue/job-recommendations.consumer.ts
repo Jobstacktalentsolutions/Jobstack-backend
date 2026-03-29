@@ -26,7 +26,7 @@ import {
 /**
  * Bull Queue Consumer for job recommendations
  * Handles background processing of recommendation calculations
- * 
+ *
  * This consumer processes two types of jobs:
  * 1. PRECALCULATE_ALL - Daily scheduled job to precalculate for all users
  * 2. PRECALCULATE_SINGLE - On-demand calculation for a single user
@@ -155,7 +155,11 @@ export class JobRecommendationsConsumer {
   /**
    * Generate cache key for recommendations
    */
-  private getCacheKey(jobSeekerId: string, page: number, limit: number): string {
+  private getCacheKey(
+    jobSeekerId: string,
+    page: number,
+    limit: number,
+  ): string {
     return `job-recommendations:${jobSeekerId}:page:${page}:limit:${limit}`;
   }
 

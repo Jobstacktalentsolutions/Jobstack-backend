@@ -42,20 +42,13 @@ export const createStorageConfig = (
     ],
     [StorageProviders.IDRIVE]: {
       endpoint: configService.get<string>(ENV.S3_ENDPOINT) as string,
-      region:
-        (configService.get<string>(ENV.S3_REGION) as string) || 'auto',
-      accessKeyId: configService.get<string>(
-        ENV.S3_ACCESS_KEY_ID,
-      ) as string,
+      region: (configService.get<string>(ENV.S3_REGION) as string) || 'auto',
+      accessKeyId: configService.get<string>(ENV.S3_ACCESS_KEY_ID) as string,
       secretAccessKey: configService.get<string>(
         ENV.S3_SECRET_ACCESS_KEY,
       ) as string,
-      publicBucket: configService.get<string>(
-        ENV.S3_PUBLIC_BUCKET,
-      ) as string,
-      privateBucket: configService.get<string>(
-        ENV.S3_PRIVATE_BUCKET,
-      ) as string,
+      publicBucket: configService.get<string>(ENV.S3_PUBLIC_BUCKET) as string,
+      privateBucket: configService.get<string>(ENV.S3_PRIVATE_BUCKET) as string,
     },
   };
 };

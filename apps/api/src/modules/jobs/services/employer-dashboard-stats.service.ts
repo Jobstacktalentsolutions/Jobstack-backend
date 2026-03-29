@@ -2,7 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Between, Repository } from 'typeorm';
 import { Employee, Job } from '@app/common/database/entities';
-import { EmployeeStatus, JobStatus } from '@app/common/database/entities/schema.enum';
+import {
+  EmployeeStatus,
+  JobStatus,
+} from '@app/common/database/entities/schema.enum';
 
 export type EmployerDashboardStats = {
   jobsLive: number;
@@ -72,4 +75,3 @@ export class EmployerDashboardStatsService {
     };
   }
 }
-

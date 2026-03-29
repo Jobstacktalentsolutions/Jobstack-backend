@@ -59,4 +59,3 @@ import { NotificationController } from './controllers/notification.controller';
   exports: [NotificationService, TypeOrmModule],
 })
 export class NotificationModule {}
-

@@ -168,7 +168,8 @@ export class JobVettingService {
           application.createdAt > job.vettingCompletedAt);
 
       let score =
-        application.vettingScore !== null && application.vettingScore !== undefined
+        application.vettingScore !== null &&
+        application.vettingScore !== undefined
           ? Number(application.vettingScore)
           : 0;
       let profileCompleteness =
@@ -250,7 +251,9 @@ export class JobVettingService {
       va.isHighlighted = isHighlighted;
 
       // Persist highlight flag alongside scores on corresponding entity
-      const application = applications.find((app) => app.id === va.applicationId);
+      const application = applications.find(
+        (app) => app.id === va.applicationId,
+      );
       if (application) {
         application.vettingIsHighlighted = isHighlighted;
       }
@@ -630,7 +633,9 @@ export class JobVettingService {
             },
           );
         } catch (appNotifErr) {
-          this.logger.warn(`Failed to create in-app screening notification: ${appNotifErr.message}`);
+          this.logger.warn(
+            `Failed to create in-app screening notification: ${appNotifErr.message}`,
+          );
         }
 
         this.logger.log(
@@ -703,11 +708,16 @@ export class JobVettingService {
               title: 'Screening Completed',
               message: `Your screening for "${application.job.title}" is complete. Stay tuned for next steps from the employer.`,
               priority: NotificationPriority.MEDIUM,
-              metadata: { jobId: application.job.id, applicationId: application.id },
+              metadata: {
+                jobId: application.job.id,
+                applicationId: application.id,
+              },
             },
           );
         } catch (appNotifErr) {
-          this.logger.warn(`Failed to create in-app screening-complete notification: ${appNotifErr.message}`);
+          this.logger.warn(
+            `Failed to create in-app screening-complete notification: ${appNotifErr.message}`,
+          );
         }
 
         this.logger.log(

@@ -9,12 +9,7 @@ import {
   HttpStatus,
   HttpCode,
 } from '@nestjs/common';
-import {
-  ApiBearerAuth,
-  ApiBody,
-  ApiOperation,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { PaymentService } from '../services/payment.service';
 import { InitiatePaymentDto, PaymentQueryDto, VerifyPaymentDto } from '../dto';
 import { EmployerJwtGuard } from '../../../guards/employer-jwt.guard';

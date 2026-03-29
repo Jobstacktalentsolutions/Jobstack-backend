@@ -1,7 +1,10 @@
 import { IsOptional, IsEnum, IsUUID, IsInt, Min, Max } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { PaymentStatus, PaymentType } from '@app/common/database/entities/schema.enum';
+import {
+  PaymentStatus,
+  PaymentType,
+} from '@app/common/database/entities/schema.enum';
 
 export class PaymentQueryDto {
   @ApiPropertyOptional({ format: 'uuid' })

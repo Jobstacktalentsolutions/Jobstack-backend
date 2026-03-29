@@ -5,7 +5,7 @@
 export interface VettingConfig {
   // Default number of candidates to highlight for admin review
   defaultHighlightedCandidateCount: number;
-  
+
   // Scoring weights for high-skill jobs
   highSkillWeights: {
     yearsOfExperience: number;
@@ -14,7 +14,7 @@ export interface VettingConfig {
     proximity: number;
     applicationSpeed: number;
   };
-  
+
   // Scoring weights for low-skill jobs
   lowSkillWeights: {
     applicationSpeed: number;
@@ -22,7 +22,7 @@ export interface VettingConfig {
     experience: number;
     proximity: number;
   };
-  
+
   // Profile completeness factors
   profileCompletenessWeights: {
     basicInfo: number; // name, email, phone
@@ -33,10 +33,10 @@ export interface VettingConfig {
     yearsOfExperience: number;
     jobTitle: number;
   };
-  
+
   // Minimum profile completeness threshold (0-100)
   minProfileCompletenessThreshold: number;
-  
+
   // Application speed calculation settings
   applicationSpeed: {
     maxHoursForFullScore: number; // Hours after job creation for full score
@@ -46,34 +46,34 @@ export interface VettingConfig {
 
 export const VETTING_CONFIG: VettingConfig = {
   defaultHighlightedCandidateCount: 3,
-  
+
   highSkillWeights: {
     yearsOfExperience: 0.25,
     skillMatching: 0.35, // Higher than profile completeness so skill fit dominates
-    profileCompleteness: 0.10,
+    profileCompleteness: 0.1,
     proximity: 0.15,
     applicationSpeed: 0.15,
   },
-  
+
   lowSkillWeights: {
     proximity: 0.35, // Emphasizing local availability for low-skill jobs
-    applicationSpeed: 0.30,
-    profileCompleteness: 0.20,
+    applicationSpeed: 0.3,
+    profileCompleteness: 0.2,
     experience: 0.15, // Less critical for low-skill roles
   },
-  
+
   profileCompletenessWeights: {
-    basicInfo: 0.20,
+    basicInfo: 0.2,
     location: 0.15,
-    cvDocument: 0.20,
-    profilePicture: 0.10,
+    cvDocument: 0.2,
+    profilePicture: 0.1,
     skills: 0.15,
-    yearsOfExperience: 0.10,
-    jobTitle: 0.10,
+    yearsOfExperience: 0.1,
+    jobTitle: 0.1,
   },
-  
+
   minProfileCompletenessThreshold: 30, // 30% minimum completeness
-  
+
   applicationSpeed: {
     maxHoursForFullScore: 2, // Full score if applied within 2 hours
     scoreDecayPerHour: 2, // Lose 2 points per hour after job creation
@@ -91,7 +91,7 @@ export function getHighlightedCandidateCount(
   if (!performCustomScreening) {
     return 1;
   }
-  
+
   // Use custom count if provided, otherwise use default
   return customCount ?? VETTING_CONFIG.defaultHighlightedCandidateCount;
 }

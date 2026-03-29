@@ -216,9 +216,7 @@ export class JobseekerService {
    * This endpoint must NOT expose private fields like email/phone.
    * CV access is provided as an expiring signed URL when available.
    */
-  async getJobSeekerPublicProfileBySlug(
-    slug: string,
-  ): Promise<any | null> {
+  async getJobSeekerPublicProfileBySlug(slug: string): Promise<any | null> {
     const profile = await this.profileRepo.findOne({
       where: { slug },
       relations: [
@@ -328,7 +326,8 @@ export class JobseekerService {
       profile.preferredWorkMode = updateData.preferredWorkMode;
     }
     if (updateData.preferredEmploymentArrangement !== undefined) {
-      profile.preferredEmploymentArrangement = updateData.preferredEmploymentArrangement;
+      profile.preferredEmploymentArrangement =
+        updateData.preferredEmploymentArrangement;
     }
     if (updateData.workSector !== undefined) {
       profile.workSector = updateData.workSector;
@@ -426,7 +425,7 @@ export class JobseekerService {
     const limit = Math.min(100, Math.max(1, Number(query.limit) || 10));
     const skip = (page - 1) * limit;
     const sortBy = query.sortBy ?? 'createdAt';
-    const sortOrder = (query.sortOrder ?? 'DESC') as 'ASC' | 'DESC';
+    const sortOrder = query.sortOrder ?? 'DESC';
     const search =
       typeof query.query === 'string' ? query.query.trim() : undefined;
     const approvalStatus = query.approvalStatus;

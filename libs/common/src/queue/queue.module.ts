@@ -18,7 +18,7 @@ export type QueueName = (typeof QUEUE_NAMES)[keyof typeof QUEUE_NAMES];
 /**
  * Global Queue Module using BullMQ
  * Provides resilient job processing with Redis as the backing store
- * 
+ *
  * Features:
  * - Automatic retries with exponential backoff
  * - Job progress tracking

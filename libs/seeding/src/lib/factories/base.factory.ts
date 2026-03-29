@@ -91,7 +91,7 @@ export abstract class BaseFactory<T extends ObjectLiteral> {
 
     if (existingEntity) {
       // Update existing entity without changing primary key (avoids FK violations)
-      const { id: _id, ...updatePayload } = attributes as any;
+      const { id: _id, ...updatePayload } = attributes;
       await this.repository.update(
         { id: existingEntity.id } as any,
         updatePayload,

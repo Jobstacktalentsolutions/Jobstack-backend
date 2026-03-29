@@ -21,4 +21,3 @@ export class PublicJobseekerController {
     return profile;
   }
 }
-

@@ -21,6 +21,7 @@ import {
 import { NotificationService } from 'apps/api/src/modules/notification/notification.service';
 import { ProbationTrackingProducer } from '../queue';
 import { UserRole } from '@app/common/shared/enums/user-roles.enum';
+import { buildProbationSchedule } from '../utils/probation-policy.util';
 
 type CurrentEmployeeResponse = {
   employeeId: string;
@@ -56,7 +57,7 @@ type ReplaceCandidateBody = {
 
 /**
  * Admin-only flow to swap the active employee on a job.
- * Keeps it minimal: swap the active `Employee` assignment + reset probation + send 2 emails.
+ * Keeps it minimal: swap the active `Employee` assignment + reset probation + send emails.
  */
 @Injectable()
 export class AdminReplacementService {
@@ -188,7 +189,7 @@ export class AdminReplacementService {
 
     for (const app of apps) {
       if (app.jobseekerProfileId === oldJobseekerProfileId) continue;
-      if (employedIds.has(app.jobseekerProfileId as string)) continue;
+      if (employedIds.has(app.jobseekerProfileId)) continue;
 
       const jobVetted = app.vettingScore != null && app.vettedAt != null;
 
@@ -310,6 +311,12 @@ export class AdminReplacementService {
       newApp.statusUpdatedAt = now;
       await applicationManager.save(newApp);
 
+      const probationSchedule = buildProbationSchedule({
+        employmentArrangement: job.employmentArrangement,
+        startDate: now,
+        endDate: currentEmployee.endDate,
+      });
+
       // Create fresh employee record for new candidate with probation fields.
       const newEmployee = employeeManager.create({
         employerId: employer.id,
@@ -319,9 +326,9 @@ export class AdminReplacementService {
         employmentArrangement: job.employmentArrangement,
         status: EmployeeStatus.ACTIVE,
         startDate: now,
-        endDate: undefined,
+        endDate: currentEmployee.endDate,
         probationStatus: ProbationStatus.ACTIVE,
-        probationEndDate: new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000),
+        probationEndDate: probationSchedule.probationEndDate,
         pulse30SentAt: null,
         pulse60SentAt: null,
         salaryOffered: currentEmployee.salaryOffered,
@@ -347,13 +354,18 @@ export class AdminReplacementService {
       await employeeManager.save(oldEmployeeInTx);
 
       // Emails sent outside transaction after we return.
-      return { employeeId: savedNewEmployee.id, startDate: now };
+      return {
+        employeeId: savedNewEmployee.id,
+        reminderAt: probationSchedule.reminderAt,
+        confirmAt: probationSchedule.confirmAt,
+      };
     });
 
-    // Schedule probation milestones based on the new start date.
+    // Schedule probation reminder + confirmation for the new employee.
     await this.probationTrackingProducer.scheduleEmployeeProbationMilestones({
       employeeId: txResult.employeeId,
-      startDate: txResult.startDate,
+      reminderAt: txResult.reminderAt,
+      confirmAt: txResult.confirmAt,
     });
 
     // Send notifications after DB swap.

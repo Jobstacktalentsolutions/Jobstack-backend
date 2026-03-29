@@ -8,12 +8,7 @@ import {
   UseGuards,
   Delete,
 } from '@nestjs/common';
-import {
-  ApiBearerAuth,
-  ApiBody,
-  ApiOperation,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { EmployerAuthService } from './employer-auth.service';
 import {
   EmployerRegistrationDto,

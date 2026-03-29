@@ -34,12 +34,16 @@ export class JobApplicationFactory extends BaseFactory<JobApplication> {
   }
 
   /** Resolve profile id from seed id or by email when DB profile has a different id (e.g. after upsert by email). */
-  private async resolveProfileId(seedProfileId: string): Promise<string | null> {
+  private async resolveProfileId(
+    seedProfileId: string,
+  ): Promise<string | null> {
     const byId = await this.jobseekerProfileRepository.findOne({
       where: { id: seedProfileId },
     });
     if (byId) return byId.id;
-    const seedJobseeker = JOBSEEKERS_DATA.find((js: any) => js.id === seedProfileId);
+    const seedJobseeker = JOBSEEKERS_DATA.find(
+      (js: any) => js.id === seedProfileId,
+    );
     if (!seedJobseeker?.email) return null;
     const byEmail = await this.jobseekerProfileRepository.findOne({
       where: { email: (seedJobseeker.email as string).toLowerCase() },
@@ -81,10 +85,7 @@ export class JobApplicationFactory extends BaseFactory<JobApplication> {
 
     if (existingApplication) {
       // Update existing application
-      await this.repository.update(
-        { id: existingApplication.id },
-        payload,
-      );
+      await this.repository.update({ id: existingApplication.id }, payload);
       return (await this.repository.findOne({
         where: { id: existingApplication.id },
       })) as JobApplication;

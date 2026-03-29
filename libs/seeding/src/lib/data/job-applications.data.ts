@@ -248,7 +248,7 @@ JOBS_DATA.forEach((job, jobIndex) => {
     return;
   }
 
-  const jobSkillIds = (job.skills ?? []) as string[];
+  const jobSkillIds = job.skills ?? [];
   const jobSkillSet = new Set<string>(jobSkillIds);
 
   // Primary candidates share at least one skill with the job

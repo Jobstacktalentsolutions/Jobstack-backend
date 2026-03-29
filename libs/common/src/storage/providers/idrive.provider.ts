@@ -167,7 +167,10 @@ export class IDriveProvider implements IStorageProvider {
       await this.s3.send(head);
       return true;
     } catch (error) {
-      if (error.name === 'NotFound' || error.$metadata?.httpStatusCode === 404) {
+      if (
+        error.name === 'NotFound' ||
+        error.$metadata?.httpStatusCode === 404
+      ) {
         return false;
       }
       // Re-throw other errors

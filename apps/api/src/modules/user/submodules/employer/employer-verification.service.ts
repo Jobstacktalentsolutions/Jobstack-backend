@@ -370,11 +370,14 @@ export class EmployerVerificationService {
           UserRole.EMPLOYER,
           {
             title: '✅ Account Verified!',
-            message: 'Congratulations! Your employer account has been verified. You can now post jobs and hire candidates.',
+            message:
+              'Congratulations! Your employer account has been verified. You can now post jobs and hire candidates.',
             priority: NotificationPriority.HIGH,
           },
         );
-      } catch (_) { /* non-blocking */ }
+      } catch (_) {
+        /* non-blocking */
+      }
 
       return {
         verified: true,
@@ -421,7 +424,8 @@ export class EmployerVerificationService {
           UserRole.EMPLOYER,
           {
             title: '✅ Your Account is Verified',
-            message: 'Your employer account has been manually reviewed and approved. You can now post jobs and hire candidates.',
+            message:
+              'Your employer account has been manually reviewed and approved. You can now post jobs and hire candidates.',
             priority: NotificationPriority.HIGH,
           },
         );
@@ -431,12 +435,14 @@ export class EmployerVerificationService {
           UserRole.EMPLOYER,
           {
             title: '❌ Verification Rejected',
-            message: `Your employer verification was rejected.${ rejectionReason ? ` Reason: ${rejectionReason}` : '' } Please review and resubmit your documents.`,
+            message: `Your employer verification was rejected.${rejectionReason ? ` Reason: ${rejectionReason}` : ''} Please review and resubmit your documents.`,
             priority: NotificationPriority.HIGH,
           },
         );
       }
-    } catch (_) { /* non-blocking */ }
+    } catch (_) {
+      /* non-blocking */
+    }
 
     return verification;
   }

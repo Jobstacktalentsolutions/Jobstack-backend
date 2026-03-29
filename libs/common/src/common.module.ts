@@ -11,7 +11,7 @@ import { QueueModule } from './queue/queue.module';
 /**
  * Global Common Module
  * Provides shared services and modules across the application
- * 
+ *
  * Includes:
  * - DatabaseModule: TypeORM database connection
  * - RedisModule: Redis client for direct Redis operations

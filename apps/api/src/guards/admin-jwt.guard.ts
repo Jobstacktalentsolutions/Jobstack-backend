@@ -79,11 +79,15 @@ export class AdminJwtGuard implements CanActivate {
         }
 
         // Handle both single role string and array of roles
-        const requiredRoles = Array.isArray(requiredRole) ? requiredRole : [requiredRole];
-        
+        const requiredRoles = Array.isArray(requiredRole)
+          ? requiredRole
+          : [requiredRole];
+
         // Check if admin has any of the required roles or is SUPER_ADMIN
-        const hasRequiredRole = requiredRoles.includes(admin.roleKey) || admin.roleKey === AdminRole.SUPER_ADMIN.role;
-        
+        const hasRequiredRole =
+          requiredRoles.includes(admin.roleKey) ||
+          admin.roleKey === AdminRole.SUPER_ADMIN.role;
+
         if (!hasRequiredRole) {
           throw new ForbiddenException('Insufficient role permissions');
         }

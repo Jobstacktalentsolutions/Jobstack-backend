@@ -19,12 +19,15 @@ import {
   UpdateEmployeeStatusDto,
 } from '../../dto';
 import {
+  NotificationPriority,
   EmployeeStatus,
-  EmploymentArrangement,
-  EmploymentType,
   ProbationStatus,
 } from '@app/common/database/entities/schema.enum';
 import { ProbationTrackingProducer } from '../../queue';
+import { buildProbationSchedule } from '../../utils/probation-policy.util';
+import { NotificationService } from 'apps/api/src/modules/notification/notification.service';
+import { UserRole } from '@app/common/shared/enums/user-roles.enum';
+import { EmployeeTerminationHrMeaning } from './dto';
 
 @Injectable()
 export class EmployeesService {
@@ -39,7 +42,20 @@ export class EmployeesService {
     private readonly employerRepo: Repository<EmployerProfile>,
     protected readonly storageService: StorageService,
     private readonly probationTrackingProducer: ProbationTrackingProducer,
+    private readonly notificationService: NotificationService,
   ) {}
+
+  private readonly terminationMeaningLabelMap: Record<
+    EmployeeTerminationHrMeaning,
+    string
+  > = {
+    [EmployeeTerminationHrMeaning.EMPLOYEE_RESIGNED]: 'Employee Resigned',
+    [EmployeeTerminationHrMeaning.EMPLOYEE_TERMINATED]:
+      'Employee Terminated',
+    [EmployeeTerminationHrMeaning.ROLE_REDUNDANT]: 'Role Redundant',
+    [EmployeeTerminationHrMeaning.MUTUAL_SEPARATION]: 'Mutual Separation',
+    [EmployeeTerminationHrMeaning.OTHER]: 'Other',
+  };
 
   // Relations needed by employer/admin views to render profile data.
   private readonly relations = [
@@ -208,6 +224,39 @@ export class EmployeesService {
 
     employee.status = dto.status;
 
+    if (dto.status === EmployeeStatus.TERMINATED) {
+      const cleanedReason = dto.reasonForTermination?.trim();
+      if (!cleanedReason) {
+        throw new BadRequestException(
+          'reasonForTermination is required when ending employment',
+        );
+      }
+
+      const meaningLabel = dto.hrMeaning
+        ? this.terminationMeaningLabelMap[dto.hrMeaning]
+        : null;
+
+      const reasonLine = meaningLabel
+        ? `${meaningLabel}: ${cleanedReason}`
+        : cleanedReason;
+
+      const timestamp = new Date();
+      const noteLine = `Employment Ended (${timestamp.toISOString()}) - ${reasonLine}`;
+
+      employee.notes = employee.notes
+        ? `${employee.notes}\n${noteLine}`
+        : noteLine;
+      employee.endDate = timestamp;
+      employee.probationStatus = ProbationStatus.TERMINATED;
+      employee.pulse30SentAt = null;
+      employee.pulse60SentAt = null;
+
+      await this.employeeRepo.save(employee);
+      await this.sendEmploymentEndedNotifications(employee, dto);
+
+      return this.getEmployerEmployeeById(employerId, employeeId);
+    }
+
     // When activation is finalized, initialize probation fields if missing/outdated.
     if (dto.status === EmployeeStatus.ACTIVE) {
       if (!employee.startDate) {
@@ -216,31 +265,107 @@ export class EmployeesService {
         );
       }
 
-      const probationEndDate = new Date(
-        employee.startDate.getTime() + 90 * 24 * 60 * 60 * 1000,
-      );
+      const probationSchedule = buildProbationSchedule({
+        employmentArrangement: employee.employmentArrangement,
+        startDate: employee.startDate,
+        endDate: employee.endDate,
+      });
 
       employee.probationStatus = ProbationStatus.ACTIVE;
-      employee.probationEndDate = probationEndDate;
+      employee.probationEndDate = probationSchedule.probationEndDate;
       employee.pulse30SentAt = null;
       employee.pulse60SentAt = null;
+
+      await this.employeeRepo.save(employee);
+
+      // Queue probation milestones only on transition into ACTIVE.
+      if (previousStatus !== EmployeeStatus.ACTIVE) {
+        await this.probationTrackingProducer.scheduleEmployeeProbationMilestones(
+          {
+            employeeId: employee.id,
+            reminderAt: probationSchedule.reminderAt,
+            confirmAt: probationSchedule.confirmAt,
+          },
+        );
+      }
+
+      return this.getEmployerEmployeeById(employerId, employeeId);
     }
 
     await this.employeeRepo.save(employee);
 
-    // Queue probation milestones only on transition into ACTIVE.
-    if (
-      dto.status === EmployeeStatus.ACTIVE &&
-      previousStatus !== EmployeeStatus.ACTIVE &&
-      employee.startDate
-    ) {
-      await this.probationTrackingProducer.scheduleEmployeeProbationMilestones({
-        employeeId: employee.id,
-        startDate: employee.startDate,
-      });
-    }
-
     return this.getEmployerEmployeeById(employerId, employeeId);
+  }
+
+  private async sendEmploymentEndedNotifications(
+    employee: Employee,
+    dto: UpdateEmployeeStatusDto,
+  ) {
+    try {
+      const employer = await this.employerRepo.findOne({
+        where: { id: employee.employerId },
+      });
+      const hrMeaning = dto.hrMeaning
+        ? this.terminationMeaningLabelMap[dto.hrMeaning]
+        : 'Employment Ended';
+      const jobTitle = employee.job?.title ?? 'your role';
+      const employerName = `${employer?.firstName ?? ''} ${
+        employer?.lastName ?? ''
+      }`.trim();
+
+      if (employee.jobseekerProfile?.email) {
+        await this.notificationService.sendEmail({
+          to: employee.jobseekerProfile.email,
+          subject: `Employment update for ${jobTitle}`,
+          template: 'general-notification',
+          context: {
+            title: 'Employment Ended',
+            message: `Your employment for "${jobTitle}" at ${
+              employerName || 'your employer'
+            } has been ended.`,
+            hrMeaning,
+            reason: dto.reasonForTermination,
+          },
+        });
+      }
+
+      if (employee.jobseekerProfileId) {
+        await this.notificationService.createAppNotification(
+          employee.jobseekerProfileId,
+          UserRole.JOB_SEEKER,
+          {
+            title: 'Employment Ended',
+            message: `Your employment as "${jobTitle}" has ended. Reason: ${dto.reasonForTermination}`,
+            priority: NotificationPriority.HIGH,
+            metadata: {
+              employeeId: employee.id,
+              employerId: employee.employerId,
+              jobId: employee.jobId,
+              hrMeaning,
+            },
+          },
+        );
+      }
+
+      if (employee.employerId) {
+        await this.notificationService.createAppNotification(
+          employee.employerId,
+          UserRole.EMPLOYER,
+          {
+            title: 'Employment Ended',
+            message: `${employee.jobseekerProfile?.firstName ?? 'Employee'} has been marked as Employment Ended.`,
+            priority: NotificationPriority.MEDIUM,
+            metadata: {
+              employeeId: employee.id,
+              jobId: employee.jobId,
+              hrMeaning,
+            },
+          },
+        );
+      }
+    } catch (_) {
+      // Notification failures should not block status changes.
+    }
   }
 
   // Lists employees for admins

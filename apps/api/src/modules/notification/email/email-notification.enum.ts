@@ -9,6 +9,7 @@ export enum EmailTemplateType {
   GENERAL_NOTIFICATION = 'general-notification',
   VETTING_COMPLETE = 'vetting-complete',
   CANDIDATE_SELECTED_FOR_SCREENING = 'candidate-selected-for-screening',
+  PROBATION_REMINDER_EMPLOYER = 'probation-reminder-employer',
   PROBATION_DAY30_PULSE_EMPLOYER = 'probation-day30-pulse-employer',
   PROBATION_DAY60_PULSE_EMPLOYER = 'probation-day60-pulse-employer',
   PROBATION_CONFIRMED = 'probation-confirmed',
@@ -57,9 +58,13 @@ export const EMAIL_TYPE_CONFIG = {
     subject: 'You have been selected for screening',
     template: 'candidate-selected-for-screening.ejs',
   },
+  [EmailTemplateType.PROBATION_REMINDER_EMPLOYER]: {
+    subject: 'Probation Check-in Reminder',
+    template: 'probation-reminder-employer.ejs',
+  },
   [EmailTemplateType.PROBATION_DAY30_PULSE_EMPLOYER]: {
-    subject: 'How is your placement going? (Day 30 Check-in)',
-    template: 'probation-day30-pulse-employer.ejs',
+    subject: 'Probation Check-in Reminder',
+    template: 'probation-reminder-employer.ejs',
   },
   [EmailTemplateType.PROBATION_DAY60_PULSE_EMPLOYER]: {
     subject: 'How is the placement going? (Day 60 Check-in)',

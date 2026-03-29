@@ -18,7 +18,8 @@ export class CreateJobApplicationDto {
 
   @ApiPropertyOptional({
     description: 'Short note to the employer',
-    example: 'I have 5 years of NestJS experience and am available immediately.',
+    example:
+      'I have 5 years of NestJS experience and am available immediately.',
   })
   @IsOptional()
   @IsString()

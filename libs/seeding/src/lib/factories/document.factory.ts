@@ -98,10 +98,12 @@ export class DocumentFactory extends BaseFactory<Document> {
 
       // Check if file already exists in bucket
       const fileExists = await this.storageProvider.fileExists(fileKey, bucket);
-      
+
       if (fileExists) {
-        console.log(`⏭️  File already exists in bucket: ${fileKey}, skipping upload`);
-        
+        console.log(
+          `⏭️  File already exists in bucket: ${fileKey}, skipping upload`,
+        );
+
         // Generate signed URL for existing file
         const url = await this.storageProvider.getSignedFileUrl(
           fileKey,

@@ -10,12 +10,7 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import {
-  ApiBearerAuth,
-  ApiBody,
-  ApiOperation,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { EmployerJwtGuard } from 'apps/api/src/guards';
 import { JobsService } from '../services/jobs.service';
 import { EmployerDashboardStatsService } from '../services/employer-dashboard-stats.service';

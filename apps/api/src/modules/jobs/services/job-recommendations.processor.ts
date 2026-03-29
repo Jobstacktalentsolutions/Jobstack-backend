@@ -178,7 +178,7 @@ export class JobRecommendationsProcessor {
 
     // Category matching (25% weight)
     if (userSkillCategories.size > 0 && job.category) {
-      if (userSkillCategories.has(job.category as SkillCategory)) {
+      if (userSkillCategories.has(job.category)) {
         score += 25;
       }
     }

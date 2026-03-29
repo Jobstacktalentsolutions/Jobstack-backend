@@ -7,12 +7,7 @@ import {
   UseGuards,
   Delete,
 } from '@nestjs/common';
-import {
-  ApiBearerAuth,
-  ApiBody,
-  ApiOperation,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import {
   ReqDeviceInfo,
   CurrentUser,

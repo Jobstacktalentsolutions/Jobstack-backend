@@ -272,7 +272,7 @@ export class AdminService {
     const limit = Math.min(100, Math.max(1, Number(query.limit) || 10));
     const skip = (page - 1) * limit;
     const sortBy = query.sortBy ?? 'createdAt';
-    const sortOrder = (query.sortOrder ?? 'DESC') as 'ASC' | 'DESC';
+    const sortOrder = query.sortOrder ?? 'DESC';
     const search =
       typeof query.query === 'string' ? query.query.trim() : undefined;
 
@@ -387,14 +387,18 @@ export class AdminService {
         where: { createdAt: Between(startOfCurrentMonth, startOfNextMonth) },
       }),
       this.jobRepo.count({
-        where: { createdAt: Between(startOfPreviousMonth, startOfCurrentMonth) },
+        where: {
+          createdAt: Between(startOfPreviousMonth, startOfCurrentMonth),
+        },
       }),
       this.employeeRepo.count(),
       this.employeeRepo.count({
         where: { createdAt: Between(startOfCurrentMonth, startOfNextMonth) },
       }),
       this.employeeRepo.count({
-        where: { createdAt: Between(startOfPreviousMonth, startOfCurrentMonth) },
+        where: {
+          createdAt: Between(startOfPreviousMonth, startOfCurrentMonth),
+        },
       }),
       this.paymentRepo
         .createQueryBuilder('payment')
@@ -442,10 +446,16 @@ export class AdminService {
     const feesThisMonth = Number(feesThisMonthRaw?.amount ?? 0);
     const feesLastMonth = Number(feesLastMonthRaw?.amount ?? 0);
 
-    const vettedTrend = this.buildMonthlyTrend(vettedThisMonth, vettedLastMonth);
+    const vettedTrend = this.buildMonthlyTrend(
+      vettedThisMonth,
+      vettedLastMonth,
+    );
     const jobsTrend = this.buildMonthlyTrend(jobsThisMonth, jobsLastMonth);
     const hiresTrend = this.buildMonthlyTrend(hiresThisMonth, hiresLastMonth);
-    const agencyFeesTrend = this.buildMonthlyTrend(feesThisMonth, feesLastMonth);
+    const agencyFeesTrend = this.buildMonthlyTrend(
+      feesThisMonth,
+      feesLastMonth,
+    );
 
     return {
       stats: {

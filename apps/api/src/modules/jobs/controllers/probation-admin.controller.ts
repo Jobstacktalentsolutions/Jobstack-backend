@@ -1,12 +1,16 @@
-import { Controller, Get, Query, UseGuards, ParseIntPipe } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Query,
+  UseGuards,
+  ParseIntPipe,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AdminJwtGuard } from 'apps/api/src/guards';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Employee } from '@app/common/database/entities';
-import {
-  ProbationStatus,
-} from '@app/common/database/entities/schema.enum';
+import { ProbationStatus } from '@app/common/database/entities/schema.enum';
 
 /**
  * Admin-only probation monitoring: list all active probation employees.
@@ -46,29 +50,44 @@ export class ProbationAdminController {
       .take(currentLimit)
       .getManyAndCount();
 
-    const mapDays = (startDate?: Date) => {
-      if (!startDate) return { daysRemaining: 90, daysElapsed: 0 };
+    const mapDays = (startDate?: Date, endDate?: Date) => {
+      if (!startDate || !endDate)
+        return { daysRemaining: null, daysElapsed: 0 };
+
       const startUtcMidnight = Date.UTC(
         startDate.getUTCFullYear(),
         startDate.getUTCMonth(),
         startDate.getUTCDate(),
+      );
+      const endUtcMidnight = Date.UTC(
+        endDate.getUTCFullYear(),
+        endDate.getUTCMonth(),
+        endDate.getUTCDate(),
       );
       const nowUtcMidnight = Date.UTC(
         now.getUTCFullYear(),
         now.getUTCMonth(),
         now.getUTCDate(),
       );
+
       const daysElapsed = Math.max(
         0,
         Math.floor((nowUtcMidnight - startUtcMidnight) / 86400000),
       );
-      const daysRemaining = Math.max(0, 90 - daysElapsed);
+      const daysRemaining = Math.max(
+        0,
+        Math.ceil((endUtcMidnight - nowUtcMidnight) / 86400000),
+      );
+
       return { daysElapsed, daysRemaining };
     };
 
     return {
       items: items.map((e) => {
-        const { daysRemaining } = mapDays(e.startDate);
+        const { daysRemaining } = mapDays(
+          e.startDate,
+          e.probationEndDate ?? undefined,
+        );
         return {
           employeeId: e.id,
           candidateName: e.jobseekerProfile
@@ -79,13 +98,12 @@ export class ProbationAdminController {
             : null,
           jobTitle: e.job?.title ?? null,
           startDate: e.startDate ?? null,
+          probationEndDate: e.probationEndDate ?? null,
           daysRemaining,
-          pulse30SentAt: e.pulse30SentAt ?? null,
-          pulse60SentAt: e.pulse60SentAt ?? null,
+          reminderSentAt: e.pulse30SentAt ?? null,
           probationStatus: e.probationStatus ?? null,
-          // Keep explicit booleans for easy UI rendering.
-          day30EmailSent: !!e.pulse30SentAt,
-          day60EmailSent: !!e.pulse60SentAt,
+          // Keep explicit boolean for easy UI rendering.
+          reminderSent: !!e.pulse30SentAt,
         };
       }),
       total,
@@ -94,4 +112,3 @@ export class ProbationAdminController {
     };
   }
 }
-
