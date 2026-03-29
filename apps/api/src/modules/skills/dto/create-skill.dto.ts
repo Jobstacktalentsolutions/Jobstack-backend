@@ -3,9 +3,11 @@ import {
   IsOptional,
   IsArray,
   IsNotEmpty,
+  IsEnum,
   MaxLength,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { SkillCategory } from '@app/common/database/entities/schema.enum';
 
 export class CreateSkillDto {
   @ApiProperty({ example: 'NestJS', maxLength: 100 })
@@ -31,4 +33,16 @@ export class CreateSkillDto {
   @IsArray()
   @IsString({ each: true })
   synonyms?: string[];
+}
+
+export class AddSkillDto {
+  @ApiProperty({ example: 'NestJS', maxLength: 100 })
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(100)
+  name: string;
+
+  @ApiProperty({ enum: SkillCategory, example: SkillCategory.SOFTWARE_DEVELOPMENT })
+  @IsEnum(SkillCategory)
+  category: SkillCategory;
 }

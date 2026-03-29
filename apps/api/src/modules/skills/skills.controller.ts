@@ -18,29 +18,40 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { SkillsService } from './skills.service';
-import { AdminJwtGuard, JobSeekerJwtGuard, RequireAdminRole } from 'apps/api/src/guards';
+import {
+  AdminJwtGuard,
+  EmployerJwtGuard,
+  JobSeekerJwtGuard,
+  RequireAdminRole,
+} from 'apps/api/src/guards';
 import { AdminRole } from '@app/common/shared/enums/roles.enum';
 import { Skill } from '@app/common/database/entities/Skill.entity';
-import { CreateSkillDto, UpdateSkillDto, SuggestSkillDto } from './dto';
+import { AddSkillDto, CreateSkillDto, UpdateSkillDto } from './dto';
 
 @ApiTags('Skills')
 @Controller('skills')
 export class SkillsController {
   constructor(private skillsService: SkillsService) {}
 
-  // Public / Jobseeker: list/search active skills
+  // Public: list/search active skills
   @Get()
   async list(@Query('q') q?: string): Promise<Skill[]> {
     return this.skillsService.searchSkills(q);
   }
 
-  // Public / Jobseeker: suggest a new skill (creates SUGGESTED)
-  @Post('suggest')
+  /**
+   * Authenticated users (jobseekers or employers) can add a new skill directly
+   * as ACTIVE. If the skill already exists (case-insensitive), it is returned
+   * as-is. The caller must supply the work sector (category) the skill belongs
+   * to so the backend can correctly classify it.
+   */
+  @Post('add')
   @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: 'Suggest a new skill name' })
-  @ApiBody({ type: SuggestSkillDto })
-  async suggest(@Body() body: SuggestSkillDto): Promise<Skill> {
-    return this.skillsService.suggestSkill(body.name);
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Add a new skill (jobseeker or employer)' })
+  @ApiBody({ type: AddSkillDto })
+  async add(@Body() body: AddSkillDto): Promise<Skill> {
+    return this.skillsService.addSkill(body.name, body.category);
   }
 
   // Admin: create (Vetting Specialist manages candidate quality control)

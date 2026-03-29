@@ -365,9 +365,9 @@ export class JobseekerService {
       // Normalize and attach skills via SkillsService (non-transactional, best-effort)
       const normalizedIds = new Set<string>(updateData.skillIds ?? []);
 
-      // For free-text names, always insert a SUGGESTED skill
+      // For free-text names, insert as ACTIVE skill
       for (const name of updateData.skills ?? []) {
-        const skill = await this.skillsService.insertSuggestedSkill(name);
+        const skill = await this.skillsService.insertActiveSkill(name);
         normalizedIds.add(skill.id);
       }
 
