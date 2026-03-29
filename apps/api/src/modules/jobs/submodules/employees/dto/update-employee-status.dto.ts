@@ -34,7 +34,9 @@ export class UpdateEmployeeStatusDto {
     required: false,
     example: 'Employee resigned due to relocation.',
   })
-  @ValidateIf((dto: UpdateEmployeeStatusDto) => dto.status === EmployeeStatus.TERMINATED)
+  @ValidateIf(
+    (dto: UpdateEmployeeStatusDto) => dto.status === EmployeeStatus.TERMINATED,
+  )
   @IsString()
   @IsNotEmpty()
   reasonForTermination?: string;

@@ -12,6 +12,24 @@ import {
 } from '@nestjs/swagger';
 
 type OpenApiSchema = Record<string, any>;
+type OpenApiMedia = {
+  schema?: OpenApiSchema;
+  example?: unknown;
+  examples?: unknown;
+};
+type OpenApiResponse = {
+  description?: string;
+  content?: Record<string, OpenApiMedia>;
+  [key: string]: unknown;
+};
+type OpenApiOperation = {
+  requestBody?: {
+    content?: Record<string, OpenApiMedia>;
+    [key: string]: unknown;
+  };
+  responses?: Record<string, OpenApiResponse>;
+  [key: string]: unknown;
+};
 
 // Build an example object from a Swagger schema (including $ref/allOf/arrays).
 function schemaToExample(
@@ -94,7 +112,9 @@ function hydrateSwaggerExamples(document: OpenAPIObject): void {
     for (const operation of Object.values(pathItem)) {
       if (!operation || typeof operation !== 'object') continue;
 
-      const requestContent = operation.requestBody?.content ?? {};
+      const openApiOperation = operation as OpenApiOperation;
+
+      const requestContent = openApiOperation.requestBody?.content ?? {};
       for (const media of Object.values(requestContent)) {
         if (!media?.schema) continue;
         if (media.example !== undefined || media.examples !== undefined)
@@ -103,7 +123,7 @@ function hydrateSwaggerExamples(document: OpenAPIObject): void {
         if (generated !== undefined) media.example = generated;
       }
 
-      const responses = (operation.responses ??= {});
+      const responses = (openApiOperation.responses ??= {});
       if (Object.keys(responses).length === 0) {
         responses['200'] = {
           description: 'Successful response',

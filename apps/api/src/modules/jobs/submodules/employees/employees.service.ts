@@ -50,8 +50,7 @@ export class EmployeesService {
     string
   > = {
     [EmployeeTerminationHrMeaning.EMPLOYEE_RESIGNED]: 'Employee Resigned',
-    [EmployeeTerminationHrMeaning.EMPLOYEE_TERMINATED]:
-      'Employee Terminated',
+    [EmployeeTerminationHrMeaning.EMPLOYEE_TERMINATED]: 'Employee Terminated',
     [EmployeeTerminationHrMeaning.ROLE_REDUNDANT]: 'Role Redundant',
     [EmployeeTerminationHrMeaning.MUTUAL_SEPARATION]: 'Mutual Separation',
     [EmployeeTerminationHrMeaning.OTHER]: 'Other',
