@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, SelectQueryBuilder } from 'typeorm';
+import { In, Repository, SelectQueryBuilder } from 'typeorm';
 import { StorageService } from '@app/common/storage/storage.service';
 import {
   Employee,
@@ -78,10 +78,20 @@ export class EmployeesService {
 
     if (
       await this.employeeRepo.findOne({
-        where: { jobId: dto.jobId, jobseekerProfileId: dto.jobseekerProfileId },
+        where: {
+          jobId: dto.jobId,
+          jobseekerProfileId: dto.jobseekerProfileId,
+          status: In([
+            EmployeeStatus.ONBOARDING,
+            EmployeeStatus.ACTIVE,
+            EmployeeStatus.SUSPENDED,
+          ]),
+        },
       })
     ) {
-      throw new BadRequestException('Employee already exists for this job');
+      throw new BadRequestException(
+        'An active employee record already exists for this job',
+      );
     }
 
     const profile = await this.jobseekerRepo.findOne({

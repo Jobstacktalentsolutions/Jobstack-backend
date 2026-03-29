@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, SelectQueryBuilder } from 'typeorm';
+import { In, Repository, SelectQueryBuilder } from 'typeorm';
 import {
   Job,
   JobApplication,
@@ -375,12 +375,17 @@ export class JobApplicationsService {
       where: {
         jobId: application.jobId,
         jobseekerProfileId: application.jobseekerProfileId,
+        status: In([
+          EmployeeStatus.ONBOARDING,
+          EmployeeStatus.ACTIVE,
+          EmployeeStatus.SUSPENDED,
+        ]),
       },
     });
 
     if (existingEmployee) {
       throw new BadRequestException(
-        'Employee record already exists for this candidate',
+        'An active employee record already exists for this candidate',
       );
     }
 

@@ -63,7 +63,7 @@
                       </table>
                       <% } %>
 
-                      <% if (actionUrl && actionText) { %>
+                      <% if (typeof actionUrl !== 'undefined' && typeof actionText !== 'undefined' && actionUrl && actionText) { %>
                       <!-- CTA Button -->
                       <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 24px 0;">
                         <tr>
