@@ -399,7 +399,14 @@ export class JobsAdminController {
         JobApplication,
         {
           jobId,
-          status: JobApplicationStatus.SELECTED_FOR_HIRE,
+          status: In([
+            JobApplicationStatus.SELECTED_FOR_HIRE,
+            JobApplicationStatus.OFFER_SENT,
+            JobApplicationStatus.APPLICANT_ACCEPTED,
+            JobApplicationStatus.PAYMENT_COMPLETE,
+            JobApplicationStatus.CONTRACT_SIGNED,
+            JobApplicationStatus.HIRED,
+          ]),
         },
         {
           status: JobApplicationStatus.VETTED,
