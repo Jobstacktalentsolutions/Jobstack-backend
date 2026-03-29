@@ -139,8 +139,10 @@ export enum JobStatus {
   CLOSED = 'CLOSED',
 }
 
+// It always appears in this order
 export enum JobApplicationStatus {
   APPLIED = 'APPLIED',
+  WITHDRAWN = 'WITHDRAWN',
   VETTED = 'VETTED',
   SELECTED_FOR_SCREENING = 'SELECTED_FOR_SCREENING',
   SELECTED_FOR_HIRE = 'SELECTED_FOR_HIRE',
@@ -150,7 +152,6 @@ export enum JobApplicationStatus {
   CONTRACT_SIGNED = 'CONTRACT_SIGNED',
   HIRED = 'HIRED',
   REJECTED = 'REJECTED',
-  WITHDRAWN = 'WITHDRAWN',
 }
 
 export enum ProbationStatus {
