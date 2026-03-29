@@ -4,7 +4,7 @@ A financial gating system that masks candidate PII until employers pay a configu
 
 **Implemented Status Flow:**
 
-- SCREENING_COMPLETED → OFFER_SENT → APPLICANT_ACCEPTED → PAYMENT_COMPLETE → CONTRACT_SIGNED → HIRED
+- SELECTED_FOR_HIRE → OFFER_SENT → APPLICANT_ACCEPTED → PAYMENT_COMPLETE → CONTRACT_SIGNED → HIRED
 - Commission calculated on `Employee.salaryOffered` × 12 (annual basis) for permanent roles, or `Employee.contractFeeOffered` for contracts
 - **Salary/Contract Fee determined at Job creation**, not during acceptance (Job.salary and Job.contractFee fields)
 - PII unmasked when `Employee.piiUnlocked = true` after payment

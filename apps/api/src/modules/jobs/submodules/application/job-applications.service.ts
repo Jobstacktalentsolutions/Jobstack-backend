@@ -169,7 +169,7 @@ export class JobApplicationsService {
     // Candidate stages include screening and post-screening states
     const candidateStatuses: JobApplicationStatus[] = [
       JobApplicationStatus.SELECTED_FOR_SCREENING,
-      JobApplicationStatus.SCREENING_COMPLETED,
+      JobApplicationStatus.SELECTED_FOR_HIRE,
       JobApplicationStatus.OFFER_SENT,
       JobApplicationStatus.APPLICANT_ACCEPTED,
       JobApplicationStatus.PAYMENT_COMPLETE,

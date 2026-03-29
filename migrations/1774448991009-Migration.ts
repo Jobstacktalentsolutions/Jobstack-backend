@@ -14,7 +14,7 @@ export class Migration1774448991009 implements MigrationInterface {
       `ALTER TYPE "public"."job_applications_status_enum" RENAME TO "job_applications_status_enum_old"`,
     );
     await queryRunner.query(
-      `CREATE TYPE "public"."job_applications_status_enum" AS ENUM('APPLIED', 'VETTED', 'SELECTED_FOR_SCREENING', 'SCREENING_COMPLETED', 'OFFER_SENT', 'APPLICANT_ACCEPTED', 'PAYMENT_COMPLETE', 'CONTRACT_SIGNED', 'HIRED', 'REJECTED', 'WITHDRAWN')`,
+      `CREATE TYPE "public"."job_applications_status_enum" AS ENUM('APPLIED', 'VETTED', 'SELECTED_FOR_SCREENING', 'SELECTED_FOR_HIRE', 'OFFER_SENT', 'APPLICANT_ACCEPTED', 'PAYMENT_COMPLETE', 'CONTRACT_SIGNED', 'HIRED', 'REJECTED', 'WITHDRAWN')`,
     );
     await queryRunner.query(
       `ALTER TABLE "job_applications" ALTER COLUMN "status" DROP DEFAULT`,
@@ -32,7 +32,7 @@ export class Migration1774448991009 implements MigrationInterface {
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
-      `CREATE TYPE "public"."job_applications_status_enum_old" AS ENUM('APPLICANT_ACCEPTED', 'APPLIED', 'CONFIRMED', 'CONTRACT_SIGNED', 'HIRED', 'OFFER_SENT', 'PAYMENT_COMPLETE', 'PLACED_PROBATION', 'REJECTED', 'SCREENING_COMPLETED', 'SELECTED_FOR_SCREENING', 'VETTED', 'WITHDRAWN')`,
+      `CREATE TYPE "public"."job_applications_status_enum_old" AS ENUM('APPLICANT_ACCEPTED', 'APPLIED', 'CONFIRMED', 'CONTRACT_SIGNED', 'HIRED', 'OFFER_SENT', 'PAYMENT_COMPLETE', 'PLACED_PROBATION', 'REJECTED', 'SELECTED_FOR_HIRE', 'SELECTED_FOR_SCREENING', 'VETTED', 'WITHDRAWN')`,
     );
     await queryRunner.query(
       `ALTER TABLE "job_applications" ALTER COLUMN "status" DROP DEFAULT`,

@@ -37,7 +37,7 @@ This feature protects candidate contact information behind a payment. Employers 
 APPLIED
   → VETTED
     → SELECTED_FOR_SCREENING
-      → SCREENING_COMPLETED
+      → SELECTED_FOR_HIRE
         → OFFER_SENT
           → APPLICANT_ACCEPTED
             → PAYMENT_COMPLETE      (payment webhook confirmed)

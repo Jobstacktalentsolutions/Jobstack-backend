@@ -10,12 +10,7 @@ import {
   Body,
   Post,
 } from '@nestjs/common';
-import {
-  ApiBearerAuth,
-  ApiBody,
-  ApiOperation,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AdminJwtGuard, RequireAdminRole } from 'apps/api/src/guards';
 import { AdminRole } from '@app/common/shared/enums/roles.enum';
 import { JobsService } from '../services/jobs.service';
@@ -397,25 +392,29 @@ export class JobsAdminController {
       };
     }
 
-    // Ensure only one application per job is marked as SCREENING_COMPLETED
+    // Ensure only one application per job is marked as SELECTED_FOR_HIRE
     await this.applicationRepo.manager.transaction(async (manager) => {
       // Clear any previously picked applications for this job
-      await manager.update(JobApplication, {
-        jobId,
-        status: JobApplicationStatus.SCREENING_COMPLETED,
-      }, {
-        status: JobApplicationStatus.VETTED,
-        screeningStrengths: null,
-        screeningConcerns: null,
-        screeningInterviewFeedback: null,
-      });
+      await manager.update(
+        JobApplication,
+        {
+          jobId,
+          status: JobApplicationStatus.SELECTED_FOR_HIRE,
+        },
+        {
+          status: JobApplicationStatus.VETTED,
+          screeningStrengths: null,
+          screeningConcerns: null,
+          screeningInterviewFeedback: null,
+        },
+      );
 
       // Mark the chosen application as screening completed
       await manager.update(
         JobApplication,
         { id: applicationId },
         {
-          status: JobApplicationStatus.SCREENING_COMPLETED,
+          status: JobApplicationStatus.SELECTED_FOR_HIRE,
           statusUpdatedAt: new Date(),
           screeningStrengths: strengths ?? null,
           screeningConcerns: concerns ?? null,
@@ -446,7 +445,9 @@ export class JobsAdminController {
     @Query('search') search?: string,
     @Query('limit') limit?: string,
   ) {
-    const parsedLimit = limit ? Math.min(50, Math.max(5, Number(limit))) : undefined;
+    const parsedLimit = limit
+      ? Math.min(50, Math.max(5, Number(limit)))
+      : undefined;
     return this.adminReplacementService.getReplacementCandidates({
       jobId,
       search,
