@@ -1,5 +1,5 @@
 import { IsOptional, IsBoolean, IsInt, Min, IsString } from 'class-validator';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 
 // Query params for listing in-app notifications
@@ -20,7 +20,15 @@ export class NotificationListQueryDto {
 
   @ApiPropertyOptional({ example: false })
   @IsOptional()
-  @Type(() => Boolean)
+  @Transform(({ value }) => {
+    if (typeof value === 'boolean') return value;
+    if (typeof value === 'string') {
+      const normalized = value.trim().toLowerCase();
+      if (normalized === 'true' || normalized === '1') return true;
+      if (normalized === 'false' || normalized === '0') return false;
+    }
+    return value;
+  })
   @IsBoolean()
   isRead?: boolean;
 
