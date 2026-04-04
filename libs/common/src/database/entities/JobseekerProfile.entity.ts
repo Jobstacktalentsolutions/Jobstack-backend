@@ -73,7 +73,7 @@ export class JobSeekerProfile {
   @Column({ type: 'text', nullable: true })
   jobTitle?: string;
 
-  @Column({ type: 'text', nullable: true })
+  @Column({ type: 'varchar', length: 3000, nullable: true })
   brief?: string;
 
   @Column({ type: 'int', nullable: true })

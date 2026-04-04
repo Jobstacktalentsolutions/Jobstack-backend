@@ -27,7 +27,7 @@ export class Job extends BaseEntity {
   @Column()
   title: string;
 
-  @Column({ type: 'text' })
+  @Column({ type: 'varchar', length: 3000 })
   description: string;
 
   @Column({ type: 'enum', enum: SkillCategory })
