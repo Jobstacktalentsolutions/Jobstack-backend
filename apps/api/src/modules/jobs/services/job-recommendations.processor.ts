@@ -18,7 +18,17 @@ const W = JOB_MATCHING_CONFIG.WEIGHTS;
 const C = JOB_MATCHING_CONFIG;
 
 // Seniority keywords for title boost
-const SENIORITY_KEYWORDS = ['junior','entry','mid','mid-level','senior','lead','principal','staff','head'];
+const SENIORITY_KEYWORDS = [
+  'junior',
+  'entry',
+  'mid',
+  'mid-level',
+  'senior',
+  'lead',
+  'principal',
+  'staff',
+  'head',
+];
 
 @Injectable()
 export class JobRecommendationsProcessor {
@@ -61,7 +71,10 @@ export class JobRecommendationsProcessor {
     // Initial query for candidate jobs
     const qb = this.baseJobQuery()
       .where('job.status = :status', { status: JobStatus.PUBLISHED })
-      .andWhere('(job.applicationDeadline IS NULL OR job.applicationDeadline > :now)', { now: new Date() })
+      .andWhere(
+        '(job.applicationDeadline IS NULL OR job.applicationDeadline > :now)',
+        { now: new Date() },
+      )
       .andWhere(
         `NOT EXISTS (
           SELECT 1 FROM job_applications application
@@ -75,11 +88,26 @@ export class JobRecommendationsProcessor {
 
     // Score jobs and filter by CORE gate
     const scoredJobs = allJobs
-      .map((job) => this.scoreJob(profile, job, userSkillIds, userSkillNames, userSkillCategories))
-      .filter((result): result is { job: Job; score: number } => result !== null);
+      .map((job) =>
+        this.scoreJob(
+          profile,
+          job,
+          userSkillIds,
+          userSkillNames,
+          userSkillCategories,
+        ),
+      )
+      .filter(
+        (result): result is { job: Job; score: number } => result !== null,
+      );
 
     // Sort by score (desc) then recency
-    scoredJobs.sort((a, b) => b.score - a.score || new Date(b.job.createdAt).getTime() - new Date(a.job.createdAt).getTime());
+    scoredJobs.sort(
+      (a, b) =>
+        b.score - a.score ||
+        new Date(b.job.createdAt).getTime() -
+          new Date(a.job.createdAt).getTime(),
+    );
 
     // Pagination
     const page = Math.max(1, query.page ?? 1);
@@ -106,9 +134,15 @@ export class JobRecommendationsProcessor {
     userSkillCategories: Set<SkillCategory>,
   ): { job: Job; score: number } | null {
     // 1. Calculate Core Determinants
-    const skillScore = this.calcSkillScore(job, userSkillIds, userSkillNames) * W.skillMatch;
-    const catScore = (job.category && userSkillCategories.has(job.category) ? 1.0 : 0) * W.categoryMatch;
-    const titleScore = (profile.jobTitle ? this.calcTitleMatch(profile.jobTitle, job.title) : 0) * W.titleSimilarity;
+    const skillScore =
+      this.calcSkillScore(job, userSkillIds, userSkillNames) * W.skillMatch;
+    const catScore =
+      (job.category && userSkillCategories.has(job.category) ? 1.0 : 0) *
+      W.categoryMatch;
+    const titleScore =
+      (profile.jobTitle
+        ? this.calcTitleMatch(profile.jobTitle, job.title)
+        : 0) * W.titleSimilarity;
     const tagScore = this.calcTagScore(job.tags, profile.brief) * W.tags;
 
     const coreScoreSum = skillScore + catScore + titleScore + tagScore;
@@ -116,13 +150,19 @@ export class JobRecommendationsProcessor {
     // CORE GATE: If ratio is below threshold, exclude immediately
     const relevancyRatio = coreScoreSum / CORE_FACTORS_WEIGHT;
     if (relevancyRatio < C.MIN_CORE_RELEVANCY_RATIO) {
-      return null; 
+      return null;
     }
 
     // 2. Calculate Secondary "Buffer" Factors
-    const locationScore = (this.calcLocationScore(profile, job) / 100) * W.location;
+    const locationScore =
+      (this.calcLocationScore(profile, job) / 100) * W.location;
     const prefScore = this.calcPrefScore(profile, job);
-    const salaryScore = this.calcSalaryScore(profile.minExpectedSalary, profile.maxExpectedSalary, job.salary) * W.salary;
+    const salaryScore =
+      this.calcSalaryScore(
+        profile.minExpectedSalary,
+        profile.maxExpectedSalary,
+        job.salary,
+      ) * W.salary;
 
     const totalScore = coreScoreSum + locationScore + prefScore + salaryScore;
 
@@ -136,7 +176,11 @@ export class JobRecommendationsProcessor {
   // Detail logic
   // ---------------------------------------------------------------------------
 
-  private calcSkillScore(job: Job, userSkillIds: string[], userSkillNames: Set<string>): number {
+  private calcSkillScore(
+    job: Job,
+    userSkillIds: string[],
+    userSkillNames: Set<string>,
+  ): number {
     if (!job.skills || job.skills.length === 0) return 0.5; // neutral
     if (userSkillIds.length === 0) return 0;
 
@@ -148,7 +192,8 @@ export class JobRecommendationsProcessor {
         matchCount += 1.0;
       } else {
         const fuzzyVal = this.bestFuzzySimilarity(jSkill.name, userSkillNames);
-        if (fuzzyVal >= C.FUZZY_THRESHOLD) matchCount += (fuzzyVal * C.FUZZY_CREDIT_RATIO);
+        if (fuzzyVal >= C.FUZZY_THRESHOLD)
+          matchCount += fuzzyVal * C.FUZZY_CREDIT_RATIO;
       }
     }
 
@@ -157,11 +202,16 @@ export class JobRecommendationsProcessor {
     return union > 0 ? Math.min(1, intersection / union) : 0;
   }
 
-  private calcTagScore(tags: string[] | undefined, brief: string | undefined): number {
+  private calcTagScore(
+    tags: string[] | undefined,
+    brief: string | undefined,
+  ): number {
     if (!tags || tags.length === 0) return 0;
     if (!brief) return 0;
 
-    const summary = brief.substring(0, C.MAX_FUZZY_MATCH_TEXT_LENGTH).toLowerCase();
+    const summary = brief
+      .substring(0, C.MAX_FUZZY_MATCH_TEXT_LENGTH)
+      .toLowerCase();
     let totalTagMatches = 0;
 
     for (const tag of tags) {
@@ -179,9 +229,10 @@ export class JobRecommendationsProcessor {
         if (word.length < 3) continue;
         const sim = JaroWinklerDistance(tagLower, word);
         if (sim > bestWordSim) bestWordSim = sim;
-        if (bestWordSim > 0.95) break; 
+        if (bestWordSim > 0.95) break;
       }
-      if (bestWordSim >= C.FUZZY_THRESHOLD) totalTagMatches += (bestWordSim * C.FUZZY_CREDIT_RATIO);
+      if (bestWordSim >= C.FUZZY_THRESHOLD)
+        totalTagMatches += bestWordSim * C.FUZZY_CREDIT_RATIO;
     }
 
     return Math.min(1, totalTagMatches / tags.length);
@@ -191,9 +242,9 @@ export class JobRecommendationsProcessor {
     const a = userTitle.toLowerCase();
     const b = jobTitle.toLowerCase();
     const jaro = JaroWinklerDistance(a, b);
-    const aLevel = SENIORITY_KEYWORDS.find(k => a.includes(k));
-    const bLevel = SENIORITY_KEYWORDS.find(k => b.includes(k));
-    const bonus = (aLevel && bLevel && aLevel === bLevel) ? 0.08 : 0;
+    const aLevel = SENIORITY_KEYWORDS.find((k) => a.includes(k));
+    const bLevel = SENIORITY_KEYWORDS.find((k) => b.includes(k));
+    const bonus = aLevel && bLevel && aLevel === bLevel ? 0.08 : 0;
     return Math.min(1, jaro + bonus);
   }
 
@@ -207,8 +258,10 @@ export class JobRecommendationsProcessor {
 
   private calcLocationScore(p: JobSeekerProfile, j: Job): number {
     if (!j.state && !j.city) return 50;
-    if (j.city && p.city && j.city.toLowerCase() === p.city.toLowerCase()) return 100;
-    if (j.state && p.state && j.state.toLowerCase() === p.state.toLowerCase()) return 50;
+    if (j.city && p.city && j.city.toLowerCase() === p.city.toLowerCase())
+      return 100;
+    if (j.state && p.state && j.state.toLowerCase() === p.state.toLowerCase())
+      return 50;
     return 0;
   }
 

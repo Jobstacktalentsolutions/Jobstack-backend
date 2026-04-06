@@ -27,7 +27,6 @@ export class JobApplication extends BaseEntity {
   })
   status: JobApplicationStatus;
 
-
   @Column({ type: 'text', nullable: true })
   note?: string;
 

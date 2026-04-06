@@ -41,7 +41,7 @@ export class SystemConfigFactory {
           const updated = await this.repository.findOne({
             where: { key: entry.key },
           });
-          results.push(updated!);
+          results.push(updated);
           console.log(`  ↩  Updated: ${entry.key} = ${entry.value}`);
         } else {
           const record = this.repository.create({

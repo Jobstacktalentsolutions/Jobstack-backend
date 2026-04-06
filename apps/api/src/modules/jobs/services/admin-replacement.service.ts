@@ -430,7 +430,7 @@ export class AdminReplacementService {
       );
 
       await this.notificationService.createAppNotification(
-        current.jobseekerProfileId as string,
+        current.jobseekerProfileId,
         UserRole.JOB_SEEKER,
         {
           title: '🎉 You have been Hired! (Replacement)',

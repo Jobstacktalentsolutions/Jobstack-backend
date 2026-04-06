@@ -203,7 +203,7 @@ export class ProbationTrackingService {
       );
 
       await this.notificationService.createAppNotification(
-        employee.jobseekerProfileId as string,
+        employee.jobseekerProfileId,
         UserRole.JOB_SEEKER,
         {
           title: '🎉 Placement Confirmed!',

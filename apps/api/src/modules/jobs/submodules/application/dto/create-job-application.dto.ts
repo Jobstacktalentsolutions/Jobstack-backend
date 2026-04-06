@@ -4,7 +4,6 @@ import { IsNumber } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateJobApplicationDto {
-
   @ApiPropertyOptional({
     description: 'Short note to the employer',
     example:

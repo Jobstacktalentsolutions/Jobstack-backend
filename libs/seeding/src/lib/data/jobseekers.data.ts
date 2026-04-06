@@ -747,7 +747,8 @@ export const JOBSEEKERS_DATA: any[] = [
     city: 'Ikeja',
     passwordHash,
     jobTitle: 'Backend Engineer',
-    brief: 'Node.js specialist with strong SQL and performance optimization skills',
+    brief:
+      'Node.js specialist with strong SQL and performance optimization skills',
     yearsOfExperience: 5,
     preferredLocation: 'Lagos',
     preferredEmploymentType: EmploymentType.FULL_TIME,
@@ -757,8 +758,16 @@ export const JOBSEEKERS_DATA: any[] = [
     maxExpectedSalary: 8500000,
     approvalStatus: ApprovalStatus.APPROVED,
     skills: [
-      { skillId: CONSTANT_IDS.SKILLS[4], proficiency: 'ADVANCED', yearsExperience: 5 }, // Node.js
-      { skillId: CONSTANT_IDS.SKILLS[5], proficiency: 'ADVANCED', yearsExperience: 4 }, // PostgreSQL
+      {
+        skillId: CONSTANT_IDS.SKILLS[4],
+        proficiency: 'ADVANCED',
+        yearsExperience: 5,
+      }, // Node.js
+      {
+        skillId: CONSTANT_IDS.SKILLS[5],
+        proficiency: 'ADVANCED',
+        yearsExperience: 4,
+      }, // PostgreSQL
     ],
   },
   {
@@ -772,7 +781,8 @@ export const JOBSEEKERS_DATA: any[] = [
     city: 'Lekki',
     passwordHash,
     jobTitle: 'Frontend Engineer',
-    brief: 'React and TypeScript expert with a focus on building accessible user interfaces',
+    brief:
+      'React and TypeScript expert with a focus on building accessible user interfaces',
     yearsOfExperience: 4,
     preferredLocation: 'Lagos',
     preferredEmploymentType: EmploymentType.FULL_TIME,
@@ -782,8 +792,16 @@ export const JOBSEEKERS_DATA: any[] = [
     maxExpectedSalary: 8000000,
     approvalStatus: ApprovalStatus.APPROVED,
     skills: [
-      { skillId: CONSTANT_IDS.SKILLS[2], proficiency: 'ADVANCED', yearsExperience: 4 }, // React
-      { skillId: CONSTANT_IDS.SKILLS[3], proficiency: 'ADVANCED', yearsExperience: 3 }, // TypeScript
+      {
+        skillId: CONSTANT_IDS.SKILLS[2],
+        proficiency: 'ADVANCED',
+        yearsExperience: 4,
+      }, // React
+      {
+        skillId: CONSTANT_IDS.SKILLS[3],
+        proficiency: 'ADVANCED',
+        yearsExperience: 3,
+      }, // TypeScript
     ],
   },
   {
@@ -797,7 +815,8 @@ export const JOBSEEKERS_DATA: any[] = [
     city: 'Abuja',
     passwordHash,
     jobTitle: 'Product Manager',
-    brief: 'Strategic thinker with a background in data-driven product development',
+    brief:
+      'Strategic thinker with a background in data-driven product development',
     yearsOfExperience: 6,
     preferredLocation: 'Abuja',
     preferredEmploymentType: EmploymentType.FULL_TIME,
@@ -807,8 +826,16 @@ export const JOBSEEKERS_DATA: any[] = [
     maxExpectedSalary: 11000000,
     approvalStatus: ApprovalStatus.APPROVED,
     skills: [
-      { skillId: CONSTANT_IDS.SKILLS[8], proficiency: 'ADVANCED', yearsExperience: 6 }, // PM
-      { skillId: CONSTANT_IDS.SKILLS[10], proficiency: 'INTERMEDIATE', yearsExperience: 3 }, // Data Analysis
+      {
+        skillId: CONSTANT_IDS.SKILLS[8],
+        proficiency: 'ADVANCED',
+        yearsExperience: 6,
+      }, // PM
+      {
+        skillId: CONSTANT_IDS.SKILLS[10],
+        proficiency: 'INTERMEDIATE',
+        yearsExperience: 3,
+      }, // Data Analysis
     ],
   },
   {
@@ -822,7 +849,8 @@ export const JOBSEEKERS_DATA: any[] = [
     city: 'Benin City',
     passwordHash,
     jobTitle: 'Data Engineer',
-    brief: 'Expert in building robust data pipelines and managing large-scale databases',
+    brief:
+      'Expert in building robust data pipelines and managing large-scale databases',
     yearsOfExperience: 5,
     preferredLocation: 'Remote',
     preferredEmploymentType: EmploymentType.FULL_TIME,
@@ -832,8 +860,16 @@ export const JOBSEEKERS_DATA: any[] = [
     maxExpectedSalary: 10000000,
     approvalStatus: ApprovalStatus.APPROVED,
     skills: [
-      { skillId: CONSTANT_IDS.SKILLS[1], proficiency: 'ADVANCED', yearsExperience: 5 }, // Python
-      { skillId: CONSTANT_IDS.SKILLS[5], proficiency: 'ADVANCED', yearsExperience: 4 }, // PostgreSQL
+      {
+        skillId: CONSTANT_IDS.SKILLS[1],
+        proficiency: 'ADVANCED',
+        yearsExperience: 5,
+      }, // Python
+      {
+        skillId: CONSTANT_IDS.SKILLS[5],
+        proficiency: 'ADVANCED',
+        yearsExperience: 4,
+      }, // PostgreSQL
     ],
   },
   {
@@ -847,7 +883,8 @@ export const JOBSEEKERS_DATA: any[] = [
     city: 'Kano',
     passwordHash,
     jobTitle: 'Financial Accountant',
-    brief: 'Detail-oriented accountant with extensive experience in corporate taxation',
+    brief:
+      'Detail-oriented accountant with extensive experience in corporate taxation',
     yearsOfExperience: 7,
     preferredLocation: 'Kano',
     preferredEmploymentType: EmploymentType.FULL_TIME,
@@ -857,8 +894,16 @@ export const JOBSEEKERS_DATA: any[] = [
     maxExpectedSalary: 7500000,
     approvalStatus: ApprovalStatus.APPROVED,
     skills: [
-      { skillId: CONSTANT_IDS.SKILLS[14], proficiency: 'ADVANCED', yearsExperience: 7 }, // Accounting
-      { skillId: CONSTANT_IDS.SKILLS[15], proficiency: 'INTERMEDIATE', yearsExperience: 4 }, // Financial Analysis
+      {
+        skillId: CONSTANT_IDS.SKILLS[14],
+        proficiency: 'ADVANCED',
+        yearsExperience: 7,
+      }, // Accounting
+      {
+        skillId: CONSTANT_IDS.SKILLS[15],
+        proficiency: 'INTERMEDIATE',
+        yearsExperience: 4,
+      }, // Financial Analysis
     ],
   },
   {
@@ -882,8 +927,16 @@ export const JOBSEEKERS_DATA: any[] = [
     maxExpectedSalary: 5500000,
     approvalStatus: ApprovalStatus.APPROVED,
     skills: [
-      { skillId: CONSTANT_IDS.SKILLS[16], proficiency: 'ADVANCED', yearsExperience: 3 }, // Sales
-      { skillId: CONSTANT_IDS.SKILLS[11], proficiency: 'ADVANCED', yearsExperience: 3 }, // Communication
+      {
+        skillId: CONSTANT_IDS.SKILLS[16],
+        proficiency: 'ADVANCED',
+        yearsExperience: 3,
+      }, // Sales
+      {
+        skillId: CONSTANT_IDS.SKILLS[11],
+        proficiency: 'ADVANCED',
+        yearsExperience: 3,
+      }, // Communication
     ],
   },
   {
@@ -897,7 +950,8 @@ export const JOBSEEKERS_DATA: any[] = [
     city: 'Port Harcourt',
     passwordHash,
     jobTitle: 'Operations Manager',
-    brief: 'Experienced operations leader skilled in logistics and supply chain optimization',
+    brief:
+      'Experienced operations leader skilled in logistics and supply chain optimization',
     yearsOfExperience: 8,
     preferredLocation: 'Port Harcourt',
     preferredEmploymentType: EmploymentType.FULL_TIME,
@@ -907,8 +961,16 @@ export const JOBSEEKERS_DATA: any[] = [
     maxExpectedSalary: 9500000,
     approvalStatus: ApprovalStatus.APPROVED,
     skills: [
-      { skillId: CONSTANT_IDS.SKILLS[18], proficiency: 'ADVANCED', yearsExperience: 8 }, // Operations
-      { skillId: CONSTANT_IDS.SKILLS[19], proficiency: 'ADVANCED', yearsExperience: 6 }, // Supply Chain
+      {
+        skillId: CONSTANT_IDS.SKILLS[18],
+        proficiency: 'ADVANCED',
+        yearsExperience: 8,
+      }, // Operations
+      {
+        skillId: CONSTANT_IDS.SKILLS[19],
+        proficiency: 'ADVANCED',
+        yearsExperience: 6,
+      }, // Supply Chain
     ],
   },
   {
@@ -932,8 +994,16 @@ export const JOBSEEKERS_DATA: any[] = [
     maxExpectedSalary: 4500000,
     approvalStatus: ApprovalStatus.APPROVED,
     skills: [
-      { skillId: CONSTANT_IDS.SKILLS[13], proficiency: 'ADVANCED', yearsExperience: 4 }, // Graphic Design
-      { skillId: CONSTANT_IDS.SKILLS[12], proficiency: 'INTERMEDIATE', yearsExperience: 2 }, // UI/UX
+      {
+        skillId: CONSTANT_IDS.SKILLS[13],
+        proficiency: 'ADVANCED',
+        yearsExperience: 4,
+      }, // Graphic Design
+      {
+        skillId: CONSTANT_IDS.SKILLS[12],
+        proficiency: 'INTERMEDIATE',
+        yearsExperience: 2,
+      }, // UI/UX
     ],
   },
   {
@@ -947,7 +1017,8 @@ export const JOBSEEKERS_DATA: any[] = [
     city: 'Calabar',
     passwordHash,
     jobTitle: 'Customer Success Specialist',
-    brief: 'Dedicated professional with a background in client relationship management',
+    brief:
+      'Dedicated professional with a background in client relationship management',
     yearsOfExperience: 5,
     preferredLocation: 'Lagos',
     preferredEmploymentType: EmploymentType.FULL_TIME,
@@ -957,8 +1028,16 @@ export const JOBSEEKERS_DATA: any[] = [
     maxExpectedSalary: 5000000,
     approvalStatus: ApprovalStatus.APPROVED,
     skills: [
-      { skillId: CONSTANT_IDS.SKILLS[11], proficiency: 'ADVANCED', yearsExperience: 5 }, // Customer Service
-      { skillId: CONSTANT_IDS.SKILLS[21], proficiency: 'ADVANCED', yearsExperience: 5 }, // Communication
+      {
+        skillId: CONSTANT_IDS.SKILLS[11],
+        proficiency: 'ADVANCED',
+        yearsExperience: 5,
+      }, // Customer Service
+      {
+        skillId: CONSTANT_IDS.SKILLS[21],
+        proficiency: 'ADVANCED',
+        yearsExperience: 5,
+      }, // Communication
     ],
   },
   {
@@ -972,7 +1051,8 @@ export const JOBSEEKERS_DATA: any[] = [
     city: 'Ajah',
     passwordHash,
     jobTitle: 'DevOps Engineer',
-    brief: 'Cloud infrastructure expert with mastery in AWS, Docker, and Kubernetes',
+    brief:
+      'Cloud infrastructure expert with mastery in AWS, Docker, and Kubernetes',
     yearsOfExperience: 6,
     preferredLocation: 'Lagos',
     preferredEmploymentType: EmploymentType.FULL_TIME,
@@ -982,8 +1062,16 @@ export const JOBSEEKERS_DATA: any[] = [
     maxExpectedSalary: 11000000,
     approvalStatus: ApprovalStatus.APPROVED,
     skills: [
-      { skillId: CONSTANT_IDS.SKILLS[4], proficiency: 'ADVANCED', yearsExperience: 5 }, // Node (placeholder for tech backend)
-      { skillId: CONSTANT_IDS.SKILLS[5], proficiency: 'INTERMEDIATE', yearsExperience: 3 }, // SQL
+      {
+        skillId: CONSTANT_IDS.SKILLS[4],
+        proficiency: 'ADVANCED',
+        yearsExperience: 5,
+      }, // Node (placeholder for tech backend)
+      {
+        skillId: CONSTANT_IDS.SKILLS[5],
+        proficiency: 'INTERMEDIATE',
+        yearsExperience: 3,
+      }, // SQL
     ],
   },
   // --- 10 for Jobseekers with NO applications initially ---
@@ -998,7 +1086,8 @@ export const JOBSEEKERS_DATA: any[] = [
     city: 'Akure',
     passwordHash,
     jobTitle: 'Content Writer',
-    brief: 'Skilled copywriter and editor with a focus on digital media and SEO',
+    brief:
+      'Skilled copywriter and editor with a focus on digital media and SEO',
     yearsOfExperience: 3,
     preferredLocation: 'Remote',
     preferredEmploymentType: EmploymentType.FULL_TIME,
@@ -1008,8 +1097,16 @@ export const JOBSEEKERS_DATA: any[] = [
     maxExpectedSalary: 3500000,
     approvalStatus: ApprovalStatus.APPROVED,
     skills: [
-      { skillId: CONSTANT_IDS.SKILLS[17], proficiency: 'ADVANCED', yearsExperience: 3 }, // Content
-      { skillId: CONSTANT_IDS.SKILLS[9], proficiency: 'INTERMEDIATE', yearsExperience: 2 }, // Marketing
+      {
+        skillId: CONSTANT_IDS.SKILLS[17],
+        proficiency: 'ADVANCED',
+        yearsExperience: 3,
+      }, // Content
+      {
+        skillId: CONSTANT_IDS.SKILLS[9],
+        proficiency: 'INTERMEDIATE',
+        yearsExperience: 2,
+      }, // Marketing
     ],
   },
   {
@@ -1023,7 +1120,8 @@ export const JOBSEEKERS_DATA: any[] = [
     city: 'Kaduna',
     passwordHash,
     jobTitle: 'Electrician',
-    brief: 'Licensed electrician with 10 years experience in residential wiring',
+    brief:
+      'Licensed electrician with 10 years experience in residential wiring',
     yearsOfExperience: 10,
     preferredLocation: 'Kaduna',
     preferredEmploymentType: EmploymentType.FULL_TIME,
@@ -1033,7 +1131,11 @@ export const JOBSEEKERS_DATA: any[] = [
     maxExpectedSalary: 2800000,
     approvalStatus: ApprovalStatus.APPROVED,
     skills: [
-      { skillId: CONSTANT_IDS.SKILLS[26], proficiency: 'ADVANCED', yearsExperience: 10 }, // Electrical
+      {
+        skillId: CONSTANT_IDS.SKILLS[26],
+        proficiency: 'ADVANCED',
+        yearsExperience: 10,
+      }, // Electrical
     ],
   },
   {
@@ -1057,7 +1159,11 @@ export const JOBSEEKERS_DATA: any[] = [
     maxExpectedSalary: 4500000,
     approvalStatus: ApprovalStatus.APPROVED,
     skills: [
-      { skillId: CONSTANT_IDS.SKILLS[19], proficiency: 'ADVANCED', yearsExperience: 5 }, // Supply Chain
+      {
+        skillId: CONSTANT_IDS.SKILLS[19],
+        proficiency: 'ADVANCED',
+        yearsExperience: 5,
+      }, // Supply Chain
     ],
   },
   {
@@ -1081,405 +1187,535 @@ export const JOBSEEKERS_DATA: any[] = [
     maxExpectedSalary: 6500000,
     approvalStatus: ApprovalStatus.APPROVED,
     skills: [
-      { skillId: CONSTANT_IDS.SKILLS[15], proficiency: 'ADVANCED', yearsExperience: 4 }, // Financial analysis
-      { skillId: CONSTANT_IDS.SKILLS[14], proficiency: 'INTERMEDIATE', yearsExperience: 3 }, // Accounting
+      {
+        skillId: CONSTANT_IDS.SKILLS[15],
+        proficiency: 'ADVANCED',
+        yearsExperience: 4,
+      }, // Financial analysis
+      {
+        skillId: CONSTANT_IDS.SKILLS[14],
+        proficiency: 'INTERMEDIATE',
+        yearsExperience: 3,
+      }, // Accounting
     ],
   },
   {
-     id: CONSTANT_IDS.JOBSEEKERS[32],
-     firstName: 'Patience',
-     lastName: 'Udoh',
-     email: 'patience.udoh@example.com',
-     phoneNumber: '+2348000000032',
-     address: 'Uyo, Akwa Ibom',
-     state: 'Akwa Ibom',
-     city: 'Uyo',
-     passwordHash,
-     jobTitle: 'Customer Service Lead',
-     brief: 'Exceptional interpersonal skills with leadership experience in call centers',
-     yearsOfExperience: 8,
-     preferredLocation: 'Uyo',
-     preferredEmploymentType: EmploymentType.FULL_TIME,
-     preferredWorkMode: WorkMode.ON_SITE,
-     preferredEmploymentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
-     minExpectedSalary: 3500000,
-     maxExpectedSalary: 5500000,
-     approvalStatus: ApprovalStatus.APPROVED,
-     skills: [
-       { skillId: CONSTANT_IDS.SKILLS[11], proficiency: 'ADVANCED', yearsExperience: 8 }, // Customer Service
-       { skillId: CONSTANT_IDS.SKILLS[21], proficiency: 'ADVANCED', yearsExperience: 8 }, // Communication
-     ],
+    id: CONSTANT_IDS.JOBSEEKERS[32],
+    firstName: 'Patience',
+    lastName: 'Udoh',
+    email: 'patience.udoh@example.com',
+    phoneNumber: '+2348000000032',
+    address: 'Uyo, Akwa Ibom',
+    state: 'Akwa Ibom',
+    city: 'Uyo',
+    passwordHash,
+    jobTitle: 'Customer Service Lead',
+    brief:
+      'Exceptional interpersonal skills with leadership experience in call centers',
+    yearsOfExperience: 8,
+    preferredLocation: 'Uyo',
+    preferredEmploymentType: EmploymentType.FULL_TIME,
+    preferredWorkMode: WorkMode.ON_SITE,
+    preferredEmploymentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
+    minExpectedSalary: 3500000,
+    maxExpectedSalary: 5500000,
+    approvalStatus: ApprovalStatus.APPROVED,
+    skills: [
+      {
+        skillId: CONSTANT_IDS.SKILLS[11],
+        proficiency: 'ADVANCED',
+        yearsExperience: 8,
+      }, // Customer Service
+      {
+        skillId: CONSTANT_IDS.SKILLS[21],
+        proficiency: 'ADVANCED',
+        yearsExperience: 8,
+      }, // Communication
+    ],
   },
   {
-     id: CONSTANT_IDS.JOBSEEKERS[33],
-     firstName: 'Qudus',
-     lastName: 'Aliyu',
-     email: 'qudus.aliyu@example.com',
-     phoneNumber: '+2348000000033',
-     address: 'Ketu, Lagos',
-     state: 'Lagos',
-     city: 'Ikorodu',
-     passwordHash,
-     jobTitle: 'Fullstack Developer',
-     brief: 'Versatile developer skilled in modern JavaScript frameworks and databases',
-     yearsOfExperience: 3,
-     preferredLocation: 'Lagos',
-     preferredEmploymentType: EmploymentType.FULL_TIME,
-     preferredWorkMode: WorkMode.REMOTE,
-     preferredEmploymentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
-     minExpectedSalary: 4500000,
-     maxExpectedSalary: 7000000,
-     approvalStatus: ApprovalStatus.APPROVED,
-     skills: [
-       { skillId: CONSTANT_IDS.SKILLS[0], proficiency: 'ADVANCED', yearsExperience: 3 }, // JS
-       { skillId: CONSTANT_IDS.SKILLS[4], proficiency: 'INTERMEDIATE', yearsExperience: 2 }, // Node
-     ],
+    id: CONSTANT_IDS.JOBSEEKERS[33],
+    firstName: 'Qudus',
+    lastName: 'Aliyu',
+    email: 'qudus.aliyu@example.com',
+    phoneNumber: '+2348000000033',
+    address: 'Ketu, Lagos',
+    state: 'Lagos',
+    city: 'Ikorodu',
+    passwordHash,
+    jobTitle: 'Fullstack Developer',
+    brief:
+      'Versatile developer skilled in modern JavaScript frameworks and databases',
+    yearsOfExperience: 3,
+    preferredLocation: 'Lagos',
+    preferredEmploymentType: EmploymentType.FULL_TIME,
+    preferredWorkMode: WorkMode.REMOTE,
+    preferredEmploymentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
+    minExpectedSalary: 4500000,
+    maxExpectedSalary: 7000000,
+    approvalStatus: ApprovalStatus.APPROVED,
+    skills: [
+      {
+        skillId: CONSTANT_IDS.SKILLS[0],
+        proficiency: 'ADVANCED',
+        yearsExperience: 3,
+      }, // JS
+      {
+        skillId: CONSTANT_IDS.SKILLS[4],
+        proficiency: 'INTERMEDIATE',
+        yearsExperience: 2,
+      }, // Node
+    ],
   },
   {
-     id: CONSTANT_IDS.JOBSEEKERS[34],
-     firstName: 'Rita',
-     lastName: 'Chukwu',
-     email: 'rita.chukwu@example.com',
-     phoneNumber: '+2348000000034',
-     address: 'Isolo, Lagos',
-     state: 'Lagos',
-     city: 'Isolo',
-     passwordHash,
-     jobTitle: 'UX Researcher',
-     brief: 'Human-centered designer with a master\'s degree in Cognitive Psychology',
-     yearsOfExperience: 5,
-     preferredLocation: 'Lagos',
-     preferredEmploymentType: EmploymentType.FULL_TIME,
-     preferredWorkMode: WorkMode.HYBRID,
-     preferredEmploymentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
-     minExpectedSalary: 7000000,
-     maxExpectedSalary: 9500000,
-     approvalStatus: ApprovalStatus.APPROVED,
-     skills: [
-       { skillId: CONSTANT_IDS.SKILLS[12], proficiency: 'ADVANCED', yearsExperience: 5 }, // UI/UX
-       { skillId: CONSTANT_IDS.SKILLS[21], proficiency: 'ADVANCED', yearsExperience: 5 }, // Comm
-     ],
+    id: CONSTANT_IDS.JOBSEEKERS[34],
+    firstName: 'Rita',
+    lastName: 'Chukwu',
+    email: 'rita.chukwu@example.com',
+    phoneNumber: '+2348000000034',
+    address: 'Isolo, Lagos',
+    state: 'Lagos',
+    city: 'Isolo',
+    passwordHash,
+    jobTitle: 'UX Researcher',
+    brief:
+      "Human-centered designer with a master's degree in Cognitive Psychology",
+    yearsOfExperience: 5,
+    preferredLocation: 'Lagos',
+    preferredEmploymentType: EmploymentType.FULL_TIME,
+    preferredWorkMode: WorkMode.HYBRID,
+    preferredEmploymentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
+    minExpectedSalary: 7000000,
+    maxExpectedSalary: 9500000,
+    approvalStatus: ApprovalStatus.APPROVED,
+    skills: [
+      {
+        skillId: CONSTANT_IDS.SKILLS[12],
+        proficiency: 'ADVANCED',
+        yearsExperience: 5,
+      }, // UI/UX
+      {
+        skillId: CONSTANT_IDS.SKILLS[21],
+        proficiency: 'ADVANCED',
+        yearsExperience: 5,
+      }, // Comm
+    ],
   },
   {
-     id: CONSTANT_IDS.JOBSEEKERS[35],
-     firstName: 'Seyi',
-     lastName: 'Olatunji',
-     email: 'seyi.olatunji@example.com',
-     phoneNumber: '+2348000000035',
-     address: 'Ife Central, Osun',
-     state: 'Osun',
-     city: 'Ile-Ife',
-     passwordHash,
-     jobTitle: 'Data Analyst',
-     brief: 'Data enthusiast passionate about uncovering insights using Python and SQL',
-     yearsOfExperience: 2,
-     preferredLocation: 'Remote',
-     preferredEmploymentType: EmploymentType.FULL_TIME,
-     preferredWorkMode: WorkMode.REMOTE,
-     preferredEmploymentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
-     minExpectedSalary: 3000000,
-     maxExpectedSalary: 5000000,
-     approvalStatus: ApprovalStatus.APPROVED,
-     skills: [
-       { skillId: CONSTANT_IDS.SKILLS[1], proficiency: 'ADVANCED', yearsExperience: 2 }, // Python
-       { skillId: CONSTANT_IDS.SKILLS[10], proficiency: 'INTERMEDIATE', yearsExperience: 2 }, // Analytics
-     ],
+    id: CONSTANT_IDS.JOBSEEKERS[35],
+    firstName: 'Seyi',
+    lastName: 'Olatunji',
+    email: 'seyi.olatunji@example.com',
+    phoneNumber: '+2348000000035',
+    address: 'Ife Central, Osun',
+    state: 'Osun',
+    city: 'Ile-Ife',
+    passwordHash,
+    jobTitle: 'Data Analyst',
+    brief:
+      'Data enthusiast passionate about uncovering insights using Python and SQL',
+    yearsOfExperience: 2,
+    preferredLocation: 'Remote',
+    preferredEmploymentType: EmploymentType.FULL_TIME,
+    preferredWorkMode: WorkMode.REMOTE,
+    preferredEmploymentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
+    minExpectedSalary: 3000000,
+    maxExpectedSalary: 5000000,
+    approvalStatus: ApprovalStatus.APPROVED,
+    skills: [
+      {
+        skillId: CONSTANT_IDS.SKILLS[1],
+        proficiency: 'ADVANCED',
+        yearsExperience: 2,
+      }, // Python
+      {
+        skillId: CONSTANT_IDS.SKILLS[10],
+        proficiency: 'INTERMEDIATE',
+        yearsExperience: 2,
+      }, // Analytics
+    ],
   },
   {
-     id: CONSTANT_IDS.JOBSEEKERS[36],
-     firstName: 'Tope',
-     lastName: 'Balogun',
-     email: 'tope.balogun@example.com',
-     phoneNumber: '+2348000000036',
-     address: 'Agege, Lagos',
-     state: 'Lagos',
-     city: 'Agege',
-     passwordHash,
-     jobTitle: 'System Administrator',
-     brief: 'Windows and Linux server admin with extensive networking experience',
-     yearsOfExperience: 9,
-     preferredLocation: 'Lagos',
-     preferredEmploymentType: EmploymentType.FULL_TIME,
-     preferredWorkMode: WorkMode.ON_SITE,
-     preferredEmploymentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
-     minExpectedSalary: 6000000,
-     maxExpectedSalary: 9000000,
-     approvalStatus: ApprovalStatus.APPROVED,
-     skills: [
-       { skillId: CONSTANT_IDS.SKILLS[4], proficiency: 'ADVANCED', yearsExperience: 5 }, // Placeholder
-       { skillId: CONSTANT_IDS.SKILLS[18], proficiency: 'ADVANCED', yearsExperience: 7 }, // Ops
-     ],
+    id: CONSTANT_IDS.JOBSEEKERS[36],
+    firstName: 'Tope',
+    lastName: 'Balogun',
+    email: 'tope.balogun@example.com',
+    phoneNumber: '+2348000000036',
+    address: 'Agege, Lagos',
+    state: 'Lagos',
+    city: 'Agege',
+    passwordHash,
+    jobTitle: 'System Administrator',
+    brief:
+      'Windows and Linux server admin with extensive networking experience',
+    yearsOfExperience: 9,
+    preferredLocation: 'Lagos',
+    preferredEmploymentType: EmploymentType.FULL_TIME,
+    preferredWorkMode: WorkMode.ON_SITE,
+    preferredEmploymentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
+    minExpectedSalary: 6000000,
+    maxExpectedSalary: 9000000,
+    approvalStatus: ApprovalStatus.APPROVED,
+    skills: [
+      {
+        skillId: CONSTANT_IDS.SKILLS[4],
+        proficiency: 'ADVANCED',
+        yearsExperience: 5,
+      }, // Placeholder
+      {
+        skillId: CONSTANT_IDS.SKILLS[18],
+        proficiency: 'ADVANCED',
+        yearsExperience: 7,
+      }, // Ops
+    ],
   },
   {
-     id: CONSTANT_IDS.JOBSEEKERS[37],
-     firstName: 'Uche',
-     lastName: 'Okeke',
-     email: 'uche.okeke@example.com',
-     phoneNumber: '+2348000000037',
-     address: 'Onitsha, Anambra',
-     state: 'Anambra',
-     city: 'Onitsha',
-     passwordHash,
-     jobTitle: 'Marketing Executive',
-     brief: 'Results-oriented marketer specialized in local brand awareness',
-     yearsOfExperience: 6,
-     preferredLocation: 'Onitsha',
-     preferredEmploymentType: EmploymentType.FULL_TIME,
-     preferredWorkMode: WorkMode.ON_SITE,
-     preferredEmploymentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
-     minExpectedSalary: 3500000,
-     maxExpectedSalary: 5500000,
-     approvalStatus: ApprovalStatus.APPROVED,
-     skills: [
-       { skillId: CONSTANT_IDS.SKILLS[9], proficiency: 'ADVANCED', yearsExperience: 6 }, // Marketing
-       { skillId: CONSTANT_IDS.SKILLS[21], proficiency: 'ADVANCED', yearsExperience: 6 }, // Communication
-     ],
+    id: CONSTANT_IDS.JOBSEEKERS[37],
+    firstName: 'Uche',
+    lastName: 'Okeke',
+    email: 'uche.okeke@example.com',
+    phoneNumber: '+2348000000037',
+    address: 'Onitsha, Anambra',
+    state: 'Anambra',
+    city: 'Onitsha',
+    passwordHash,
+    jobTitle: 'Marketing Executive',
+    brief: 'Results-oriented marketer specialized in local brand awareness',
+    yearsOfExperience: 6,
+    preferredLocation: 'Onitsha',
+    preferredEmploymentType: EmploymentType.FULL_TIME,
+    preferredWorkMode: WorkMode.ON_SITE,
+    preferredEmploymentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
+    minExpectedSalary: 3500000,
+    maxExpectedSalary: 5500000,
+    approvalStatus: ApprovalStatus.APPROVED,
+    skills: [
+      {
+        skillId: CONSTANT_IDS.SKILLS[9],
+        proficiency: 'ADVANCED',
+        yearsExperience: 6,
+      }, // Marketing
+      {
+        skillId: CONSTANT_IDS.SKILLS[21],
+        proficiency: 'ADVANCED',
+        yearsExperience: 6,
+      }, // Communication
+    ],
   },
   // --- Remaining 10 to complete the 30 ---
   {
-     id: CONSTANT_IDS.JOBSEEKERS[38],
-     firstName: 'Victoria',
-     lastName: 'John',
-     email: 'victoria.john@example.com',
-     phoneNumber: '+2348000000038',
-     address: 'Jos North, Plateau',
-     state: 'Plateau',
-     city: 'Jos',
-     passwordHash,
-     jobTitle: 'Graphic Artist',
-     brief: 'Versatile artist skilled in both digital and hand-drawn illustrations',
-     yearsOfExperience: 7,
-     preferredLocation: 'Remote',
-     preferredEmploymentType: EmploymentType.FULL_TIME,
-     preferredWorkMode: WorkMode.REMOTE,
-     preferredEmploymentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
-     minExpectedSalary: 4000000,
-     maxExpectedSalary: 6500000,
-     approvalStatus: ApprovalStatus.APPROVED,
-     skills: [
-       { skillId: CONSTANT_IDS.SKILLS[13], proficiency: 'ADVANCED', yearsExperience: 7 }, // Graphics
-       { skillId: CONSTANT_IDS.SKILLS[14], proficiency: 'INTERMEDIATE', yearsExperience: 2 }, // Placeholder
-     ],
+    id: CONSTANT_IDS.JOBSEEKERS[38],
+    firstName: 'Victoria',
+    lastName: 'John',
+    email: 'victoria.john@example.com',
+    phoneNumber: '+2348000000038',
+    address: 'Jos North, Plateau',
+    state: 'Plateau',
+    city: 'Jos',
+    passwordHash,
+    jobTitle: 'Graphic Artist',
+    brief:
+      'Versatile artist skilled in both digital and hand-drawn illustrations',
+    yearsOfExperience: 7,
+    preferredLocation: 'Remote',
+    preferredEmploymentType: EmploymentType.FULL_TIME,
+    preferredWorkMode: WorkMode.REMOTE,
+    preferredEmploymentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
+    minExpectedSalary: 4000000,
+    maxExpectedSalary: 6500000,
+    approvalStatus: ApprovalStatus.APPROVED,
+    skills: [
+      {
+        skillId: CONSTANT_IDS.SKILLS[13],
+        proficiency: 'ADVANCED',
+        yearsExperience: 7,
+      }, // Graphics
+      {
+        skillId: CONSTANT_IDS.SKILLS[14],
+        proficiency: 'INTERMEDIATE',
+        yearsExperience: 2,
+      }, // Placeholder
+    ],
   },
   {
-     id: CONSTANT_IDS.JOBSEEKERS[39],
-     firstName: 'Wale',
-     lastName: 'Ibrahim',
-     email: 'wale.ibrahim@example.com',
-     phoneNumber: '+2348000000039',
-     address: 'Mushin, Lagos',
-     state: 'Lagos',
-     city: 'Mushin',
-     passwordHash,
-     jobTitle: 'Plumber',
-     brief: 'Master plumber with expertise in industrial maintenance',
-     yearsOfExperience: 12,
-     preferredLocation: 'Lagos',
-     preferredEmploymentType: EmploymentType.FULL_TIME,
-     preferredWorkMode: WorkMode.ON_SITE,
-     preferredEmploymentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
-     minExpectedSalary: 2500000,
-     maxExpectedSalary: 4500000,
-     approvalStatus: ApprovalStatus.APPROVED,
-     skills: [
-       { skillId: CONSTANT_IDS.SKILLS[25], proficiency: 'ADVANCED', yearsExperience: 12 }, // Plumbing
-     ],
+    id: CONSTANT_IDS.JOBSEEKERS[39],
+    firstName: 'Wale',
+    lastName: 'Ibrahim',
+    email: 'wale.ibrahim@example.com',
+    phoneNumber: '+2348000000039',
+    address: 'Mushin, Lagos',
+    state: 'Lagos',
+    city: 'Mushin',
+    passwordHash,
+    jobTitle: 'Plumber',
+    brief: 'Master plumber with expertise in industrial maintenance',
+    yearsOfExperience: 12,
+    preferredLocation: 'Lagos',
+    preferredEmploymentType: EmploymentType.FULL_TIME,
+    preferredWorkMode: WorkMode.ON_SITE,
+    preferredEmploymentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
+    minExpectedSalary: 2500000,
+    maxExpectedSalary: 4500000,
+    approvalStatus: ApprovalStatus.APPROVED,
+    skills: [
+      {
+        skillId: CONSTANT_IDS.SKILLS[25],
+        proficiency: 'ADVANCED',
+        yearsExperience: 12,
+      }, // Plumbing
+    ],
   },
   {
-     id: CONSTANT_IDS.JOBSEEKERS[40],
-     firstName: 'Xavier',
-     lastName: 'Opara',
-     email: 'xavier.opara@example.com',
-     phoneNumber: '+2348000000040',
-     address: 'Owerri Municipal, Imo',
-     state: 'Imo',
-     city: 'Owerri',
-     passwordHash,
-     jobTitle: 'Quality Assurance Analyst',
-     brief: 'Detail-focused QA engineer with expertise in automated testing pools',
-     yearsOfExperience: 4,
-     preferredLocation: 'Remote',
-     preferredEmploymentType: EmploymentType.FULL_TIME,
-     preferredWorkMode: WorkMode.REMOTE,
-     preferredEmploymentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
-     minExpectedSalary: 5000000,
-     maxExpectedSalary: 7500000,
-     approvalStatus: ApprovalStatus.APPROVED,
-     skills: [
-       { skillId: CONSTANT_IDS.SKILLS[3], proficiency: 'ADVANCED', yearsExperience: 4 }, // TS
-       { skillId: CONSTANT_IDS.SKILLS[0], proficiency: 'ADVANCED', yearsExperience: 4 }, // JS
-     ],
+    id: CONSTANT_IDS.JOBSEEKERS[40],
+    firstName: 'Xavier',
+    lastName: 'Opara',
+    email: 'xavier.opara@example.com',
+    phoneNumber: '+2348000000040',
+    address: 'Owerri Municipal, Imo',
+    state: 'Imo',
+    city: 'Owerri',
+    passwordHash,
+    jobTitle: 'Quality Assurance Analyst',
+    brief:
+      'Detail-focused QA engineer with expertise in automated testing pools',
+    yearsOfExperience: 4,
+    preferredLocation: 'Remote',
+    preferredEmploymentType: EmploymentType.FULL_TIME,
+    preferredWorkMode: WorkMode.REMOTE,
+    preferredEmploymentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
+    minExpectedSalary: 5000000,
+    maxExpectedSalary: 7500000,
+    approvalStatus: ApprovalStatus.APPROVED,
+    skills: [
+      {
+        skillId: CONSTANT_IDS.SKILLS[3],
+        proficiency: 'ADVANCED',
+        yearsExperience: 4,
+      }, // TS
+      {
+        skillId: CONSTANT_IDS.SKILLS[0],
+        proficiency: 'ADVANCED',
+        yearsExperience: 4,
+      }, // JS
+    ],
   },
   {
-     id: CONSTANT_IDS.JOBSEEKERS[41],
-     firstName: 'Yinka',
-     lastName: 'Fadu',
-     email: 'yinka.fadu@example.com',
-     phoneNumber: '+2348000000041',
-     address: 'Ketu, Lagos',
-     state: 'Lagos',
-     city: 'Ketu',
-     passwordHash,
-     jobTitle: 'Social Media Manager',
-     brief: 'Creative thinker with a deep understanding of audience engagement',
-     yearsOfExperience: 5,
-     preferredLocation: 'Lagos',
-     preferredEmploymentType: EmploymentType.FULL_TIME,
-     preferredWorkMode: WorkMode.HYBRID,
-     preferredEmploymentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
-     minExpectedSalary: 3000000,
-     maxExpectedSalary: 5000000,
-     approvalStatus: ApprovalStatus.APPROVED,
-     skills: [
-       { skillId: CONSTANT_IDS.SKILLS[9], proficiency: 'ADVANCED', yearsExperience: 5 }, // Marketing
-       { skillId: CONSTANT_IDS.SKILLS[21], proficiency: 'ADVANCED', yearsExperience: 5 }, // Comm
-     ],
+    id: CONSTANT_IDS.JOBSEEKERS[41],
+    firstName: 'Yinka',
+    lastName: 'Fadu',
+    email: 'yinka.fadu@example.com',
+    phoneNumber: '+2348000000041',
+    address: 'Ketu, Lagos',
+    state: 'Lagos',
+    city: 'Ketu',
+    passwordHash,
+    jobTitle: 'Social Media Manager',
+    brief: 'Creative thinker with a deep understanding of audience engagement',
+    yearsOfExperience: 5,
+    preferredLocation: 'Lagos',
+    preferredEmploymentType: EmploymentType.FULL_TIME,
+    preferredWorkMode: WorkMode.HYBRID,
+    preferredEmploymentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
+    minExpectedSalary: 3000000,
+    maxExpectedSalary: 5000000,
+    approvalStatus: ApprovalStatus.APPROVED,
+    skills: [
+      {
+        skillId: CONSTANT_IDS.SKILLS[9],
+        proficiency: 'ADVANCED',
+        yearsExperience: 5,
+      }, // Marketing
+      {
+        skillId: CONSTANT_IDS.SKILLS[21],
+        proficiency: 'ADVANCED',
+        yearsExperience: 5,
+      }, // Comm
+    ],
   },
   {
-     id: CONSTANT_IDS.JOBSEEKERS[42],
-     firstName: 'Zarah',
-     lastName: 'Iliya',
-     email: 'zarah.iliya@example.com',
-     phoneNumber: '+2348000000042',
-     address: 'Maitama, Abuja',
-     state: 'FCT',
-     city: 'Abuja',
-     passwordHash,
-     jobTitle: 'Legal Consultant',
-     brief: 'Specialized in labor law and corporate compliance',
-     yearsOfExperience: 8,
-     preferredLocation: 'Abuja',
-     preferredEmploymentType: EmploymentType.FULL_TIME,
-     preferredWorkMode: WorkMode.ON_SITE,
-     preferredEmploymentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
-     minExpectedSalary: 9000000,
-     maxExpectedSalary: 13000000,
-     approvalStatus: ApprovalStatus.APPROVED,
-     skills: [
-       { skillId: CONSTANT_IDS.SKILLS[11], proficiency: 'ADVANCED', yearsExperience: 8 }, // Placeholder
-       { skillId: CONSTANT_IDS.SKILLS[21], proficiency: 'ADVANCED', yearsExperience: 8 }, // Comm
-     ],
+    id: CONSTANT_IDS.JOBSEEKERS[42],
+    firstName: 'Zarah',
+    lastName: 'Iliya',
+    email: 'zarah.iliya@example.com',
+    phoneNumber: '+2348000000042',
+    address: 'Maitama, Abuja',
+    state: 'FCT',
+    city: 'Abuja',
+    passwordHash,
+    jobTitle: 'Legal Consultant',
+    brief: 'Specialized in labor law and corporate compliance',
+    yearsOfExperience: 8,
+    preferredLocation: 'Abuja',
+    preferredEmploymentType: EmploymentType.FULL_TIME,
+    preferredWorkMode: WorkMode.ON_SITE,
+    preferredEmploymentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
+    minExpectedSalary: 9000000,
+    maxExpectedSalary: 13000000,
+    approvalStatus: ApprovalStatus.APPROVED,
+    skills: [
+      {
+        skillId: CONSTANT_IDS.SKILLS[11],
+        proficiency: 'ADVANCED',
+        yearsExperience: 8,
+      }, // Placeholder
+      {
+        skillId: CONSTANT_IDS.SKILLS[21],
+        proficiency: 'ADVANCED',
+        yearsExperience: 8,
+      }, // Comm
+    ],
   },
   {
-     id: CONSTANT_IDS.JOBSEEKERS[43],
-     firstName: 'Amara',
-     lastName: 'Chima',
-     email: 'amara.chima@example.com',
-     phoneNumber: '+2348000000043',
-     address: 'Umuahia, Abia',
-     state: 'Abia',
-     city: 'Umuahia',
-     passwordHash,
-     jobTitle: 'Health & Safety Officer',
-     brief: 'NEBOSH certified professional committed to workplace safety',
-     yearsOfExperience: 10,
-     preferredLocation: 'Port Harcourt',
-     preferredEmploymentType: EmploymentType.FULL_TIME,
-     preferredWorkMode: WorkMode.ON_SITE,
-     preferredEmploymentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
-     minExpectedSalary: 6000000,
-     maxExpectedSalary: 8500000,
-     approvalStatus: ApprovalStatus.APPROVED,
-     skills: [
-       { skillId: CONSTANT_IDS.SKILLS[18], proficiency: 'ADVANCED', yearsExperience: 10 }, // Placeholder for Safety
-     ],
+    id: CONSTANT_IDS.JOBSEEKERS[43],
+    firstName: 'Amara',
+    lastName: 'Chima',
+    email: 'amara.chima@example.com',
+    phoneNumber: '+2348000000043',
+    address: 'Umuahia, Abia',
+    state: 'Abia',
+    city: 'Umuahia',
+    passwordHash,
+    jobTitle: 'Health & Safety Officer',
+    brief: 'NEBOSH certified professional committed to workplace safety',
+    yearsOfExperience: 10,
+    preferredLocation: 'Port Harcourt',
+    preferredEmploymentType: EmploymentType.FULL_TIME,
+    preferredWorkMode: WorkMode.ON_SITE,
+    preferredEmploymentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
+    minExpectedSalary: 6000000,
+    maxExpectedSalary: 8500000,
+    approvalStatus: ApprovalStatus.APPROVED,
+    skills: [
+      {
+        skillId: CONSTANT_IDS.SKILLS[18],
+        proficiency: 'ADVANCED',
+        yearsExperience: 10,
+      }, // Placeholder for Safety
+    ],
   },
   {
-     id: CONSTANT_IDS.JOBSEEKERS[44],
-     firstName: 'Bartholomew',
-     lastName: 'Eze',
-     email: 'barth.eze@example.com',
-     phoneNumber: '+2348000000044',
-     address: 'Enugu East, Enugu',
-     state: 'Enugu',
-     city: 'Enugu',
-     passwordHash,
-     jobTitle: 'Carpenter',
-     brief: 'Skilled craftsman specializing in modern furniture design',
-     yearsOfExperience: 15,
-     preferredLocation: 'Enugu',
-     preferredEmploymentType: EmploymentType.FULL_TIME,
-     preferredWorkMode: WorkMode.ON_SITE,
-     preferredEmploymentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
-     minExpectedSalary: 3000000,
-     maxExpectedSalary: 5000000,
-     approvalStatus: ApprovalStatus.APPROVED,
-     skills: [
-       { skillId: CONSTANT_IDS.SKILLS[27], proficiency: 'ADVANCED', yearsExperience: 15 }, // Carpentry
-     ],
+    id: CONSTANT_IDS.JOBSEEKERS[44],
+    firstName: 'Bartholomew',
+    lastName: 'Eze',
+    email: 'barth.eze@example.com',
+    phoneNumber: '+2348000000044',
+    address: 'Enugu East, Enugu',
+    state: 'Enugu',
+    city: 'Enugu',
+    passwordHash,
+    jobTitle: 'Carpenter',
+    brief: 'Skilled craftsman specializing in modern furniture design',
+    yearsOfExperience: 15,
+    preferredLocation: 'Enugu',
+    preferredEmploymentType: EmploymentType.FULL_TIME,
+    preferredWorkMode: WorkMode.ON_SITE,
+    preferredEmploymentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
+    minExpectedSalary: 3000000,
+    maxExpectedSalary: 5000000,
+    approvalStatus: ApprovalStatus.APPROVED,
+    skills: [
+      {
+        skillId: CONSTANT_IDS.SKILLS[27],
+        proficiency: 'ADVANCED',
+        yearsExperience: 15,
+      }, // Carpentry
+    ],
   },
   {
-     id: CONSTANT_IDS.JOBSEEKERS[45],
-     firstName: 'Clementine',
-     lastName: 'Okoro',
-     email: 'clem.okoro@example.com',
-     phoneNumber: '+2348000000045',
-     address: 'Garki, Abuja',
-     state: 'FCT',
-     city: 'Abuja',
-     passwordHash,
-     jobTitle: 'Receptionist',
-     brief: 'Professional and courteous front-desk officer with great communication skills',
-     yearsOfExperience: 4,
-     preferredLocation: 'Abuja',
-     preferredEmploymentType: EmploymentType.FULL_TIME,
-     preferredWorkMode: WorkMode.ON_SITE,
-     preferredEmploymentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
-     minExpectedSalary: 1800000,
-     maxExpectedSalary: 2800000,
-     approvalStatus: ApprovalStatus.APPROVED,
-     skills: [
-       { skillId: CONSTANT_IDS.SKILLS[11], proficiency: 'ADVANCED', yearsExperience: 4 }, // Customer Service
-       { skillId: CONSTANT_IDS.SKILLS[21], proficiency: 'ADVANCED', yearsExperience: 4 }, // Communication
-     ],
+    id: CONSTANT_IDS.JOBSEEKERS[45],
+    firstName: 'Clementine',
+    lastName: 'Okoro',
+    email: 'clem.okoro@example.com',
+    phoneNumber: '+2348000000045',
+    address: 'Garki, Abuja',
+    state: 'FCT',
+    city: 'Abuja',
+    passwordHash,
+    jobTitle: 'Receptionist',
+    brief:
+      'Professional and courteous front-desk officer with great communication skills',
+    yearsOfExperience: 4,
+    preferredLocation: 'Abuja',
+    preferredEmploymentType: EmploymentType.FULL_TIME,
+    preferredWorkMode: WorkMode.ON_SITE,
+    preferredEmploymentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
+    minExpectedSalary: 1800000,
+    maxExpectedSalary: 2800000,
+    approvalStatus: ApprovalStatus.APPROVED,
+    skills: [
+      {
+        skillId: CONSTANT_IDS.SKILLS[11],
+        proficiency: 'ADVANCED',
+        yearsExperience: 4,
+      }, // Customer Service
+      {
+        skillId: CONSTANT_IDS.SKILLS[21],
+        proficiency: 'ADVANCED',
+        yearsExperience: 4,
+      }, // Communication
+    ],
   },
   {
-     id: CONSTANT_IDS.JOBSEEKERS[46],
-     firstName: 'Donatus',
-     lastName: 'Mbah',
-     email: 'don.mbah@example.com',
-     phoneNumber: '+2348000000046',
-     address: 'Lekki Phase 2, Lagos',
-     state: 'Lagos',
-     city: 'Lekki',
-     passwordHash,
-     jobTitle: 'Security Supervisor',
-     brief: 'Ex-military officer with expertise in perimeter security and surveillance',
-     yearsOfExperience: 20,
-     preferredLocation: 'Lagos',
-     preferredEmploymentType: EmploymentType.FULL_TIME,
-     preferredWorkMode: WorkMode.ON_SITE,
-     preferredEmploymentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
-     minExpectedSalary: 4500000,
-     maxExpectedSalary: 7000000,
-     approvalStatus: ApprovalStatus.APPROVED,
-     skills: [
-       { skillId: CONSTANT_IDS.SKILLS[30], proficiency: 'ADVANCED', yearsExperience: 20 }, // Security
-     ],
+    id: CONSTANT_IDS.JOBSEEKERS[46],
+    firstName: 'Donatus',
+    lastName: 'Mbah',
+    email: 'don.mbah@example.com',
+    phoneNumber: '+2348000000046',
+    address: 'Lekki Phase 2, Lagos',
+    state: 'Lagos',
+    city: 'Lekki',
+    passwordHash,
+    jobTitle: 'Security Supervisor',
+    brief:
+      'Ex-military officer with expertise in perimeter security and surveillance',
+    yearsOfExperience: 20,
+    preferredLocation: 'Lagos',
+    preferredEmploymentType: EmploymentType.FULL_TIME,
+    preferredWorkMode: WorkMode.ON_SITE,
+    preferredEmploymentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
+    minExpectedSalary: 4500000,
+    maxExpectedSalary: 7000000,
+    approvalStatus: ApprovalStatus.APPROVED,
+    skills: [
+      {
+        skillId: CONSTANT_IDS.SKILLS[30],
+        proficiency: 'ADVANCED',
+        yearsExperience: 20,
+      }, // Security
+    ],
   },
   {
-     id: CONSTANT_IDS.JOBSEEKERS[47],
-     firstName: 'Evelyn',
-     lastName: 'Peters',
-     email: 'evelyn.peters@example.com',
-     phoneNumber: '+2348000000047',
-     address: 'Asokoro, Abuja',
-     state: 'FCT',
-     city: 'Abuja',
-     passwordHash,
-     jobTitle: 'Executive Assistant',
-     brief: 'Highly organized professional with experience supporting C-level executives',
-     yearsOfExperience: 10,
-     preferredLocation: 'Abuja',
-     preferredEmploymentType: EmploymentType.FULL_TIME,
-     preferredWorkMode: WorkMode.ON_SITE,
-     preferredEmploymentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
-     minExpectedSalary: 6000000,
-     maxExpectedSalary: 9500000,
-     approvalStatus: ApprovalStatus.APPROVED,
-     skills: [
-       { skillId: CONSTANT_IDS.SKILLS[11], proficiency: 'ADVANCED', yearsExperience: 10 }, // CS as proxy
-       { skillId: CONSTANT_IDS.SKILLS[21], proficiency: 'ADVANCED', yearsExperience: 10 }, // Comm
-     ],
+    id: CONSTANT_IDS.JOBSEEKERS[47],
+    firstName: 'Evelyn',
+    lastName: 'Peters',
+    email: 'evelyn.peters@example.com',
+    phoneNumber: '+2348000000047',
+    address: 'Asokoro, Abuja',
+    state: 'FCT',
+    city: 'Abuja',
+    passwordHash,
+    jobTitle: 'Executive Assistant',
+    brief:
+      'Highly organized professional with experience supporting C-level executives',
+    yearsOfExperience: 10,
+    preferredLocation: 'Abuja',
+    preferredEmploymentType: EmploymentType.FULL_TIME,
+    preferredWorkMode: WorkMode.ON_SITE,
+    preferredEmploymentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
+    minExpectedSalary: 6000000,
+    maxExpectedSalary: 9500000,
+    approvalStatus: ApprovalStatus.APPROVED,
+    skills: [
+      {
+        skillId: CONSTANT_IDS.SKILLS[11],
+        proficiency: 'ADVANCED',
+        yearsExperience: 10,
+      }, // CS as proxy
+      {
+        skillId: CONSTANT_IDS.SKILLS[21],
+        proficiency: 'ADVANCED',
+        yearsExperience: 10,
+      }, // Comm
+    ],
   },
 ];

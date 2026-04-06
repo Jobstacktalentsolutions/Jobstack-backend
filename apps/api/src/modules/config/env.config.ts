@@ -12,7 +12,7 @@ export enum ENV {
   JWT_ISSUER = 'JWT_ISSUER',
   JWT_AUDIENCE = 'JWT_AUDIENCE',
 
-  // Resend Email Configuration (fallback)
+  // Resend Email Configuration ()
   RESEND_API_KEY = 'RESEND_API_KEY',
   RESEND_FROM_EMAIL = 'RESEND_FROM_EMAIL',
   RESEND_FROM_NAME = 'RESEND_FROM_NAME',

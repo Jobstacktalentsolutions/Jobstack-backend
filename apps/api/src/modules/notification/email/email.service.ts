@@ -28,6 +28,21 @@ export class EmailService extends BaseNotificationService<EmailPayloadDto> {
   }
 
   async send(payload: EmailPayloadDto): Promise<void> {
+    const recipientDomain = (payload.recipient || '')
+      .trim()
+      .toLowerCase()
+      .split('@')
+      .pop();
+
+    // Test users: never send real emails to example.com
+    if (recipientDomain && recipientDomain.endsWith('example.com')) {
+      this.logger.log('Skipping email send for test user', {
+        recipient: payload.recipient,
+        templateType: payload.templateType,
+      });
+      return;
+    }
+
     let htmlContent = payload.htmlContent;
 
     // Render template if templateType is provided and no htmlContent exists
@@ -130,11 +145,12 @@ export class EmailService extends BaseNotificationService<EmailPayloadDto> {
         async: true,
         root: this.templatesPath,
       });
-    } catch (error) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
       this.logger.error(
-        `Failed to render email template ${templateType}: ${error.message}`,
+        `Failed to render email template ${templateType}: ${message}`,
       );
-      throw new Error(`Email template rendering failed: ${error.message}`);
+      throw new Error(`Email template rendering failed: ${message}`);
     }
   }
 }

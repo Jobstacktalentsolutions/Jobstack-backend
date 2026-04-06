@@ -85,9 +85,9 @@ export class JobApplicationFactory extends BaseFactory<JobApplication> {
     if (existingApplication) {
       // Update existing application
       await this.repository.update({ id: existingApplication.id }, payload);
-      return (await this.repository.findOne({
+      return await this.repository.findOne({
         where: { id: existingApplication.id },
-      })) as JobApplication;
+      });
     } else {
       // Create new application using resolved profile id
       const application = this.repository.create({

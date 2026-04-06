@@ -337,7 +337,6 @@ function buildCreatedAt(jobIndex: number, orderIndex: number): Date {
   return date;
 }
 
-
 // Job indices that get 8 applications each for full screening/vetting tests (5–10 jobs)
 const JOBS_WITH_8_APPLICATIONS = new Set([0, 1, 2, 3, 5, 6, 12, 21]); // Full Stack, Product Manager, Data Analyst, Backend, DevOps, Frontend, Financial Analyst, Data Engineer
 
@@ -360,9 +359,9 @@ JOBS_DATA.forEach((job, jobIndex) => {
   const jobSkillSet = new Set<string>(jobSkillIds);
 
   // Primary candidates share at least one skill with the job
-  const matchingCandidates = JOBSEEKERS_DATA.filter((js: any, idx: number) =>
-    (js.skills ?? []).some((s) => jobSkillSet.has(s.skillId)) &&
-    idx < 38
+  const matchingCandidates = JOBSEEKERS_DATA.filter(
+    (js: any, idx: number) =>
+      (js.skills ?? []).some((s) => jobSkillSet.has(s.skillId)) && idx < 38,
   );
 
   // Secondary candidates match primarily on location preference

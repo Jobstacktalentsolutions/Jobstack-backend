@@ -7,10 +7,10 @@ dotenv.config();
  * Get super admin configuration from environment variables with fallbacks
  */
 function getSuperAdminConfig() {
-  const email = process.env.SUPER_ADMIN_EMAIL!;
-  const password = process.env.SUPER_ADMIN_PASSWORD!;
-  const firstName = process.env.SUPER_ADMIN_FIRST_NAME!;
-  const lastName = process.env.SUPER_ADMIN_LAST_NAME!;
+  const email = process.env.SUPER_ADMIN_EMAIL;
+  const password = process.env.SUPER_ADMIN_PASSWORD;
+  const firstName = process.env.SUPER_ADMIN_FIRST_NAME;
+  const lastName = process.env.SUPER_ADMIN_LAST_NAME;
 
   if (!email || !password || !firstName || !lastName) {
     console.error({ email, password, firstName, lastName });
