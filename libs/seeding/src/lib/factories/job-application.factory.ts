@@ -115,9 +115,6 @@ export class JobApplicationFactory extends BaseFactory<JobApplication> {
       try {
         const application = await this.createOrUpdateJobApplication(appData);
         applications.push(application);
-
-        // Update job applicant count
-        await this.updateJobApplicantCount(appData.jobId);
       } catch (error: any) {
         console.warn(
           `⚠️  Failed to upsert job application for job ${appData.jobId} and jobseeker ${appData.jobseekerProfileId}`,
@@ -128,19 +125,5 @@ export class JobApplicationFactory extends BaseFactory<JobApplication> {
 
     console.log(`✅ Upserted ${applications.length} job application records`);
     return applications;
-  }
-
-  /**
-   * Update the applicant count for a job
-   */
-  private async updateJobApplicantCount(jobId: string): Promise<void> {
-    const applicationCount = await this.repository.count({
-      where: { jobId },
-    });
-
-    await this.jobRepository.update(
-      { id: jobId },
-      { applicantsCount: applicationCount },
-    );
   }
 }
