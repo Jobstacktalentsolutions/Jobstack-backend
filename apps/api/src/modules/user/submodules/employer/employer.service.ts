@@ -8,6 +8,7 @@ import { Repository } from 'typeorm';
 import { EmployerProfile } from '@app/common/database/entities/EmployerProfile.entity';
 import { EmployerAuth } from '@app/common/database/entities/EmployerAuth.entity';
 import { EmployerVerification } from '@app/common/database/entities/EmployerVerification.entity';
+import { JobApplication } from '@app/common/database/entities/JobApplication.entity';
 import { Document } from '@app/common/database/entities';
 import { StorageService } from '@app/common/storage/storage.service';
 import type { MulterFile } from '@app/common/shared/types';
@@ -23,6 +24,8 @@ export class EmployerService {
     protected readonly authRepo: Repository<EmployerAuth>,
     @InjectRepository(EmployerVerification)
     protected readonly verificationRepo: Repository<EmployerVerification>,
+    @InjectRepository(JobApplication)
+    protected readonly jobApplicationRepo: Repository<JobApplication>,
     protected readonly storageService: StorageService,
   ) {}
 
@@ -315,9 +318,11 @@ export class EmployerService {
 
     // Calculate metrics
     const totalJobsPosted = profile.jobs?.length || 0;
-    const totalApplicants =
-      profile.jobs?.reduce((sum, job) => sum + (job.applicantsCount || 0), 0) ||
-      0;
+    const totalApplicants = await this.jobApplicationRepo
+      .createQueryBuilder('application')
+      .innerJoin('application.job', 'job')
+      .where('job.employerId = :employerId', { employerId })
+      .getCount();
     const totalHires = profile.employees?.length || 0;
 
     // Attach to profile or return as separate fields (we will return as separate fields mixed into the response)
