@@ -27,8 +27,8 @@ export class Job extends BaseEntity {
   @Column()
   title: string;
 
-  @Column({ type: 'varchar', length: 3000 })
-  description: string;
+  @Column({ type: 'varchar', length: 3000, nullable: true })
+  description?: string;
 
   @Column({ type: 'enum', enum: SkillCategory })
   category: SkillCategory;
@@ -93,13 +93,6 @@ export class Job extends BaseEntity {
     default: JobStatus.DRAFT,
   })
   status: JobStatus;
-
-  /**
-   * @deprecated This counter is stale and not reliably updated.
-   * Do not use this field to display applicant counts — query job_applications directly instead.
-   */
-  @Column({ type: 'int', default: 0 })
-  applicantsCount: number;
 
   @ManyToMany(() => Skill, { cascade: false })
   @JoinTable({

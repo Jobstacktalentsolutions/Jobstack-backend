@@ -36,15 +36,16 @@ export class CreateJobDto {
   @MaxLength(120)
   title: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Full role description',
     example:
       'We need a NestJS engineer to build APIs and integrations for our Lagos-based team.',
     minLength: 20,
   })
+  @IsOptional()
   @IsString()
   @MinLength(20)
-  description: string;
+  description?: string;
 
   @ApiProperty({
     description: 'Primary skill category for the role',

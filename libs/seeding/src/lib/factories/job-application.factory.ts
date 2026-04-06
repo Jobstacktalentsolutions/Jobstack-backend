@@ -9,7 +9,6 @@ const JOB_APPLICATIONS_DATA: Array<{
   jobId: string;
   jobseekerProfileId: string;
   status: JobApplicationStatus;
-  expectedSalary?: number;
   note?: string;
   createdAt: Date;
 }> = require('../data/job-applications.data').JOB_APPLICATIONS_DATA;

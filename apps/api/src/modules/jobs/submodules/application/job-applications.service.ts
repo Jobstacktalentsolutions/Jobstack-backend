@@ -76,7 +76,6 @@ export class JobApplicationsService {
     const application = this.applicationRepo.create({
       jobId,
       jobseekerProfileId: jobseekerId,
-      expectedSalary: dto.expectedSalary,
       note: dto.note,
       status: JobApplicationStatus.APPLIED,
     });
