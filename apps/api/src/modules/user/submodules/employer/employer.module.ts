@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { EmployerProfile } from '@app/common/database/entities/EmployerProfile.entity';
 import { EmployerAuth } from '@app/common/database/entities/EmployerAuth.entity';
 import { Document } from '@app/common/database/entities/Document.entity';
+import { JobApplication } from '@app/common/database/entities/JobApplication.entity';
 import { EmployerController } from './employer.controller';
 import { EmployerService } from './employer.service';
 import { EmployerVerification } from '@app/common/database/entities/EmployerVerification.entity';
@@ -27,6 +28,7 @@ import { NotificationModule } from 'apps/api/src/modules/notification/notificati
       EmployerVerification,
       EmployerVerificationDocument,
       Document,
+      JobApplication,
     ]),
     EmployerAuthModule,
     AuthModule,
