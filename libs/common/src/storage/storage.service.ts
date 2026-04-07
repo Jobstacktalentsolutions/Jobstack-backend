@@ -16,7 +16,7 @@ export class StorageService {
   private readonly providers: Record<StorageProviders, IStorageProvider>;
   private static readonly DEFAULT_PROVIDER: StorageProviders =
     StorageProviders.IDRIVE;
-  private static readonly MAX_FILE_SIZE_BYTES: number = 10 * 1024 * 1024; // 10 MB
+  private static readonly MAX_FILE_SIZE_BYTES: number = 3 * 1024 * 1024; // 3 MB
 
   constructor(
     private readonly configService: ConfigService,

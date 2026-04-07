@@ -235,8 +235,6 @@ export class JobsAdminController {
               (us) => ({
                 id: us.skill.id,
                 name: us.skill.name,
-                proficiency: us.proficiency,
-                yearsExperience: us.yearsExperience,
               }),
             ),
           },

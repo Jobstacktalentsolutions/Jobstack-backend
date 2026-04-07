@@ -36,10 +36,12 @@ export class EmployerAuthController {
     @Body() registrationData: EmployerRegistrationDto,
     @ReqDeviceInfo() deviceInfo: RequestDeviceInfo,
   ) {
-    return await this.employerAuthService.register(
+    const result = await this.employerAuthService.register(
       registrationData,
       deviceInfo,
     );
+    console.log('result', result);
+    return result;
   }
 
   @Post('login')

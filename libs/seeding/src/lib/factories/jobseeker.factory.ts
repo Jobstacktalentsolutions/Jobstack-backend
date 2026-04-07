@@ -98,9 +98,6 @@ export class JobseekerFactory extends BaseFactory<JobseekerAuth> {
             const jobseekerSkill = this.jobseekerSkillRepository.create({
               profileId: auth.id,
               skillId: skillData.skillId,
-              proficiency: skillData.proficiency,
-              yearsExperience: skillData.yearsExperience,
-              verified: false,
             });
             await this.jobseekerSkillRepository.save(jobseekerSkill);
           }

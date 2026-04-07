@@ -112,14 +112,14 @@ export class EmployerAuthService {
         type,
         slug,
       });
+      await queryRunner.manager.save(profile);
+
       // Create initial verification record with NOT_STARTED status
       const verification = queryRunner.manager.create(EmployerVerification, {
         employerId: auth.id,
         status: VerificationStatus.NOT_STARTED,
       });
       await queryRunner.manager.save(verification);
-
-      await queryRunner.manager.save(profile);
 
       await queryRunner.commitTransaction();
 

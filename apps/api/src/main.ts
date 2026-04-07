@@ -2,9 +2,10 @@ import { NestFactory } from '@nestjs/core';
 import { ApiModule } from './api.module';
 import { ConfigService } from '@nestjs/config';
 import { ENV } from 'apps/api/src/modules/config';
-import { ValidationPipe } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import { AppEnum } from 'apps/api/src/modules/config/app.config';
 import helmet from 'helmet';
+import type { Request, Response } from 'express';
 import {
   DocumentBuilder,
   SwaggerModule,
@@ -166,6 +167,33 @@ function hydrateSwaggerExamples(document: OpenAPIObject): void {
 async function bootstrap() {
   const app = await NestFactory.create(ApiModule, {
     // logger: ['error', 'warn'], // Only log errors and warnings
+  });
+  const logger = new Logger('HttpErrorMiddleware');
+
+  app.use((request: Request, response: Response, next: () => void) => {
+    const start = Date.now();
+
+    response.on('finish', () => {
+      const statusCode = response.statusCode;
+      if (statusCode < 400) return;
+
+      const durationMs = Date.now() - start;
+      const requestIdHeader = response.getHeader('x-request-id');
+      const requestId =
+        typeof requestIdHeader === 'string' ? requestIdHeader : undefined;
+
+      const message = `${request.method} ${request.originalUrl} -> ${statusCode} (${durationMs}ms)`;
+      const context = requestId ? `requestId=${requestId}` : undefined;
+
+      if (statusCode >= 500) {
+        logger.error(message, context);
+        return;
+      }
+
+      logger.warn(context ? `${message} ${context}` : message);
+    });
+
+    next();
   });
 
   app.useGlobalPipes(

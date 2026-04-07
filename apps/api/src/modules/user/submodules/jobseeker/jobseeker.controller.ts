@@ -173,7 +173,6 @@ export class JobseekerController {
   @HttpCode(HttpStatus.OK)
   async getMyProfile(@CurrentUser() user: CurrentUserPayload) {
     const result = await this.jobseekerService.getProfile(user.id);
-    console.log('result', result);
     return { success: true, data: result };
   }
 

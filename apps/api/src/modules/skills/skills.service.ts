@@ -8,7 +8,6 @@ import { Repository, ILike } from 'typeorm';
 import { Skill } from '@app/common/database/entities/Skill.entity';
 import { JobseekerSkill } from '@app/common/database/entities/JobseekerSkill.entity';
 import {
-  Proficiency,
   SkillCategory,
   SkillStatus,
 } from '@app/common/database/entities/schema.enum';
@@ -120,13 +119,11 @@ export class SkillsService {
     return await this.skillRepo.save(skill);
   }
 
-  // Attach skills to a profile with metadata
+  // Attach skills to a profile as simple links
   async attachSkillsToProfile(
     profileId: string,
     items: Array<{
       skillId: string;
-      proficiency?: Proficiency;
-      yearsExperience?: number;
     }>,
   ): Promise<void> {
     if (!items?.length) return;
@@ -134,8 +131,6 @@ export class SkillsService {
       this.jsSkillRepo.create({
         profileId,
         skillId: i.skillId,
-        proficiency: i.proficiency ?? Proficiency.INTERMEDIATE,
-        yearsExperience: i.yearsExperience ?? 0,
       }),
     );
     await this.jsSkillRepo.save(rows);
