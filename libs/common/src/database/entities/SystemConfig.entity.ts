@@ -13,10 +13,10 @@ export class SystemConfig extends BaseEntity {
   @Column({ type: 'text', nullable: true })
   description?: string;
 
-  @ManyToOne(() => AdminAuth, { nullable: true })
+  @ManyToOne(() => AdminAuth, { nullable: true, onDelete: 'SET NULL' })
   @JoinColumn({ name: 'updatedBy' })
   updatedByAdmin?: AdminAuth;
 
-  @Column('uuid', { nullable: true })
+  @Column('uuid', { nullable: true, default: null })
   updatedBy?: string;
 }

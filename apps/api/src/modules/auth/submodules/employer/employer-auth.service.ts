@@ -487,6 +487,21 @@ export class EmployerAuthService {
       },
     });
 
+    // Also create an in-app welcome notification (non-blocking)
+    try {
+      await this.notificationService.createAppNotification(
+        auth.profile.id,
+        UserRole.EMPLOYER,
+        {
+          title: 'Welcome to JobStack',
+          message:
+            'Welcome aboard! Complete your company verification to start posting jobs and hiring candidates.',
+        },
+      );
+    } catch (_) {
+      /* non-blocking */
+    }
+
     // Generate and return tokens
     const authResult = await this.generateTokens(
       auth,

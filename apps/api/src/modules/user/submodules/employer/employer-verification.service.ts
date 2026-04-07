@@ -131,7 +131,7 @@ export class EmployerVerificationService {
       documentId: docUpload.document.id,
       documentType: dto.documentType,
       documentNumber: dto.documentNumber,
-      verified: true,
+      verified: false,
     });
 
     await this.verificationDocRepo.save(verificationDoc);

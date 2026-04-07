@@ -15,7 +15,7 @@ import { ENV } from '../../../../apps/api/src/modules/config/env.config';
           entities: [__dirname + '/entities/**/*.entity{.ts,.js}'],
           autoLoadEntities: true,
           // synchronize: nodeEnv !== 'production',
-          synchronize: true,
+          synchronize: false,
           logging: ['error'],
         };
       },
