@@ -16,6 +16,7 @@ import { EmployerAuth } from '@app/common/database/entities/EmployerAuth.entity'
 import { EmployerProfile } from '@app/common/database/entities/EmployerProfile.entity';
 import { EmployerSession } from '@app/common/database/entities/EmployerSession.entity';
 import { EmployerVerification } from '@app/common/database/entities/EmployerVerification.entity';
+import { JobseekerAuth } from '@app/common/database/entities/JobseekerAuth.entity';
 import { RedisService } from '@app/common/redis/redis.service';
 import { REDIS_KEYS } from '@app/common/redis/redis.config';
 import { NotificationService } from '../../../notification/notification.service';
@@ -51,6 +52,8 @@ export class EmployerAuthService {
   constructor(
     @InjectRepository(EmployerAuth)
     private employerAuthRepository: Repository<EmployerAuth>,
+    @InjectRepository(JobseekerAuth)
+    private jobseekerAuthRepository: Repository<JobseekerAuth>,
     @InjectRepository(EmployerProfile)
     private employerProfileRepository: Repository<EmployerProfile>,
     @InjectRepository(EmployerSession)
@@ -72,15 +75,26 @@ export class EmployerAuthService {
   ): Promise<AuthResult> {
     const { email, password, firstName, lastName, phoneNumber, type } =
       registrationData;
+    const normalizedEmail = email.toLowerCase();
     const baseSlug = this.buildBaseSlug(firstName, lastName);
 
     // Check if email already exists
     const existingAuth = await this.employerAuthRepository.findOne({
-      where: { email: email.toLowerCase() },
+      where: { email: normalizedEmail },
     });
 
     if (existingAuth) {
       throw new ConflictException('Email already registered');
+    }
+
+    // Prevent role-collision: do not allow employer signup with a jobseeker email
+    const existingJobseekerAuth = await this.jobseekerAuthRepository.findOne({
+      where: { email: normalizedEmail },
+      select: ['id'],
+    });
+
+    if (existingJobseekerAuth) {
+      throw new ConflictException('Jobseeker with this email exists');
     }
 
     // Hash password
@@ -94,7 +108,7 @@ export class EmployerAuthService {
     try {
       // Create auth first
       const auth = queryRunner.manager.create(EmployerAuth, {
-        email: email.toLowerCase(),
+        email: normalizedEmail,
         password: hashedPassword,
       });
       await queryRunner.manager.save(auth);
@@ -105,7 +119,7 @@ export class EmployerAuthService {
       const slug = await this.generateUniqueSlug(baseSlug, profileRepo);
       const profile = queryRunner.manager.create(EmployerProfile, {
         id: auth.id,
-        email: email.toLowerCase(),
+        email: normalizedEmail,
         firstName,
         lastName,
         phoneNumber,

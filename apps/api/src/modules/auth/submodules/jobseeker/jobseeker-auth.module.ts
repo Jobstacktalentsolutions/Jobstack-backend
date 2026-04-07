@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { JobseekerAuth } from '@app/common/database/entities/JobseekerAuth.entity';
 import { JobSeekerProfile } from '@app/common/database/entities/JobseekerProfile.entity';
 import { JobseekerSession } from '@app/common/database/entities/JobseekerSession.entity';
+import { EmployerAuth } from '@app/common/database/entities/EmployerAuth.entity';
 import { RedisModule } from '@app/common/redis/redis.module';
 import { createJwtConfig } from 'apps/api/src/modules/config/jwt.config';
 import { JobSeekerAuthService } from './jobseeker-auth.service';
@@ -15,6 +16,7 @@ import { SkillsModule } from '../../../skills/skills.module';
   imports: [
     TypeOrmModule.forFeature([
       JobseekerAuth,
+      EmployerAuth,
       JobSeekerProfile,
       JobseekerSession,
     ]),

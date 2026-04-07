@@ -5,6 +5,7 @@ import { EmployerAuth } from '@app/common/database/entities/EmployerAuth.entity'
 import { EmployerProfile } from '@app/common/database/entities/EmployerProfile.entity';
 import { EmployerSession } from '@app/common/database/entities/EmployerSession.entity';
 import { EmployerVerification } from '@app/common/database/entities/EmployerVerification.entity';
+import { JobseekerAuth } from '@app/common/database/entities/JobseekerAuth.entity';
 import { RedisModule } from '@app/common/redis/redis.module';
 import { createJwtConfig } from 'apps/api/src/modules/config/jwt.config';
 import { EmployerAuthService } from './employer-auth.service';
@@ -16,6 +17,7 @@ import { NotificationModule } from '../../../notification/notification.module';
   imports: [
     TypeOrmModule.forFeature([
       EmployerAuth,
+      JobseekerAuth,
       EmployerProfile,
       EmployerSession,
       EmployerVerification,

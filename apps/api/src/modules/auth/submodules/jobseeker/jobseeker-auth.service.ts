@@ -16,6 +16,7 @@ import { JobseekerAuth } from '@app/common/database/entities/JobseekerAuth.entit
 import { JobSeekerProfile } from '@app/common/database/entities/JobseekerProfile.entity';
 import { ApprovalStatus } from '@app/common/database/entities/schema.enum';
 import { JobseekerSession } from '@app/common/database/entities/JobseekerSession.entity';
+import { EmployerAuth } from '@app/common/database/entities/EmployerAuth.entity';
 import { RedisService } from '@app/common/redis/redis.service';
 import { REDIS_KEYS } from '@app/common/redis/redis.config';
 import { NotificationService } from '../../../notification/notification.service';
@@ -48,6 +49,8 @@ export class JobSeekerAuthService {
   constructor(
     @InjectRepository(JobseekerAuth)
     private jobseekerAuthRepository: Repository<JobseekerAuth>,
+    @InjectRepository(EmployerAuth)
+    private employerAuthRepository: Repository<EmployerAuth>,
     @InjectRepository(JobSeekerProfile)
     private jobseekerProfileRepository: Repository<JobSeekerProfile>,
     @InjectRepository(JobseekerSession)
@@ -68,15 +71,26 @@ export class JobSeekerAuthService {
   ): Promise<AuthResult> {
     const { email, password, firstName, lastName, phoneNumber } =
       registrationData;
+    const normalizedEmail = email.toLowerCase();
     const baseSlug = this.buildBaseSlug(firstName, lastName);
 
     // Check if email already exists
     const existingAuth = await this.jobseekerAuthRepository.findOne({
-      where: { email: email.toLowerCase() },
+      where: { email: normalizedEmail },
     });
 
     if (existingAuth) {
       throw new ConflictException('Email already registered');
+    }
+
+    // Prevent role-collision: do not allow jobseeker signup with an employer email
+    const existingEmployerAuth = await this.employerAuthRepository.findOne({
+      where: { email: normalizedEmail },
+      select: ['id'],
+    });
+
+    if (existingEmployerAuth) {
+      throw new ConflictException('Employer with this email exists');
     }
 
     // Check if phone number already exists
@@ -99,7 +113,7 @@ export class JobSeekerAuthService {
     try {
       // Create auth first
       const auth = queryRunner.manager.create(JobseekerAuth, {
-        email: email.toLowerCase(),
+        email: normalizedEmail,
         password: hashedPassword,
       });
       await queryRunner.manager.save(auth);
@@ -110,7 +124,7 @@ export class JobSeekerAuthService {
       const slug = await this.generateUniqueSlug(baseSlug, profileRepo);
       const profile = queryRunner.manager.create(JobSeekerProfile, {
         id: auth.id,
-        email: email.toLowerCase(),
+        email: normalizedEmail,
         firstName,
         lastName,
         phoneNumber,
