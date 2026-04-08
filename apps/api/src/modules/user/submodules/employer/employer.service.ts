@@ -232,6 +232,7 @@ export class EmployerService {
     const skip = (page - 1) * limit;
     const type = query.type;
     const verificationStatus = query.verificationStatus;
+    const status = query.status;
     const search =
       typeof query.search === 'string' ? query.search.trim() : undefined;
     const sortBy = query.sortBy ?? 'createdAt';
@@ -254,6 +255,12 @@ export class EmployerService {
     if (verificationStatus) {
       queryBuilder.andWhere('verification.status = :verificationStatus', {
         verificationStatus,
+      });
+    }
+
+    if (status) {
+      queryBuilder.andWhere('employer.status = :status', {
+        status,
       });
     }
 

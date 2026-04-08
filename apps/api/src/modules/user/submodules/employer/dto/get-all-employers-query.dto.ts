@@ -9,7 +9,7 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { EmployerType } from '@app/common/database/entities/schema.enum';
+import { EmployerType, EmployerStatus } from '@app/common/database/entities/schema.enum';
 import { VerificationStatus } from '@app/common/shared/enums/employer-docs.enum';
 
 export class GetAllEmployersQueryDto {
@@ -40,6 +40,14 @@ export class GetAllEmployersQueryDto {
   @IsOptional()
   @IsEnum(VerificationStatus)
   verificationStatus?: VerificationStatus;
+
+  @ApiPropertyOptional({
+    enum: EmployerStatus,
+    example: EmployerStatus.ACTIVE,
+  })
+  @IsOptional()
+  @IsEnum(EmployerStatus)
+  status?: EmployerStatus;
 
   @ApiPropertyOptional({
     description: 'Search by name, email, or company name',

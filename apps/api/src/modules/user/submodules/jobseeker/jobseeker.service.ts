@@ -508,6 +508,18 @@ export class JobseekerService {
       profile.cvDocument.url = signedUrl;
     }
 
+    // Also sign the profile picture URL (also stored in private bucket).
+    if (profile.profilePicture?.fileKey) {
+      const signedPictureUrl = await this.storageService.getSignedUrl(
+        profile.profilePicture.fileKey,
+        3600,
+        false,
+        profile.profilePicture.bucketType,
+        profile.profilePicture.provider,
+      );
+      profile.profilePicture.url = signedPictureUrl;
+    }
+
     return {
       id: profile.id,
       email: profile.auth.email,
