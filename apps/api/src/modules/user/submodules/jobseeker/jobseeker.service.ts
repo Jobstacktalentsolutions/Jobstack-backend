@@ -2,6 +2,7 @@ import {
   Injectable,
   BadRequestException,
   NotFoundException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -18,6 +19,7 @@ import {
   DocumentType,
   ApprovalStatus,
 } from '@app/common/database/entities/schema.enum';
+import { JobseekerDocumentType } from '@app/common/shared/enums/jobseeker-docs.enum';
 
 @Injectable()
 export class JobseekerService {
@@ -209,6 +211,146 @@ export class JobseekerService {
     );
 
     return { document, signedUrl };
+  }
+
+  async uploadIdDocument(
+    userId: string,
+    file: MulterFile,
+    idDocumentType: JobseekerDocumentType,
+    idDocumentNumber: string,
+  ): Promise<{ signedUrl: string; documentId: string }> {
+    const profile = await this.profileRepo.findOne({
+      where: { id: userId },
+    });
+    if (!profile) throw new NotFoundException('Jobseeker not found');
+
+    if (profile.approvalStatus === ApprovalStatus.APPROVED) {
+      throw new ForbiddenException(
+        'Identity credential cannot be updated after approval',
+      );
+    }
+
+    const normalizedNumber = (idDocumentNumber ?? '').trim();
+    if (!normalizedNumber) {
+      throw new BadRequestException('idDocumentNumber is required');
+    }
+
+    if (!Object.values(JobseekerDocumentType).includes(idDocumentType)) {
+      throw new BadRequestException('Invalid idDocumentType');
+    }
+
+    const allowedMimeTypes = [
+      'application/pdf',
+      'image/jpeg',
+      'image/png',
+      'image/webp',
+    ];
+    const mime = (file.mimetype || '').toLowerCase();
+    if (!allowedMimeTypes.includes(mime)) {
+      throw new BadRequestException('Only PDF or image files are allowed');
+    }
+
+    if (profile.idDocumentId) {
+      await this.deleteIdDocument(userId);
+    }
+
+    const upload = await this.storageService.uploadFile(file as any, {
+      folder: `jobseekers/${profile.id}/id-document/${idDocumentType}`,
+      bucketType: 'private',
+      documentType: DocumentType.ID_DOCUMENT,
+      uploadedBy: userId,
+      description: `Job seeker ID document (${idDocumentType})`,
+    });
+
+    profile.idDocumentId = upload.document.id;
+    profile.idDocumentType = idDocumentType;
+    profile.idDocumentNumber = normalizedNumber;
+    profile.idDocumentVerified = false;
+    profile.idDocumentVerifiedAt = undefined;
+    profile.idDocumentVerifiedByAdminId = undefined;
+
+    if (profile.approvalStatus === ApprovalStatus.NOT_STARTED) {
+      profile.approvalStatus = ApprovalStatus.PENDING;
+    }
+
+    await this.profileRepo.save(profile);
+
+    const signedUrl = await this.storageService.getSignedUrl(
+      upload.document.fileKey,
+      3600,
+      false,
+      upload.document.bucketType,
+      upload.document.provider,
+    );
+
+    return {
+      signedUrl,
+      documentId: upload.document.id,
+    };
+  }
+
+  async deleteIdDocument(userId: string): Promise<void> {
+    const profile = await this.profileRepo.findOne({
+      where: { id: userId },
+    });
+    if (!profile) throw new NotFoundException('Jobseeker not found');
+
+    if (profile.approvalStatus === ApprovalStatus.APPROVED) {
+      throw new ForbiddenException(
+        'Identity credential cannot be deleted after approval',
+      );
+    }
+
+    const currentDocumentId = profile.idDocumentId;
+    if (!currentDocumentId) return;
+
+    await this.profileRepo.update(
+      { id: profile.id },
+      {
+        idDocumentId: undefined,
+        idDocumentType: undefined,
+        idDocumentNumber: undefined,
+        idDocumentVerified: false,
+        idDocumentVerifiedAt: undefined,
+        idDocumentVerifiedByAdminId: undefined,
+      },
+    );
+
+    await this.storageService.deleteDocument(currentDocumentId);
+  }
+
+  async getIdDocument(userId: string): Promise<{
+    document: Document;
+    signedUrl: string;
+    idDocumentType: JobseekerDocumentType | null;
+    idDocumentNumber: string | null;
+    idDocumentVerified: boolean;
+  } | null> {
+    const profile = await this.profileRepo.findOne({
+      where: { id: userId },
+      relations: ['idDocument'],
+    });
+
+    if (!profile || !profile.idDocument) {
+      return null;
+    }
+
+    const document = profile.idDocument;
+    const signedUrl = await this.storageService.getSignedUrl(
+      document.fileKey,
+      3600,
+      false,
+      document.bucketType,
+      document.provider,
+    );
+
+    return {
+      document,
+      signedUrl,
+      idDocumentType: profile.idDocumentType ?? null,
+      idDocumentNumber: profile.idDocumentNumber ?? null,
+      idDocumentVerified: profile.idDocumentVerified ?? false,
+    };
   }
 
   /**
@@ -486,6 +628,7 @@ export class JobseekerService {
         'userSkills.skill',
         'cvDocument',
         'profilePicture',
+        'idDocument',
         'applications',
         'applications.job',
         'applications.job.employer',
@@ -518,6 +661,17 @@ export class JobseekerService {
         profile.profilePicture.provider,
       );
       profile.profilePicture.url = signedPictureUrl;
+    }
+
+    if (profile.idDocument?.fileKey) {
+      const signedIdDocUrl = await this.storageService.getSignedUrl(
+        profile.idDocument.fileKey,
+        3600,
+        false,
+        profile.idDocument.bucketType,
+        profile.idDocument.provider,
+      );
+      profile.idDocument.url = signedIdDocUrl;
     }
 
     return {

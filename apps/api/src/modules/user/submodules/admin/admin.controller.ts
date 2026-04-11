@@ -246,11 +246,29 @@ export class AdminController {
     return this.adminService.unsuspendJobseeker(user.id, jobseekerId);
   }
 
+  @Put('jobseekers/:id/id-document/verify')
+  @RequireAdminRole(AdminRole.OPERATIONS_SUPPORT.role)
+  async verifyJobseekerIdDocument(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') jobseekerId: string,
+    @Body('verified') verified: boolean,
+  ) {
+    return this.adminService.verifyJobseekerIdDocument(
+      user.id,
+      jobseekerId,
+      verified,
+    );
+  }
+
   // Approve jobseeker verification
   @Patch('jobseekers/:id/verification/approve')
   @RequireAdminRole(AdminRole.OPERATIONS_SUPPORT.role)
-  async approveJobseeker(@Param('id') jobseekerId: string) {
+  async approveJobseeker(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') jobseekerId: string,
+  ) {
     return this.adminService.updateJobseekerVerification(
+      user.id,
       jobseekerId,
       ApprovalStatus.APPROVED,
     );
@@ -259,10 +277,16 @@ export class AdminController {
   // Reject jobseeker verification
   @Patch('jobseekers/:id/verification/reject')
   @RequireAdminRole(AdminRole.OPERATIONS_SUPPORT.role)
-  async rejectJobseeker(@Param('id') jobseekerId: string) {
+  async rejectJobseeker(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') jobseekerId: string,
+    @Body('reason') reason: string,
+  ) {
     return this.adminService.updateJobseekerVerification(
+      user.id,
       jobseekerId,
       ApprovalStatus.REJECTED,
+      reason,
     );
   }
 }

@@ -28,6 +28,7 @@ import { UpdateProfileDto } from './dto/update-profile.dto';
 import { GetAllJobSeekersQueryDto } from './dto/get-all-jobseekers-query.dto';
 import type { MulterFile } from '@app/common/shared/types';
 import { CurrentUser, type CurrentUserPayload } from '@app/common/shared';
+import { JobseekerDocumentType } from '@app/common/shared/enums/jobseeker-docs.enum';
 
 @ApiTags('Users (jobseeker)')
 @ApiBearerAuth()
@@ -148,6 +149,86 @@ export class JobseekerController {
       },
       signedUrl: result.signedUrl,
     };
+  }
+
+  @Post('profile/id-document')
+  @UseGuards(JobSeekerJwtGuard)
+  @UseInterceptors(FileInterceptor('file'))
+  @HttpCode(HttpStatus.OK)
+  @ApiConsumes('multipart/form-data')
+  @ApiOperation({ summary: 'Upload ID document (NIN/Passport/Voters card)' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        idDocumentType: {
+          type: 'string',
+          enum: ['NIN', 'PASSPORT', 'VOTERS_CARD'],
+        },
+        idDocumentNumber: { type: 'string' },
+        file: { type: 'string', format: 'binary' },
+      },
+      required: ['idDocumentType', 'idDocumentNumber', 'file'],
+    },
+  })
+  async uploadIdDocument(
+    @CurrentUser() user: CurrentUserPayload,
+    @UploadedFile() file: MulterFile,
+    @Body('idDocumentType') idDocumentType: JobseekerDocumentType,
+    @Body('idDocumentNumber') idDocumentNumber: string,
+  ) {
+    if (!file) {
+      throw new BadRequestException('No file uploaded');
+    }
+
+    const result = await this.jobseekerService.uploadIdDocument(
+      user.id,
+      file,
+      idDocumentType,
+      idDocumentNumber,
+    );
+
+    return {
+      success: true,
+      signedUrl: result.signedUrl,
+      documentId: result.documentId,
+    };
+  }
+
+  @Get('profile/id-document')
+  @UseGuards(JobSeekerJwtGuard)
+  @HttpCode(HttpStatus.OK)
+  async getIdDocument(@CurrentUser() user: CurrentUserPayload) {
+    const result = await this.jobseekerService.getIdDocument(user.id);
+    if (!result) {
+      throw new BadRequestException('No ID document found');
+    }
+
+    return {
+      success: true,
+      document: {
+        id: result.document.id,
+        fileName: result.document.fileName,
+        originalName: result.document.originalName,
+        mimeType: result.document.mimeType,
+        size: result.document.size,
+        type: result.document.type,
+        description: result.document.description,
+        createdAt: result.document.createdAt,
+      },
+      signedUrl: result.signedUrl,
+      idDocumentType: result.idDocumentType,
+      idDocumentNumber: result.idDocumentNumber,
+      idDocumentVerified: result.idDocumentVerified,
+    };
+  }
+
+  @Delete('profile/id-document')
+  @UseGuards(JobSeekerJwtGuard)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async deleteIdDocument(@CurrentUser() user: CurrentUserPayload) {
+    await this.jobseekerService.deleteIdDocument(user.id);
+    return;
   }
 
   // Update jobseeker profile

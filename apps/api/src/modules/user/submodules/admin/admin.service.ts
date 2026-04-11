@@ -755,19 +755,85 @@ export class AdminService {
     return { success: true, jobseekerId };
   }
 
+  async verifyJobseekerIdDocument(
+    adminId: string,
+    jobseekerId: string,
+    verified: boolean,
+  ) {
+    const profile = await this.jobseekerProfileRepo.findOne({
+      where: { id: jobseekerId },
+    });
+
+    if (!profile) {
+      throw new NotFoundException('Jobseeker profile not found');
+    }
+
+    if (!profile.idDocumentId) {
+      throw new BadRequestException(
+        'Jobseeker has not uploaded an ID document',
+      );
+    }
+
+    profile.idDocumentVerified = Boolean(verified);
+    profile.idDocumentVerifiedAt = verified ? new Date() : undefined;
+    profile.idDocumentVerifiedByAdminId = verified ? adminId : undefined;
+
+    await this.jobseekerProfileRepo.save(profile);
+
+    return {
+      success: true,
+      jobseekerId,
+      verified: profile.idDocumentVerified,
+    };
+  }
+
   async updateJobseekerVerification(
+    adminId: string,
     jobseekerId: string,
     status: ApprovalStatus,
+    reason?: string,
   ) {
     const profile = await this.jobseekerProfileRepo.findOne({
       where: { id: jobseekerId },
     });
     if (!profile) throw new NotFoundException('Jobseeker profile not found');
 
-    profile.approvalStatus = status;
-    await this.jobseekerProfileRepo.save(profile);
+    if (status === ApprovalStatus.APPROVED) {
+      if (!profile.idDocumentId || !profile.idDocumentVerified) {
+        throw new BadRequestException(
+          'Cannot approve jobseeker until ID document is verified',
+        );
+      }
 
-    return { jobseekerId, status };
+      profile.approvalStatus = ApprovalStatus.APPROVED;
+      profile.approvalRejectionReason = undefined;
+      profile.approvalReviewedAt = new Date();
+      profile.approvalReviewedByAdminId = adminId;
+
+      await this.jobseekerProfileRepo.save(profile);
+      return { success: true, jobseekerId, status: profile.approvalStatus };
+    }
+
+    if (status === ApprovalStatus.REJECTED) {
+      const rejectionReason = (reason ?? '').trim();
+      if (!rejectionReason) {
+        throw new BadRequestException('Rejection reason is required');
+      }
+
+      profile.approvalStatus = ApprovalStatus.REJECTED;
+      profile.approvalRejectionReason = rejectionReason;
+      profile.approvalReviewedAt = new Date();
+      profile.approvalReviewedByAdminId = adminId;
+
+      await this.jobseekerProfileRepo.save(profile);
+      return { success: true, jobseekerId, status: profile.approvalStatus };
+    }
+
+    profile.approvalStatus = status;
+    profile.approvalReviewedAt = new Date();
+    profile.approvalReviewedByAdminId = adminId;
+    await this.jobseekerProfileRepo.save(profile);
+    return { success: true, jobseekerId, status: profile.approvalStatus };
   }
 
   /**
