@@ -274,6 +274,20 @@ export class AdminController {
     );
   }
 
+  // Unapprove jobseeker verification (move back to PENDING)
+  @Patch('jobseekers/:id/verification/unapprove')
+  @RequireAdminRole(AdminRole.OPERATIONS_SUPPORT.role)
+  async unapproveJobseeker(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') jobseekerId: string,
+  ) {
+    return this.adminService.updateJobseekerVerification(
+      user.id,
+      jobseekerId,
+      ApprovalStatus.PENDING,
+    );
+  }
+
   // Reject jobseeker verification
   @Patch('jobseekers/:id/verification/reject')
   @RequireAdminRole(AdminRole.OPERATIONS_SUPPORT.role)

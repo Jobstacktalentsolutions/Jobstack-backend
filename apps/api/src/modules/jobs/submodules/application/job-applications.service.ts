@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   Logger,
   NotFoundException,
@@ -18,6 +19,7 @@ import {
   UpdateApplicationStatusDto,
 } from './dto';
 import {
+  ApprovalStatus,
   JobApplicationStatus,
   JobStatus,
   EmployeeStatus,
@@ -64,6 +66,12 @@ export class JobApplicationsService {
     });
     if (!profile) {
       throw new NotFoundException('Jobseeker profile not found');
+    }
+
+    if (profile.approvalStatus !== ApprovalStatus.APPROVED) {
+      throw new ForbiddenException(
+        'Your profile is not approved yet. You cannot apply for jobs at this time.',
+      );
     }
 
     const exists = await this.applicationRepo.findOne({

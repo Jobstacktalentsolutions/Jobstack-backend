@@ -126,4 +126,6 @@ export class Job extends BaseEntity {
 
   @Column({ type: 'text', nullable: true })
   vettingCompletedBy?: string;
+
+  applicantsCount?: number;
 }

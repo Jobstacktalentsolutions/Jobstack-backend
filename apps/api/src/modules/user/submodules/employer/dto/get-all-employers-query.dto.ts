@@ -9,7 +9,10 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { EmployerType, EmployerStatus } from '@app/common/database/entities/schema.enum';
+import {
+  EmployerType,
+  EmployerStatus,
+} from '@app/common/database/entities/schema.enum';
 import { VerificationStatus } from '@app/common/shared/enums/employer-docs.enum';
 
 export class GetAllEmployersQueryDto {

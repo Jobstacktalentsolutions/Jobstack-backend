@@ -830,6 +830,7 @@ export class AdminService {
     }
 
     profile.approvalStatus = status;
+    profile.approvalRejectionReason = undefined;
     profile.approvalReviewedAt = new Date();
     profile.approvalReviewedByAdminId = adminId;
     await this.jobseekerProfileRepo.save(profile);
