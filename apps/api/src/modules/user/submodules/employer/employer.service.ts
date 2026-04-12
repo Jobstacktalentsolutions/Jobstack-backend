@@ -6,13 +6,18 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { EmployerProfile } from '@app/common/database/entities/EmployerProfile.entity';
+import { Job } from '@app/common/database/entities/Job.entity';
 import { EmployerAuth } from '@app/common/database/entities/EmployerAuth.entity';
 import { EmployerVerification } from '@app/common/database/entities/EmployerVerification.entity';
 import { JobApplication } from '@app/common/database/entities/JobApplication.entity';
 import { Document } from '@app/common/database/entities';
 import { StorageService } from '@app/common/storage/storage.service';
 import type { MulterFile } from '@app/common/shared/types';
-import { DocumentType } from '@app/common/database/entities/schema.enum';
+import {
+  DocumentType,
+  JobStatus,
+} from '@app/common/database/entities/schema.enum';
+import { VerificationStatus } from '@app/common/shared/enums/employer-docs.enum';
 import { UpdateEmployerProfileDto, GetAllEmployersQueryDto } from './dto';
 
 @Injectable()
@@ -26,6 +31,8 @@ export class EmployerService {
     protected readonly verificationRepo: Repository<EmployerVerification>,
     @InjectRepository(JobApplication)
     protected readonly jobApplicationRepo: Repository<JobApplication>,
+    @InjectRepository(Job)
+    protected readonly jobRepo: Repository<Job>,
     protected readonly storageService: StorageService,
   ) {}
 
@@ -158,10 +165,23 @@ export class EmployerService {
 
     const city = verification?.city;
     const state = verification?.state;
+    // Public location: verification city/state only (never street-level profile.address)
     const location =
-      (city && state && `${city}, ${state}`) ||
-      profile.address ||
-      'Location not specified';
+      city && state
+        ? `${city}, ${state}`
+        : city || state || 'Location not specified';
+
+    const activeJobCount = await this.jobRepo
+      .createQueryBuilder('job')
+      .where('job.employerId = :employerId', { employerId: profile.id })
+      .andWhere('job.status IN (:...statuses)', {
+        statuses: [JobStatus.PUBLISHED, JobStatus.ACTIVE],
+      })
+      .andWhere(
+        '(job.applicationDeadline IS NULL OR job.applicationDeadline > :now)',
+        { now: new Date() },
+      )
+      .getCount();
 
     let logoUrl: string | null = null;
     if (profile.profilePicture) {
@@ -185,7 +205,16 @@ export class EmployerService {
         verification?.companyWebsite ||
         null,
       logoUrl,
-      verificationStatus: verification?.status ?? null,
+      /** Organization, SME, or Individual when set on the profile */
+      employerType: profile.type ?? null,
+      /** ISO timestamp for "on JobStack since" */
+      memberSince: profile.createdAt
+        ? profile.createdAt.toISOString()
+        : null,
+      /** Live roles visible on the marketplace (not expired by deadline) */
+      activeJobCount,
+      /** True when employer verification is approved (safe public signal) */
+      isVerified: verification?.status === VerificationStatus.APPROVED,
     };
   }
 

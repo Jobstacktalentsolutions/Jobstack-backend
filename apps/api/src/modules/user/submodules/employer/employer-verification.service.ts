@@ -24,6 +24,7 @@ import {
   isDocumentMandatory,
 } from '@app/common/shared/config/employer-document-requirements';
 import { NotificationService } from 'apps/api/src/modules/notification/notification.service';
+import { ApprovalDecisionEmailService } from '../../approval-decision-email.service';
 import { UserRole } from '@app/common/shared/enums/user-roles.enum';
 import { NotificationPriority } from '@app/common/database/entities/schema.enum';
 
@@ -38,6 +39,7 @@ export class EmployerVerificationService {
     private readonly profileRepo: Repository<EmployerProfile>,
     private readonly storageService: StorageService,
     private readonly notificationService: NotificationService,
+    private readonly approvalDecisionEmailService: ApprovalDecisionEmailService,
   ) {}
 
   // Get current user's verification with all documents
@@ -359,6 +361,7 @@ export class EmployerVerificationService {
     });
 
     if (verification && verification.status === VerificationStatus.PENDING) {
+      const previousStatus = verification.status;
       verification.status = VerificationStatus.APPROVED;
       verification.reviewedAt = new Date();
       await this.verificationRepo.save(verification);
@@ -377,6 +380,18 @@ export class EmployerVerificationService {
         );
       } catch (_) {
         /* non-blocking */
+      }
+
+      const employerWithAuth = await this.profileRepo.findOne({
+        where: { id: profile.id },
+        relations: ['auth'],
+      });
+      if (employerWithAuth) {
+        this.approvalDecisionEmailService.queueEmployerVerificationEmail(
+          employerWithAuth,
+          previousStatus,
+          VerificationStatus.APPROVED,
+        );
       }
 
       return {
@@ -406,6 +421,7 @@ export class EmployerVerificationService {
       throw new NotFoundException('Verification record not found');
     }
 
+    const previousStatus = verification.status;
     verification.status = status;
     verification.reviewedByAdminId = adminId;
     verification.reviewedAt = new Date();
@@ -415,6 +431,19 @@ export class EmployerVerificationService {
     }
 
     await this.verificationRepo.save(verification);
+
+    const employer = await this.profileRepo.findOne({
+      where: { id: employerId },
+      relations: ['auth'],
+    });
+    if (employer) {
+      this.approvalDecisionEmailService.queueEmployerVerificationEmail(
+        employer,
+        previousStatus,
+        status,
+        rejectionReason,
+      );
+    }
 
     // Notify employer of the decision
     try {

@@ -31,6 +31,7 @@ import { GetAllAdminsQueryDto } from './dto/get-all-admins-query.dto';
 import * as bcrypt from 'bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
 import { NotificationService } from 'apps/api/src/modules/notification/notification.service';
+import { ApprovalDecisionEmailService } from '../../approval-decision-email.service';
 
 function generateRandomPassword(length = 12): string {
   const chars =
@@ -66,6 +67,7 @@ export class AdminService {
     @InjectRepository(Payment)
     private readonly paymentRepo: Repository<Payment>,
     private readonly notificationService: NotificationService,
+    private readonly approvalDecisionEmailService: ApprovalDecisionEmailService,
   ) {}
 
   private buildMonthlyTrend(current: number, previous: number) {
@@ -222,11 +224,25 @@ export class AdminService {
     });
     if (!verification) throw new NotFoundException('Verification not found');
 
+    const previousStatus = verification.status;
     verification.status = status;
     verification.reviewedAt = new Date();
     verification.rejectionReason =
       status === VerificationStatus.REJECTED ? rejectionReason : undefined;
     await this.verificationRepo.save(verification);
+
+    const employer = await this.profileRepo.findOne({
+      where: { id: employerId },
+      relations: ['auth'],
+    });
+    if (employer) {
+      this.approvalDecisionEmailService.queueEmployerVerificationEmail(
+        employer,
+        previousStatus,
+        status,
+        rejectionReason,
+      );
+    }
 
     return { employerId, status };
   }
@@ -863,6 +879,8 @@ export class AdminService {
     });
     if (!profile) throw new NotFoundException('Jobseeker profile not found');
 
+    const previousApprovalStatus = profile.approvalStatus;
+
     if (status === ApprovalStatus.APPROVED) {
       if (!profile.idDocumentId || !profile.idDocumentVerified) {
         throw new BadRequestException(
@@ -876,6 +894,11 @@ export class AdminService {
       profile.approvalReviewedByAdminId = adminId;
 
       await this.jobseekerProfileRepo.save(profile);
+      this.approvalDecisionEmailService.queueJobseekerApprovalEmail(
+        profile,
+        previousApprovalStatus,
+        ApprovalStatus.APPROVED,
+      );
       return { success: true, jobseekerId, status: profile.approvalStatus };
     }
 
@@ -891,6 +914,12 @@ export class AdminService {
       profile.approvalReviewedByAdminId = adminId;
 
       await this.jobseekerProfileRepo.save(profile);
+      this.approvalDecisionEmailService.queueJobseekerApprovalEmail(
+        profile,
+        previousApprovalStatus,
+        ApprovalStatus.REJECTED,
+        rejectionReason,
+      );
       return { success: true, jobseekerId, status: profile.approvalStatus };
     }
 

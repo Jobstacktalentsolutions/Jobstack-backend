@@ -8,6 +8,7 @@ import { EmployerController } from './employer.controller';
 import { EmployerService } from './employer.service';
 import { EmployerVerification } from '@app/common/database/entities/EmployerVerification.entity';
 import { EmployerVerificationDocument } from '@app/common/database/entities/EmployerVerificationDocument.entity';
+import { Job } from '@app/common/database/entities/Job.entity';
 import { EmployerVerificationService } from './employer-verification.service';
 import {
   EmployerVerificationController,
@@ -19,6 +20,7 @@ import { EmployerAuthModule } from 'apps/api/src/modules/auth/submodules/employe
 import { AuthModule } from 'apps/api/src/modules/auth/auth.module';
 import { PublicEmployerController } from './public-employer.controller';
 import { NotificationModule } from 'apps/api/src/modules/notification/notification.module';
+import { ApprovalDecisionEmailService } from '../../approval-decision-email.service';
 
 @Module({
   imports: [
@@ -29,6 +31,7 @@ import { NotificationModule } from 'apps/api/src/modules/notification/notificati
       EmployerVerificationDocument,
       Document,
       JobApplication,
+      Job,
     ]),
     EmployerAuthModule,
     AuthModule,
@@ -43,6 +46,7 @@ import { NotificationModule } from 'apps/api/src/modules/notification/notificati
   providers: [
     EmployerService,
     EmployerVerificationService,
+    ApprovalDecisionEmailService,
     StorageService,
     EmployerJwtGuard,
   ],

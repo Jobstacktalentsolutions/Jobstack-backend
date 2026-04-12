@@ -6,6 +6,7 @@ import { AdminService } from './admin.service';
 import { AdminJwtGuard } from 'apps/api/src/guards';
 import { AdminAuthModule } from 'apps/api/src/modules/auth/submodules/admin/admin-auth.module';
 import { NotificationModule } from 'apps/api/src/modules/notification/notification.module';
+import { ApprovalDecisionEmailService } from '../../approval-decision-email.service';
 import {
   AdminProfile,
   Employee,
@@ -36,7 +37,7 @@ import {
     NotificationModule,
   ],
   controllers: [AdminController],
-  providers: [AdminService, AdminJwtGuard],
+  providers: [AdminService, AdminJwtGuard, ApprovalDecisionEmailService],
   exports: [AdminService],
 })
 export class AdminModule {}
