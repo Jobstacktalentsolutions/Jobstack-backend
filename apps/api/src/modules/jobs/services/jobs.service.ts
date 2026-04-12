@@ -12,8 +12,12 @@ import {
   UpdateJobDto,
   UpdateJobStatusDto,
 } from '../dto';
-import { JobStatus } from '@app/common/database/entities/schema.enum';
-import { JobVettingProducer } from '../queue/job-vetting.producer';
+import {
+  JobStatus,
+  isJobOpenOnMarketplace,
+} from '@app/common/database/entities/schema.enum';
+import { JobPostMatchNotifyProducer } from '../queue/job-post-match-notify.producer';
+import { JobActivationService } from './job-activation.service';
 
 @Injectable()
 export class JobsService {
@@ -24,7 +28,8 @@ export class JobsService {
     private readonly skillRepo: Repository<Skill>,
     @InjectRepository(EmployerProfile)
     private readonly employerRepo: Repository<EmployerProfile>,
-    private readonly jobVettingProducer: JobVettingProducer,
+    private readonly jobPostMatchNotifyProducer: JobPostMatchNotifyProducer,
+    private readonly jobActivationService: JobActivationService,
   ) {}
 
   private readonly jobRelations = ['skills'];
@@ -74,6 +79,8 @@ export class JobsService {
     options?: {
       employerId?: string;
       status?: JobStatus;
+      /** When set, restricts to any of these statuses (overrides single status). */
+      statuses?: JobStatus[];
       includeExpired?: boolean;
     },
   ) {
@@ -87,14 +94,25 @@ export class JobsService {
       params.employerId = options.employerId;
     }
 
-    // Filter by status if specified
-    if (options?.status) {
+    // Filter by status(es) if specified
+    if (options?.statuses?.length) {
+      conditions.push('job.status IN (:...statuses)');
+      params.statuses = options.statuses;
+    } else if (options?.status) {
       conditions.push('job.status = :status');
       params.status = options.status;
     }
 
-    // Filter out expired jobs for published jobs (unless includeExpired is true)
-    if (options?.status === JobStatus.PUBLISHED && !options?.includeExpired) {
+    // Hide past-deadline jobs for marketplace-visible listings unless includeExpired
+    const statusesForDeadline = options?.statuses?.length
+      ? options.statuses
+      : options?.status
+        ? [options.status]
+        : [];
+    const deadlineFilterForLive =
+      !options?.includeExpired &&
+      statusesForDeadline.some((s) => isJobOpenOnMarketplace(s));
+    if (deadlineFilterForLive) {
       conditions.push(
         '(job.applicationDeadline IS NULL OR job.applicationDeadline > :now)',
       );
@@ -237,20 +255,47 @@ export class JobsService {
     }
 
     const previousStatus = job.status;
-    job.status = dto.status;
+
+    // Map employer publish request to ACTIVE (same end state as admin activation).
+    let nextStatus = dto.status;
+    if (
+      employerId &&
+      dto.status === JobStatus.PUBLISHED &&
+      (previousStatus === JobStatus.DRAFT ||
+        previousStatus === JobStatus.CLOSED)
+    ) {
+      nextStatus = JobStatus.ACTIVE;
+    }
+
+    job.status = nextStatus;
     await this.jobRepo.save(job);
 
-    // Trigger vetting when job is published
-    if (
-      dto.status === JobStatus.PUBLISHED &&
-      previousStatus !== JobStatus.PUBLISHED
-    ) {
+    const becameOpenOnMarketplace =
+      isJobOpenOnMarketplace(nextStatus) &&
+      !isJobOpenOnMarketplace(previousStatus);
+
+    if (becameOpenOnMarketplace) {
       try {
-        await this.jobVettingProducer.queueJobVetting(jobId, 'status-change');
+        await this.jobPostMatchNotifyProducer.queueNotifyJobMatches(jobId);
       } catch (error) {
-        // Log error but don't fail the status update
-        console.error(`Failed to queue vetting for job ${jobId}:`, error);
+        console.error(
+          `Failed to queue job match notifications for job ${jobId}:`,
+          error,
+        );
       }
+    }
+
+    // Employer email when job first becomes ACTIVE (manual admin activation after publish, or employer go-live).
+    try {
+      await this.jobActivationService.queueEmployerActivationEmail(
+        job,
+        previousStatus,
+      );
+    } catch (error) {
+      console.error(
+        `Failed to queue employer activation email for job ${jobId}:`,
+        error,
+      );
     }
 
     return this.getJobById(jobId);

@@ -34,6 +34,7 @@ import { ENV } from './env.config';
         [ENV.WEBSITE_URL]: Joi.string().required(),
         [ENV.DISABLE_JOBS]: Joi.boolean().default(false),
         [ENV.FRONTEND_URL]: Joi.string().required(),
+        [ENV.GOOGLE_CLIENT_ID]: Joi.string().required(),
         [ENV.S3_ENDPOINT]: Joi.string().required(),
         [ENV.S3_REGION]: Joi.string().required(),
         [ENV.S3_ACCESS_KEY_ID]: Joi.string().required(),

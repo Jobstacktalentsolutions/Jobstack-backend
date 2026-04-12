@@ -1,5 +1,6 @@
 import {
   IsEmail,
+  IsNotEmpty,
   IsString,
   MinLength,
   Length,
@@ -113,4 +114,17 @@ export class ChangePasswordDto {
       'Password must contain at least one uppercase letter, one lowercase letter, and one number',
   })
   newPassword: string;
+}
+
+/**
+ * Google Authentication DTO
+ */
+export class GoogleAuthDto {
+  @ApiProperty({
+    description: 'Google ID token from Google Identity Services',
+    example: 'eyJhbGciOiJSUzI1NiIsImtpZCI6Ij...',
+  })
+  @IsString()
+  @IsNotEmpty()
+  idToken: string;
 }

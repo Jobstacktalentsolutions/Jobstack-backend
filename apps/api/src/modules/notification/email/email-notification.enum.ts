@@ -5,6 +5,8 @@ export enum EmailTemplateType {
   JOB_APPLICATION_RECEIVED = 'job-application-received',
   JOB_APPLICATION_STATUS = 'job-application-status',
   NEW_JOB_POSTED = 'new-job-posted',
+  /** Personalized “new published job” for jobseekers matched on publish */
+  JOB_MATCH_RECOMMENDATION = 'job-match-recommendation',
   INTERVIEW_SCHEDULED = 'interview-scheduled',
   GENERAL_NOTIFICATION = 'general-notification',
   VETTING_COMPLETE = 'vetting-complete',
@@ -15,6 +17,8 @@ export enum EmailTemplateType {
   PROBATION_CONFIRMED = 'probation-confirmed',
   ADMIN_REPLACEMENT_TO_EMPLOYER = 'admin-replacement-to-employer',
   ADMIN_REPLACEMENT_TO_CANDIDATE = 'admin-replacement-to-candidate',
+  /** Employer: job reached ACTIVE (admin activation or go-live after publish). */
+  JOB_ACTIVATED_EMPLOYER = 'job-activated-employer',
 }
 
 export const EMAIL_TYPE_CONFIG = {
@@ -41,6 +45,10 @@ export const EMAIL_TYPE_CONFIG = {
   [EmailTemplateType.NEW_JOB_POSTED]: {
     subject: 'New Job Opportunity',
     template: 'new-job-posted.ejs',
+  },
+  [EmailTemplateType.JOB_MATCH_RECOMMENDATION]: {
+    subject: 'A new job matches your profile',
+    template: 'job-match-recommendation.ejs',
   },
   [EmailTemplateType.INTERVIEW_SCHEDULED]: {
     subject: 'Interview Scheduled',
@@ -81,5 +89,9 @@ export const EMAIL_TYPE_CONFIG = {
   [EmailTemplateType.ADMIN_REPLACEMENT_TO_CANDIDATE]: {
     subject: 'You have been assigned to a job',
     template: 'admin-replacement-to-candidate.ejs',
+  },
+  [EmailTemplateType.JOB_ACTIVATED_EMPLOYER]: {
+    subject: 'Your job is now active on JobStack',
+    template: 'job-activated-employer.ejs',
   },
 } as const;

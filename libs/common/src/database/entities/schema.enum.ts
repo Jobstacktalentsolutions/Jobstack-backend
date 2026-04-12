@@ -139,6 +139,11 @@ export enum JobStatus {
   CLOSED = 'CLOSED',
 }
 
+/** True when job seekers can browse and apply (legacy published or admin-activated live). */
+export function isJobOpenOnMarketplace(status: JobStatus): boolean {
+  return status === JobStatus.PUBLISHED || status === JobStatus.ACTIVE;
+}
+
 // It always appears in this order
 export enum JobApplicationStatus {
   APPLIED = 'APPLIED',
@@ -166,6 +171,41 @@ export enum EmployeeStatus {
   SUSPENDED = 'SUSPENDED',
   COMPLETED = 'COMPLETED',
   TERMINATED = 'TERMINATED',
+  /** Mutual completion confirmed by both employer and jobseeker. */
+  ENDED = 'ENDED',
+}
+
+/** True when employment is no longer active for staffing/placement purposes. */
+export function isEmployeeTerminalStatus(status: EmployeeStatus): boolean {
+  return (
+    status === EmployeeStatus.ENDED ||
+    status === EmployeeStatus.TERMINATED ||
+    status === EmployeeStatus.COMPLETED
+  );
+}
+
+/** Eligible to declare mutual completion (not already ended). */
+export function isEmployeeOpenForMutualCompletion(
+  status: EmployeeStatus,
+): boolean {
+  return (
+    status === EmployeeStatus.ACTIVE || status === EmployeeStatus.ONBOARDING
+  );
+}
+
+/** HR categorization when employment is ended by employer. */
+export enum EmployeeTerminationHrMeaning {
+  EMPLOYEE_RESIGNED = 'EMPLOYEE_RESIGNED',
+  EMPLOYEE_TERMINATED = 'EMPLOYEE_TERMINATED',
+  ROLE_REDUNDANT = 'ROLE_REDUNDANT',
+  MUTUAL_SEPARATION = 'MUTUAL_SEPARATION',
+  OTHER = 'OTHER',
+}
+
+/** Who submitted a row in employment_feedback. */
+export enum EmploymentFeedbackReviewerRole {
+  EMPLOYER = 'EMPLOYER',
+  JOBSEEKER = 'JOBSEEKER',
 }
 
 // Jobseeker related enums

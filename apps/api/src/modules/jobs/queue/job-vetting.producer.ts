@@ -87,8 +87,13 @@ export class JobVettingProducer implements OnModuleInit {
    */
   async queueJobVetting(
     jobId: string,
-    triggeredBy: 'status-change' | 'manual' = 'manual',
+    triggeredBy: VetJobData['triggeredBy'] = 'manual',
+    options?: { bullJobIdSuffix?: string },
   ): Promise<{ jobId: string | number }> {
+    // Per-application suffix avoids Bull dropping a second add while the first job is still queued
+    const bullJobId = options?.bullJobIdSuffix
+      ? `vet-job-${jobId}-${options.bullJobIdSuffix}`
+      : `vet-job-${jobId}`;
     const job = await this.vettingQueue.add(
       JOB_VETTING_JOBS.VET_JOB,
       {
@@ -97,11 +102,13 @@ export class JobVettingProducer implements OnModuleInit {
         triggeredAt: new Date().toISOString(),
       } as VetJobData,
       {
-        priority: triggeredBy === 'status-change' ? 1 : 5, // Higher priority for status changes
+        priority:
+          triggeredBy === 'status-change' || triggeredBy === 'application'
+            ? 1
+            : 5, // Higher priority when vetting is tied to hiring workflow events
         removeOnComplete: true,
         removeOnFail: false,
-        // Deduplicate jobs for the same job ID
-        jobId: `vet-job-${jobId}`,
+        jobId: bullJobId,
       },
     );
 

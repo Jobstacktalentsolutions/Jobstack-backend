@@ -24,6 +24,7 @@ import {
   PasswordResetRequestDto,
   PasswordResetConfirmCodeDto,
   PasswordResetDto,
+  GoogleAuthDto,
 } from './dto/jobseeker-auth.dto';
 import { JobSeekerJwtGuard } from 'apps/api/src/guards';
 
@@ -60,6 +61,20 @@ export class JobSeekerAuthController {
     @ReqDeviceInfo() deviceInfo: RequestDeviceInfo,
   ) {
     return await this.jobseekerAuthService.login(loginData, deviceInfo);
+  }
+
+  @Post('google')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Jobseeker Google sign-in/sign-up' })
+  @ApiBody({ type: GoogleAuthDto })
+  async googleAuth(
+    @Body() googleAuthData: GoogleAuthDto,
+    @ReqDeviceInfo() deviceInfo: RequestDeviceInfo,
+  ) {
+    return await this.jobseekerAuthService.googleAuth(
+      googleAuthData,
+      deviceInfo,
+    );
   }
 
   @Post('refresh')

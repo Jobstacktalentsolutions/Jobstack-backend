@@ -313,6 +313,47 @@ export class JobVettingService {
   }
 
   /**
+   * Vetting-style fit score (0–100) for a profile vs a published job without an application; uses full application-speed weight as neutral 100.
+   */
+  computeMatchScoreForPublishedJob(
+    job: Job,
+    profile: JobSeekerProfile,
+  ): number {
+    if (!job || !profile) {
+      this.logger.warn(
+        'computeMatchScoreForPublishedJob called with missing job or profile',
+      );
+      return 0;
+    }
+
+    const profileCompleteness = this.calculateProfileCompleteness(profile);
+    const proximityScore = this.calculateProximityScore(job, profile);
+    const experienceScore = this.calculateExperienceScore(profile, job);
+    const skillMatchScore = this.calculateSkillMatchScore(profile, job);
+    const applicationSpeedScore = 100;
+
+    const skillType = getSkillTypeFromCategory(job.category);
+    if (skillType === SkillType.HIGH_SKILL) {
+      const weights = VETTING_CONFIG.highSkillWeights;
+      const totalScore =
+        experienceScore * weights.yearsOfExperience +
+        skillMatchScore * weights.skillMatching +
+        profileCompleteness * weights.profileCompleteness +
+        proximityScore * weights.proximity +
+        applicationSpeedScore * weights.applicationSpeed;
+      return Math.round(totalScore * 100) / 100;
+    }
+
+    const weights = VETTING_CONFIG.lowSkillWeights;
+    const totalScore =
+      applicationSpeedScore * weights.applicationSpeed +
+      profileCompleteness * weights.profileCompleteness +
+      experienceScore * weights.experience +
+      proximityScore * weights.proximity;
+    return Math.round(totalScore * 100) / 100;
+  }
+
+  /**
    * Calculate profile completeness percentage (0-100)
    */
   calculateProfileCompleteness(profile: JobSeekerProfile): number {

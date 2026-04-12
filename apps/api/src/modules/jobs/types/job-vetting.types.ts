@@ -12,7 +12,7 @@ export type JobVettingJobType =
 
 export interface VetJobData {
   jobId: string;
-  triggeredBy: 'status-change' | 'manual' | 'schedule';
+  triggeredBy: 'status-change' | 'manual' | 'schedule' | 'application';
   triggeredAt: string; // ISO date string
 }
 

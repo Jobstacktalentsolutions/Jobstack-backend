@@ -102,6 +102,22 @@ export class EmailService extends BaseNotificationService<EmailPayloadDto> {
           defaults.viewApplicationUrl = c.applicationUrl ?? c.actionUrl ?? '';
         }
         break;
+      case EmailTemplateType.JOB_MATCH_RECOMMENDATION:
+        defaults.recipientName =
+          c.firstName ?? c.name ?? (c.recipientName as string) ?? 'there';
+        // Absolute URL to jobseeker job detail (apply flow lives on this page)
+        defaults.jobDetailUrl =
+          (c.jobDetailUrl as string) ?? (c.jobUrl as string) ?? '';
+        break;
+      case EmailTemplateType.JOB_ACTIVATED_EMPLOYER:
+        defaults.firstName =
+          (c.firstName as string) ?? (c.employerFirstName as string) ?? 'there';
+        defaults.jobTitle = (c.jobTitle as string) ?? '';
+        defaults.jobDashboardUrl = (c.jobDashboardUrl as string) ?? '';
+        defaults.actionUrl =
+          (c.actionUrl as string) ?? (defaults.jobDashboardUrl as string) ?? '';
+        defaults.actionText = (c.actionText as string) ?? 'View your job post';
+        break;
       case EmailTemplateType.WELCOME:
         defaults.firstName = c.firstName ?? 'there';
         defaults.userType = c.userType ?? 'jobseeker';

@@ -1,11 +1,15 @@
 import { forwardRef, Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { BullModule } from '@nestjs/bull';
 import {
+  AdminAuth,
   Employee,
   EmployerProfile,
+  EmploymentFeedback,
   Job,
   JobApplication,
+  JobBookmark,
   JobSeekerProfile,
   JobseekerSkill,
   Skill,
@@ -19,9 +23,15 @@ import { ProbationAdminController } from './controllers/probation-admin.controll
 import { JobApplicationsController } from './submodules/application/job-applications.controller';
 import { EmployeesController } from './submodules/employees/employees.controller';
 import { JobsService } from './services/jobs.service';
+import { JobBookmarksService } from './services/job-bookmarks.service';
+import { EmploymentFeedbackService } from './services/employment-feedback.service';
+import { EmploymentCompletionService } from './services/employment-completion.service';
 import { JobRecommendationsService } from './services/job-recommendations.service';
 import { JobRecommendationsProcessor } from './services/job-recommendations.processor';
 import { JobVettingService } from './services/job-vetting.service';
+import { JobPostMatchNotifyService } from './services/job-post-match-notify.service';
+import { JobVettingMilestoneNotifyService } from './services/job-vetting-milestone-notify.service';
+import { JobActivationService } from './services/job-activation.service';
 import { JobApplicationsService } from './submodules/application/job-applications.service';
 import { EmployeesService } from './submodules/employees/employees.service';
 import {
@@ -30,6 +40,8 @@ import {
 } from './queue';
 import { JobVettingProducer } from './queue/job-vetting.producer';
 import { JobVettingConsumer } from './queue/job-vetting.consumer';
+import { JobPostMatchNotifyProducer } from './queue/job-post-match-notify.producer';
+import { JobPostMatchNotifyConsumer } from './queue/job-post-match-notify.consumer';
 import { ProbationTrackingConsumer, ProbationTrackingProducer } from './queue';
 import {
   AdminJwtGuard,
@@ -48,14 +60,18 @@ import { StorageModule } from '@app/common/storage';
 
 @Module({
   imports: [
+    ConfigModule,
     TypeOrmModule.forFeature([
+      AdminAuth,
       Job,
       Skill,
       EmployerProfile,
       JobApplication,
+      JobBookmark,
       JobSeekerProfile,
       JobseekerSkill,
       Employee,
+      EmploymentFeedback,
     ]),
     // Register the job recommendations queue
     BullModule.registerQueue({
@@ -87,6 +103,15 @@ import { StorageModule } from '@app/common/storage';
         removeOnFail: false,
       },
     }),
+    BullModule.registerQueue({
+      name: QUEUE_NAMES.JOB_POST_MATCH_NOTIFY,
+      defaultJobOptions: {
+        attempts: 2,
+        backoff: { type: 'exponential', delay: 2000 },
+        removeOnComplete: 20,
+        removeOnFail: 10,
+      },
+    }),
     forwardRef(() => AdminAuthModule),
     forwardRef(() => EmployerAuthModule),
     forwardRef(() => JobSeekerAuthModule),
@@ -104,15 +129,23 @@ import { StorageModule } from '@app/common/storage';
   ],
   providers: [
     JobsService,
+    JobBookmarksService,
+    EmploymentFeedbackService,
+    EmploymentCompletionService,
     EmployerDashboardStatsService,
     JobRecommendationsProcessor,
     JobRecommendationsService,
     JobVettingService,
+    JobPostMatchNotifyService,
+    JobVettingMilestoneNotifyService,
+    JobActivationService,
     // Bull queue consumer and producer
     JobRecommendationsConsumer,
     JobRecommendationsProducer,
     JobVettingConsumer,
     JobVettingProducer,
+    JobPostMatchNotifyConsumer,
+    JobPostMatchNotifyProducer,
     ProbationTrackingConsumer,
     ProbationTrackingProducer,
     ProbationTrackingService,
@@ -128,6 +161,7 @@ import { StorageModule } from '@app/common/storage';
     JobsService,
     JobRecommendationsProducer,
     JobVettingProducer,
+    JobPostMatchNotifyProducer,
     JobVettingService,
   ],
 })

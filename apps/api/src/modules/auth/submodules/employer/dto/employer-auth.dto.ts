@@ -61,4 +61,5 @@ export {
   PasswordResetConfirmCodeDto,
   PasswordResetDto,
   ChangePasswordDto,
+  GoogleAuthDto,
 } from 'apps/api/src/modules/auth/dto/auth.dto';

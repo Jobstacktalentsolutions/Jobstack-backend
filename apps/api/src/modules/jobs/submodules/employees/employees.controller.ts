@@ -19,10 +19,14 @@ import {
 import { EmployeesService } from './employees.service';
 import {
   CreateEmployeeDto,
+  DeclareEmploymentCompletionDto,
   EmployeeQueryDto,
+  SubmitEmploymentFeedbackDto,
   UpdateEmployeeDto,
   UpdateEmployeeStatusDto,
 } from '../../dto';
+import { EmploymentCompletionService } from '../../services/employment-completion.service';
+import { EmploymentFeedbackService } from '../../services/employment-feedback.service';
 import { CurrentUser, type CurrentUserPayload } from '@app/common/shared';
 import { UserRole } from '@app/common/shared/enums/user-roles.enum';
 
@@ -30,7 +34,11 @@ import { UserRole } from '@app/common/shared/enums/user-roles.enum';
 @ApiBearerAuth()
 @Controller('employees')
 export class EmployeesController {
-  constructor(private readonly employeesService: EmployeesService) {}
+  constructor(
+    private readonly employeesService: EmployeesService,
+    private readonly employmentCompletionService: EmploymentCompletionService,
+    private readonly employmentFeedbackService: EmploymentFeedbackService,
+  ) {}
 
   // Creates an employee under the authenticated employer
   @Post()
@@ -66,6 +74,60 @@ export class EmployeesController {
   @UseGuards(AdminJwtGuard)
   getAdminEmployee(@Param('employeeId', ParseUUIDPipe) employeeId: string) {
     return this.employeesService.getAdminEmployeeById(employeeId);
+  }
+
+  // Employer declares mutual completion for a placement (second party finalizes to ENDED).
+  @Post(':employeeId/completion/declare')
+  @UseGuards(EmployerJwtGuard)
+  @ApiOperation({ summary: 'Declare mutual employment completion (employer)' })
+  @ApiBody({ type: DeclareEmploymentCompletionDto })
+  declareEmploymentCompletionEmployer(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('employeeId', ParseUUIDPipe) employeeId: string,
+    @Body() dto: DeclareEmploymentCompletionDto,
+  ) {
+    return this.employmentCompletionService.declareCompleteAsEmployer(
+      user.id,
+      employeeId,
+      dto.note,
+    );
+  }
+
+  // Returns employer-authored feedback for this employment if it exists.
+  @Get(':employeeId/feedback/me')
+  @UseGuards(EmployerJwtGuard)
+  @ApiOperation({
+    summary: 'Get employer feedback for an employment (if submitted)',
+  })
+  async getMyEmployerEmploymentFeedback(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('employeeId', ParseUUIDPipe) employeeId: string,
+  ) {
+    const feedback =
+      await this.employmentFeedbackService.getEmployerFeedbackForEmployee(
+        user.id,
+        employeeId,
+      );
+    return { feedback };
+  }
+
+  // Submits employer feedback after declaring completion or via termination flow.
+  @Post(':employeeId/feedback')
+  @UseGuards(EmployerJwtGuard)
+  @ApiOperation({ summary: 'Submit employment feedback (employer)' })
+  @ApiBody({ type: SubmitEmploymentFeedbackDto })
+  async submitEmployerEmploymentFeedback(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('employeeId', ParseUUIDPipe) employeeId: string,
+    @Body() body: SubmitEmploymentFeedbackDto,
+  ) {
+    const feedback =
+      await this.employmentFeedbackService.submitEmployerFeedback(
+        user.id,
+        employeeId,
+        body,
+      );
+    return { feedback };
   }
 
   // Retrieves a single employee for the employer

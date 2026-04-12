@@ -19,6 +19,7 @@ import {
   PasswordResetRequestDto,
   PasswordResetConfirmCodeDto,
   PasswordResetDto,
+  GoogleAuthDto,
 } from './dto/employer-auth.dto';
 import { ReqDeviceInfo, type RequestDeviceInfo } from 'libs/common/src/shared';
 import { EmployerJwtGuard } from 'apps/api/src/guards';
@@ -53,6 +54,20 @@ export class EmployerAuthController {
     @ReqDeviceInfo() deviceInfo: RequestDeviceInfo,
   ) {
     return await this.employerAuthService.login(loginData, deviceInfo);
+  }
+
+  @Post('google')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Employer Google sign-in/sign-up' })
+  @ApiBody({ type: GoogleAuthDto })
+  async googleAuth(
+    @Body() googleAuthData: GoogleAuthDto,
+    @ReqDeviceInfo() deviceInfo: RequestDeviceInfo,
+  ) {
+    return await this.employerAuthService.googleAuth(
+      googleAuthData,
+      deviceInfo,
+    );
   }
 
   @Post('refresh')

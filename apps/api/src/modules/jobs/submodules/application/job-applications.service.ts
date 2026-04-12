@@ -25,9 +25,12 @@ import {
   EmployeeStatus,
   EmploymentArrangement,
   ProbationStatus,
+  isJobOpenOnMarketplace,
 } from '@app/common/database/entities/schema.enum';
 import { NotificationService } from 'apps/api/src/modules/notification/notification.service';
 import { ProbationTrackingProducer } from '../../queue';
+import { JobVettingProducer } from '../../queue/job-vetting.producer';
+import { JobVettingMilestoneNotifyService } from '../../services/job-vetting-milestone-notify.service';
 import { UserRole } from '@app/common/shared/enums/user-roles.enum';
 import { NotificationPriority } from '@app/common/database/entities/schema.enum';
 import { buildProbationSchedule } from '../../utils/probation-policy.util';
@@ -46,6 +49,8 @@ export class JobApplicationsService {
     private readonly employeeRepo: Repository<Employee>,
     private readonly notificationService: NotificationService,
     private readonly probationTrackingProducer: ProbationTrackingProducer,
+    private readonly jobVettingProducer: JobVettingProducer,
+    private readonly jobVettingMilestoneNotifyService: JobVettingMilestoneNotifyService,
   ) {}
 
   private readonly relations = ['job', 'jobseekerProfile'];
@@ -57,7 +62,7 @@ export class JobApplicationsService {
     dto: CreateJobApplicationDto,
   ) {
     const job = await this.jobRepo.findOne({ where: { id: jobId } });
-    if (!job || job.status !== JobStatus.PUBLISHED) {
+    if (!job || !isJobOpenOnMarketplace(job.status)) {
       throw new BadRequestException('Job is not open for applications');
     }
 
@@ -90,6 +95,17 @@ export class JobApplicationsService {
 
     const saved = await this.applicationRepo.save(application);
 
+    // Queue auto-vetting once there is at least one applicant (not on job publish)
+    try {
+      await this.jobVettingProducer.queueJobVetting(jobId, 'application', {
+        bullJobIdSuffix: saved.id,
+      });
+    } catch (err) {
+      this.logger.warn(
+        `Failed to queue vetting after application for job ${jobId}: ${err.message}`,
+      );
+    }
+
     // Notify jobseeker that their application was received
     try {
       await this.notificationService.createAppNotification(
@@ -107,6 +123,22 @@ export class JobApplicationsService {
         `Failed to create app notification for jobseeker application: ${err.message}`,
       );
     }
+
+    // Every 5th applicant: non-blocking email nudge to vetting admin (or super admin)
+    void this.applicationRepo
+      .count({ where: { jobId } })
+      .then((applicantCount) =>
+        this.jobVettingMilestoneNotifyService.notifyIfApplicantMilestone(
+          jobId,
+          job.title,
+          applicantCount,
+        ),
+      )
+      .catch((err) =>
+        this.logger.warn(
+          `Vetting milestone notification failed for job ${jobId}: ${err?.message ?? err}`,
+        ),
+      );
 
     return this.getApplicationById(saved.id);
   }
@@ -126,17 +158,8 @@ export class JobApplicationsService {
     // Annotate each application with its associated employeeId so the frontend
     // can fetch probation progress without an extra lookup.
     if (result.items.length > 0) {
-      const employees = await this.employeeRepo.find({
-        where: result.items.map((app) => ({
-          jobId: app.jobId,
-          jobseekerProfileId: app.jobseekerProfileId,
-          status: EmployeeStatus.ACTIVE,
-        })),
-        select: ['id', 'jobId', 'jobseekerProfileId'],
-      });
-
-      const employeeMap = new Map(
-        employees.map((e) => [`${e.jobId}:${e.jobseekerProfileId}`, e.id]),
+      const employeeMap = await this.buildEmployeeIdMapForApplicationItems(
+        result.items,
       );
 
       return {
@@ -200,16 +223,8 @@ export class JobApplicationsService {
     // Annotate each application with its associated employeeId so the
     // frontend can use it directly for payment flows without an extra lookup.
     if (result.items.length > 0) {
-      const employees = await this.employeeRepo.find({
-        where: result.items.map((app) => ({
-          jobId: app.jobId,
-          jobseekerProfileId: app.jobseekerProfileId,
-        })),
-        select: ['id', 'jobId', 'jobseekerProfileId'],
-      });
-
-      const employeeMap = new Map(
-        employees.map((e) => [`${e.jobId}:${e.jobseekerProfileId}`, e.id]),
+      const employeeMap = await this.buildEmployeeIdMapForApplicationItems(
+        result.items,
       );
 
       return {
@@ -287,7 +302,10 @@ export class JobApplicationsService {
         'probationStatus',
         'probationEndDate',
         'startDate',
+        'endDate',
         'pulse30SentAt',
+        'employerDeclaredCompleteAt',
+        'jobseekerDeclaredCompleteAt',
       ],
     });
 
@@ -301,7 +319,12 @@ export class JobApplicationsService {
             probationStatus: employee.probationStatus ?? null,
             probationEndDate: employee.probationEndDate ?? null,
             startDate: employee.startDate ?? null,
+            endDate: employee.endDate ?? null,
             reminderSentAt: employee.pulse30SentAt ?? null,
+            employerDeclaredCompleteAt:
+              employee.employerDeclaredCompleteAt ?? null,
+            jobseekerDeclaredCompleteAt:
+              employee.jobseekerDeclaredCompleteAt ?? null,
           }
         : null,
     };
@@ -350,6 +373,34 @@ export class JobApplicationsService {
       .orderBy('application.createdAt', 'DESC');
     const [items, total] = await qb.getManyAndCount();
     return { items, total, page, limit };
+  }
+
+  // Latest employee id per (job, jobseeker) pair for list views (includes ended rows).
+  private async buildEmployeeIdMapForApplicationItems(
+    items: Pick<JobApplication, 'jobId' | 'jobseekerProfileId'>[],
+  ): Promise<Map<string, string>> {
+    if (items.length === 0) {
+      return new Map();
+    }
+    const qb = this.employeeRepo.createQueryBuilder('e');
+    items.forEach((app, i) => {
+      qb.orWhere(`(e.jobId = :jid${i} AND e.jobseekerProfileId = :pid${i})`, {
+        [`jid${i}`]: app.jobId,
+        [`pid${i}`]: app.jobseekerProfileId,
+      });
+    });
+    const rows = await qb.getMany();
+    rows.sort(
+      (a, b) => (b.updatedAt?.getTime() ?? 0) - (a.updatedAt?.getTime() ?? 0),
+    );
+    const map = new Map<string, string>();
+    for (const e of rows) {
+      const key = `${e.jobId}:${e.jobseekerProfileId}`;
+      if (!map.has(key)) {
+        map.set(key, e.id);
+      }
+    }
+    return map;
   }
 
   // Employer accepts candidate after screening - creates Employee record

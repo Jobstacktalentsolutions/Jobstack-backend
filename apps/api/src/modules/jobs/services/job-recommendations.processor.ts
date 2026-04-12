@@ -70,7 +70,9 @@ export class JobRecommendationsProcessor {
 
     // Initial query for candidate jobs
     const qb = this.baseJobQuery()
-      .where('job.status = :status', { status: JobStatus.PUBLISHED })
+      .where('job.status IN (:...liveStatuses)', {
+        liveStatuses: [JobStatus.PUBLISHED, JobStatus.ACTIVE],
+      })
       .andWhere(
         '(job.applicationDeadline IS NULL OR job.applicationDeadline > :now)',
         { now: new Date() },

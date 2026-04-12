@@ -11,6 +11,7 @@ export const QUEUE_NAMES = {
   JOB_RECOMMENDATIONS: 'job-recommendations',
   JOB_VETTING: 'job-vetting',
   JOB_PROBATION_TRACKING: 'job-probation-tracking',
+  JOB_POST_MATCH_NOTIFY: 'job-post-match-notify',
 } as const;
 
 export type QueueName = (typeof QUEUE_NAMES)[keyof typeof QUEUE_NAMES];

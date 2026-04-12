@@ -5,6 +5,7 @@ import { Job } from './Job.entity';
 import { JobSeekerProfile } from './JobseekerProfile.entity';
 import {
   EmployeeStatus,
+  EmployeeTerminationHrMeaning,
   EmploymentArrangement,
   EmploymentType,
   ContractPaymentType,
@@ -91,6 +92,25 @@ export class Employee extends BaseEntity {
 
   @Column({ type: 'text', nullable: true })
   notes?: string;
+
+  @Column({
+    type: 'enum',
+    enum: EmployeeTerminationHrMeaning,
+    nullable: true,
+  })
+  terminationHrMeaning?: EmployeeTerminationHrMeaning | null;
+
+  @Column({ type: 'text', nullable: true })
+  terminationDetail?: string | null;
+
+  @Column({ type: 'timestamp', nullable: true })
+  terminatedAt?: Date | null;
+
+  @Column({ type: 'timestamp', nullable: true })
+  employerDeclaredCompleteAt?: Date | null;
+
+  @Column({ type: 'timestamp', nullable: true })
+  jobseekerDeclaredCompleteAt?: Date | null;
 
   // Payment related fields
   @Column({

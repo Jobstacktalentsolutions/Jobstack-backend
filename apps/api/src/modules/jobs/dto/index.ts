@@ -16,3 +16,5 @@ export * from '../submodules/employees/dto/create-employee.dto';
 export * from '../submodules/employees/dto/update-employee.dto';
 export * from '../submodules/employees/dto/update-employee-status.dto';
 export * from '../submodules/employees/dto/employee-query.dto';
+export * from './submit-employment-feedback.dto';
+export * from './declare-employment-completion.dto';

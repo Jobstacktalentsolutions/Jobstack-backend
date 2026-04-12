@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light dark" />
+    <meta name="supported-color-schemes" content="light dark" />
+    <title><%= subject %></title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        supported-color-schemes: light dark;
+      }
+      @media (prefers-color-scheme: dark) {
+        .email-container { background-color: #1a1a1a !important; }
+        .email-content { background-color: #2d2d2d !important; color: #e0e0e0 !important; }
+        .text-primary { color: #e0e0e0 !important; }
+        .text-secondary { color: #b0b0b0 !important; }
+        .header-text { color: #ffffff !important; }
+        .info-box { background-color: #1e3a5f !important; }
+        .footer { background-color: #2d2d2d !important; color: #b0b0b0 !important; }
+        .footer a { color: #60a5fa !important; }
+      }
+    </style>
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #e8eef3;">
+    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" class="email-container" style="background-color: #e8eef3;">
+      <tr>
+        <td style="padding: 40px 20px;">
+          <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="max-width: 600px; margin: 0 auto;">
+            <tr>
+              <td class="email-content" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                  <tr>
+                    <td style="padding: 32px 32px 24px 32px; text-align: center;">
+                      <img src="https://jobstack.org/email-assets/logo.svg" alt="Jobstack" width="120" height="58" style="display: block; margin: 0 auto;" />
+                    </td>
+                  </tr>
+                </table>
+
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                  <tr>
+                    <td style="padding: 0 32px 32px 32px;">
+
+                      <h1 class="header-text" style="margin: 0 0 16px 0; font-size: 28px; font-weight: 600; color: #1a1a1a; line-height: 1.3;">Your job is live</h1>
+
+                      <p class="text-primary" style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.5; color: #4a4a4a;">
+                        Hi <%= firstName %>,
+                      </p>
+
+                      <p class="text-primary" style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.5; color: #4a4a4a;">
+                        Good news — <strong><%= jobTitle %></strong> is now <strong>active</strong> on JobStack. Candidates can see it and apply when it fits them.
+                      </p>
+
+                      <p class="text-primary" style="margin: 0 0 24px 0; font-size: 16px; line-height: 1.5; color: #4a4a4a;">
+                        Sit back for a bit — we’re getting your role in front of the right jobseekers. You don’t need to do anything right now; dip into your dashboard whenever you want to check applicants or tweak the post.
+                      </p>
+
+                      <% if (jobTitle) { %>
+                      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 24px 0;">
+                        <tr>
+                          <td class="info-box" style="background-color: #eff6ff; border-radius: 8px; padding: 20px; border-left: 4px solid #2563eb;">
+                            <p style="margin: 0; font-size: 15px; line-height: 1.5; color: #1e40af;">
+                              <strong>Active role:</strong> <%= jobTitle %>
+                            </p>
+                          </td>
+                        </tr>
+                      </table>
+                      <% } %>
+
+                      <% if (typeof actionUrl !== 'undefined' && typeof actionText !== 'undefined' && actionUrl && actionText) { %>
+                      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 16px 0;">
+                        <tr>
+                          <td style="text-align: center;">
+                            <a href="<%= actionUrl %>" style="display: inline-block; background-color: #2563eb; color: #ffffff; font-size: 16px; font-weight: 600; text-decoration: none; padding: 14px 40px; border-radius: 6px;"><%= actionText %></a>
+                          </td>
+                        </tr>
+                      </table>
+                      <% } %>
+
+                      <% if (jobDashboardUrl) { %>
+                      <p class="text-secondary" style="margin: 0 0 24px 0; font-size: 13px; line-height: 1.5; color: #6b7280; text-align: center; word-break: break-all;">
+                        Prefer to copy the link?<br />
+                        <a href="<%= jobDashboardUrl %>" style="color: #2563eb; text-decoration: underline;"><%= jobDashboardUrl %></a>
+                      </p>
+                      <% } %>
+
+                      <p class="text-primary" style="margin: 0; font-size: 16px; line-height: 1.5; color: #4a4a4a;">
+                        Thanks for hiring with JobStack — we’re glad this one’s out in the wild.
+                      </p>
+
+                    </td>
+                  </tr>
+                </table>
+
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" class="footer" style="background-color: #f9fafb; border-top: 1px solid #e5e7eb;">
+                  <tr>
+                    <td style="padding: 32px 32px 24px 32px;">
+
+                      <p class="text-secondary" style="margin: 0 0 16px 0; font-size: 14px; line-height: 1.5; color: #6b7280; text-align: center;">
+                        Questions? Email us at
+                        <a href="mailto:<%= supportEmail %>" style="color: #2563eb; text-decoration: underline;"><%= supportEmail %></a>.
+                      </p>
+
+                      <p class="text-secondary" style="margin: 0; font-size: 12px; line-height: 1.5; color: #9ca3af; text-align: center;">
+                        <a href="<%= websiteUrl %>" style="color: #2563eb; text-decoration: none;">JobStack</a>
+                      </p>
+
+                    </td>
+                  </tr>
+                </table>
+
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+</body>
+</html>

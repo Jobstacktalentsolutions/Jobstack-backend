@@ -10,6 +10,7 @@ import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
+import { randomBytes } from 'crypto';
 import { v4 as uuidv4 } from 'uuid';
 
 import { EmployerAuth } from '@app/common/database/entities/EmployerAuth.entity';
@@ -27,7 +28,6 @@ import {
   AccessTokenPayload,
   RefreshTokenPayload,
   RedisSessionData,
-  EmailVerificationTokenPayload,
   PasswordResetTokenPayload,
 } from '@app/common/shared/interfaces/jwt-payload.interface';
 import {
@@ -38,12 +38,13 @@ import {
 } from 'apps/api/src/modules/auth/interfaces/auth.interface';
 import {
   EmployerRegistrationDto,
+  GoogleAuthDto,
   LoginDto,
   PasswordResetRequestDto,
   PasswordResetConfirmCodeDto,
   PasswordResetDto,
 } from './dto/employer-auth.dto';
-import { ENV } from 'apps/api/src/modules/config';
+import { GoogleIdentityService } from '../../google/google-identity.service';
 
 @Injectable()
 export class EmployerAuthService {
@@ -64,6 +65,7 @@ export class EmployerAuthService {
     private redisService: RedisService,
     private notificationService: NotificationService,
     private dataSource: DataSource,
+    private googleIdentityService: GoogleIdentityService,
   ) {}
 
   /**
@@ -183,6 +185,51 @@ export class EmployerAuthService {
     return `${baseSlug}_${Date.now().toString(36)}`;
   }
 
+  private extractGoogleNames(
+    givenName?: string,
+    familyName?: string,
+    fullName?: string,
+  ): { firstName: string; lastName: string } {
+    const normalizedGiven = givenName?.trim();
+    const normalizedFamily = familyName?.trim();
+
+    if (normalizedGiven && normalizedFamily) {
+      return { firstName: normalizedGiven, lastName: normalizedFamily };
+    }
+
+    const normalizedFullName = fullName?.trim();
+    if (normalizedFullName) {
+      const [firstToken, ...rest] = normalizedFullName.split(/\s+/);
+      return {
+        firstName: firstToken || 'Google',
+        lastName: rest.join(' ') || 'User',
+      };
+    }
+
+    return { firstName: 'Google', lastName: 'User' };
+  }
+
+  private async generateUniqueGooglePlaceholderPhoneNumber(
+    repo: Repository<EmployerProfile>,
+  ): Promise<string> {
+    const maxAttempts = 10;
+
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      const candidate = `+2348${Math.floor(Math.random() * 1_000_000_000)
+        .toString()
+        .padStart(9, '0')}`;
+      const existing = await repo.findOne({
+        where: { phoneNumber: candidate },
+        select: ['id'],
+      });
+      if (!existing) {
+        return candidate;
+      }
+    }
+
+    return `+2349${Date.now().toString().slice(-9).padStart(9, '0')}`;
+  }
+
   /**
    * Login employer
    */
@@ -231,6 +278,112 @@ export class EmployerAuthService {
     this.logger.log(`Employer logged in: ${auth.id} (${email})`);
 
     return authResult;
+  }
+
+  /**
+   * Google sign-in/sign-up for employer
+   */
+  async googleAuth(
+    googleAuthData: GoogleAuthDto,
+    deviceInfo?: any,
+  ): Promise<AuthResult> {
+    const googleProfile = await this.googleIdentityService.verifyIdToken(
+      googleAuthData.idToken,
+    );
+    const normalizedEmail = googleProfile.email.toLowerCase();
+
+    const existingAuth = await this.employerAuthRepository.findOne({
+      where: { email: normalizedEmail },
+      relations: ['profile'],
+    });
+
+    if (existingAuth) {
+      if (existingAuth.suspended) {
+        throw new UnauthorizedException(
+          existingAuth.suspensionReason
+            ? `Your account has been suspended. Reason: ${existingAuth.suspensionReason}`
+            : 'Your account has been suspended. Please contact support for assistance.',
+        );
+      }
+
+      if (!existingAuth.emailVerified) {
+        existingAuth.emailVerified = true;
+        await this.employerAuthRepository.save(existingAuth);
+      }
+
+      this.logger.log(`Employer Google login: ${existingAuth.id}`);
+      return await this.generateTokens(
+        existingAuth,
+        existingAuth.profile,
+        deviceInfo,
+      );
+    }
+
+    const existingJobseekerAuth = await this.jobseekerAuthRepository.findOne({
+      where: { email: normalizedEmail },
+      select: ['id'],
+    });
+    if (existingJobseekerAuth) {
+      throw new ConflictException('Jobseeker with this email exists');
+    }
+
+    const { firstName, lastName } = this.extractGoogleNames(
+      googleProfile.givenName,
+      googleProfile.familyName,
+      googleProfile.fullName,
+    );
+    const baseSlug = this.buildBaseSlug(firstName, lastName);
+
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      const hashedPassword = await bcrypt.hash(
+        randomBytes(32).toString('hex'),
+        12,
+      );
+
+      const auth = queryRunner.manager.create(EmployerAuth, {
+        email: normalizedEmail,
+        password: hashedPassword,
+        emailVerified: true,
+      });
+      await queryRunner.manager.save(auth);
+
+      const profileRepo =
+        queryRunner.manager.getRepository<EmployerProfile>(EmployerProfile);
+      const slug = await this.generateUniqueSlug(baseSlug, profileRepo);
+      const phoneNumber =
+        await this.generateUniqueGooglePlaceholderPhoneNumber(profileRepo);
+
+      const profile = queryRunner.manager.create(EmployerProfile, {
+        id: auth.id,
+        email: normalizedEmail,
+        firstName,
+        lastName,
+        phoneNumber,
+        slug,
+      });
+      await queryRunner.manager.save(profile);
+
+      const verification = queryRunner.manager.create(EmployerVerification, {
+        employerId: auth.id,
+        status: VerificationStatus.NOT_STARTED,
+      });
+      await queryRunner.manager.save(verification);
+
+      await queryRunner.commitTransaction();
+
+      this.logger.log(`Employer Google signup: ${auth.id}`);
+      return await this.generateTokens(auth, profile, deviceInfo);
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      this.logger.error(`Google signup failed: ${error.message}`);
+      throw error;
+    } finally {
+      await queryRunner.release();
+    }
   }
 
   /**

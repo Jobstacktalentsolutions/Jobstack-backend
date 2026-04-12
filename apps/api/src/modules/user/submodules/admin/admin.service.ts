@@ -22,6 +22,7 @@ import {
 import { VerificationStatus } from '@app/common/shared/enums/employer-docs.enum';
 import {
   ApprovalStatus,
+  EmployeeStatus,
   EmployerStatus,
   PaymentStatus,
 } from '@app/common/database/entities/schema.enum';
@@ -366,6 +367,11 @@ export class AdminService {
       pendingEmployerVerificationsTotal,
       pendingJobseekerApprovals,
       pendingJobseekerApprovalsTotal,
+      recentJobPostsRaw,
+      employmentsPendingMutualCompletion,
+      completionAwaitingJobseeker,
+      completionAwaitingEmployer,
+      employmentsEndedMutualThisMonth,
     ] = await Promise.all([
       this.jobseekerProfileRepo.count({
         where: { approvalStatus: ApprovalStatus.APPROVED },
@@ -440,6 +446,44 @@ export class AdminService {
       this.jobseekerProfileRepo.count({
         where: { approvalStatus: ApprovalStatus.PENDING },
       }),
+      this.jobRepo.find({
+        relations: ['employer', 'employer.verification'],
+        order: { createdAt: 'DESC' },
+        take: pendingLimit,
+      }),
+      this.employeeRepo
+        .createQueryBuilder('e')
+        .where('e.status IN (:...open)', {
+          open: [EmployeeStatus.ACTIVE, EmployeeStatus.ONBOARDING],
+        })
+        .andWhere(
+          '(e.employerDeclaredCompleteAt IS NOT NULL AND e.jobseekerDeclaredCompleteAt IS NULL) OR (e.employerDeclaredCompleteAt IS NULL AND e.jobseekerDeclaredCompleteAt IS NOT NULL)',
+        )
+        .getCount(),
+      this.employeeRepo
+        .createQueryBuilder('e')
+        .where('e.status IN (:...open)', {
+          open: [EmployeeStatus.ACTIVE, EmployeeStatus.ONBOARDING],
+        })
+        .andWhere('e.employerDeclaredCompleteAt IS NOT NULL')
+        .andWhere('e.jobseekerDeclaredCompleteAt IS NULL')
+        .getCount(),
+      this.employeeRepo
+        .createQueryBuilder('e')
+        .where('e.status IN (:...open)', {
+          open: [EmployeeStatus.ACTIVE, EmployeeStatus.ONBOARDING],
+        })
+        .andWhere('e.jobseekerDeclaredCompleteAt IS NOT NULL')
+        .andWhere('e.employerDeclaredCompleteAt IS NULL')
+        .getCount(),
+      this.employeeRepo
+        .createQueryBuilder('e')
+        .where('e.status = :ended', { ended: EmployeeStatus.ENDED })
+        .andWhere('e.endDate >= :start AND e.endDate < :end', {
+          start: startOfCurrentMonth,
+          end: startOfNextMonth,
+        })
+        .getCount(),
     ]);
 
     const totalAgencyFees = Number(totalAgencyFeesRaw?.amount ?? 0);
@@ -485,6 +529,12 @@ export class AdminService {
             : 0,
           period: 'month',
         },
+        mutualCompletion: {
+          pendingOneSided: employmentsPendingMutualCompletion,
+          awaitingJobseekerConfirmation: completionAwaitingJobseeker,
+          awaitingEmployerConfirmation: completionAwaitingEmployer,
+          endedThisMonth: employmentsEndedMutualThisMonth,
+        },
       },
       pendingApprovals: {
         employerVerification: {
@@ -512,6 +562,21 @@ export class AdminService {
             submittedAt: item.updatedAt,
           })),
         },
+      },
+      recentJobPosts: {
+        total: totalJobsPosted,
+        items: recentJobPostsRaw.map((j) => ({
+          id: j.id,
+          title: j.title,
+          status: j.status,
+          employerId: j.employerId,
+          companyName:
+            j.employer?.verification?.companyName?.trim() ||
+            `${j.employer?.firstName ?? ''} ${j.employer?.lastName ?? ''}`.trim() ||
+            j.employer?.email ||
+            'Employer',
+          createdAt: j.createdAt,
+        })),
       },
     };
   }

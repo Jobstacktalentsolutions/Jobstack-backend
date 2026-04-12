@@ -27,7 +27,8 @@ import { ProbationTrackingProducer } from '../../queue';
 import { buildProbationSchedule } from '../../utils/probation-policy.util';
 import { NotificationService } from 'apps/api/src/modules/notification/notification.service';
 import { UserRole } from '@app/common/shared/enums/user-roles.enum';
-import { EmployeeTerminationHrMeaning } from './dto';
+import { EmployeeTerminationHrMeaning } from '@app/common/database/entities/schema.enum';
+import { EmploymentFeedbackService } from '../../services/employment-feedback.service';
 
 @Injectable()
 export class EmployeesService {
@@ -43,6 +44,7 @@ export class EmployeesService {
     protected readonly storageService: StorageService,
     private readonly probationTrackingProducer: ProbationTrackingProducer,
     private readonly notificationService: NotificationService,
+    private readonly employmentFeedbackService: EmploymentFeedbackService,
   ) {}
 
   private readonly terminationMeaningLabelMap: Record<
@@ -215,6 +217,12 @@ export class EmployeesService {
     const employee = await this.getEmployerEmployeeById(employerId, employeeId);
     const previousStatus = employee.status;
 
+    if (dto.status === EmployeeStatus.ENDED) {
+      throw new BadRequestException(
+        'ENDED is applied only when employer and jobseeker both confirm mutual completion.',
+      );
+    }
+
     // Check payment requirement before allowing activation
     if (
       dto.status === EmployeeStatus.ACTIVE &&
@@ -240,6 +248,11 @@ export class EmployeesService {
           'reasonForTermination is required when ending employment',
         );
       }
+      if (dto.exitRating == null || dto.exitRating < 1 || dto.exitRating > 5) {
+        throw new BadRequestException(
+          'exitRating between 1 and 5 is required when ending employment',
+        );
+      }
 
       const meaningLabel = dto.hrMeaning
         ? this.terminationMeaningLabelMap[dto.hrMeaning]
@@ -252,18 +265,40 @@ export class EmployeesService {
       const timestamp = new Date();
       const noteLine = `Employment Ended (${timestamp.toISOString()}) - ${reasonLine}`;
 
-      employee.notes = employee.notes
-        ? `${employee.notes}\n${noteLine}`
-        : noteLine;
-      employee.endDate = timestamp;
-      employee.probationStatus = ProbationStatus.TERMINATED;
-      employee.pulse30SentAt = null;
-      employee.pulse60SentAt = null;
+      const employeeIdToEnd = employee.id;
+      await this.employeeRepo.manager.transaction(async (manager) => {
+        const empRepo = manager.getRepository(Employee);
+        const row = await empRepo.findOne({
+          where: { id: employeeIdToEnd, employerId },
+        });
+        if (!row) {
+          throw new NotFoundException('Employee not found');
+        }
 
-      await this.employeeRepo.save(employee);
-      await this.sendEmploymentEndedNotifications(employee, dto);
+        row.status = EmployeeStatus.TERMINATED;
+        row.terminationHrMeaning = dto.hrMeaning ?? null;
+        row.terminationDetail = cleanedReason;
+        row.terminatedAt = timestamp;
+        row.notes = row.notes ? `${row.notes}\n${noteLine}` : noteLine;
+        row.endDate = timestamp;
+        row.probationStatus = ProbationStatus.TERMINATED;
+        row.pulse30SentAt = null;
+        row.pulse60SentAt = null;
 
-      return this.getEmployerEmployeeById(employerId, employeeId);
+        await empRepo.save(row);
+
+        await this.employmentFeedbackService.createEmployerFeedbackWithManager(
+          manager,
+          row.id,
+          dto.exitRating,
+          dto.exitComment ?? null,
+        );
+      });
+
+      const ended = await this.getEmployerEmployeeById(employerId, employeeId);
+      await this.sendEmploymentEndedNotifications(ended, dto);
+
+      return ended;
     }
 
     // When activation is finalized, initialize probation fields if missing/outdated.
