@@ -208,9 +208,7 @@ export class EmployerService {
       /** Organization, SME, or Individual when set on the profile */
       employerType: profile.type ?? null,
       /** ISO timestamp for "on JobStack since" */
-      memberSince: profile.createdAt
-        ? profile.createdAt.toISOString()
-        : null,
+      memberSince: profile.createdAt ? profile.createdAt.toISOString() : null,
       /** Live roles visible on the marketplace (not expired by deadline) */
       activeJobCount,
       /** True when employer verification is approved (safe public signal) */

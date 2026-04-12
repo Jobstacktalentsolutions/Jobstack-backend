@@ -70,7 +70,10 @@ describe('EmploymentCompletionService', () => {
       providers: [
         EmploymentCompletionService,
         { provide: getRepositoryToken(Employee), useValue: employeeRepo },
-        { provide: getRepositoryToken(JobApplication), useValue: applicationRepo },
+        {
+          provide: getRepositoryToken(JobApplication),
+          useValue: applicationRepo,
+        },
         {
           provide: getRepositoryToken(EmployerProfile),
           useValue: employerRepo,

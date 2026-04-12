@@ -419,7 +419,9 @@ export class EmployerAuthService {
       });
 
       if (!session || session.isExpired()) {
-        throw new UnauthorizedException('Session expired');
+        throw new UnauthorizedException(
+          'You are not authenticated or authorized this page',
+        );
       }
 
       // Find auth and profile

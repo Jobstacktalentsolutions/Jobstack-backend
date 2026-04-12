@@ -122,7 +122,9 @@ export class AdminAuthService {
       });
 
       if (!session || session.isExpired()) {
-        throw new UnauthorizedException('Session expired');
+        throw new UnauthorizedException(
+          'You are not authenticated or authorized to access this page',
+        );
       }
 
       // Find auth

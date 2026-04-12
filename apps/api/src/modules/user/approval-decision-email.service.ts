@@ -46,8 +46,7 @@ export class ApprovalDecisionEmailService {
     }
 
     const base =
-      this.configService.get<string>(ENV.WEBSITE_URL)?.replace(/\/$/, '') ??
-      '';
+      this.configService.get<string>(ENV.WEBSITE_URL)?.replace(/\/$/, '') ?? '';
     const jobPostsUrl = base ? `${base}/employer/dashboard/jobposts` : '';
     const homeUrl = base ? `${base}/employer/dashboard` : '';
     const firstName = employer.firstName?.trim() || 'there';
@@ -117,17 +116,12 @@ export class ApprovalDecisionEmailService {
     }
 
     const base =
-      this.configService.get<string>(ENV.WEBSITE_URL)?.replace(/\/$/, '') ??
-      '';
-    const exploreUrl = base
-      ? `${base}/jobseeker/dashboard/explore-jobs`
-      : '';
+      this.configService.get<string>(ENV.WEBSITE_URL)?.replace(/\/$/, '') ?? '';
+    const exploreUrl = base ? `${base}/jobseeker/dashboard/explore-jobs` : '';
     const dashboardUrl = base ? `${base}/jobseeker/dashboard` : '';
     const firstName = profile.firstName?.trim() || 'there';
     const reasonText =
-      rejectionReason?.trim() ||
-      profile.approvalRejectionReason?.trim() ||
-      '';
+      rejectionReason?.trim() || profile.approvalRejectionReason?.trim() || '';
 
     let subject: string;
     let message: string;

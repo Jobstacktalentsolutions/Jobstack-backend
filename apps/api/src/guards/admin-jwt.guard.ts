@@ -60,7 +60,9 @@ export class AdminJwtGuard implements CanActivate {
       );
 
       if (!sessionValidation.valid) {
-        throw new UnauthorizedException('Session expired or invalid');
+        throw new UnauthorizedException(
+          'You are not authenticated or authorized this page',
+        );
       }
 
       // Attach user data to request for downstream use

@@ -8,6 +8,7 @@ import { Repository } from 'typeorm';
 import { Job, JobBookmark } from '@app/common/database/entities';
 import { isJobOpenOnMarketplace } from '@app/common/database/entities/schema.enum';
 import { JobQueryDto } from '../dto';
+import { applyJobListingFilters } from '../utils/job-listing-filters.util';
 
 @Injectable()
 export class JobBookmarksService {
@@ -90,22 +91,11 @@ export class JobBookmarksService {
       .where('bm.jobseekerProfileId = :jobseekerProfileId', {
         jobseekerProfileId,
       })
-      .orderBy('bm.createdAt', 'DESC')
-      .take(limit)
-      .skip((page - 1) * limit);
+      .orderBy('bm.createdAt', 'DESC');
 
-    if (query.category) {
-      qb.andWhere('job.category = :category', { category: query.category });
-    }
-    if (query.search) {
-      qb.andWhere(
-        '(job.title ILIKE :search OR job.description ILIKE :search OR job.city ILIKE :search OR job.state ILIKE :search)',
-        { search: `%${query.search}%` },
-      );
-    }
-    if (query.status) {
-      qb.andWhere('job.status = :status', { status: query.status });
-    }
+    applyJobListingFilters(qb, query, 'job');
+
+    qb.take(limit).skip((page - 1) * limit);
 
     const [items, total] = await qb.getManyAndCount();
     const jobs = items.map((b) => b.job);

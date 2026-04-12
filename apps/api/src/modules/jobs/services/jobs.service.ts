@@ -18,6 +18,10 @@ import {
 } from '@app/common/database/entities/schema.enum';
 import { JobPostMatchNotifyProducer } from '../queue/job-post-match-notify.producer';
 import { JobActivationService } from './job-activation.service';
+import {
+  applyJobListingFilters,
+  applyJobListingSort,
+} from '../utils/job-listing-filters.util';
 
 @Injectable()
 export class JobsService {
@@ -124,8 +128,8 @@ export class JobsService {
       qb.where(conditions.join(' AND '), params);
     }
 
-    // Apply common filters (category, search, status from query)
-    this.applyJobFilters(qb, query);
+    // Category, search, employment, compensation, recency, etc.
+    applyJobListingFilters(qb, query, 'job');
 
     const [items, total, page, limit] = await this.executePagedQuery(qb, query);
     return { items, total, page, limit };
@@ -389,22 +393,6 @@ export class JobsService {
       ]);
   }
 
-  // Applies reusable filters on a query builder
-  private applyJobFilters(qb: SelectQueryBuilder<Job>, query: JobQueryDto) {
-    if (query.status) {
-      qb.andWhere('job.status = :status', { status: query.status });
-    }
-    if (query.category) {
-      qb.andWhere('job.category = :category', { category: query.category });
-    }
-    if (query.search) {
-      qb.andWhere(
-        '(job.title ILIKE :search OR job.description ILIKE :search OR job.city ILIKE :search OR job.state ILIKE :search)',
-        { search: `%${query.search}%` },
-      );
-    }
-  }
-
   // Executes pagination logic consistently
   private async executePagedQuery(
     qb: SelectQueryBuilder<Job>,
@@ -412,9 +400,8 @@ export class JobsService {
   ): Promise<[Job[], number, number, number]> {
     const page = Math.max(1, query.page ?? 1);
     const limit = Math.min(100, Math.max(1, query.limit ?? 20));
-    qb.take(limit)
-      .skip((page - 1) * limit)
-      .orderBy('job.createdAt', 'DESC');
+    applyJobListingSort(qb, query.sortBy, 'job');
+    qb.take(limit).skip((page - 1) * limit);
     const [items, total] = await qb.getManyAndCount();
     return [items, total, page, limit];
   }
