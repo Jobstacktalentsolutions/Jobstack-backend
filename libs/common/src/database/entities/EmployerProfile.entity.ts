@@ -3,7 +3,6 @@ import {
   Column,
   OneToOne,
   JoinColumn,
-  ManyToOne,
   PrimaryColumn,
   CreateDateColumn,
   UpdateDateColumn,
@@ -11,11 +10,20 @@ import {
   Index,
 } from 'typeorm';
 import { EmployerAuth } from './EmployerAuth.entity';
-import { EmployerVerification } from './EmployerVerification.entity';
+import {
+  EmployerGender,
+  EmployerStatus,
+  EmployerType,
+  SkillCategory,
+} from './schema.enum';
 import { Document } from './Document.entity';
-import { EmployerType, EmployerStatus } from './schema.enum';
 import { Job } from './Job.entity';
 import { Employee } from './Employee.entity';
+import {
+  GovernmentIdType,
+  VerificationStatus,
+} from '@app/common/shared/enums/employer-docs.enum';
+import { EmployerVerificationDocument } from './EmployerVerificationDocument.entity';
 
 @Entity('employer_profiles')
 export class EmployerProfile {
@@ -62,6 +70,73 @@ export class EmployerProfile {
   @Column({ nullable: true })
   address?: string;
 
+  @Column({ type: 'enum', enum: EmployerGender, nullable: true })
+  gender?: EmployerGender;
+
+  @Column({ type: 'enum', enum: SkillCategory, nullable: true })
+  industry?: SkillCategory;
+
+  @Column({ nullable: true })
+  contactPersonName?: string;
+
+  @Column({ nullable: true })
+  contactPersonJobTitle?: string;
+
+  @Column({ nullable: true })
+  workEmail?: string;
+
+  @Column({ nullable: true })
+  businessAddress?: string;
+
+  @Column({ nullable: true })
+  registeredBusinessAddress?: string;
+
+  @Column({ default: false })
+  declarationAccepted: boolean;
+
+  @Column({ type: 'enum', enum: GovernmentIdType, nullable: true })
+  governmentIdType?: GovernmentIdType;
+
+  @Column({ nullable: true })
+  companyName?: string;
+
+  @Column({ nullable: true })
+  companyAddress?: string;
+
+  @Column({ nullable: true })
+  companyWebsite?: string;
+
+  @Column({ nullable: true })
+  companyDescription?: string;
+
+  @Column({ nullable: true })
+  state?: string;
+
+  @Column({ nullable: true })
+  city?: string;
+
+  @Column({ nullable: true })
+  companySize?: string;
+
+  @Column({ nullable: true })
+  socialOrWebsiteUrl?: string;
+
+  @Column({
+    type: 'enum',
+    enum: VerificationStatus,
+    default: VerificationStatus.NOT_STARTED,
+  })
+  verificationStatus: VerificationStatus;
+
+  @Column('uuid', { nullable: true })
+  reviewedByAdminId?: string;
+
+  @Column({ type: 'timestamp', nullable: true })
+  reviewedAt?: Date;
+
+  @Column({ nullable: true })
+  verificationRejectionReason?: string;
+
   @Column({ type: 'enum', enum: EmployerType, nullable: true })
   type?: EmployerType;
 
@@ -76,8 +151,11 @@ export class EmployerProfile {
   @JoinColumn({ name: 'id' })
   auth: EmployerAuth;
 
-  @OneToOne(() => EmployerVerification, (v) => v.employer)
-  verification?: EmployerVerification;
+  @OneToMany(
+    () => EmployerVerificationDocument,
+    (verificationDocument) => verificationDocument.employerProfile,
+  )
+  verificationDocuments: EmployerVerificationDocument[];
 
   @OneToMany(() => Job, (job) => job.employer)
   jobs: Job[];

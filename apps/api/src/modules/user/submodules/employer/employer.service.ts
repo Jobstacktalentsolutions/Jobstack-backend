@@ -8,7 +8,6 @@ import { Repository } from 'typeorm';
 import { EmployerProfile } from '@app/common/database/entities/EmployerProfile.entity';
 import { Job } from '@app/common/database/entities/Job.entity';
 import { EmployerAuth } from '@app/common/database/entities/EmployerAuth.entity';
-import { EmployerVerification } from '@app/common/database/entities/EmployerVerification.entity';
 import { JobApplication } from '@app/common/database/entities/JobApplication.entity';
 import { Document } from '@app/common/database/entities';
 import { StorageService } from '@app/common/storage/storage.service';
@@ -27,8 +26,6 @@ export class EmployerService {
     protected readonly profileRepo: Repository<EmployerProfile>,
     @InjectRepository(EmployerAuth)
     protected readonly authRepo: Repository<EmployerAuth>,
-    @InjectRepository(EmployerVerification)
-    protected readonly verificationRepo: Repository<EmployerVerification>,
     @InjectRepository(JobApplication)
     protected readonly jobApplicationRepo: Repository<JobApplication>,
     @InjectRepository(Job)
@@ -134,9 +131,8 @@ export class EmployerService {
       where: { id: userId },
       relations: [
         'profilePicture',
-        'verification',
-        'verification.documents',
-        'verification.documents.document',
+        'verificationDocuments',
+        'verificationDocuments.document',
       ],
     });
     if (!profile) {
@@ -153,18 +149,17 @@ export class EmployerService {
   async getEmployerPublicProfileBySlug(slug: string): Promise<any | null> {
     const profile = await this.profileRepo.findOne({
       where: { slug },
-      relations: ['profilePicture', 'verification'],
+      relations: ['profilePicture'],
     });
 
     if (!profile) return null;
 
-    const verification = profile.verification;
     const companyName =
-      verification?.companyName ||
+      profile.companyName ||
       `${profile.firstName} ${profile.lastName}`.trim();
 
-    const city = verification?.city;
-    const state = verification?.state;
+    const city = profile.city;
+    const state = profile.state;
     // Public location: verification city/state only (never street-level profile.address)
     const location =
       city && state
@@ -198,11 +193,11 @@ export class EmployerService {
       slug: profile.slug,
       companyName,
       location,
-      companyDescription: verification?.companyDescription,
-      companySize: verification?.companySize,
+      companyDescription: profile.companyDescription,
+      companySize: profile.companySize,
       website:
-        verification?.socialOrWebsiteUrl ||
-        verification?.companyWebsite ||
+        profile.socialOrWebsiteUrl ||
+        profile.companyWebsite ||
         null,
       logoUrl,
       /** Organization, SME, or Individual when set on the profile */
@@ -212,7 +207,7 @@ export class EmployerService {
       /** Live roles visible on the marketplace (not expired by deadline) */
       activeJobCount,
       /** True when employer verification is approved (safe public signal) */
-      isVerified: verification?.status === VerificationStatus.APPROVED,
+      isVerified: profile.verificationStatus === VerificationStatus.APPROVED,
     };
   }
 
@@ -227,9 +222,8 @@ export class EmployerService {
       where: { id: userId },
       relations: [
         'profilePicture',
-        'verification',
-        'verification.documents',
-        'verification.documents.document',
+        'verificationDocuments',
+        'verificationDocuments.document',
       ],
     });
     if (!profile) {
@@ -269,7 +263,6 @@ export class EmployerService {
       .createQueryBuilder('employer')
       .leftJoinAndSelect('employer.auth', 'auth')
       .leftJoinAndSelect('employer.profilePicture', 'profilePicture')
-      .leftJoinAndSelect('employer.verification', 'verification')
       .loadRelationCountAndMap('employer.jobsCount', 'employer.jobs')
       .loadRelationCountAndMap('employer.employeesCount', 'employer.employees');
 
@@ -280,9 +273,12 @@ export class EmployerService {
     }
 
     if (verificationStatus) {
-      queryBuilder.andWhere('verification.status = :verificationStatus', {
+      queryBuilder.andWhere(
+        'employer.verificationStatus = :verificationStatus',
+        {
         verificationStatus,
-      });
+        },
+      );
     }
 
     if (status) {
@@ -293,7 +289,7 @@ export class EmployerService {
 
     if (search) {
       queryBuilder.andWhere(
-        '(employer.firstName ILIKE :search OR employer.lastName ILIKE :search OR employer.email ILIKE :search OR verification.companyName ILIKE :search)',
+        '(employer.firstName ILIKE :search OR employer.lastName ILIKE :search OR employer.email ILIKE :search OR employer.companyName ILIKE :search)',
         { search: `%${search}%` },
       );
     }
@@ -318,7 +314,12 @@ export class EmployerService {
         id: profile.id,
         email: profile.auth?.email,
         profile: profile,
-        verification: profile.verification,
+        verification: {
+          status: profile.verificationStatus,
+          reviewedAt: profile.reviewedAt,
+          rejectionReason: profile.verificationRejectionReason,
+          documents: profile.verificationDocuments ?? [],
+        },
         jobsCount: (profile as any).jobsCount ?? 0,
         employeesCount: (profile as any).employeesCount ?? 0,
         createdAt: profile.createdAt,
@@ -338,9 +339,8 @@ export class EmployerService {
       relations: [
         'auth',
         'profilePicture',
-        'verification',
-        'verification.documents',
-        'verification.documents.document',
+        'verificationDocuments',
+        'verificationDocuments.document',
         'jobs',
         'employees',
       ],

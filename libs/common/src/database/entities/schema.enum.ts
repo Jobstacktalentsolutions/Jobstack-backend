@@ -79,6 +79,12 @@ export enum EmployerStatus {
   SUSPENDED = 'SUSPENDED',
 }
 
+export enum EmployerGender {
+  MALE = 'MALE',
+  FEMALE = 'FEMALE',
+  OTHER = 'OTHER',
+}
+
 // Notification related enums
 export enum NotificationStatus {
   PENDING = 'pending',

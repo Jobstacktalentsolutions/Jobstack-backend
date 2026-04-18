@@ -43,11 +43,14 @@ export class JobseekerService {
     protected readonly skillsService: SkillsService,
   ) {}
 
-  // Maps ID verification row onto profile for API consumers (legacy field names).
-  private hydrateIdDocumentFields(profile: JobSeekerProfile): void {
-    const row = profile.verificationDocuments?.find(
+  // Maps verification rows onto profile for API consumers (legacy field names).
+  private hydrateVerificationDocumentFields(profile: JobSeekerProfile): void {
+    const idRow = profile.verificationDocuments?.find(
+      (v) => v.documentKind === JobseekerVerificationDocumentKind.ID_DOCUMENT,
+    );
+    const proofRow = profile.verificationDocuments?.find(
       (v) =>
-        v.documentKind === JobseekerVerificationDocumentKind.ID_DOCUMENT,
+        v.documentKind === JobseekerVerificationDocumentKind.PROOF_OF_ADDRESS,
     );
     const p = profile as JobSeekerProfile & {
       idDocument?: Document;
@@ -56,14 +59,19 @@ export class JobseekerService {
       idDocumentStatus?: VerificationDocumentStatus;
       idDocumentVerificationId?: string;
       idDocumentVerified?: boolean;
+      proofOfAddressDocument?: Document;
+      proofOfAddressStatus?: VerificationDocumentStatus;
+      proofOfAddressVerificationId?: string;
+      proofOfAddressVerified?: boolean;
     };
-    if (row?.document) {
-      p.idDocument = row.document;
-      p.idDocumentType = row.idSubtype ?? null;
-      p.idDocumentNumber = row.documentNumber ?? null;
-      p.idDocumentStatus = row.status;
-      p.idDocumentVerificationId = row.id;
-      p.idDocumentVerified = row.status === VerificationDocumentStatus.APPROVED;
+    if (idRow?.document) {
+      p.idDocument = idRow.document;
+      p.idDocumentType = idRow.idSubtype ?? null;
+      p.idDocumentNumber = idRow.documentNumber ?? null;
+      p.idDocumentStatus = idRow.status;
+      p.idDocumentVerificationId = idRow.id;
+      p.idDocumentVerified =
+        idRow.status === VerificationDocumentStatus.APPROVED;
     } else {
       delete p.idDocument;
       p.idDocumentType = null;
@@ -71,6 +79,19 @@ export class JobseekerService {
       p.idDocumentStatus = undefined;
       p.idDocumentVerificationId = undefined;
       p.idDocumentVerified = false;
+    }
+
+    if (proofRow?.document) {
+      p.proofOfAddressDocument = proofRow.document;
+      p.proofOfAddressStatus = proofRow.status;
+      p.proofOfAddressVerificationId = proofRow.id;
+      p.proofOfAddressVerified =
+        proofRow.status === VerificationDocumentStatus.APPROVED;
+    } else {
+      delete p.proofOfAddressDocument;
+      p.proofOfAddressStatus = undefined;
+      p.proofOfAddressVerificationId = undefined;
+      p.proofOfAddressVerified = false;
     }
   }
 
@@ -400,6 +421,139 @@ export class JobseekerService {
     };
   }
 
+  async uploadProofOfAddress(
+    userId: string,
+    file: MulterFile,
+  ): Promise<{ signedUrl: string; documentId: string }> {
+    const profile = await this.profileRepo.findOne({
+      where: { id: userId },
+    });
+    if (!profile) throw new NotFoundException('Jobseeker not found');
+
+    if (profile.approvalStatus === ApprovalStatus.APPROVED) {
+      throw new ForbiddenException(
+        'Proof of address cannot be updated after approval',
+      );
+    }
+
+    const allowedMimeTypes = [
+      'application/pdf',
+      'image/jpeg',
+      'image/png',
+      'image/webp',
+    ];
+    const mime = (file.mimetype || '').toLowerCase();
+    if (!allowedMimeTypes.includes(mime)) {
+      throw new BadRequestException('Only PDF or image files are allowed');
+    }
+
+    const existing = await this.jobseekerVerificationDocRepo.findOne({
+      where: {
+        jobseekerProfileId: profile.id,
+        documentKind: JobseekerVerificationDocumentKind.PROOF_OF_ADDRESS,
+      },
+    });
+    if (existing) {
+      await this.jobseekerVerificationDocRepo.remove(existing);
+      await this.storageService.deleteDocument(existing.documentId);
+    }
+
+    const upload = await this.storageService.uploadFile(file as any, {
+      folder: `jobseekers/${profile.id}/proof-of-address`,
+      bucketType: 'private',
+      documentType: DocumentType.OTHER,
+      uploadedBy: userId,
+      description: 'Job seeker proof of address (utility bill)',
+    });
+
+    const verificationDoc = this.jobseekerVerificationDocRepo.create({
+      jobseekerProfileId: profile.id,
+      documentId: upload.document.id,
+      documentKind: JobseekerVerificationDocumentKind.PROOF_OF_ADDRESS,
+      status: VerificationDocumentStatus.PENDING,
+    });
+    await this.jobseekerVerificationDocRepo.save(verificationDoc);
+
+    if (profile.approvalStatus === ApprovalStatus.NOT_STARTED) {
+      profile.approvalStatus = ApprovalStatus.PENDING;
+    }
+
+    await this.profileRepo.save(profile);
+
+    const signedUrl = await this.storageService.getSignedUrl(
+      upload.document.fileKey,
+      3600,
+      false,
+      upload.document.bucketType,
+      upload.document.provider,
+    );
+
+    return {
+      signedUrl,
+      documentId: upload.document.id,
+    };
+  }
+
+  async deleteProofOfAddress(userId: string): Promise<void> {
+    const profile = await this.profileRepo.findOne({
+      where: { id: userId },
+    });
+    if (!profile) throw new NotFoundException('Jobseeker not found');
+
+    if (profile.approvalStatus === ApprovalStatus.APPROVED) {
+      throw new ForbiddenException(
+        'Proof of address cannot be deleted after approval',
+      );
+    }
+
+    const existing = await this.jobseekerVerificationDocRepo.findOne({
+      where: {
+        jobseekerProfileId: profile.id,
+        documentKind: JobseekerVerificationDocumentKind.PROOF_OF_ADDRESS,
+      },
+    });
+    if (!existing) return;
+
+    await this.jobseekerVerificationDocRepo.remove(existing);
+    await this.storageService.deleteDocument(existing.documentId);
+  }
+
+  async getProofOfAddress(userId: string): Promise<{
+    document: Document;
+    signedUrl: string;
+    proofOfAddressVerified: boolean;
+    proofOfAddressStatus: VerificationDocumentStatus;
+  } | null> {
+    const row = await this.jobseekerVerificationDocRepo.findOne({
+      where: {
+        jobseekerProfileId: userId,
+        documentKind: JobseekerVerificationDocumentKind.PROOF_OF_ADDRESS,
+      },
+      relations: ['document'],
+    });
+
+    if (!row?.document) {
+      return null;
+    }
+
+    const document = row.document;
+    const signedUrl = await this.storageService.getSignedUrl(
+      document.fileKey,
+      3600,
+      false,
+      document.bucketType,
+      document.provider,
+    );
+
+    return {
+      document,
+      signedUrl,
+      proofOfAddressVerified:
+        row.status === VerificationDocumentStatus.APPROVED,
+      proofOfAddressStatus: row.status,
+    };
+  }
+
   /**
    * Get a sanitized jobseeker profile intended for public pages.
    * This endpoint must NOT expose private fields like email/phone.
@@ -542,6 +696,9 @@ export class JobseekerService {
     if (updateData.workExperience !== undefined) {
       profile.workExperience = updateData.workExperience;
     }
+    if (updateData.referenceContacts !== undefined) {
+      profile.referenceContacts = updateData.referenceContacts;
+    }
 
     // Handle skills smartly
     if (updateData.skills || updateData.skillIds) {
@@ -591,7 +748,7 @@ export class JobseekerService {
       throw new NotFoundException('Profile not found after update');
     }
 
-    this.hydrateIdDocumentFields(profileWithRelations);
+    this.hydrateVerificationDocumentFields(profileWithRelations);
     return profileWithRelations;
   }
 
@@ -609,7 +766,7 @@ export class JobseekerService {
     });
     if (!profile) throw new NotFoundException('Jobseeker not found');
 
-    this.hydrateIdDocumentFields(profile);
+    this.hydrateVerificationDocumentFields(profile);
     return profile;
   }
 
@@ -725,9 +882,10 @@ export class JobseekerService {
       profile.profilePicture.url = signedPictureUrl;
     }
 
-    this.hydrateIdDocumentFields(profile);
-    const idDocForSign = (profile as JobSeekerProfile & { idDocument?: Document })
-      .idDocument;
+    this.hydrateVerificationDocumentFields(profile);
+    const idDocForSign = (
+      profile as JobSeekerProfile & { idDocument?: Document }
+    ).idDocument;
     if (idDocForSign?.fileKey) {
       const signedIdDocUrl = await this.storageService.getSignedUrl(
         idDocForSign.fileKey,
@@ -737,6 +895,19 @@ export class JobseekerService {
         idDocForSign.provider,
       );
       idDocForSign.url = signedIdDocUrl;
+    }
+    const proofForSign = (
+      profile as JobSeekerProfile & { proofOfAddressDocument?: Document }
+    ).proofOfAddressDocument;
+    if (proofForSign?.fileKey) {
+      const signedProofUrl = await this.storageService.getSignedUrl(
+        proofForSign.fileKey,
+        3600,
+        false,
+        proofForSign.bucketType,
+        proofForSign.provider,
+      );
+      proofForSign.url = signedProofUrl;
     }
 
     return {

@@ -3,15 +3,17 @@ import {
   IsOptional,
   IsArray,
   IsUUID,
-  IsPhoneNumber,
   IsInt,
   Min,
   IsEnum,
   ValidateNested,
+  ArrayMinSize,
+  ArrayMaxSize,
 } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { WorkExperienceDto } from './work-experience.dto';
+import { ReferenceContactDto } from './reference-contact.dto';
 import {
   EmploymentArrangement,
   EmploymentType,
@@ -146,4 +148,30 @@ export class UpdateProfileDto {
   @ValidateNested({ each: true })
   @Type(() => WorkExperienceDto)
   workExperience?: WorkExperienceDto[];
+
+  @ApiPropertyOptional({
+    type: [ReferenceContactDto],
+    description: 'Exactly two reference contacts required for onboarding',
+    example: [
+      {
+        name: 'Ada Nwankwo',
+        phoneNumber: '+2348012345678',
+        homeAddress: '17 Obafemi Awolowo Way, Ikeja, Lagos',
+        relationship: 'Former Supervisor',
+      },
+      {
+        name: 'Tunde Balogun',
+        phoneNumber: '+2348098765432',
+        homeAddress: '55 Ikorodu Road, Yaba, Lagos',
+        relationship: 'Family Friend',
+      },
+    ],
+  })
+  @IsOptional()
+  @IsArray()
+  @ArrayMinSize(2)
+  @ArrayMaxSize(2)
+  @ValidateNested({ each: true })
+  @Type(() => ReferenceContactDto)
+  referenceContacts?: ReferenceContactDto[];
 }

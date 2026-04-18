@@ -96,11 +96,9 @@ export class JobSeekerProfile {
   @JoinColumn({ name: 'cvDocumentId' })
   cvDocument?: Document;
 
-  @OneToMany(
-    () => JobseekerVerificationDocument,
-    (v) => v.jobseekerProfile,
-    { cascade: true },
-  )
+  @OneToMany(() => JobseekerVerificationDocument, (v) => v.jobseekerProfile, {
+    cascade: true,
+  })
   verificationDocuments: JobseekerVerificationDocument[];
 
   @Column({
@@ -163,6 +161,18 @@ export class JobSeekerProfile {
     role: string;
     duration: string;
     description: string;
+  }>;
+
+  @Column({ type: 'jsonb', nullable: true })
+  /**
+   * Exactly two onboarding reference contacts.
+   * Each entry: { name, phoneNumber, homeAddress, relationship }
+   */
+  referenceContacts?: Array<{
+    name: string;
+    phoneNumber: string;
+    homeAddress: string;
+    relationship: string;
   }>;
 
   @OneToOne(() => JobseekerAuth, (auth) => auth.profile)

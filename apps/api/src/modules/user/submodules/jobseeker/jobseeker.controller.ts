@@ -156,14 +156,16 @@ export class JobseekerController {
   @UseInterceptors(FileInterceptor('file'))
   @HttpCode(HttpStatus.OK)
   @ApiConsumes('multipart/form-data')
-  @ApiOperation({ summary: 'Upload ID document (NIN/Passport/Voters card)' })
+  @ApiOperation({
+    summary: 'Upload ID document (NIN/Passport/Drivers license/Voters card)',
+  })
   @ApiBody({
     schema: {
       type: 'object',
       properties: {
         idDocumentType: {
           type: 'string',
-          enum: ['NIN', 'PASSPORT', 'VOTERS_CARD'],
+          enum: ['NIN', 'PASSPORT', 'DRIVERS_LICENSE', 'VOTERS_CARD'],
         },
         idDocumentNumber: { type: 'string' },
         file: { type: 'string', format: 'binary' },
@@ -229,6 +231,79 @@ export class JobseekerController {
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteIdDocument(@CurrentUser() user: CurrentUserPayload) {
     await this.jobseekerService.deleteIdDocument(user.id);
+    return;
+  }
+
+  @Post('profile/proof-of-address')
+  @UseGuards(JobSeekerJwtGuard)
+  @UseInterceptors(FileInterceptor('file'))
+  @HttpCode(HttpStatus.OK)
+  @ApiConsumes('multipart/form-data')
+  @ApiOperation({
+    summary:
+      'Upload proof of address document (utility bill not older than 3 months)',
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: { type: 'string', format: 'binary' },
+      },
+      required: ['file'],
+    },
+  })
+  async uploadProofOfAddress(
+    @CurrentUser() user: CurrentUserPayload,
+    @UploadedFile() file: MulterFile,
+  ) {
+    if (!file) {
+      throw new BadRequestException('No file uploaded');
+    }
+
+    const result = await this.jobseekerService.uploadProofOfAddress(
+      user.id,
+      file,
+    );
+
+    return {
+      success: true,
+      signedUrl: result.signedUrl,
+      documentId: result.documentId,
+    };
+  }
+
+  @Get('profile/proof-of-address')
+  @UseGuards(JobSeekerJwtGuard)
+  @HttpCode(HttpStatus.OK)
+  async getProofOfAddress(@CurrentUser() user: CurrentUserPayload) {
+    const result = await this.jobseekerService.getProofOfAddress(user.id);
+    if (!result) {
+      throw new BadRequestException('No proof of address document found');
+    }
+
+    return {
+      success: true,
+      document: {
+        id: result.document.id,
+        fileName: result.document.fileName,
+        originalName: result.document.originalName,
+        mimeType: result.document.mimeType,
+        size: result.document.size,
+        type: result.document.type,
+        description: result.document.description,
+        createdAt: result.document.createdAt,
+      },
+      signedUrl: result.signedUrl,
+      proofOfAddressVerified: result.proofOfAddressVerified,
+      proofOfAddressStatus: result.proofOfAddressStatus,
+    };
+  }
+
+  @Delete('profile/proof-of-address')
+  @UseGuards(JobSeekerJwtGuard)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async deleteProofOfAddress(@CurrentUser() user: CurrentUserPayload) {
+    await this.jobseekerService.deleteProofOfAddress(user.id);
     return;
   }
 

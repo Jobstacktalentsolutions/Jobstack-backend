@@ -975,6 +975,27 @@ export class AdminService {
           'Cannot approve jobseeker until an ID document is uploaded',
         );
       }
+      const proofOfAddressRow = await this.jobseekerVerificationDocRepo.findOne(
+        {
+          where: {
+            jobseekerProfileId: jobseekerId,
+            documentKind: JobseekerVerificationDocumentKind.PROOF_OF_ADDRESS,
+          },
+        },
+      );
+      if (!proofOfAddressRow) {
+        throw new BadRequestException(
+          'Cannot approve jobseeker until proof of address is uploaded',
+        );
+      }
+      if (
+        !Array.isArray(profile.referenceContacts) ||
+        profile.referenceContacts.length !== 2
+      ) {
+        throw new BadRequestException(
+          'Cannot approve jobseeker until two reference contacts are provided',
+        );
+      }
 
       profile.approvalStatus = ApprovalStatus.APPROVED;
       profile.approvalRejectionReason = undefined;
