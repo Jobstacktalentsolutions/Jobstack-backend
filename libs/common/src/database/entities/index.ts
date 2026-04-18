@@ -11,6 +11,7 @@ export * from './EmployerProfile.entity';
 export * from './EmployerSession.entity';
 export * from './EmployerVerification.entity';
 export * from './EmployerVerificationDocument.entity';
+export * from './JobseekerVerificationDocument.entity';
 export * from './Skill.entity';
 export * from './Payment.entity';
 export * from './SystemConfig.entity';

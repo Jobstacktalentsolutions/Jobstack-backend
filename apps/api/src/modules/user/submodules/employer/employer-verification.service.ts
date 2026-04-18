@@ -12,17 +12,18 @@ import { EmployerProfile } from '@app/common/database/entities/EmployerProfile.e
 import { StorageService } from '@app/common/storage/storage.service';
 import { UploadEmployerVerificationDocumentDto } from './dto/upload-employer-verification-document.dto';
 import { UpdateVerificationInfoDto } from './dto/update-verification.dto';
+import { UpdateDocumentVerificationDto } from './dto/admin-verification.dto';
 import { MulterFile } from '@app/common/shared/types';
 import {
   DocumentType,
   EmployerType,
 } from '@app/common/database/entities/schema.enum';
-import { VerificationStatus } from '@app/common/shared/enums/employer-docs.enum';
 import {
-  getMandatoryDocuments,
-  getAllDocuments,
-  isDocumentMandatory,
-} from '@app/common/shared/config/employer-document-requirements';
+  VerificationStatus,
+  EmployerDocumentType,
+} from '@app/common/shared/enums/employer-docs.enum';
+import { VerificationDocumentStatus } from '@app/common/shared/enums/verification-document-status.enum';
+import { getMandatoryDocuments, getAllDocuments } from '@app/common/shared/config/employer-document-requirements';
 import { NotificationService } from 'apps/api/src/modules/notification/notification.service';
 import { ApprovalDecisionEmailService } from '../../approval-decision-email.service';
 import { UserRole } from '@app/common/shared/enums/user-roles.enum';
@@ -133,7 +134,7 @@ export class EmployerVerificationService {
       documentId: docUpload.document.id,
       documentType: dto.documentType,
       documentNumber: dto.documentNumber,
-      verified: false,
+      status: VerificationDocumentStatus.PENDING,
     });
 
     await this.verificationDocRepo.save(verificationDoc);
@@ -314,7 +315,7 @@ export class EmployerVerificationService {
     // Get all mandatory documents for this employer type
     const mandatoryDocuments = getMandatoryDocuments(profile.type);
     const uploadedDocumentTypes = verification.documents
-      .filter((doc) => doc.verified)
+      .filter((doc) => doc.status === VerificationDocumentStatus.APPROVED)
       .map((doc) => doc.documentType);
 
     // Check for missing mandatory documents
@@ -365,6 +366,8 @@ export class EmployerVerificationService {
       verification.status = VerificationStatus.APPROVED;
       verification.reviewedAt = new Date();
       await this.verificationRepo.save(verification);
+
+      await this.approveAllEmployerDocuments(verification.id, null);
 
       // Notify employer that they are verified
       try {
@@ -432,6 +435,10 @@ export class EmployerVerificationService {
 
     await this.verificationRepo.save(verification);
 
+    if (status === VerificationStatus.APPROVED) {
+      await this.approveAllEmployerDocuments(verification.id, adminId);
+    }
+
     const employer = await this.profileRepo.findOne({
       where: { id: employerId },
       relations: ['auth'],
@@ -476,26 +483,74 @@ export class EmployerVerificationService {
     return verification;
   }
 
-  // Admin: Mark a document as verified/unverified
+  // Marks all employer verification files approved (used on overall approval / auto-verify).
+  private async approveAllEmployerDocuments(
+    verificationId: string,
+    adminId: string | null,
+  ): Promise<void> {
+    const docs = await this.verificationDocRepo.find({
+      where: { verificationId },
+    });
+    const now = new Date();
+    for (const d of docs) {
+      d.status = VerificationDocumentStatus.APPROVED;
+      d.rejectionReason = undefined;
+      d.reviewedAt = now;
+      d.reviewedByAdminId = adminId ?? undefined;
+    }
+    if (docs.length > 0) {
+      await this.verificationDocRepo.save(docs);
+    }
+  }
+
+  // Human-readable label for employer document rejection emails.
+  private formatEmployerDocumentTypeLabel(documentType: EmployerDocumentType): string {
+    return String(documentType)
+      .split('_')
+      .map((w) => w.charAt(0) + w.slice(1).toLowerCase())
+      .join(' ');
+  }
+
+  // Admin: set per-document verification status (pending / approved / rejected).
   async adminUpdateDocumentVerification(
     documentId: string,
-    verified: boolean,
+    dto: UpdateDocumentVerificationDto,
     adminId: string,
   ) {
     const verificationDoc = await this.verificationDocRepo.findOne({
       where: { id: documentId },
-      relations: ['verification', 'verification.employer'],
+      relations: ['verification', 'verification.employer', 'verification.employer.auth'],
     });
 
     if (!verificationDoc) {
       throw new NotFoundException('Verification document not found');
     }
 
-    verificationDoc.verified = verified;
+    const employer = verificationDoc.verification.employer;
+    const previousStatus = verificationDoc.status;
+
+    verificationDoc.status = dto.status;
+    verificationDoc.rejectionReason =
+      dto.status === VerificationDocumentStatus.REJECTED
+        ? (dto.rejectionReason ?? '').trim() || undefined
+        : undefined;
+    verificationDoc.reviewedAt = new Date();
+    verificationDoc.reviewedByAdminId = adminId;
     await this.verificationDocRepo.save(verificationDoc);
 
-    // Check if this change affects auto-verification eligibility
-    const employerId = verificationDoc.verification.employer.id;
+    if (
+      dto.status === VerificationDocumentStatus.REJECTED &&
+      verificationDoc.rejectionReason &&
+      previousStatus !== VerificationDocumentStatus.REJECTED
+    ) {
+      this.approvalDecisionEmailService.queueEmployerVerificationDocumentRejectedEmail(
+        employer,
+        this.formatEmployerDocumentTypeLabel(verificationDoc.documentType),
+        verificationDoc.rejectionReason,
+      );
+    }
+
+    const employerId = employer.id;
     const autoVerifyResult = await this.performAutoVerification(employerId);
 
     return {

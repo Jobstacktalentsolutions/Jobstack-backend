@@ -5,3 +5,9 @@ export enum JobseekerDocumentType {
   PASSPORT = 'PASSPORT',
   VOTERS_CARD = 'VOTERS_CARD',
 }
+
+/** Slot/category for rows in jobseeker_verification_documents (extensible). */
+export enum JobseekerVerificationDocumentKind {
+  ID_DOCUMENT = 'ID_DOCUMENT',
+}
+

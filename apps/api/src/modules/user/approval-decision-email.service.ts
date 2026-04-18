@@ -6,6 +6,7 @@ import {
 } from '@app/common/database/entities';
 import { ApprovalStatus } from '@app/common/database/entities/schema.enum';
 import { VerificationStatus } from '@app/common/shared/enums/employer-docs.enum';
+import { JobseekerVerificationDocumentKind } from '@app/common/shared/enums/jobseeker-docs.enum';
 import { NotificationService } from '../notification/notification.service';
 import { ENV } from '../config';
 
@@ -157,6 +158,88 @@ export class ApprovalDecisionEmailService {
       .catch((err) =>
         this.logger.warn(
           `Jobseeker approval email failed for ${to}: ${err?.message ?? err}`,
+        ),
+      );
+  }
+
+  /** Notify employer when a specific verification document is rejected. */
+  queueEmployerVerificationDocumentRejectedEmail(
+    employer: EmployerProfile,
+    documentTypeLabel: string,
+    rejectionReason: string,
+  ): void {
+    const to = employer.auth?.email ?? employer.email;
+    if (!to?.trim() || !rejectionReason?.trim()) {
+      return;
+    }
+
+    const base =
+      this.configService.get<string>(ENV.WEBSITE_URL)?.replace(/\/$/, '') ?? '';
+    const homeUrl = base ? `${base}/employer/dashboard` : '';
+    const firstName = employer.firstName?.trim() || 'there';
+
+    const subject = 'Action needed: verification document update';
+    const message = `Hi ${firstName}, we reviewed your ${documentTypeLabel} and couldn't accept it this time. Reason: ${rejectionReason.trim()} Please upload a replacement from your dashboard.`;
+
+    void this.notificationService
+      .sendEmail({
+        to: to.trim(),
+        subject,
+        template: 'general-notification',
+        context: {
+          subject,
+          firstName,
+          message,
+          actionText: homeUrl ? 'Open dashboard' : undefined,
+          actionUrl: homeUrl || undefined,
+        },
+      })
+      .catch((err) =>
+        this.logger.warn(
+          `Employer document rejection email failed for ${to}: ${err?.message ?? err}`,
+        ),
+      );
+  }
+
+  /** Notify jobseeker when a specific verification document is rejected. */
+  queueJobseekerVerificationDocumentRejectedEmail(
+    profile: JobSeekerProfile,
+    documentKind: JobseekerVerificationDocumentKind,
+    rejectionReason: string,
+  ): void {
+    const to = profile.email;
+    if (!to?.trim() || !rejectionReason?.trim()) {
+      return;
+    }
+
+    const base =
+      this.configService.get<string>(ENV.WEBSITE_URL)?.replace(/\/$/, '') ?? '';
+    const dashboardUrl = base ? `${base}/jobseeker/dashboard` : '';
+    const firstName = profile.firstName?.trim() || 'there';
+    const kindLabel =
+      documentKind === JobseekerVerificationDocumentKind.ID_DOCUMENT
+        ? 'identity document'
+        : String(documentKind).replace(/_/g, ' ').toLowerCase();
+
+    const subject = 'Action needed: update your verification document';
+    const message = `Hi ${firstName}, we reviewed your ${kindLabel} and couldn't accept it this time. Reason: ${rejectionReason.trim()} Please upload a replacement from your profile.`;
+
+    void this.notificationService
+      .sendEmail({
+        to: to.trim(),
+        subject,
+        template: 'general-notification',
+        context: {
+          subject,
+          firstName,
+          message,
+          actionText: dashboardUrl ? 'Open dashboard' : undefined,
+          actionUrl: dashboardUrl || undefined,
+        },
+      })
+      .catch((err) =>
+        this.logger.warn(
+          `Jobseeker document rejection email failed for ${to}: ${err?.message ?? err}`,
         ),
       );
   }

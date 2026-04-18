@@ -220,6 +220,7 @@ export class JobseekerController {
       idDocumentType: result.idDocumentType,
       idDocumentNumber: result.idDocumentNumber,
       idDocumentVerified: result.idDocumentVerified,
+      idDocumentStatus: result.idDocumentStatus,
     };
   }
 

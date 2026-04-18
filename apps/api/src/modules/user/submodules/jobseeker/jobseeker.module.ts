@@ -4,6 +4,7 @@ import { JobSeekerProfile } from '@app/common/database/entities/JobseekerProfile
 import { JobseekerAuth } from '@app/common/database/entities/JobseekerAuth.entity';
 import { JobseekerSkill } from '@app/common/database/entities/JobseekerSkill.entity';
 import { Document } from '@app/common/database/entities';
+import { JobseekerVerificationDocument } from '@app/common/database/entities/JobseekerVerificationDocument.entity';
 import { JobseekerController } from './jobseeker.controller';
 import { JobseekerService } from './jobseeker.service';
 import { PublicJobseekerController } from './public-jobseeker.controller';
@@ -19,6 +20,7 @@ import { AuthModule } from 'apps/api/src/modules/auth/auth.module';
       JobSeekerProfile,
       JobseekerAuth,
       JobseekerSkill,
+      JobseekerVerificationDocument,
       Document,
     ]),
     JobSeekerAuthModule,

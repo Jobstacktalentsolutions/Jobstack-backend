@@ -1,6 +1,13 @@
-import { IsEnum, IsOptional, IsString, IsBoolean } from 'class-validator';
+import {
+  IsEnum,
+  IsOptional,
+  IsString,
+  ValidateIf,
+  IsNotEmpty,
+} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { VerificationStatus } from '@app/common/shared/enums/employer-docs.enum';
+import { VerificationDocumentStatus } from '@app/common/shared/enums/verification-document-status.enum';
 
 export class UpdateVerificationStatusDto {
   @ApiProperty({
@@ -19,7 +26,18 @@ export class UpdateVerificationStatusDto {
 }
 
 export class UpdateDocumentVerificationDto {
-  @ApiProperty({ description: 'Mark document as verified', example: true })
-  @IsBoolean()
-  verified: boolean;
+  @ApiProperty({
+    enum: VerificationDocumentStatus,
+    example: VerificationDocumentStatus.APPROVED,
+  })
+  @IsEnum(VerificationDocumentStatus)
+  status: VerificationDocumentStatus;
+
+  @ApiPropertyOptional({
+    example: 'Document was blurry or expired.',
+  })
+  @ValidateIf((o) => o.status === VerificationDocumentStatus.REJECTED)
+  @IsNotEmpty()
+  @IsString()
+  rejectionReason?: string;
 }

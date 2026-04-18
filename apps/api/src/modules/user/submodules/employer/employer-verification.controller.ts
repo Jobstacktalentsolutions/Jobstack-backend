@@ -176,7 +176,7 @@ export class AdminEmployerVerificationController {
 
   // Mark document as verified/unverified
   @Put('documents/:id/verify')
-  @ApiOperation({ summary: 'Mark document verified or unverified' })
+  @ApiOperation({ summary: 'Set per-document verification status' })
   @ApiBody({ type: UpdateDocumentVerificationDto })
   async updateDocumentVerification(
     @Param('id') documentId: string,
@@ -185,7 +185,7 @@ export class AdminEmployerVerificationController {
   ) {
     return this.verificationService.adminUpdateDocumentVerification(
       documentId,
-      dto.verified,
+      dto,
       admin.id,
     );
   }

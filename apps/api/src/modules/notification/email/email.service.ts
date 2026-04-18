@@ -121,6 +121,7 @@ export class EmailService extends BaseNotificationService<EmailPayloadDto> {
       case EmailTemplateType.WELCOME:
         defaults.firstName = c.firstName ?? 'there';
         defaults.userType = c.userType ?? 'jobseeker';
+        defaults.actionUrl = c.actionUrl ?? '';
         break;
       case EmailTemplateType.GENERAL_NOTIFICATION:
         defaults.firstName = c.firstName ?? 'there';

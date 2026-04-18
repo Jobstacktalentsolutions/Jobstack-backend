@@ -5,6 +5,7 @@ import { EmployerAuth } from '@app/common/database/entities/EmployerAuth.entity'
 import { EmployerProfile } from '@app/common/database/entities/EmployerProfile.entity';
 import { EMPLOYERS_DATA } from '../data/employers.data';
 import { DocumentFactory } from './document.factory';
+import { VerificationDocumentStatus } from '@app/common/shared/enums/verification-document-status.enum';
 
 export class EmployerFactory extends BaseFactory<EmployerAuth> {
   private profileRepository: any;
@@ -115,7 +116,10 @@ export class EmployerFactory extends BaseFactory<EmployerAuth> {
             verificationId: existingVerification.id,
             documentId: doc.documentId,
             documentType: doc.documentType,
-            verified: doc.verified,
+            status:
+              doc.verified === true
+                ? VerificationDocumentStatus.APPROVED
+                : VerificationDocumentStatus.PENDING,
           };
 
           const existingDoc = await verificationDocRepo.findOne({

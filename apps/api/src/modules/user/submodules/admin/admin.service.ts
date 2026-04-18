@@ -12,14 +12,18 @@ import { AdminProfile } from '@app/common/database/entities/AdminProfile.entity'
 import {
   Employee,
   EmployerVerification,
+  EmployerVerificationDocument,
   EmployerProfile,
   EmployerAuth,
   Job,
   JobseekerAuth,
   JobSeekerProfile,
+  JobseekerVerificationDocument,
   Payment,
 } from '@app/common/database/entities';
 import { VerificationStatus } from '@app/common/shared/enums/employer-docs.enum';
+import { VerificationDocumentStatus } from '@app/common/shared/enums/verification-document-status.enum';
+import { JobseekerVerificationDocumentKind } from '@app/common/shared/enums/jobseeker-docs.enum';
 import {
   ApprovalStatus,
   EmployeeStatus,
@@ -28,6 +32,7 @@ import {
 } from '@app/common/database/entities/schema.enum';
 import { AdminRole } from '@app/common/shared/enums/roles.enum';
 import { GetAllAdminsQueryDto } from './dto/get-all-admins-query.dto';
+import { UpdateDocumentVerificationDto } from '../employer/dto/admin-verification.dto';
 import * as bcrypt from 'bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
 import { NotificationService } from 'apps/api/src/modules/notification/notification.service';
@@ -52,6 +57,8 @@ export class AdminService {
     private readonly adminProfileRepo: Repository<AdminProfile>,
     @InjectRepository(EmployerVerification)
     private readonly verificationRepo: Repository<EmployerVerification>,
+    @InjectRepository(EmployerVerificationDocument)
+    private readonly employerVerificationDocRepo: Repository<EmployerVerificationDocument>,
     @InjectRepository(EmployerProfile)
     private readonly profileRepo: Repository<EmployerProfile>,
     @InjectRepository(EmployerAuth)
@@ -60,6 +67,8 @@ export class AdminService {
     private readonly jobseekerAuthRepo: Repository<JobseekerAuth>,
     @InjectRepository(JobSeekerProfile)
     private readonly jobseekerProfileRepo: Repository<JobSeekerProfile>,
+    @InjectRepository(JobseekerVerificationDocument)
+    private readonly jobseekerVerificationDocRepo: Repository<JobseekerVerificationDocument>,
     @InjectRepository(Job)
     private readonly jobRepo: Repository<Job>,
     @InjectRepository(Employee)
@@ -217,6 +226,7 @@ export class AdminService {
     employerId: string,
     status: VerificationStatus,
     rejectionReason?: string,
+    adminId?: string,
   ) {
     const verification = await this.verificationRepo.findOne({
       where: { employerId },
@@ -230,6 +240,22 @@ export class AdminService {
     verification.rejectionReason =
       status === VerificationStatus.REJECTED ? rejectionReason : undefined;
     await this.verificationRepo.save(verification);
+
+    if (status === VerificationStatus.APPROVED) {
+      const docs = await this.employerVerificationDocRepo.find({
+        where: { verificationId: verification.id },
+      });
+      const now = new Date();
+      for (const d of docs) {
+        d.status = VerificationDocumentStatus.APPROVED;
+        d.rejectionReason = undefined;
+        d.reviewedAt = now;
+        d.reviewedByAdminId = adminId;
+      }
+      if (docs.length > 0) {
+        await this.employerVerificationDocRepo.save(docs);
+      }
+    }
 
     const employer = await this.profileRepo.findOne({
       where: { id: employerId },
@@ -836,36 +862,92 @@ export class AdminService {
     return { success: true, jobseekerId };
   }
 
-  async verifyJobseekerIdDocument(
+  // Sets status on a single jobseeker verification document (e.g. ID).
+  async updateJobseekerVerificationDocument(
     adminId: string,
     jobseekerId: string,
-    verified: boolean,
+    verificationDocumentId: string,
+    dto: UpdateDocumentVerificationDto,
   ) {
-    const profile = await this.jobseekerProfileRepo.findOne({
-      where: { id: jobseekerId },
+    const row = await this.jobseekerVerificationDocRepo.findOne({
+      where: {
+        id: verificationDocumentId,
+        jobseekerProfileId: jobseekerId,
+      },
+      relations: ['jobseekerProfile'],
     });
 
-    if (!profile) {
-      throw new NotFoundException('Jobseeker profile not found');
+    if (!row) {
+      throw new NotFoundException('Verification document not found');
     }
 
-    if (!profile.idDocumentId) {
-      throw new BadRequestException(
-        'Jobseeker has not uploaded an ID document',
+    const previousStatus = row.status;
+    row.status = dto.status;
+    row.rejectionReason =
+      dto.status === VerificationDocumentStatus.REJECTED
+        ? (dto.rejectionReason ?? '').trim() || undefined
+        : undefined;
+    row.reviewedAt = new Date();
+    row.reviewedByAdminId = adminId;
+    await this.jobseekerVerificationDocRepo.save(row);
+
+    if (
+      dto.status === VerificationDocumentStatus.REJECTED &&
+      row.rejectionReason &&
+      previousStatus !== VerificationDocumentStatus.REJECTED
+    ) {
+      const profile = row.jobseekerProfile;
+      this.approvalDecisionEmailService.queueJobseekerVerificationDocumentRejectedEmail(
+        profile,
+        row.documentKind,
+        row.rejectionReason,
       );
     }
-
-    profile.idDocumentVerified = Boolean(verified);
-    profile.idDocumentVerifiedAt = verified ? new Date() : undefined;
-    profile.idDocumentVerifiedByAdminId = verified ? adminId : undefined;
-
-    await this.jobseekerProfileRepo.save(profile);
 
     return {
       success: true,
       jobseekerId,
-      verified: profile.idDocumentVerified,
+      documentId: row.id,
+      status: row.status,
     };
+  }
+
+  // Marks all jobseeker verification rows approved (used when profile is approved).
+  private async approveAllJobseekerVerificationDocuments(
+    jobseekerProfileId: string,
+    adminId: string,
+  ): Promise<void> {
+    const docs = await this.jobseekerVerificationDocRepo.find({
+      where: { jobseekerProfileId },
+    });
+    const now = new Date();
+    for (const d of docs) {
+      d.status = VerificationDocumentStatus.APPROVED;
+      d.rejectionReason = undefined;
+      d.reviewedAt = now;
+      d.reviewedByAdminId = adminId;
+    }
+    if (docs.length > 0) {
+      await this.jobseekerVerificationDocRepo.save(docs);
+    }
+  }
+
+  // Resets per-document review metadata when unapproving a jobseeker profile.
+  private async resetJobseekerVerificationDocumentsToPending(
+    jobseekerProfileId: string,
+  ): Promise<void> {
+    const docs = await this.jobseekerVerificationDocRepo.find({
+      where: { jobseekerProfileId },
+    });
+    for (const d of docs) {
+      d.status = VerificationDocumentStatus.PENDING;
+      d.rejectionReason = undefined;
+      d.reviewedAt = undefined;
+      d.reviewedByAdminId = undefined;
+    }
+    if (docs.length > 0) {
+      await this.jobseekerVerificationDocRepo.save(docs);
+    }
   }
 
   async updateJobseekerVerification(
@@ -882,9 +964,15 @@ export class AdminService {
     const previousApprovalStatus = profile.approvalStatus;
 
     if (status === ApprovalStatus.APPROVED) {
-      if (!profile.idDocumentId || !profile.idDocumentVerified) {
+      const idRow = await this.jobseekerVerificationDocRepo.findOne({
+        where: {
+          jobseekerProfileId: jobseekerId,
+          documentKind: JobseekerVerificationDocumentKind.ID_DOCUMENT,
+        },
+      });
+      if (!idRow) {
         throw new BadRequestException(
-          'Cannot approve jobseeker until ID document is verified',
+          'Cannot approve jobseeker until an ID document is uploaded',
         );
       }
 
@@ -894,6 +982,8 @@ export class AdminService {
       profile.approvalReviewedByAdminId = adminId;
 
       await this.jobseekerProfileRepo.save(profile);
+      await this.approveAllJobseekerVerificationDocuments(jobseekerId, adminId);
+
       this.approvalDecisionEmailService.queueJobseekerApprovalEmail(
         profile,
         previousApprovalStatus,
@@ -928,6 +1018,14 @@ export class AdminService {
     profile.approvalReviewedAt = new Date();
     profile.approvalReviewedByAdminId = adminId;
     await this.jobseekerProfileRepo.save(profile);
+
+    if (
+      status === ApprovalStatus.PENDING &&
+      previousApprovalStatus === ApprovalStatus.APPROVED
+    ) {
+      await this.resetJobseekerVerificationDocumentsToPending(jobseekerId);
+    }
+
     return { success: true, jobseekerId, status: profile.approvalStatus };
   }
 

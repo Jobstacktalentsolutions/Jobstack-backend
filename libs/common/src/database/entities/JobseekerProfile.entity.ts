@@ -21,7 +21,7 @@ import {
 } from './schema.enum';
 import { JobApplication } from './JobApplication.entity';
 import { Employee } from './Employee.entity';
-import { JobseekerDocumentType } from '@app/common/shared/enums/jobseeker-docs.enum';
+import { JobseekerVerificationDocument } from './JobseekerVerificationDocument.entity';
 
 @Entity('jobseeker_profiles')
 export class JobSeekerProfile {
@@ -96,31 +96,12 @@ export class JobSeekerProfile {
   @JoinColumn({ name: 'cvDocumentId' })
   cvDocument?: Document;
 
-  @Column('uuid', { nullable: true })
-  idDocumentId?: string;
-
-  @OneToOne(() => Document, { nullable: true, onDelete: 'SET NULL' })
-  @JoinColumn({ name: 'idDocumentId' })
-  idDocument?: Document;
-
-  @Column({
-    type: 'enum',
-    enum: JobseekerDocumentType,
-    nullable: true,
-  })
-  idDocumentType?: JobseekerDocumentType;
-
-  @Column({ type: 'varchar', nullable: true })
-  idDocumentNumber?: string;
-
-  @Column({ type: 'boolean', default: false })
-  idDocumentVerified: boolean;
-
-  @Column('uuid', { nullable: true })
-  idDocumentVerifiedByAdminId?: string;
-
-  @Column({ type: 'timestamp', nullable: true })
-  idDocumentVerifiedAt?: Date;
+  @OneToMany(
+    () => JobseekerVerificationDocument,
+    (v) => v.jobseekerProfile,
+    { cascade: true },
+  )
+  verificationDocuments: JobseekerVerificationDocument[];
 
   @Column({
     type: 'enum',
