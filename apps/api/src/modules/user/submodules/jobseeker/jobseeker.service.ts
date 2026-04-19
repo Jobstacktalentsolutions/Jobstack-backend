@@ -659,8 +659,17 @@ export class JobseekerService {
     if (updateData.phoneNumber !== undefined) {
       profile.phoneNumber = updateData.phoneNumber;
     }
+    if (updateData.dateOfBirth !== undefined) {
+      profile.dateOfBirth = new Date(updateData.dateOfBirth);
+    }
+    if (updateData.gender !== undefined) {
+      profile.gender = updateData.gender;
+    }
     if (updateData.preferredLocation !== undefined) {
       profile.preferredLocation = updateData.preferredLocation;
+    }
+    if (updateData.availability !== undefined) {
+      profile.availability = updateData.availability;
     }
     if (updateData.preferredEmploymentType !== undefined) {
       profile.preferredEmploymentType = updateData.preferredEmploymentType;

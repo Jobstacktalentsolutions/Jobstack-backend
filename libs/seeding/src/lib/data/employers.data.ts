@@ -33,13 +33,13 @@ export const EMPLOYERS_DATA = [
         {
           documentId: CONSTANT_IDS.DOCUMENTS[0],
           documentType:
-            EmployerDocumentType.CERTIFICATE_OF_BUSINESS_REGISTRATION,
+            EmployerDocumentType.CAC_REGISTRATION_CERTIFICATE,
           status: VerificationStatus.APPROVED,
           verified: true,
         },
         {
           documentId: CONSTANT_IDS.DOCUMENTS[1],
-          documentType: EmployerDocumentType.TAX_IDENTIFICATION,
+          documentType: EmployerDocumentType.DIRECTOR_GOVERNMENT_ID,
           status: VerificationStatus.APPROVED,
           verified: true,
         },
@@ -70,13 +70,13 @@ export const EMPLOYERS_DATA = [
         {
           documentId: CONSTANT_IDS.DOCUMENTS[2],
           documentType:
-            EmployerDocumentType.CERTIFICATE_OF_BUSINESS_REGISTRATION,
+            EmployerDocumentType.CAC_REGISTRATION_CERTIFICATE,
           status: VerificationStatus.APPROVED,
           verified: true,
         },
         {
           documentId: CONSTANT_IDS.DOCUMENTS[3],
-          documentType: EmployerDocumentType.PROOF_OF_ADDRESS,
+          documentType: EmployerDocumentType.UTILITY_BILL,
           status: VerificationStatus.APPROVED,
           verified: true,
         },
@@ -107,13 +107,13 @@ export const EMPLOYERS_DATA = [
         {
           documentId: CONSTANT_IDS.DOCUMENTS[4],
           documentType:
-            EmployerDocumentType.CERTIFICATE_OF_BUSINESS_REGISTRATION,
+            EmployerDocumentType.CAC_REGISTRATION_CERTIFICATE,
           status: VerificationStatus.APPROVED,
           verified: true,
         },
         {
           documentId: CONSTANT_IDS.DOCUMENTS[5],
-          documentType: EmployerDocumentType.PROOF_OF_ADDRESS,
+          documentType: EmployerDocumentType.UTILITY_BILL,
           status: VerificationStatus.APPROVED,
           verified: true,
         },
@@ -144,13 +144,13 @@ export const EMPLOYERS_DATA = [
         {
           documentId: CONSTANT_IDS.DOCUMENTS[6],
           documentType:
-            EmployerDocumentType.CERTIFICATE_OF_BUSINESS_REGISTRATION,
+            EmployerDocumentType.CAC_REGISTRATION_CERTIFICATE,
           status: VerificationStatus.APPROVED,
           verified: true,
         },
         {
           documentId: CONSTANT_IDS.DOCUMENTS[7],
-          documentType: EmployerDocumentType.TAX_IDENTIFICATION,
+          documentType: EmployerDocumentType.DIRECTOR_GOVERNMENT_ID,
           status: VerificationStatus.APPROVED,
           verified: true,
         },
@@ -175,13 +175,13 @@ export const EMPLOYERS_DATA = [
         {
           documentId: CONSTANT_IDS.DOCUMENTS[8],
           documentType:
-            EmployerDocumentType.CERTIFICATE_OF_BUSINESS_REGISTRATION,
+            EmployerDocumentType.CAC_REGISTRATION_CERTIFICATE,
           status: VerificationStatus.APPROVED,
           verified: true,
         },
         {
           documentId: CONSTANT_IDS.DOCUMENTS[9],
-          documentType: EmployerDocumentType.PROOF_OF_ADDRESS,
+          documentType: EmployerDocumentType.UTILITY_BILL,
           status: VerificationStatus.APPROVED,
           verified: true,
         },
@@ -212,13 +212,13 @@ export const EMPLOYERS_DATA = [
         {
           documentId: CONSTANT_IDS.DOCUMENTS[10],
           documentType:
-            EmployerDocumentType.CERTIFICATE_OF_BUSINESS_REGISTRATION,
+            EmployerDocumentType.CAC_REGISTRATION_CERTIFICATE,
           status: VerificationStatus.APPROVED,
           verified: true,
         },
         {
           documentId: CONSTANT_IDS.DOCUMENTS[11],
-          documentType: EmployerDocumentType.PROOF_OF_ADDRESS,
+          documentType: EmployerDocumentType.UTILITY_BILL,
           status: VerificationStatus.APPROVED,
           verified: true,
         },
@@ -266,13 +266,13 @@ export const EMPLOYERS_DATA = [
         {
           documentId: CONSTANT_IDS.DOCUMENTS[14],
           documentType:
-            EmployerDocumentType.CERTIFICATE_OF_BUSINESS_REGISTRATION,
+            EmployerDocumentType.CAC_REGISTRATION_CERTIFICATE,
           status: VerificationStatus.APPROVED,
           verified: true,
         },
         {
           documentId: CONSTANT_IDS.DOCUMENTS[15],
-          documentType: EmployerDocumentType.PROOF_OF_ADDRESS,
+          documentType: EmployerDocumentType.UTILITY_BILL,
           status: VerificationStatus.APPROVED,
           verified: true,
         },
@@ -303,13 +303,13 @@ export const EMPLOYERS_DATA = [
         {
           documentId: CONSTANT_IDS.DOCUMENTS[16],
           documentType:
-            EmployerDocumentType.CERTIFICATE_OF_BUSINESS_REGISTRATION,
+            EmployerDocumentType.CAC_REGISTRATION_CERTIFICATE,
           status: VerificationStatus.APPROVED,
           verified: true,
         },
         {
           documentId: CONSTANT_IDS.DOCUMENTS[17],
-          documentType: EmployerDocumentType.TAX_IDENTIFICATION,
+          documentType: EmployerDocumentType.DIRECTOR_GOVERNMENT_ID,
           status: VerificationStatus.APPROVED,
           verified: true,
         },
@@ -340,13 +340,13 @@ export const EMPLOYERS_DATA = [
         {
           documentId: CONSTANT_IDS.DOCUMENTS[18],
           documentType:
-            EmployerDocumentType.CERTIFICATE_OF_BUSINESS_REGISTRATION,
+            EmployerDocumentType.CAC_REGISTRATION_CERTIFICATE,
           status: VerificationStatus.APPROVED,
           verified: true,
         },
         {
           documentId: CONSTANT_IDS.DOCUMENTS[19],
-          documentType: EmployerDocumentType.PROOF_OF_ADDRESS,
+          documentType: EmployerDocumentType.UTILITY_BILL,
           status: VerificationStatus.APPROVED,
           verified: true,
         },
@@ -374,13 +374,13 @@ export const EMPLOYERS_DATA = [
       documents: [
         {
           documentId: CONSTANT_IDS.DOCUMENTS[20],
-          documentType: EmployerDocumentType.NATIONAL_ID,
+          documentType: EmployerDocumentType.GOVERNMENT_ISSUED_ID,
           status: VerificationStatus.APPROVED,
           verified: true,
         },
         {
           documentId: CONSTANT_IDS.DOCUMENTS[21],
-          documentType: EmployerDocumentType.PROOF_OF_ADDRESS,
+          documentType: EmployerDocumentType.UTILITY_BILL,
           status: VerificationStatus.APPROVED,
           verified: true,
         },
@@ -411,13 +411,13 @@ export const EMPLOYERS_DATA = [
         {
           documentId: CONSTANT_IDS.DOCUMENTS[22],
           documentType:
-            EmployerDocumentType.CERTIFICATE_OF_BUSINESS_REGISTRATION,
+            EmployerDocumentType.CAC_REGISTRATION_CERTIFICATE,
           status: VerificationStatus.APPROVED,
           verified: true,
         },
         {
           documentId: CONSTANT_IDS.DOCUMENTS[23],
-          documentType: EmployerDocumentType.TAX_IDENTIFICATION,
+          documentType: EmployerDocumentType.DIRECTOR_GOVERNMENT_ID,
           status: VerificationStatus.APPROVED,
           verified: true,
         },

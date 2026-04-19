@@ -987,6 +987,16 @@ export class AdminService {
           'Cannot approve jobseeker until two reference contacts are provided',
         );
       }
+      if (!profile.dateOfBirth) {
+        throw new BadRequestException(
+          'Cannot approve jobseeker until date of birth is provided',
+        );
+      }
+      if (!profile.gender) {
+        throw new BadRequestException(
+          'Cannot approve jobseeker until gender is provided',
+        );
+      }
 
       profile.approvalStatus = ApprovalStatus.APPROVED;
       profile.approvalRejectionReason = undefined;

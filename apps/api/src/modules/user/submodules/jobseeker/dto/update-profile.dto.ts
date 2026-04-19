@@ -9,6 +9,7 @@ import {
   ValidateNested,
   ArrayMinSize,
   ArrayMaxSize,
+  IsDateString,
 } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
@@ -17,6 +18,8 @@ import { ReferenceContactDto } from './reference-contact.dto';
 import {
   EmploymentArrangement,
   EmploymentType,
+  JobseekerAvailability,
+  JobseekerGender,
   SkillCategory,
   WorkMode,
 } from '@app/common/database/entities/schema.enum';
@@ -49,10 +52,31 @@ export class UpdateProfileDto {
   @IsString()
   phoneNumber?: string;
 
+  @ApiPropertyOptional({ example: '1997-10-23' })
+  @IsOptional()
+  @IsDateString()
+  dateOfBirth?: string;
+
+  @ApiPropertyOptional({
+    enum: JobseekerGender,
+    example: JobseekerGender.FEMALE,
+  })
+  @IsOptional()
+  @IsEnum(JobseekerGender)
+  gender?: JobseekerGender;
+
   @ApiPropertyOptional({ example: 'Lagos, Nigeria' })
   @IsString()
   @IsOptional()
   preferredLocation?: string;
+
+  @ApiPropertyOptional({
+    enum: JobseekerAvailability,
+    example: JobseekerAvailability.IMMEDIATE,
+  })
+  @IsOptional()
+  @IsEnum(JobseekerAvailability)
+  availability?: JobseekerAvailability;
 
   @ApiPropertyOptional({
     enum: EmploymentType,

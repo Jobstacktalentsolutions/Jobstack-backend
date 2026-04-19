@@ -5,8 +5,8 @@
 import 'reflect-metadata';
 
 import { DataSource } from 'typeorm';
+import { typeOrmConfig } from '@app/common';
 import { SeedingService } from '../seeding.service';
-import { typeormConfig } from '@app/common/database/typeorm.config';
 
 /**
  * Seeding script for JobStack
@@ -31,7 +31,7 @@ async function runSeeding() {
   try {
     // Initialize database connection
     console.log('\n🔌 Connecting to database...');
-    dataSource = new DataSource(typeormConfig);
+    dataSource = new DataSource(typeOrmConfig as any);
     await dataSource.initialize();
     console.log('✅ Database connected successfully');
 

@@ -16,6 +16,8 @@ import {
   ApprovalStatus,
   EmploymentArrangement,
   EmploymentType,
+  JobseekerAvailability,
+  JobseekerGender,
   SkillCategory,
   WorkMode,
 } from './schema.enum';
@@ -58,6 +60,16 @@ export class JobSeekerProfile {
   @Column('varchar')
   phoneNumber: string;
 
+  @Column({ type: 'date', nullable: true })
+  dateOfBirth?: Date;
+
+  @Column({
+    type: 'enum',
+    enum: JobseekerGender,
+    nullable: true,
+  })
+  gender?: JobseekerGender;
+
   @Column('uuid', { nullable: true })
   profilePictureId?: string;
 
@@ -82,6 +94,13 @@ export class JobSeekerProfile {
 
   @Column({ type: 'text', nullable: true })
   preferredLocation?: string;
+
+  @Column({
+    type: 'enum',
+    enum: JobseekerAvailability,
+    nullable: true,
+  })
+  availability?: JobseekerAvailability;
 
   @Column({ type: 'varchar', nullable: true })
   state?: string;

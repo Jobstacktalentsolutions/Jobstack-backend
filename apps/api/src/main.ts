@@ -5,6 +5,8 @@ import { ENV } from 'apps/api/src/modules/config';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { AppEnum } from 'apps/api/src/modules/config/app.config';
 import helmet from 'helmet';
+import 'dotenv/config';
+
 import type { Request, Response } from 'express';
 import {
   DocumentBuilder,

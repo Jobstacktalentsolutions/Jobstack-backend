@@ -221,6 +221,16 @@ export enum Proficiency {
   ADVANCED = 'ADVANCED',
 }
 
+export enum JobseekerGender {
+  MALE = 'MALE',
+  FEMALE = 'FEMALE',
+}
+
+export enum JobseekerAvailability {
+  IMMEDIATE = 'IMMEDIATE',
+  NOTICE_PERIOD = 'NOTICE_PERIOD',
+}
+
 export enum ApprovalStatus {
   NOT_STARTED = 'NOT_STARTED',
   PENDING = 'PENDING',
