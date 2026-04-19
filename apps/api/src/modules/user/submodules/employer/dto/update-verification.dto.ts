@@ -31,4 +31,14 @@ export class UpdateVerificationInfoDto {
   @IsOptional()
   @IsString()
   socialOrWebsiteUrl?: string;
+
+  @ApiPropertyOptional({ example: 'https://acme.ng/company' })
+  @IsOptional()
+  @IsString()
+  companyWebsite?: string;
+
+  @ApiPropertyOptional({ example: 'We hire vetted support staff and admins.' })
+  @IsOptional()
+  @IsString()
+  companyDescription?: string;
 }

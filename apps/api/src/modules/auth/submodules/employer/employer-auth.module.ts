@@ -3,7 +3,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { EmployerAuth } from '@app/common/database/entities/EmployerAuth.entity';
 import { EmployerProfile } from '@app/common/database/entities/EmployerProfile.entity';
 import { EmployerSession } from '@app/common/database/entities/EmployerSession.entity';
-import { EmployerVerification } from '@app/common/database/entities/EmployerVerification.entity';
 import { JobseekerAuth } from '@app/common/database/entities/JobseekerAuth.entity';
 import { RedisModule } from '@app/common/redis/redis.module';
 import { EmployerAuthService } from './employer-auth.service';
@@ -19,7 +18,6 @@ import { GoogleIdentityModule } from '../../google/google-identity.module';
       JobseekerAuth,
       EmployerProfile,
       EmployerSession,
-      EmployerVerification,
     ]),
     RedisModule,
     NotificationModule,

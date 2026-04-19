@@ -16,7 +16,8 @@ export const EMPLOYER_DOCUMENT_REQUIREMENTS: Record<
     {
       documentType: EmployerDocumentType.GOVERNMENT_ISSUED_ID,
       mandatory: true,
-      description: "Government-issued ID (NIN slip, international passport, or voter's card)",
+      description:
+        "Government-issued ID (NIN slip, international passport, or voter's card)",
       purpose: 'Confirms identity of the hiring individual',
     },
 
@@ -42,8 +43,7 @@ export const EMPLOYER_DOCUMENT_REQUIREMENTS: Record<
       purpose: 'Confirms identity of business owner',
     },
     {
-      documentType:
-        EmployerDocumentType.SIGNED_LEGITIMATE_BUSINESS_DECLARATION,
+      documentType: EmployerDocumentType.SIGNED_LEGITIMATE_BUSINESS_DECLARATION,
       mandatory: true,
       description:
         'Signed declaration confirming legitimate business hiring purpose',

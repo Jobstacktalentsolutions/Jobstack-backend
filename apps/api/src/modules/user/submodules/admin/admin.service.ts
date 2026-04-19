@@ -11,7 +11,6 @@ import { AdminAuth } from '@app/common/database/entities/AdminAuth.entity';
 import { AdminProfile } from '@app/common/database/entities/AdminProfile.entity';
 import {
   Employee,
-  EmployerVerification,
   EmployerVerificationDocument,
   EmployerProfile,
   EmployerAuth,
@@ -55,8 +54,6 @@ export class AdminService {
     private readonly adminAuthRepo: Repository<AdminAuth>,
     @InjectRepository(AdminProfile)
     private readonly adminProfileRepo: Repository<AdminProfile>,
-    @InjectRepository(EmployerVerification)
-    private readonly verificationRepo: Repository<EmployerVerification>,
     @InjectRepository(EmployerVerificationDocument)
     private readonly employerVerificationDocRepo: Repository<EmployerVerificationDocument>,
     @InjectRepository(EmployerProfile)
@@ -228,22 +225,24 @@ export class AdminService {
     rejectionReason?: string,
     adminId?: string,
   ) {
-    const verification = await this.verificationRepo.findOne({
-      where: { employerId },
-      relations: ['documents', 'documents.document'],
+    const employerProfile = await this.profileRepo.findOne({
+      where: { id: employerId },
+      relations: ['auth'],
     });
-    if (!verification) throw new NotFoundException('Verification not found');
+    if (!employerProfile)
+      throw new NotFoundException('Employer verification not found');
 
-    const previousStatus = verification.status;
-    verification.status = status;
-    verification.reviewedAt = new Date();
-    verification.rejectionReason =
+    const previousStatus = employerProfile.verificationStatus;
+    employerProfile.verificationStatus = status;
+    employerProfile.reviewedAt = new Date();
+    employerProfile.reviewedByAdminId = adminId;
+    employerProfile.verificationRejectionReason =
       status === VerificationStatus.REJECTED ? rejectionReason : undefined;
-    await this.verificationRepo.save(verification);
+    await this.profileRepo.save(employerProfile);
 
     if (status === VerificationStatus.APPROVED) {
       const docs = await this.employerVerificationDocRepo.find({
-        where: { verificationId: verification.id },
+        where: { employerProfileId: employerId },
       });
       const now = new Date();
       for (const d of docs) {
@@ -257,13 +256,9 @@ export class AdminService {
       }
     }
 
-    const employer = await this.profileRepo.findOne({
-      where: { id: employerId },
-      relations: ['auth'],
-    });
-    if (employer) {
+    if (employerProfile) {
       this.approvalDecisionEmailService.queueEmployerVerificationEmail(
-        employer,
+        employerProfile,
         previousStatus,
         status,
         rejectionReason,
@@ -471,14 +466,13 @@ export class AdminService {
           end: startOfCurrentMonth,
         })
         .getRawOne<{ amount: string | number }>(),
-      this.verificationRepo.find({
-        where: { status: VerificationStatus.PENDING },
-        relations: ['employer'],
-        order: { createdAt: 'DESC' },
+      this.profileRepo.find({
+        where: { verificationStatus: VerificationStatus.PENDING },
+        order: { updatedAt: 'DESC' },
         take: pendingLimit,
       }),
-      this.verificationRepo.count({
-        where: { status: VerificationStatus.PENDING },
+      this.profileRepo.count({
+        where: { verificationStatus: VerificationStatus.PENDING },
       }),
       this.jobseekerProfileRepo.find({
         where: { approvalStatus: ApprovalStatus.PENDING },
@@ -489,7 +483,7 @@ export class AdminService {
         where: { approvalStatus: ApprovalStatus.PENDING },
       }),
       this.jobRepo.find({
-        relations: ['employer', 'employer.verification'],
+        relations: ['employer'],
         order: { createdAt: 'DESC' },
         take: pendingLimit,
       }),
@@ -583,15 +577,15 @@ export class AdminService {
           total: pendingEmployerVerificationsTotal,
           items: pendingEmployerVerifications.map((item) => ({
             id: item.id,
-            employerId: item.employerId,
+            employerId: item.id,
             companyName:
               item.companyName ||
-              `${item.employer?.firstName ?? ''} ${item.employer?.lastName ?? ''}`.trim() ||
+              `${item.firstName ?? ''} ${item.lastName ?? ''}`.trim() ||
               'Unspecified company',
             contactName:
-              `${item.employer?.firstName ?? ''} ${item.employer?.lastName ?? ''}`.trim(),
-            email: item.employer?.email,
-            submittedAt: item.createdAt,
+              `${item.firstName ?? ''} ${item.lastName ?? ''}`.trim(),
+            email: item.email,
+            submittedAt: item.updatedAt,
           })),
         },
         jobseekerApproval: {
@@ -613,7 +607,7 @@ export class AdminService {
           status: j.status,
           employerId: j.employerId,
           companyName:
-            j.employer?.verification?.companyName?.trim() ||
+            j.employer?.companyName?.trim() ||
             `${j.employer?.firstName ?? ''} ${j.employer?.lastName ?? ''}`.trim() ||
             j.employer?.email ||
             'Employer',
@@ -634,7 +628,7 @@ export class AdminService {
   ): Promise<{ success: boolean; employerId: string; status: EmployerStatus }> {
     const employerProfile = await this.profileRepo.findOne({
       where: { id: employerId },
-      relations: ['verification', 'auth'],
+      relations: ['auth'],
     });
 
     if (!employerProfile) {
@@ -643,10 +637,7 @@ export class AdminService {
 
     // Validate: Can only activate if verification is APPROVED
     if (status === EmployerStatus.ACTIVE) {
-      if (
-        !employerProfile.verification ||
-        employerProfile.verification.status !== VerificationStatus.APPROVED
-      ) {
+      if (employerProfile.verificationStatus !== VerificationStatus.APPROVED) {
         throw new BadRequestException(
           'Cannot activate employer: Verification must be APPROVED first',
         );

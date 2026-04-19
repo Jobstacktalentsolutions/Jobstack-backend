@@ -12,37 +12,23 @@ The system now supports three types of employers:
 
 **Mandatory Documents:**
 
-- Valid ID (National ID or International Passport) - Confirms identity
-- Proof of address (utility bill or tenancy agreement) - Confirms legitimacy of location
-- Guarantor details - Confirms legitimacy of location
-- Signed service agreement (digital) - Accepts Jobstack's terms, fees, and consent for deductions
-- Payment method setup (card or bank details) - For fee and salary payments
+- Government-issued ID (NIN slip, international passport, or voter's card) - Confirms identity
+- Utility bill - Confirms legitimacy of location
 
 ### 2. SME (Small Businesses / Organizations)
 
 **Mandatory Documents:**
 
 - Business registration certificate (CAC) - Confirms legal entity
-- Payment details (corporate account) - For transactions
-- Signed service agreement - Legally binds employer to T&Cs and fees
-
-**Optional Documents:**
-
-- Company ID or official letterhead - Confirms authority of representative
-- Tax Identification Number (TIN) - Helps for invoicing and compliance
+- Owner's government-issued ID - Confirms business owner identity
+- Signed declaration confirming legitimate business hiring purpose - Confirms hiring legitimacy
 
 ### 3. Large Organizations / Companies
 
 **Mandatory Documents:**
 
-- Certificate of Incorporation (CAC) - Legal entity proof
-- Contact person ID and authorization letter - Ensures authorized account setup
-- Payment information (corporate account) - For processing salary and fees
-- Signed service agreement - Legally binds employer to T&Cs and fees
-
-**Optional Documents:**
-
-- Corporate profile or company website link - Context and credibility
+- CAC registration certificate - Legal entity proof
+- One director's government-issued ID - Confirms executive identity
 
 ## Automatic Verification System
 
@@ -76,30 +62,22 @@ The system now supports three types of employers:
 
 ## Database Changes
 
-### Migration: AddSmeEmployerType
+### Migration: Employer Verification Flattening
 
-The migration adds:
+The migration and refactor adds:
 
-1. SME to the `EmployerType` enum
-2. New document types for all employer categories
-3. Updates existing enum values to support the new document types
+1. Verification attributes moved from `employer_verification` into `employer_profiles`
+2. Employer verification documents linked directly to `EmployerProfile`
+3. Requirement matrix narrowed to approved document types only
 
 ### New Document Types
 
-- `NATIONAL_ID` - National ID
-- `INTERNATIONAL_PASSPORT` - International Passport
-- `PROOF_OF_ADDRESS` - Utility bill or tenancy agreement
-- `GUARANTOR_DETAILS` - Guarantor information document
-- `SERVICE_AGREEMENT` - Signed service agreement
-- `PAYMENT_METHOD` - Payment method setup proof
-- `BUSINESS_REGISTRATION` - CAC Business registration certificate
-- `COMPANY_ID` - Company ID or official letterhead
-- `TAX_IDENTIFICATION` - Tax Identification Number (TIN)
-- `CORPORATE_PAYMENT_DETAILS` - Corporate account details
-- `CERTIFICATE_OF_INCORPORATION` - CAC Certificate of Incorporation
-- `CORPORATE_PROFILE` - Corporate profile or company website link
-- `AUTHORIZATION_LETTER` - Contact person ID and authorization letter
-- `CORPORATE_ACCOUNT_DETAILS` - Corporate account for transactions
+- `GOVERNMENT_ISSUED_ID` - Government-issued ID for individual employers
+- `UTILITY_BILL` - Utility bill for address confirmation
+- `CAC_REGISTRATION_CERTIFICATE` - CAC registration certificate
+- `OWNER_GOVERNMENT_ID` - Owner government-issued ID for SME employers
+- `DIRECTOR_GOVERNMENT_ID` - Director government-issued ID for registered companies
+- `SIGNED_LEGITIMATE_BUSINESS_DECLARATION` - Signed legitimate hiring declaration
 
 ## Configuration
 

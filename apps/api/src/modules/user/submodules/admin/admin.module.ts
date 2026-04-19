@@ -10,7 +10,6 @@ import { ApprovalDecisionEmailService } from '../../approval-decision-email.serv
 import {
   AdminProfile,
   Employee,
-  EmployerVerification,
   EmployerVerificationDocument,
   EmployerProfile,
   EmployerAuth,
@@ -26,7 +25,6 @@ import {
     TypeOrmModule.forFeature([
       AdminAuth,
       AdminProfile,
-      EmployerVerification,
       EmployerVerificationDocument,
       EmployerProfile,
       EmployerAuth,

@@ -110,13 +110,14 @@ export class EmployerVerificationController {
   // Get document requirements for current employer type
   @Get('requirements')
   async getDocumentRequirements(@CurrentUser() user: CurrentUserPayload) {
-    const employerVerification =
-      await this.verificationService.getMyVerification(user.id);
-    if (!employerVerification?.employer?.type) {
+    const employerProfile = await this.verificationService.getMyVerification(
+      user.id,
+    );
+    if (!employerProfile?.type) {
       throw new BadRequestException('Employer type not set');
     }
     return this.verificationService.getDocumentRequirements(
-      employerVerification.employer.type,
+      employerProfile.type,
     );
   }
 

@@ -155,8 +155,7 @@ export class EmployerService {
     if (!profile) return null;
 
     const companyName =
-      profile.companyName ||
-      `${profile.firstName} ${profile.lastName}`.trim();
+      profile.companyName || `${profile.firstName} ${profile.lastName}`.trim();
 
     const city = profile.city;
     const state = profile.state;
@@ -195,10 +194,7 @@ export class EmployerService {
       location,
       companyDescription: profile.companyDescription,
       companySize: profile.companySize,
-      website:
-        profile.socialOrWebsiteUrl ||
-        profile.companyWebsite ||
-        null,
+      website: profile.socialOrWebsiteUrl || profile.companyWebsite || null,
       logoUrl,
       /** Organization, SME, or Individual when set on the profile */
       employerType: profile.type ?? null,
@@ -276,7 +272,7 @@ export class EmployerService {
       queryBuilder.andWhere(
         'employer.verificationStatus = :verificationStatus',
         {
-        verificationStatus,
+          verificationStatus,
         },
       );
     }
@@ -315,6 +311,14 @@ export class EmployerService {
         email: profile.auth?.email,
         profile: profile,
         verification: {
+          companyName: profile.companyName,
+          companyAddress: profile.companyAddress,
+          companyWebsite: profile.companyWebsite,
+          companyDescription: profile.companyDescription,
+          city: profile.city,
+          state: profile.state,
+          companySize: profile.companySize,
+          socialOrWebsiteUrl: profile.socialOrWebsiteUrl,
           status: profile.verificationStatus,
           reviewedAt: profile.reviewedAt,
           rejectionReason: profile.verificationRejectionReason,

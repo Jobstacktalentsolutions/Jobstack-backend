@@ -6,7 +6,6 @@ import { Document } from '@app/common/database/entities/Document.entity';
 import { JobApplication } from '@app/common/database/entities/JobApplication.entity';
 import { EmployerController } from './employer.controller';
 import { EmployerService } from './employer.service';
-import { EmployerVerification } from '@app/common/database/entities/EmployerVerification.entity';
 import { EmployerVerificationDocument } from '@app/common/database/entities/EmployerVerificationDocument.entity';
 import { Job } from '@app/common/database/entities/Job.entity';
 import { EmployerVerificationService } from './employer-verification.service';
@@ -27,7 +26,6 @@ import { ApprovalDecisionEmailService } from '../../approval-decision-email.serv
     TypeOrmModule.forFeature([
       EmployerProfile,
       EmployerAuth,
-      EmployerVerification,
       EmployerVerificationDocument,
       Document,
       JobApplication,

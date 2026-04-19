@@ -5,7 +5,7 @@ import { EmployerDocumentType } from '@app/common/shared/enums/employer-docs.enu
 export class UploadEmployerVerificationDocumentDto {
   @ApiProperty({
     enum: EmployerDocumentType,
-    example: EmployerDocumentType.CERTIFICATE_OF_BUSINESS_REGISTRATION,
+    example: EmployerDocumentType.CAC_REGISTRATION_CERTIFICATE,
   })
   @IsEnum(EmployerDocumentType)
   documentType: EmployerDocumentType;
