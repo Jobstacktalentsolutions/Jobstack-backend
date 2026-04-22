@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
 import {
@@ -6,6 +6,7 @@ import {
   JobApplication,
   JobSeekerProfile,
   Employee,
+  EmployerProfile,
 } from '@app/common/database/entities';
 import {
   JobApplicationStatus,
@@ -55,6 +56,8 @@ export class JobVettingService {
     private readonly profileRepo: Repository<JobSeekerProfile>,
     @InjectRepository(Employee)
     private readonly employeeRepo: Repository<Employee>,
+    @InjectRepository(EmployerProfile)
+    private readonly employerRepo: Repository<EmployerProfile>,
     private readonly notificationService: NotificationService,
   ) {}
 
@@ -241,7 +244,6 @@ export class JobVettingService {
 
     // Determine how many candidates should be highlighted
     const highlightedCount = getHighlightedCandidateCount(
-      job.performCustomScreening,
       job.highlightedCandidateCount,
     );
 
@@ -634,7 +636,7 @@ export class JobVettingService {
           timeZoneName: 'short',
         });
 
-        const employerWillJoin = application.job.performCustomScreening;
+        const employerWillJoin = true; // Employer always manages their own screenings
 
         // Send email to candidate
         await this.notificationService.sendEmail({
@@ -683,8 +685,8 @@ export class JobVettingService {
           `Screening notification sent to candidate ${application.jobseekerProfile.email}`,
         );
 
-        // If custom screening, also notify the employer
-        if (employerWillJoin && application.job.employer) {
+        // Always notify the employer — they are the ones who scheduled the screening
+        if (application.job.employer) {
           await this.notificationService.sendEmail({
             to: application.job.employer.email,
             subject: `Screening scheduled for ${application.job.title}`,
@@ -774,9 +776,10 @@ export class JobVettingService {
   }
 
   /**
-   * Send vetting completion notification to admin
+   * Send vetting completion notification to the employer whose job was vetted.
+   * Previously notified admin; now employers manage the pipeline.
    */
-  async notifyAdminVettingComplete(
+  async notifyEmployerVettingComplete(
     jobId: string,
     result: VettingResult,
   ): Promise<void> {
@@ -785,45 +788,45 @@ export class JobVettingService {
       relations: ['employer'],
     });
 
-    if (!job) {
-      this.logger.error(`Job ${jobId} not found for admin notification`);
-      return;
-    }
-
-    if (!job.employer) {
+    if (!job?.employer) {
       this.logger.error(
-        `Job ${jobId} has no employer relation for admin notification`,
+        `Job ${jobId} or its employer not found for vetting notification`,
       );
       return;
     }
 
+    const websiteUrl = process.env.WEBSITE_URL ?? '';
+    const dashboardUrl = websiteUrl
+      ? `${websiteUrl}/employer/dashboard/jobs/${jobId}/candidates`
+      : '';
+
     try {
-      // For now, we'll send to a generic admin email or the employer
-      // In a real system, you'd have admin user management
-      const adminEmail = process.env.ADMIN_EMAIL || job.employer.email;
-
-      if (!adminEmail) {
-        this.logger.error(
-          `No admin email configured and employer has no email for job ${jobId}`,
-        );
-        return;
-      }
-
       await this.notificationService.sendEmail({
-        to: adminEmail,
-        subject: `Vetting completed for ${job.title}`,
+        to: job.employer.email,
+        subject: `Candidates ranked for "${job.title}" — Review them now`,
         template: 'vetting-complete',
         context: {
           jobTitle: job.title,
           jobId: job.id,
           totalApplicants: result.totalApplicants,
           highlightedCount: result.highlightedCount,
-          dashboardUrl: `${process.env.WEBSITE_URL}/admin/jobs/${jobId}/vetted-applicants`,
+          dashboardUrl,
         },
       });
 
+      await this.notificationService.createAppNotification(
+        job.employerId,
+        UserRole.EMPLOYER,
+        {
+          title: '📊 Candidates Ranked',
+          message: `Your job "${job.title}" has ${result.totalApplicants} ranked applicants. ${result.highlightedCount} top candidates are highlighted. Review them now.`,
+          priority: NotificationPriority.HIGH,
+          metadata: { jobId: job.id, highlightedCount: result.highlightedCount },
+        },
+      );
+
       this.logger.log(
-        `Vetting completion notification sent to admin for job ${jobId}`,
+        `Vetting completion notification sent to employer for job ${jobId}`,
       );
     } catch (error) {
       this.logger.error(
@@ -831,5 +834,294 @@ export class JobVettingService {
         error,
       );
     }
+  }
+
+  /**
+   * Returns the ranked vetted applicants for a job, gating PII fields based on
+   * whether the employer has paid to unlock each candidate (application.piiUnlocked).
+   * Only returns applications where vettingScore is set.
+   */
+  async getVettedApplicantsForEmployer(
+    jobId: string,
+    employerId: string,
+  ): Promise<object> {
+    const job = await this.jobRepo.findOne({ where: { id: jobId, employerId } });
+    if (!job) {
+      throw new NotFoundException('Job not found or you do not own this job');
+    }
+
+    // Trigger re-vetting for new/unvetted apps if needed
+    if (job.vettingCompletedAt) {
+      const hasNew = await this.applicationRepo.count({
+        where: { jobId },
+      });
+      const unvetted = await this.applicationRepo
+        .createQueryBuilder('a')
+        .where('a.jobId = :jobId', { jobId })
+        .andWhere('(a.vettingScore IS NULL OR a.vettedAt IS NULL)')
+        .getCount();
+      if (unvetted > 0 || hasNew > 0) {
+        await this.vetJobApplications(jobId);
+      }
+    }
+
+    if (!job.vettingCompletedAt) {
+      return {
+        success: false,
+        vettingCompleted: false,
+        message: 'Candidates are still being ranked. Check back soon.',
+        applications: [],
+      };
+    }
+
+    const applications = await this.applicationRepo.find({
+      where: { jobId },
+      relations: [
+        'jobseekerProfile',
+        'jobseekerProfile.userSkills',
+        'jobseekerProfile.userSkills.skill',
+      ],
+      order: { vettingScore: 'DESC' },
+    });
+
+    return {
+      success: true,
+      vettingCompleted: true,
+      vettingCompletedAt: job.vettingCompletedAt,
+      highlightedCandidateCount: job.highlightedCandidateCount,
+      applications: applications
+        .filter((app) => app.vettingScore !== null && app.vettingScore !== undefined)
+        .map((application) => {
+          const profile = application.jobseekerProfile;
+          const unlocked = application.piiUnlocked;
+          return {
+            applicationId: application.id,
+            jobseekerProfileId: profile.id,
+            score: application.vettingScore,
+            isHighlighted: !!application.vettingIsHighlighted,
+            profileCompleteness: application.vettingProfileCompleteness ?? 0,
+            proximityScore: application.vettingProximityScore ?? 0,
+            experienceScore: application.vettingExperienceScore ?? 0,
+            skillMatchScore: application.vettingSkillMatchScore ?? 0,
+            applicationSpeedScore: application.vettingApplicationSpeedScore ?? 0,
+            status: application.status,
+            piiUnlocked: unlocked,
+            piiUnlockedAt: application.piiUnlockedAt ?? null,
+            screeningMeetingLink: application.screeningMeetingLink,
+            screeningScheduledAt: application.screeningScheduledAt,
+            screeningDurationMinutes: application.screeningDurationMinutes,
+            screeningStrengths: application.screeningStrengths,
+            screeningConcerns: application.screeningConcerns,
+            screeningInterviewFeedback: application.screeningInterviewFeedback,
+            createdAt: application.createdAt,
+            jobseekerProfile: {
+              id: profile.id,
+              firstName: profile.firstName,
+              lastName: profile.lastName,
+              // PII fields — masked until payment unlocks them
+              email: unlocked ? profile.email : this.maskEmail(profile.email),
+              phoneNumber: unlocked
+                ? profile.phoneNumber
+                : this.maskPhone(profile.phoneNumber),
+              yearsOfExperience: profile.yearsOfExperience,
+              city: profile.city,
+              state: profile.state,
+              skills: (profile.userSkills || []).map((us) => ({
+                id: us.skill.id,
+                name: us.skill.name,
+              })),
+            },
+          };
+        }),
+    };
+  }
+
+  /**
+   * Employer picks a candidate for hire (post-screening or direct hire).
+   * This is a single atomic action that:
+   *  1. Clears any previously picked application for this job.
+   *  2. Marks the chosen application as SELECTED_FOR_HIRE.
+   *  3. Creates an Employee record (piiUnlocked = true, since PII was already paid for).
+   *  4. Advances application to OFFER_SENT and notifies the jobseeker.
+   */
+  async employerPickCandidate(
+    jobId: string,
+    employerId: string,
+    dto: {
+      applicationId: string;
+      strengths?: string;
+      concerns?: string;
+      interviewFeedback?: string;
+      startDate?: Date;
+      notes?: string;
+    },
+  ): Promise<object> {
+    const job = await this.jobRepo.findOne({
+      where: { id: jobId, employerId },
+      relations: ['employer'],
+    });
+    if (!job) {
+      throw new NotFoundException('Job not found or you do not own this job');
+    }
+
+    const application = await this.applicationRepo.findOne({
+      where: { id: dto.applicationId, jobId },
+      relations: ['jobseekerProfile'],
+    });
+    if (!application) {
+      throw new NotFoundException('Application not found for this job');
+    }
+
+    // Must have PII unlocked before hiring
+    if (!application.piiUnlocked) {
+      throw new BadRequestException(
+        'You must unlock this candidate\'s contact info before hiring them.',
+      );
+    }
+
+    const allowedStatuses = [
+      JobApplicationStatus.VETTED,
+      JobApplicationStatus.SELECTED_FOR_SCREENING,
+      JobApplicationStatus.SELECTED_FOR_HIRE,
+    ];
+    if (!allowedStatuses.includes(application.status)) {
+      throw new BadRequestException(
+        `Cannot select a candidate with status ${application.status}`,
+      );
+    }
+
+    if (
+      application.job?.employmentArrangement === 'PERMANENT_EMPLOYEE' &&
+      !job.salary
+    ) {
+      throw new BadRequestException(
+        'Job does not have a salary defined. Please update the job posting first.',
+      );
+    }
+    if (application.job?.employmentArrangement === 'CONTRACT' && !job.contractFee) {
+      throw new BadRequestException(
+        'Job does not have a contract fee defined. Please update the job posting first.',
+      );
+    }
+
+    // Validate no other active employee exists for this job+candidate combo
+    const existingEmployee = await this.employeeRepo.findOne({
+      where: {
+        jobId,
+        jobseekerProfileId: application.jobseekerProfileId,
+        status: In([EmployeeStatus.ONBOARDING, EmployeeStatus.ACTIVE]),
+      },
+    });
+    if (existingEmployee) {
+      throw new BadRequestException(
+        'An active employee record already exists for this candidate on this job.',
+      );
+    }
+
+    await this.applicationRepo.manager.transaction(async (manager) => {
+      // Clear any previously selected-for-hire application
+      await manager.update(
+        JobApplication,
+        {
+          jobId,
+          status: In([
+            JobApplicationStatus.SELECTED_FOR_HIRE,
+            JobApplicationStatus.OFFER_SENT,
+          ]),
+        },
+        {
+          status: JobApplicationStatus.VETTED,
+          screeningStrengths: null,
+          screeningConcerns: null,
+          screeningInterviewFeedback: null,
+        },
+      );
+
+      // Advance the chosen application
+      await manager.update(
+        JobApplication,
+        { id: dto.applicationId },
+        {
+          status: JobApplicationStatus.OFFER_SENT,
+          statusUpdatedAt: new Date(),
+          screeningStrengths: dto.strengths ?? null,
+          screeningConcerns: dto.concerns ?? null,
+          screeningInterviewFeedback: dto.interviewFeedback ?? null,
+        },
+      );
+
+      // Create Employee record — PII is already unlocked via payment
+      const employeeManager = manager.getRepository(Employee);
+      await employeeManager.save(
+        employeeManager.create({
+          employerId,
+          jobId,
+          jobseekerProfileId: application.jobseekerProfileId,
+          employmentType: job.employmentType,
+          employmentArrangement: job.employmentArrangement,
+          status: EmployeeStatus.ONBOARDING,
+          salaryOffered:
+            job.employmentArrangement === 'PERMANENT_EMPLOYEE'
+              ? job.salary
+              : undefined,
+          contractFeeOffered:
+            job.employmentArrangement === 'CONTRACT' ? job.contractFee : undefined,
+          contractPaymentType:
+            job.employmentArrangement === 'CONTRACT'
+              ? job.contractPaymentType
+              : undefined,
+          currency: 'NGN',
+          startDate: dto.startDate,
+          notes: dto.notes,
+          piiUnlocked: true, // PII already paid for at application level
+        }),
+      );
+    });
+
+    // Notify jobseeker about the offer
+    try {
+      await this.notificationService.createAppNotification(
+        application.jobseekerProfileId,
+        UserRole.JOB_SEEKER,
+        {
+          title: '🎉 Job Offer Received!',
+          message: `You have received a job offer for "${job.title}". Please review and respond within 7 days.`,
+          priority: NotificationPriority.HIGH,
+          metadata: { jobId, applicationId: dto.applicationId },
+        },
+      );
+    } catch (err) {
+      this.logger.warn(`Failed to notify jobseeker of offer: ${err.message}`);
+    }
+
+    return {
+      success: true,
+      message: 'Candidate selected for hire. Offer sent to jobseeker.',
+      applicationId: dto.applicationId,
+    };
+  }
+
+  // --- Private helpers for PII masking in employer view ---
+
+  private maskEmail(email?: string): string {
+    if (!email || !email.includes('@')) return '****@****.***';
+    const [local, domain] = email.split('@');
+    return `${local.charAt(0)}***@${domain}`;
+  }
+
+  private maskPhone(phone?: string): string {
+    if (!phone || phone.length < 6) return '****';
+    return `${phone.substring(0, 4)} **** ${phone.substring(phone.length - 2)}`;
+  }
+
+  /**
+   * @deprecated Use notifyEmployerVettingComplete instead.
+   * Kept temporarily so the vetting consumer doesn't break during transition.
+   */
+  async notifyAdminVettingComplete(
+    jobId: string,
+    result: VettingResult,
+  ): Promise<void> {
+    return this.notifyEmployerVettingComplete(jobId, result);
   }
 }

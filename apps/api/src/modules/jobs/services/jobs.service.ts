@@ -67,7 +67,6 @@ export class JobsService {
       applicationDeadline: dto.applicationDeadline
         ? new Date(dto.applicationDeadline)
         : undefined,
-      performCustomScreening: dto.performCustomScreening ?? false,
       employerId,
       skills,
       status: JobStatus.DRAFT,
@@ -237,8 +236,6 @@ export class JobsService {
       applicationDeadline: dto.applicationDeadline
         ? new Date(dto.applicationDeadline)
         : job.applicationDeadline,
-      performCustomScreening:
-        dto.performCustomScreening ?? job.performCustomScreening,
     });
 
     await this.jobRepo.save(job);
@@ -370,7 +367,6 @@ export class JobsService {
         'job.tags',
         'job.applicationDeadline',
         'job.status',
-        'job.performCustomScreening',
         'job.employerId',
         'job.createdAt',
         'job.updatedAt',

@@ -15,20 +15,14 @@ import { AdminJwtGuard, RequireAdminRole } from 'apps/api/src/guards';
 import { AdminRole } from '@app/common/shared/enums/roles.enum';
 import { JobsService } from '../services/jobs.service';
 import { JobVettingService } from '../services/job-vetting.service';
-import { JobVettingProducer } from '../queue/job-vetting.producer';
 import { AdminReplacementService } from '../services/admin-replacement.service';
 import {
-  AdjustHighlightedCountDto,
-  CompleteScreeningDto,
   JobQueryDto,
-  PickScreeningCandidateDto,
-  SelectCandidatesForScreeningDto,
   UpdateJobDto,
   UpdateJobStatusDto,
 } from '../dto';
-import { JobApplicationStatus } from '@app/common/database/entities/schema.enum';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, In, MoreThan } from 'typeorm';
+import { Repository, MoreThan } from 'typeorm';
 import { Job, JobApplication } from '@app/common/database/entities';
 
 @ApiTags('Jobs (admin)')
@@ -38,7 +32,6 @@ export class JobsAdminController {
   constructor(
     private readonly jobsService: JobsService,
     private readonly jobVettingService: JobVettingService,
-    private readonly jobVettingProducer: JobVettingProducer,
     private readonly adminReplacementService: AdminReplacementService,
     @InjectRepository(JobApplication)
     private readonly applicationRepo: Repository<JobApplication>,
@@ -99,23 +92,7 @@ export class JobsAdminController {
     return this.jobsService.deleteJob(jobId);
   }
 
-  // Manually trigger vetting for a job
-  @Post(':jobId/vet')
-  @UseGuards(AdminJwtGuard)
-  @ApiOperation({ summary: 'Queue manual vetting for a job' })
-  async triggerVetting(@Param('jobId', ParseUUIDPipe) jobId: string) {
-    const result = await this.jobVettingProducer.queueJobVetting(
-      jobId,
-      'manual',
-    );
-    return {
-      success: true,
-      message: 'Vetting job queued successfully',
-      queueJobId: result.jobId,
-    };
-  }
-
-  // Get all applications for a job (admin view)
+  // Get all applications for a job (admin read-only view)
   @Get(':jobId/applications')
   @UseGuards(AdminJwtGuard)
   async getJobApplications(@Param('jobId', ParseUUIDPipe) jobId: string) {
@@ -132,11 +109,7 @@ export class JobsAdminController {
       screeningMeetingLink: app.screeningMeetingLink,
       screeningScheduledAt: app.screeningScheduledAt,
       screeningDurationMinutes: app.screeningDurationMinutes,
-      employerWillJoinScreening: app.employerWillJoinScreening,
-      adminProposedScreeningTime: app.adminProposedScreeningTime,
-      employerProposedScreeningTime: app.employerProposedScreeningTime,
-      employerAccepted: app.employerAccepted,
-      adminAccepted: app.adminAccepted,
+      piiUnlocked: app.piiUnlocked,
       jobseeker: {
         id: app.jobseekerProfile.id,
         firstName: app.jobseekerProfile.firstName,
@@ -213,15 +186,10 @@ export class JobsAdminController {
           applicationSpeedScore: application.vettingApplicationSpeedScore ?? 0,
           isEmployed: false, // Employment is checked during vetting; not persisted
           status: application.status,
+          piiUnlocked: application.piiUnlocked,
           screeningMeetingLink: application.screeningMeetingLink,
           screeningScheduledAt: application.screeningScheduledAt,
           screeningDurationMinutes: application.screeningDurationMinutes,
-          employerWillJoinScreening: application.employerWillJoinScreening,
-          adminProposedScreeningTime: application.adminProposedScreeningTime,
-          employerProposedScreeningTime:
-            application.employerProposedScreeningTime,
-          employerAccepted: application.employerAccepted,
-          adminAccepted: application.adminAccepted,
           createdAt: application.createdAt,
           jobseekerProfile: {
             id: application.jobseekerProfile.id,
@@ -239,199 +207,6 @@ export class JobsAdminController {
             ),
           },
         })),
-    };
-  }
-
-  // Adjust number of highlighted candidates
-  @Patch(':jobId/highlighted-count')
-  @UseGuards(AdminJwtGuard)
-  @ApiOperation({ summary: 'Set highlighted candidate count' })
-  @ApiBody({ type: AdjustHighlightedCountDto })
-  async adjustHighlightedCount(
-    @Param('jobId', ParseUUIDPipe) jobId: string,
-    @Body() dto: AdjustHighlightedCountDto,
-  ) {
-    const { count } = dto;
-
-    if (count < 1 || count > 10) {
-      return {
-        success: false,
-        message: 'Highlighted count must be between 1 and 10',
-      };
-    }
-
-    await this.jobsService.updateJob(jobId, {
-      highlightedCandidateCount: count,
-    } as any);
-
-    return {
-      success: true,
-      message: `Highlighted candidate count updated to ${count}`,
-      highlightedCount: count,
-    };
-  }
-
-  // Select candidates for screening
-  @Post(':jobId/select-for-screening')
-  @UseGuards(AdminJwtGuard)
-  @ApiOperation({ summary: 'Select candidates for screening' })
-  @ApiBody({ type: SelectCandidatesForScreeningDto })
-  async selectCandidatesForScreening(
-    @Param('jobId', ParseUUIDPipe) jobId: string,
-    @Body() dto: SelectCandidatesForScreeningDto,
-  ) {
-    const { candidates } = dto;
-
-    if (!candidates || candidates.length === 0) {
-      return {
-        success: false,
-        message: 'No candidates provided',
-      };
-    }
-
-    // Validate all required fields (including durationMinutes)
-    for (const candidate of candidates) {
-      if (
-        !candidate.applicationId ||
-        !candidate.meetingLink ||
-        !candidate.scheduledAt ||
-        candidate.durationMinutes === undefined ||
-        candidate.durationMinutes === null
-      ) {
-        return {
-          success: false,
-          message:
-            'Each candidate must have applicationId, meetingLink, scheduledAt, and durationMinutes',
-        };
-      }
-    }
-
-    // Load job once to determine if employer will join screening (custom screening)
-    const job = await this.jobsService.getJobById(jobId);
-    const employerWillJoinScreening = !!job.performCustomScreening;
-
-    // Update each application with screening details and admin proposal snapshot
-    for (const candidate of candidates) {
-      await this.applicationRepo.update(
-        { id: candidate.applicationId },
-        {
-          status: JobApplicationStatus.SELECTED_FOR_SCREENING,
-          screeningMeetingLink: candidate.meetingLink,
-          screeningScheduledAt: new Date(candidate.scheduledAt),
-          screeningPrepInfo: candidate.prepInfo ?? undefined,
-          screeningDurationMinutes: candidate.durationMinutes,
-          employerWillJoinScreening,
-          adminProposedScreeningTime: new Date(candidate.scheduledAt),
-          adminAccepted: true,
-        },
-      );
-    }
-
-    // Send notifications to candidates with meeting details
-    await this.jobVettingService.notifyCandidatesForScreening(
-      candidates.map((c) => c.applicationId),
-    );
-
-    return {
-      success: true,
-      message: `${candidates.length} candidates selected for screening and notified`,
-      selectedCount: candidates.length,
-    };
-  }
-
-  // Mark screening as complete
-  @Post(':jobId/complete-screening')
-  @UseGuards(AdminJwtGuard)
-  @ApiOperation({ summary: 'Notify candidates after screening' })
-  @ApiBody({ type: CompleteScreeningDto })
-  async completeScreening(
-    @Param('jobId', ParseUUIDPipe) jobId: string,
-    @Body() dto: CompleteScreeningDto,
-  ) {
-    const { applicationIds } = dto;
-
-    if (!applicationIds || applicationIds.length === 0) {
-      return {
-        success: false,
-        message: 'No application IDs provided',
-      };
-    }
-
-    // Send completion notifications to candidates
-    await this.jobVettingService.notifyCandidatesAfterScreening(applicationIds);
-
-    return {
-      success: true,
-      message: `Screening completion notifications sent to ${applicationIds.length} candidates`,
-      notifiedCount: applicationIds.length,
-    };
-  }
-
-  // Pick a single application as the screened candidate for a job
-  @Post(':jobId/pick-screening-candidate')
-  @UseGuards(AdminJwtGuard)
-  @ApiOperation({ summary: 'Pick screened candidate for employer review' })
-  @ApiBody({ type: PickScreeningCandidateDto })
-  async pickScreeningCandidate(
-    @Param('jobId', ParseUUIDPipe) jobId: string,
-    @Body() dto: PickScreeningCandidateDto,
-  ) {
-    const { applicationId, strengths, concerns, interviewFeedback } = dto;
-
-    // Ensure the target application exists and belongs to this job
-    const application = await this.applicationRepo.findOne({
-      where: { id: applicationId, jobId },
-    });
-
-    if (!application) {
-      return {
-        success: false,
-        message: 'Application not found for this job',
-      };
-    }
-
-    // Ensure only one application per job is marked as SELECTED_FOR_HIRE
-    await this.applicationRepo.manager.transaction(async (manager) => {
-      // Clear any previously picked applications for this job
-      await manager.update(
-        JobApplication,
-        {
-          jobId,
-          status: In([
-            JobApplicationStatus.SELECTED_FOR_HIRE,
-            JobApplicationStatus.OFFER_SENT,
-            JobApplicationStatus.APPLICANT_ACCEPTED,
-            JobApplicationStatus.PAYMENT_COMPLETE,
-            JobApplicationStatus.CONTRACT_SIGNED,
-            JobApplicationStatus.HIRED,
-          ]),
-        },
-        {
-          status: JobApplicationStatus.VETTED,
-          screeningStrengths: null,
-          screeningConcerns: null,
-          screeningInterviewFeedback: null,
-        },
-      );
-
-      // Mark the chosen application as screening completed
-      await manager.update(
-        JobApplication,
-        { id: applicationId },
-        {
-          status: JobApplicationStatus.SELECTED_FOR_HIRE,
-          statusUpdatedAt: new Date(),
-          screeningStrengths: strengths ?? null,
-          screeningConcerns: concerns ?? null,
-          screeningInterviewFeedback: interviewFeedback ?? null,
-        },
-      );
-    });
-
-    return {
-      success: true,
-      message: 'Candidate picked successfully for employer review',
-      applicationId,
     };
   }
 

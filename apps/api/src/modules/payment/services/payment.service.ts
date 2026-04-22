@@ -244,34 +244,49 @@ export class PaymentService {
     };
   }
 
-  // Check if payment is required and completed for employee activation
+  // Check if payment is required and completed for employee activation or application PII unlock
   async checkPaymentStatus(
-    employeeId: string,
+    id: string,
   ): Promise<{ required: boolean; completed: boolean; paymentId?: string }> {
+    // First try as employee
     const employee = await this.employeeRepo.findOne({
-      where: { id: employeeId },
+      where: { id },
     });
 
-    if (!employee) {
-      throw new NotFoundException('Employee not found');
+    if (employee) {
+      const hasPaymentAmount = employee.salaryOffered || employee.contractFeeOffered;
+      if (!hasPaymentAmount) return { required: false, completed: true };
+      
+      return {
+        required: true,
+        completed: employee.paymentStatus === EmployeePaymentStatus.PAID || employee.piiUnlocked,
+        paymentId: employee.activationPaymentId,
+      };
     }
 
-    // Check if payment is required (has salary or contract fee)
-    const hasPaymentAmount =
-      employee.salaryOffered || employee.contractFeeOffered;
+    // Then try as application
+    const application = await this.jobApplicationRepo.findOne({
+      where: { id },
+      relations: ['job'],
+    });
 
-    if (!hasPaymentAmount) {
-      return { required: false, completed: true };
+    if (application) {
+      const hasPaymentAmount = application.job.salary || application.job.contractFee;
+      if (!hasPaymentAmount) return { required: false, completed: true };
+
+      // Look up payment by applicationId to get the paymentId if completed
+      const payment = await this.paymentRepo.findOne({
+        where: { applicationId: id, paymentType: PaymentType.EMPLOYEE_ACTIVATION_FEE, status: PaymentStatus.SUCCESS }
+      });
+
+      return {
+        required: true,
+        completed: application.piiUnlocked,
+        paymentId: payment?.id,
+      };
     }
 
-    const required = true;
-    const completed = employee.paymentStatus === EmployeePaymentStatus.PAID;
-
-    return {
-      required,
-      completed,
-      paymentId: employee.activationPaymentId,
-    };
+    throw new NotFoundException('Employee or Application not found');
   }
 
   // Get payment history for employer/employee
@@ -403,26 +418,27 @@ export class PaymentService {
    * Get commission breakdown for an employee activation payment (preview before paying)
    */
   async getActivationBreakdown(
-    employeeId: string,
+    applicationId: string,
     employerId: string,
   ): Promise<CommissionBreakdown> {
-    const employee = await this.employeeRepo.findOne({
-      where: { id: employeeId, employerId },
+    const application = await this.jobApplicationRepo.findOne({
+      where: { id: applicationId },
+      relations: ['job'],
     });
 
-    if (!employee) {
-      throw new NotFoundException('Employee not found');
+    if (!application || application.job?.employerId !== employerId) {
+      throw new NotFoundException('Application not found or unauthorized');
     }
 
     const isContract =
-      employee.employmentArrangement === EmploymentArrangement.CONTRACT;
+      application.job.employmentArrangement === EmploymentArrangement.CONTRACT;
     const baseAmount = isContract
-      ? employee.contractFeeOffered
-      : employee.salaryOffered;
+      ? application.job.contractFee
+      : application.job.salary;
 
     if (!baseAmount) {
       throw new BadRequestException(
-        'Employee must have salary or contract fee defined',
+        'Job must have salary or contract fee defined',
       );
     }
 
@@ -436,7 +452,7 @@ export class PaymentService {
    * Initiate employee activation payment with commission calculation
    */
   async initiateActivationPayment(
-    employeeId: string,
+    applicationId: string,
     employerId: string,
     callbackUrl?: string,
   ): Promise<{
@@ -446,37 +462,29 @@ export class PaymentService {
     accessCode: string;
     publicKey: string;
   }> {
-    // Load employee with relations
-    const employee = await this.employeeRepo.findOne({
-      where: { id: employeeId, employerId },
-      relations: ['employer', 'job', 'jobseekerProfile'],
+    // Load application with relations
+    const application = await this.jobApplicationRepo.findOne({
+      where: { id: applicationId },
+      relations: ['job', 'job.employer', 'jobseekerProfile'],
     });
 
-    if (!employee) {
-      throw new NotFoundException('Employee not found');
+    if (!application || application.job?.employerId !== employerId) {
+      throw new NotFoundException('Application not found or unauthorized');
     }
 
-    if (!employee.jobseekerProfile) {
-      throw new BadRequestException('Employee is missing jobseeker profile');
-    }
-
-    // Validate status
-    if (employee.status !== EmployeeStatus.ONBOARDING) {
-      throw new BadRequestException(
-        `Employee must be in ONBOARDING status. Current status: ${employee.status}`,
-      );
+    if (!application.jobseekerProfile) {
+      throw new BadRequestException('Application is missing jobseeker profile');
     }
 
     // Validate PII not already unlocked
-    if (employee.piiUnlocked) {
-      throw new BadRequestException('Employee PII already unlocked');
+    if (application.piiUnlocked) {
+      throw new BadRequestException('Candidate contact info is already unlocked');
     }
 
     // Check for existing pending payment — reuse it instead of creating a duplicate.
-    // This handles the case where a previous popup was closed or the transaction failed.
     const existingPayment = await this.paymentRepo.findOne({
       where: {
-        employeeId,
+        applicationId,
         paymentType: PaymentType.EMPLOYEE_ACTIVATION_FEE,
         status: PaymentStatus.PENDING,
       },
@@ -484,11 +492,10 @@ export class PaymentService {
 
     if (existingPayment) {
       this.logger.log(
-        `Reusing existing pending payment ${existingPayment.id} for employee ${employeeId}`,
+        `Reusing existing pending payment ${existingPayment.id} for application ${applicationId}`,
       );
 
-      // Reuse the stored access_code so Paystack can restore pre-filled
-      // payment method/wallet from the previous session.
+      // Reuse the stored access_code so Paystack can restore pre-filled session.
       if (
         existingPayment.paystackAccessCode &&
         existingPayment.paystackReference
@@ -506,14 +513,14 @@ export class PaymentService {
       const freshReference = this.paystackService.generateReference('ACT');
       const paystackResponse = await this.paystackService.initializeTransaction(
         {
-          email: employee.employer.email,
+          email: application.job.employer.email,
           amount: this.paystackService.convertToKobo(existingPayment.amount),
           reference: freshReference,
           currency: existingPayment.currency || 'NGN',
           callback_url: callbackUrl,
           metadata: {
             paymentId: existingPayment.id,
-            employeeId,
+            applicationId,
             employerId,
             paymentType: PaymentType.EMPLOYEE_ACTIVATION_FEE,
           },
@@ -536,14 +543,14 @@ export class PaymentService {
 
     // Calculate commission using CommissionService
     const isContract =
-      employee.employmentArrangement === EmploymentArrangement.CONTRACT;
+      application.job.employmentArrangement === EmploymentArrangement.CONTRACT;
     const baseAmount = isContract
-      ? employee.contractFeeOffered
-      : employee.salaryOffered;
+      ? application.job.contractFee
+      : application.job.salary;
 
     if (!baseAmount) {
       throw new BadRequestException(
-        'Employee must have salary or contract fee defined',
+        'Job must have salary or contract fee defined',
       );
     }
 
@@ -557,40 +564,34 @@ export class PaymentService {
 
     // Create payment record
     const payment = this.paymentRepo.create({
-      employeeId,
+      applicationId,
       employerId,
       amount: commission.totalAmount,
       percentage: commission.percentage * 100, // Store as percentage
-      currency: employee.currency || 'NGN',
+      currency: 'NGN',
       status: PaymentStatus.PENDING,
       paymentType: PaymentType.EMPLOYEE_ACTIVATION_FEE,
       paystackReference: reference,
       metadata: {
         commissionBreakdown: commission,
-        employmentArrangement: employee.employmentArrangement,
-        jobTitle: employee.job.title,
-        employeeName: `${employee.jobseekerProfile.firstName} ${employee.jobseekerProfile.lastName}`,
+        employmentArrangement: application.job.employmentArrangement,
+        jobTitle: application.job.title,
+        jobseekerName: `${application.jobseekerProfile.firstName} ${application.jobseekerProfile.lastName}`,
       },
     });
 
     const savedPayment = await this.paymentRepo.save(payment);
 
-    // Update employee
-    await this.employeeRepo.update(employeeId, {
-      paymentStatus: EmployeePaymentStatus.PENDING,
-      activationPaymentId: savedPayment.id,
-    });
-
     // Initialize Paystack transaction
     const paystackResponse = await this.paystackService.initializeTransaction({
-      email: employee.employer.email,
+      email: application.job.employer.email,
       amount: this.paystackService.convertToKobo(commission.totalAmount),
       reference,
-      currency: employee.currency || 'NGN',
+      currency: 'NGN',
       callback_url: callbackUrl,
       metadata: {
         paymentId: savedPayment.id,
-        employeeId,
+        applicationId,
         employerId,
         paymentType: PaymentType.EMPLOYEE_ACTIVATION_FEE,
         commissionBreakdown: commission.breakdown,
@@ -603,7 +604,7 @@ export class PaymentService {
     });
 
     this.logger.log(
-      `Activation payment initiated for employee ${employeeId}: ${savedPayment.id} (${commission.totalAmount})`,
+      `Activation payment initiated for application ${applicationId}: ${savedPayment.id} (${commission.totalAmount})`,
     );
 
     return {
@@ -622,7 +623,6 @@ export class PaymentService {
     // Load payment with relations
     const payment = await this.paymentRepo.findOne({
       where: { id: paymentId },
-      relations: ['employee'],
     });
 
     if (!payment) {
@@ -646,37 +646,63 @@ export class PaymentService {
       paidAt: new Date(),
     });
 
-    // Update employee - unlock PII and mark payment as paid
-    await this.employeeRepo.update(payment.employeeId, {
-      paymentStatus: EmployeePaymentStatus.PAID,
-      piiUnlocked: true,
-      activationBlocked: false,
-    });
+    // Handle new application-based PII unlock flow
+    if (payment.applicationId) {
+      await this.jobApplicationRepo.update(payment.applicationId, {
+        piiUnlocked: true,
+        piiUnlockedAt: new Date(),
+      });
 
-    // Find associated job application and update status
-    const jobApplication = await this.jobApplicationRepo.findOne({
-      where: {
-        jobId: payment.employee.jobId,
-        jobseekerProfileId: payment.employee.jobseekerProfileId,
-      },
-    });
+      this.logger.log(
+        `Activation payment successful for application ${payment.applicationId}. PII unlocked.`,
+      );
 
-    if (jobApplication) {
-      await this.jobApplicationRepo.update(jobApplication.id, {
-        status: JobApplicationStatus.PAYMENT_COMPLETE,
-        statusUpdatedAt: new Date(),
+      this.eventEmitter.emit('application-pii-unlocked', {
+        paymentId,
+        applicationId: payment.applicationId,
+        employerId: payment.employerId,
       });
     }
 
-    this.logger.log(
-      `Activation payment successful for employee ${payment.employeeId}. PII unlocked.`,
-    );
+    // Handle legacy employee-based flow
+    if (payment.employeeId) {
+      await this.employeeRepo.update(payment.employeeId, {
+        paymentStatus: EmployeePaymentStatus.PAID,
+        piiUnlocked: true,
+        activationBlocked: false,
+      });
 
-    // Emit event for contract generation
-    this.eventEmitter.emit('employee-activation-payment.confirmed', {
-      paymentId,
-      employeeId: payment.employeeId,
-      employerId: payment.employerId,
-    });
+      // Find associated job application and update status
+      const employee = await this.employeeRepo.findOne({
+        where: { id: payment.employeeId },
+      });
+
+      if (employee) {
+        const jobApplication = await this.jobApplicationRepo.findOne({
+          where: {
+            jobId: employee.jobId,
+            jobseekerProfileId: employee.jobseekerProfileId,
+          },
+        });
+
+        if (jobApplication) {
+          await this.jobApplicationRepo.update(jobApplication.id, {
+            status: JobApplicationStatus.PAYMENT_COMPLETE,
+            statusUpdatedAt: new Date(),
+          });
+        }
+      }
+
+      this.logger.log(
+        `Legacy activation payment successful for employee ${payment.employeeId}. PII unlocked.`,
+      );
+
+      // Emit event for contract generation
+      this.eventEmitter.emit('employee-activation-payment.confirmed', {
+        paymentId,
+        employeeId: payment.employeeId,
+        employerId: payment.employerId,
+      });
+    }
   }
 }

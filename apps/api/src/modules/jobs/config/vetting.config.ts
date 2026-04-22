@@ -3,7 +3,7 @@
  */
 
 export interface VettingConfig {
-  // Default number of candidates to highlight for admin review
+  // Default number of candidates to highlight for employer review
   defaultHighlightedCandidateCount: number;
 
   // Scoring weights for high-skill jobs
@@ -81,17 +81,9 @@ export const VETTING_CONFIG: VettingConfig = {
 };
 
 /**
- * Get the number of candidates to highlight based on job settings
+ * Get the number of candidates to highlight based on job settings.
+ * Uses job-specific count when set, otherwise falls back to the configured default.
  */
-export function getHighlightedCandidateCount(
-  performCustomScreening: boolean,
-  customCount?: number,
-): number {
-  // If performCustomScreening is false, always return 1
-  if (!performCustomScreening) {
-    return 1;
-  }
-
-  // Use custom count if provided, otherwise use default
+export function getHighlightedCandidateCount(customCount?: number): number {
   return customCount ?? VETTING_CONFIG.defaultHighlightedCandidateCount;
 }

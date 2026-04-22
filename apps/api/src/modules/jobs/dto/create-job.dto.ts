@@ -11,7 +11,6 @@ import {
   MinLength,
   IsNumber,
   IsDateString,
-  IsBoolean,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
@@ -194,14 +193,6 @@ export class CreateJobDto {
   @IsOptional()
   @IsDateString()
   applicationDeadline?: string;
-
-  @ApiPropertyOptional({
-    description: 'Whether JobStack runs a custom screening with the employer',
-    example: false,
-  })
-  @IsOptional()
-  @IsBoolean()
-  performCustomScreening?: boolean;
 
   @ApiProperty({
     description: 'Skill IDs required for the role',

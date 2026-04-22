@@ -2,17 +2,25 @@ import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { Employee } from './Employee.entity';
 import { EmployerProfile } from './EmployerProfile.entity';
+import { JobApplication } from './JobApplication.entity';
 import { AdminAuth } from './AdminAuth.entity';
 import { PaymentStatus, PaymentType } from './schema.enum';
 
 @Entity('payments')
 export class Payment extends BaseEntity {
-  @ManyToOne(() => Employee, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Employee, { onDelete: 'CASCADE', nullable: true })
   @JoinColumn({ name: 'employeeId' })
-  employee: Employee;
+  employee?: Employee;
 
-  @Column('uuid')
-  employeeId: string;
+  @Column('uuid', { nullable: true })
+  employeeId?: string;
+
+  @ManyToOne(() => JobApplication, { onDelete: 'CASCADE', nullable: true })
+  @JoinColumn({ name: 'applicationId' })
+  application?: JobApplication;
+
+  @Column('uuid', { nullable: true })
+  applicationId?: string;
 
   @ManyToOne(() => EmployerProfile, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'employerId' })

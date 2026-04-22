@@ -46,25 +46,13 @@ export class JobApplication extends BaseEntity {
   @Column({ type: 'int', nullable: true })
   screeningDurationMinutes?: number | null; // Duration of screening in minutes
 
-  // Indicates if employer will join screening (snapshot for custom screening jobs)
-  @Column({ type: 'boolean', nullable: true })
-  employerWillJoinScreening?: boolean;
+  // Whether the employer has paid to unlock this candidate's PII (email/phone).
+  // Set to true by the payment webhook before the employer makes a hire/screen decision.
+  @Column({ type: 'boolean', default: false })
+  piiUnlocked: boolean;
 
-  // Admin's originally proposed screening time (authoritative schedule)
   @Column({ type: 'timestamp', nullable: true })
-  adminProposedScreeningTime?: Date;
-
-  // Employer's proposed alternative screening time (for rescheduling)
-  @Column({ type: 'timestamp', nullable: true })
-  employerProposedScreeningTime?: Date;
-
-  // Indicates if employer has accepted the current screening time
-  @Column({ type: 'boolean', nullable: true })
-  employerAccepted?: boolean;
-
-  // Indicates if admin has accepted the current screening time (including employer proposals)
-  @Column({ type: 'boolean', nullable: true })
-  adminAccepted?: boolean;
+  piiUnlockedAt?: Date | null;
 
   // Overall vetting score for this application (0-100)
   @Column({ type: 'decimal', precision: 12, scale: 2, nullable: true })
@@ -98,7 +86,7 @@ export class JobApplication extends BaseEntity {
   @Column({ type: 'timestamp', nullable: true })
   vettedAt?: Date | null;
 
-  // Admin summary fields captured when a candidate is selected for hire
+  // Screening notes captured by the employer when they complete the screening
   @Column({ type: 'text', nullable: true })
   screeningStrengths?: string | null;
 

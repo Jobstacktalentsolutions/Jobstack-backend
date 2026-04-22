@@ -20,10 +20,8 @@ import {
   ApplicationQueryDto,
   CreateJobApplicationDto,
   UpdateApplicationStatusDto,
-  EmployerAcceptCandidateDto,
   ApplicantAcceptOfferDto,
 } from '../../dto';
-import { EmployerScreeningResponseDto } from 'apps/api/src/modules/jobs/submodules/application/dto/employer-screening-response.dto';
 import { CurrentUser, type CurrentUserPayload } from '@app/common/shared';
 
 @ApiTags('Job applications')
@@ -128,48 +126,6 @@ export class JobApplicationsController {
     return this.jobApplicationsService.getApplicationById(applicationId);
   }
 
-  // Employer accepts candidate after screening and creates Employee record
-  @Post(':applicationId/employer-accept')
-  @UseGuards(EmployerJwtGuard)
-  @ApiOperation({
-    summary: 'Accept candidate after screening (creates employee)',
-  })
-  @ApiBody({ type: EmployerAcceptCandidateDto })
-  employerAcceptCandidate(
-    @CurrentUser() user: CurrentUserPayload,
-    @Param('applicationId', ParseUUIDPipe) applicationId: string,
-    @Body() dto: EmployerAcceptCandidateDto,
-  ) {
-    return this.jobApplicationsService.employerAcceptCandidate(
-      user.id,
-      applicationId,
-      {
-        startDate: dto.startDate ? new Date(dto.startDate) : undefined,
-        notes: dto.notes,
-      },
-    );
-  }
-
-  // Employer responds to screening schedule (accept or propose new time)
-  @Post(':applicationId/employer-screening-response')
-  @UseGuards(EmployerJwtGuard)
-  @ApiOperation({ summary: 'Accept or propose new screening time' })
-  @ApiBody({ type: EmployerScreeningResponseDto })
-  employerRespondToScreeningSchedule(
-    @CurrentUser() user: CurrentUserPayload,
-    @Param('applicationId', ParseUUIDPipe) applicationId: string,
-    @Body() dto: EmployerScreeningResponseDto,
-  ) {
-    return this.jobApplicationsService.employerRespondToScreeningSchedule(
-      user.id,
-      applicationId,
-      {
-        accepted: dto.accepted,
-        proposedTime: dto.proposedTime ? new Date(dto.proposedTime) : undefined,
-      },
-    );
-  }
-
   // Employer sends a reminder email for a pending offer
   @Post(':applicationId/employer-offer-reminder')
   @UseGuards(EmployerJwtGuard)
@@ -200,16 +156,6 @@ export class JobApplicationsController {
     );
   }
 
-  // Admin accepts employer's proposed screening time
-  @Post('admin/:applicationId/accept-employer-screening-time')
-  @UseGuards(AdminJwtGuard)
-  adminAcceptEmployerScreeningTime(
-    @Param('applicationId', ParseUUIDPipe) applicationId: string,
-  ) {
-    return this.jobApplicationsService.adminAcceptEmployerScreeningProposal(
-      applicationId,
-    );
-  }
 
   // Employer confirms final hire after contract is signed
   @Post(':applicationId/confirm-hire')

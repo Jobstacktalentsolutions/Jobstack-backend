@@ -2,51 +2,31 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { AdminAuth } from '@app/common/database/entities';
-import { AdminRole } from '@app/common/shared/enums/roles.enum';
+import { Job } from '@app/common/database/entities';
 import { NotificationService } from '../../notification/notification.service';
 import { ENV } from '../../config';
+import { UserRole } from '@app/common/shared/enums/user-roles.enum';
+import { NotificationPriority } from '@app/common/database/entities/schema.enum';
 
 /**
- * Emails a vetting specialist (or super admin) when applicant count hits a multiple of 5.
+ * Notifies the job's employer when applicant count hits a multiple of 5,
+ * prompting them to review candidates.
+ * Previously notified admin vetting specialists; employers now own the pipeline.
  */
 @Injectable()
 export class JobVettingMilestoneNotifyService {
   private readonly logger = new Logger(JobVettingMilestoneNotifyService.name);
 
   constructor(
-    @InjectRepository(AdminAuth)
-    private readonly adminAuthRepo: Repository<AdminAuth>,
+    @InjectRepository(Job)
+    private readonly jobRepo: Repository<Job>,
     private readonly notificationService: NotificationService,
     private readonly configService: ConfigService,
   ) {}
 
-  /** Picks a random active vetting specialist email, or falls back to super admin env email. */
-  private async resolveRecipientEmail(): Promise<{
-    to: string;
-    firstName: string;
-  }> {
-    const specialists = await this.adminAuthRepo.find({
-      where: {
-        roleKey: AdminRole.VETTING_SPECIALIST.role,
-        suspended: false,
-      },
-      relations: ['profile'],
-    });
-
-    if (specialists.length > 0) {
-      const pick = specialists[Math.floor(Math.random() * specialists.length)];
-      const firstName = pick.profile?.firstName?.trim() || 'there';
-      return { to: pick.email, firstName };
-    }
-
-    const superEmail =
-      this.configService.get<string>(ENV.SUPER_ADMIN_EMAIL) ?? '';
-    return { to: superEmail, firstName: 'there' };
-  }
-
   /**
-   * If applicant count is a positive multiple of 5, emails one admin that vetting may be needed.
+   * If applicant count is a positive multiple of 5, notifies the employer that
+   * they may want to review and vet the growing candidate pool.
    */
   async notifyIfApplicantMilestone(
     jobId: string,
@@ -57,10 +37,15 @@ export class JobVettingMilestoneNotifyService {
       return;
     }
 
-    const { to, firstName } = await this.resolveRecipientEmail();
-    if (!to?.trim()) {
+    // Fetch job with employer relation to get contact details
+    const job = await this.jobRepo.findOne({
+      where: { id: jobId },
+      relations: ['employer'],
+    });
+
+    if (!job?.employer?.email) {
       this.logger.warn(
-        'Vetting milestone: no vetting specialist and SUPER_ADMIN_EMAIL missing; skip email',
+        `Vetting milestone: job ${jobId} has no employer email; skipping notification`,
       );
       return;
     }
@@ -68,14 +53,16 @@ export class JobVettingMilestoneNotifyService {
     const websiteUrl =
       this.configService.get<string>(ENV.WEBSITE_URL)?.replace(/\/$/, '') ?? '';
     const actionUrl = websiteUrl
-      ? `${websiteUrl}/admin/jobs/${jobId}/vetted-applicants`
+      ? `${websiteUrl}/employer/dashboard/jobs/${jobId}/candidates`
       : '';
 
-    const subject = `Vetting reminder: ${applicantCount} applicants on "${jobTitle}"`;
-    const message = `Job "${jobTitle}" now has ${applicantCount} applicants (${applicantCount} is a multiple of 5). Please review and run vetting when ready so candidates can move forward.`;
+    const firstName = job.employer.firstName?.trim() || 'there';
+    const subject = `New applicants on "${jobTitle}" — ${applicantCount} total`;
+    const message = `Your job "${jobTitle}" now has ${applicantCount} applicants. Review and rank candidates whenever you're ready.`;
 
+    // Email the employer
     await this.notificationService.sendEmail({
-      to: to.trim(),
+      to: job.employer.email,
       subject,
       template: 'general-notification',
       context: {
@@ -83,12 +70,30 @@ export class JobVettingMilestoneNotifyService {
         firstName,
         message,
         actionUrl: actionUrl || undefined,
-        actionText: actionUrl ? 'Open vetted applicants' : undefined,
+        actionText: actionUrl ? 'Review Candidates' : undefined,
       },
     });
 
+    // Also send an in-app notification
+    try {
+      await this.notificationService.createAppNotification(
+        job.employerId,
+        UserRole.EMPLOYER,
+        {
+          title: `📬 ${applicantCount} applicants on "${jobTitle}"`,
+          message,
+          priority: NotificationPriority.MEDIUM,
+          metadata: { jobId, applicantCount },
+        },
+      );
+    } catch (err) {
+      this.logger.warn(
+        `Failed to create in-app milestone notification for employer: ${err.message}`,
+      );
+    }
+
     this.logger.log(
-      `Vetting milestone email queued for job ${jobId} (${applicantCount} applicants) → ${to}`,
+      `Milestone notification sent to employer for job ${jobId} (${applicantCount} applicants)`,
     );
   }
 }
