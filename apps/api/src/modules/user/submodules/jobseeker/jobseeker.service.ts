@@ -2,12 +2,14 @@ import {
   Injectable,
   BadRequestException,
   NotFoundException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { JobSeekerProfile } from '@app/common/database/entities/JobseekerProfile.entity';
 import { JobseekerAuth } from '@app/common/database/entities/JobseekerAuth.entity';
 import { JobseekerSkill } from '@app/common/database/entities/JobseekerSkill.entity';
+import { JobseekerVerificationDocument } from '@app/common/database/entities/JobseekerVerificationDocument.entity';
 import { Document } from '@app/common/database/entities';
 import { StorageService } from '@app/common/storage/storage.service';
 import { SkillsService } from 'apps/api/src/modules/skills/skills.service';
@@ -18,6 +20,11 @@ import {
   DocumentType,
   ApprovalStatus,
 } from '@app/common/database/entities/schema.enum';
+import {
+  JobseekerDocumentType,
+  JobseekerVerificationDocumentKind,
+} from '@app/common/shared/enums/jobseeker-docs.enum';
+import { VerificationDocumentStatus } from '@app/common/shared/enums/verification-document-status.enum';
 
 @Injectable()
 export class JobseekerService {
@@ -30,9 +37,63 @@ export class JobseekerService {
     protected readonly jobseekerSkillRepo: Repository<JobseekerSkill>,
     @InjectRepository(Document)
     protected readonly documentRepo: Repository<Document>,
+    @InjectRepository(JobseekerVerificationDocument)
+    protected readonly jobseekerVerificationDocRepo: Repository<JobseekerVerificationDocument>,
     protected readonly storageService: StorageService,
     protected readonly skillsService: SkillsService,
   ) {}
+
+  // Maps verification rows onto profile for API consumers (legacy field names).
+  private hydrateVerificationDocumentFields(profile: JobSeekerProfile): void {
+    const idRow = profile.verificationDocuments?.find(
+      (v) => v.documentKind === JobseekerVerificationDocumentKind.ID_DOCUMENT,
+    );
+    const proofRow = profile.verificationDocuments?.find(
+      (v) =>
+        v.documentKind === JobseekerVerificationDocumentKind.PROOF_OF_ADDRESS,
+    );
+    const p = profile as JobSeekerProfile & {
+      idDocument?: Document;
+      idDocumentType?: JobseekerDocumentType | null;
+      idDocumentNumber?: string | null;
+      idDocumentStatus?: VerificationDocumentStatus;
+      idDocumentVerificationId?: string;
+      idDocumentVerified?: boolean;
+      proofOfAddressDocument?: Document;
+      proofOfAddressStatus?: VerificationDocumentStatus;
+      proofOfAddressVerificationId?: string;
+      proofOfAddressVerified?: boolean;
+    };
+    if (idRow?.document) {
+      p.idDocument = idRow.document;
+      p.idDocumentType = idRow.idSubtype ?? null;
+      p.idDocumentNumber = idRow.documentNumber ?? null;
+      p.idDocumentStatus = idRow.status;
+      p.idDocumentVerificationId = idRow.id;
+      p.idDocumentVerified =
+        idRow.status === VerificationDocumentStatus.APPROVED;
+    } else {
+      delete p.idDocument;
+      p.idDocumentType = null;
+      p.idDocumentNumber = null;
+      p.idDocumentStatus = undefined;
+      p.idDocumentVerificationId = undefined;
+      p.idDocumentVerified = false;
+    }
+
+    if (proofRow?.document) {
+      p.proofOfAddressDocument = proofRow.document;
+      p.proofOfAddressStatus = proofRow.status;
+      p.proofOfAddressVerificationId = proofRow.id;
+      p.proofOfAddressVerified =
+        proofRow.status === VerificationDocumentStatus.APPROVED;
+    } else {
+      delete p.proofOfAddressDocument;
+      p.proofOfAddressStatus = undefined;
+      p.proofOfAddressVerificationId = undefined;
+      p.proofOfAddressVerified = false;
+    }
+  }
 
   // Upload and set CV document (PDF-only)
   async uploadCv(
@@ -211,6 +272,367 @@ export class JobseekerService {
     return { document, signedUrl };
   }
 
+  async uploadIdDocument(
+    userId: string,
+    file: MulterFile,
+    idDocumentType: JobseekerDocumentType,
+    idDocumentNumber: string,
+  ): Promise<{ signedUrl: string; documentId: string }> {
+    const profile = await this.profileRepo.findOne({
+      where: { id: userId },
+    });
+    if (!profile) throw new NotFoundException('Jobseeker not found');
+
+    if (profile.approvalStatus === ApprovalStatus.APPROVED) {
+      throw new ForbiddenException(
+        'Identity credential cannot be updated after approval',
+      );
+    }
+
+    const normalizedNumber = (idDocumentNumber ?? '').trim();
+    if (!normalizedNumber) {
+      throw new BadRequestException('idDocumentNumber is required');
+    }
+
+    if (!Object.values(JobseekerDocumentType).includes(idDocumentType)) {
+      throw new BadRequestException('Invalid idDocumentType');
+    }
+
+    const allowedMimeTypes = [
+      'application/pdf',
+      'image/jpeg',
+      'image/png',
+      'image/webp',
+    ];
+    const mime = (file.mimetype || '').toLowerCase();
+    if (!allowedMimeTypes.includes(mime)) {
+      throw new BadRequestException('Only PDF or image files are allowed');
+    }
+
+    const existing = await this.jobseekerVerificationDocRepo.findOne({
+      where: {
+        jobseekerProfileId: profile.id,
+        documentKind: JobseekerVerificationDocumentKind.ID_DOCUMENT,
+      },
+    });
+    if (existing) {
+      await this.jobseekerVerificationDocRepo.remove(existing);
+      await this.storageService.deleteDocument(existing.documentId);
+    }
+
+    const upload = await this.storageService.uploadFile(file as any, {
+      folder: `jobseekers/${profile.id}/id-document/${idDocumentType}`,
+      bucketType: 'private',
+      documentType: DocumentType.ID_DOCUMENT,
+      uploadedBy: userId,
+      description: `Job seeker ID document (${idDocumentType})`,
+    });
+
+    const verificationDoc = this.jobseekerVerificationDocRepo.create({
+      jobseekerProfileId: profile.id,
+      documentId: upload.document.id,
+      documentKind: JobseekerVerificationDocumentKind.ID_DOCUMENT,
+      idSubtype: idDocumentType,
+      documentNumber: normalizedNumber,
+      status: VerificationDocumentStatus.PENDING,
+    });
+    await this.jobseekerVerificationDocRepo.save(verificationDoc);
+
+    if (profile.approvalStatus === ApprovalStatus.NOT_STARTED) {
+      profile.approvalStatus = ApprovalStatus.PENDING;
+    }
+
+    await this.profileRepo.save(profile);
+
+    const signedUrl = await this.storageService.getSignedUrl(
+      upload.document.fileKey,
+      3600,
+      false,
+      upload.document.bucketType,
+      upload.document.provider,
+    );
+
+    return {
+      signedUrl,
+      documentId: upload.document.id,
+    };
+  }
+
+  async deleteIdDocument(userId: string): Promise<void> {
+    const profile = await this.profileRepo.findOne({
+      where: { id: userId },
+    });
+    if (!profile) throw new NotFoundException('Jobseeker not found');
+
+    if (profile.approvalStatus === ApprovalStatus.APPROVED) {
+      throw new ForbiddenException(
+        'Identity credential cannot be deleted after approval',
+      );
+    }
+
+    const existing = await this.jobseekerVerificationDocRepo.findOne({
+      where: {
+        jobseekerProfileId: profile.id,
+        documentKind: JobseekerVerificationDocumentKind.ID_DOCUMENT,
+      },
+    });
+    if (!existing) return;
+
+    await this.jobseekerVerificationDocRepo.remove(existing);
+    await this.storageService.deleteDocument(existing.documentId);
+  }
+
+  async getIdDocument(userId: string): Promise<{
+    document: Document;
+    signedUrl: string;
+    idDocumentType: JobseekerDocumentType | null;
+    idDocumentNumber: string | null;
+    idDocumentVerified: boolean;
+    idDocumentStatus: VerificationDocumentStatus;
+  } | null> {
+    const row = await this.jobseekerVerificationDocRepo.findOne({
+      where: {
+        jobseekerProfileId: userId,
+        documentKind: JobseekerVerificationDocumentKind.ID_DOCUMENT,
+      },
+      relations: ['document'],
+    });
+
+    if (!row?.document) {
+      return null;
+    }
+
+    const document = row.document;
+    const signedUrl = await this.storageService.getSignedUrl(
+      document.fileKey,
+      3600,
+      false,
+      document.bucketType,
+      document.provider,
+    );
+
+    return {
+      document,
+      signedUrl,
+      idDocumentType: row.idSubtype ?? null,
+      idDocumentNumber: row.documentNumber ?? null,
+      idDocumentVerified: row.status === VerificationDocumentStatus.APPROVED,
+      idDocumentStatus: row.status,
+    };
+  }
+
+  async uploadProofOfAddress(
+    userId: string,
+    file: MulterFile,
+  ): Promise<{ signedUrl: string; documentId: string }> {
+    const profile = await this.profileRepo.findOne({
+      where: { id: userId },
+    });
+    if (!profile) throw new NotFoundException('Jobseeker not found');
+
+    if (profile.approvalStatus === ApprovalStatus.APPROVED) {
+      throw new ForbiddenException(
+        'Proof of address cannot be updated after approval',
+      );
+    }
+
+    const allowedMimeTypes = [
+      'application/pdf',
+      'image/jpeg',
+      'image/png',
+      'image/webp',
+    ];
+    const mime = (file.mimetype || '').toLowerCase();
+    if (!allowedMimeTypes.includes(mime)) {
+      throw new BadRequestException('Only PDF or image files are allowed');
+    }
+
+    const existing = await this.jobseekerVerificationDocRepo.findOne({
+      where: {
+        jobseekerProfileId: profile.id,
+        documentKind: JobseekerVerificationDocumentKind.PROOF_OF_ADDRESS,
+      },
+    });
+    if (existing) {
+      await this.jobseekerVerificationDocRepo.remove(existing);
+      await this.storageService.deleteDocument(existing.documentId);
+    }
+
+    const upload = await this.storageService.uploadFile(file as any, {
+      folder: `jobseekers/${profile.id}/proof-of-address`,
+      bucketType: 'private',
+      documentType: DocumentType.OTHER,
+      uploadedBy: userId,
+      description: 'Job seeker proof of address (utility bill)',
+    });
+
+    const verificationDoc = this.jobseekerVerificationDocRepo.create({
+      jobseekerProfileId: profile.id,
+      documentId: upload.document.id,
+      documentKind: JobseekerVerificationDocumentKind.PROOF_OF_ADDRESS,
+      status: VerificationDocumentStatus.PENDING,
+    });
+    await this.jobseekerVerificationDocRepo.save(verificationDoc);
+
+    if (profile.approvalStatus === ApprovalStatus.NOT_STARTED) {
+      profile.approvalStatus = ApprovalStatus.PENDING;
+    }
+
+    await this.profileRepo.save(profile);
+
+    const signedUrl = await this.storageService.getSignedUrl(
+      upload.document.fileKey,
+      3600,
+      false,
+      upload.document.bucketType,
+      upload.document.provider,
+    );
+
+    return {
+      signedUrl,
+      documentId: upload.document.id,
+    };
+  }
+
+  async deleteProofOfAddress(userId: string): Promise<void> {
+    const profile = await this.profileRepo.findOne({
+      where: { id: userId },
+    });
+    if (!profile) throw new NotFoundException('Jobseeker not found');
+
+    if (profile.approvalStatus === ApprovalStatus.APPROVED) {
+      throw new ForbiddenException(
+        'Proof of address cannot be deleted after approval',
+      );
+    }
+
+    const existing = await this.jobseekerVerificationDocRepo.findOne({
+      where: {
+        jobseekerProfileId: profile.id,
+        documentKind: JobseekerVerificationDocumentKind.PROOF_OF_ADDRESS,
+      },
+    });
+    if (!existing) return;
+
+    await this.jobseekerVerificationDocRepo.remove(existing);
+    await this.storageService.deleteDocument(existing.documentId);
+  }
+
+  async getProofOfAddress(userId: string): Promise<{
+    document: Document;
+    signedUrl: string;
+    proofOfAddressVerified: boolean;
+    proofOfAddressStatus: VerificationDocumentStatus;
+  } | null> {
+    const row = await this.jobseekerVerificationDocRepo.findOne({
+      where: {
+        jobseekerProfileId: userId,
+        documentKind: JobseekerVerificationDocumentKind.PROOF_OF_ADDRESS,
+      },
+      relations: ['document'],
+    });
+
+    if (!row?.document) {
+      return null;
+    }
+
+    const document = row.document;
+    const signedUrl = await this.storageService.getSignedUrl(
+      document.fileKey,
+      3600,
+      false,
+      document.bucketType,
+      document.provider,
+    );
+
+    return {
+      document,
+      signedUrl,
+      proofOfAddressVerified:
+        row.status === VerificationDocumentStatus.APPROVED,
+      proofOfAddressStatus: row.status,
+    };
+  }
+
+  /**
+   * Get a sanitized jobseeker profile intended for public pages.
+   * This endpoint must NOT expose private fields like email/phone.
+   * CV access is provided as an expiring signed URL when available.
+   */
+  async getJobSeekerPublicProfileBySlug(slug: string): Promise<any | null> {
+    const profile = await this.profileRepo.findOne({
+      where: { slug },
+      relations: [
+        'profilePicture',
+        'cvDocument',
+        'userSkills',
+        'userSkills.skill',
+      ],
+    });
+
+    if (!profile) return null;
+
+    const fullName = `${profile.firstName} ${profile.lastName}`.trim();
+
+    const city = profile.city;
+    const state = profile.state;
+    const location =
+      (city && state && `${city}, ${state}`) ||
+      profile.preferredLocation ||
+      city ||
+      state ||
+      'Location not specified';
+
+    const skills = Array.from(
+      new Set(
+        (profile.userSkills ?? [])
+          .map((js) => js.skill?.name)
+          .filter((n): n is string => Boolean(n)),
+      ),
+    );
+
+    let profilePictureUrl: string | null = null;
+    if (profile.profilePicture) {
+      const signedUrl = await this.storageService.getSignedUrl(
+        profile.profilePicture.fileKey,
+        3600, // 1 hour expiry
+        false, // not for download, just viewing
+        profile.profilePicture.bucketType,
+      );
+      profilePictureUrl = signedUrl;
+    }
+
+    let cvDocumentUrl: string | null = null;
+    let cvDocumentName: string | null = null;
+    let cvDocumentSize: number | null = null;
+    if (profile.cvDocument) {
+      const signedUrl = await this.storageService.getSignedUrl(
+        profile.cvDocument.fileKey,
+        3600, // 1 hour expiry
+        false, // viewing (not forcing download)
+        profile.cvDocument.bucketType,
+      );
+      cvDocumentUrl = signedUrl;
+      cvDocumentName =
+        profile.cvDocument.originalName || profile.cvDocument.fileName;
+      cvDocumentSize = profile.cvDocument.size ?? null;
+    }
+
+    return {
+      slug: profile.slug,
+      fullName,
+      jobTitle: profile.jobTitle ?? null,
+      brief: profile.brief ?? null,
+      location,
+      skills: skills.slice(0, 12),
+      profilePictureUrl,
+      workExperience: profile.workExperience ?? [],
+      cvDocumentUrl,
+      cvDocumentName,
+      cvDocumentSize,
+    };
+  }
+
   // Update jobseeker profile with smart skills handling
   async updateProfile(
     userId: string,
@@ -237,8 +659,30 @@ export class JobseekerService {
     if (updateData.phoneNumber !== undefined) {
       profile.phoneNumber = updateData.phoneNumber;
     }
+    if (updateData.dateOfBirth !== undefined) {
+      profile.dateOfBirth = new Date(updateData.dateOfBirth);
+    }
+    if (updateData.gender !== undefined) {
+      profile.gender = updateData.gender;
+    }
     if (updateData.preferredLocation !== undefined) {
       profile.preferredLocation = updateData.preferredLocation;
+    }
+    if (updateData.availability !== undefined) {
+      profile.availability = updateData.availability;
+    }
+    if (updateData.preferredEmploymentType !== undefined) {
+      profile.preferredEmploymentType = updateData.preferredEmploymentType;
+    }
+    if (updateData.preferredWorkMode !== undefined) {
+      profile.preferredWorkMode = updateData.preferredWorkMode;
+    }
+    if (updateData.preferredEmploymentArrangement !== undefined) {
+      profile.preferredEmploymentArrangement =
+        updateData.preferredEmploymentArrangement;
+    }
+    if (updateData.workSector !== undefined) {
+      profile.workSector = updateData.workSector;
     }
     if (updateData.address !== undefined) {
       profile.address = updateData.address;
@@ -258,6 +702,12 @@ export class JobseekerService {
     if (updateData.yearsOfExperience !== undefined) {
       profile.yearsOfExperience = updateData.yearsOfExperience;
     }
+    if (updateData.workExperience !== undefined) {
+      profile.workExperience = updateData.workExperience;
+    }
+    if (updateData.referenceContacts !== undefined) {
+      profile.referenceContacts = updateData.referenceContacts;
+    }
 
     // Handle skills smartly
     if (updateData.skills || updateData.skillIds) {
@@ -269,9 +719,9 @@ export class JobseekerService {
       // Normalize and attach skills via SkillsService (non-transactional, best-effort)
       const normalizedIds = new Set<string>(updateData.skillIds ?? []);
 
-      // For free-text names, always insert a SUGGESTED skill
+      // For free-text names, insert as ACTIVE skill
       for (const name of updateData.skills ?? []) {
-        const skill = await this.skillsService.insertSuggestedSkill(name);
+        const skill = await this.skillsService.insertActiveSkill(name);
         normalizedIds.add(skill.id);
       }
 
@@ -294,13 +744,20 @@ export class JobseekerService {
     // Return profile with relations
     const profileWithRelations = await this.profileRepo.findOne({
       where: { id: updatedProfile.id },
-      relations: ['userSkills', 'userSkills.skill', 'profilePicture'],
+      relations: [
+        'userSkills',
+        'userSkills.skill',
+        'profilePicture',
+        'verificationDocuments',
+        'verificationDocuments.document',
+      ],
     });
 
     if (!profileWithRelations) {
       throw new NotFoundException('Profile not found after update');
     }
 
+    this.hydrateVerificationDocumentFields(profileWithRelations);
     return profileWithRelations;
   }
 
@@ -308,10 +765,17 @@ export class JobseekerService {
   async getProfile(userId: string): Promise<JobSeekerProfile> {
     const profile = await this.profileRepo.findOne({
       where: { id: userId },
-      relations: ['userSkills', 'userSkills.skill', 'profilePicture'],
+      relations: [
+        'userSkills',
+        'userSkills.skill',
+        'profilePicture',
+        'verificationDocuments',
+        'verificationDocuments.document',
+      ],
     });
     if (!profile) throw new NotFoundException('Jobseeker not found');
 
+    this.hydrateVerificationDocumentFields(profile);
     return profile;
   }
 
@@ -330,7 +794,7 @@ export class JobseekerService {
     const limit = Math.min(100, Math.max(1, Number(query.limit) || 10));
     const skip = (page - 1) * limit;
     const sortBy = query.sortBy ?? 'createdAt';
-    const sortOrder = (query.sortOrder ?? 'DESC') as 'ASC' | 'DESC';
+    const sortOrder = query.sortOrder ?? 'DESC';
     const search =
       typeof query.query === 'string' ? query.query.trim() : undefined;
     const approvalStatus = query.approvalStatus;
@@ -391,6 +855,8 @@ export class JobseekerService {
         'userSkills.skill',
         'cvDocument',
         'profilePicture',
+        'verificationDocuments',
+        'verificationDocuments.document',
         'applications',
         'applications.job',
         'applications.job.employer',
@@ -399,6 +865,58 @@ export class JobseekerService {
 
     if (!profile) {
       throw new NotFoundException('Job seeker not found');
+    }
+
+    // Ensure the admin never receives an unsigned private CV URL.
+    if (profile.cvDocument?.fileKey) {
+      const signedUrl = await this.storageService.getSignedUrl(
+        profile.cvDocument.fileKey,
+        3600, // 1 hour expiry
+        false, // view (not forced download)
+        profile.cvDocument.bucketType,
+        profile.cvDocument.provider,
+      );
+      profile.cvDocument.url = signedUrl;
+    }
+
+    // Also sign the profile picture URL (also stored in private bucket).
+    if (profile.profilePicture?.fileKey) {
+      const signedPictureUrl = await this.storageService.getSignedUrl(
+        profile.profilePicture.fileKey,
+        3600,
+        false,
+        profile.profilePicture.bucketType,
+        profile.profilePicture.provider,
+      );
+      profile.profilePicture.url = signedPictureUrl;
+    }
+
+    this.hydrateVerificationDocumentFields(profile);
+    const idDocForSign = (
+      profile as JobSeekerProfile & { idDocument?: Document }
+    ).idDocument;
+    if (idDocForSign?.fileKey) {
+      const signedIdDocUrl = await this.storageService.getSignedUrl(
+        idDocForSign.fileKey,
+        3600,
+        false,
+        idDocForSign.bucketType,
+        idDocForSign.provider,
+      );
+      idDocForSign.url = signedIdDocUrl;
+    }
+    const proofForSign = (
+      profile as JobSeekerProfile & { proofOfAddressDocument?: Document }
+    ).proofOfAddressDocument;
+    if (proofForSign?.fileKey) {
+      const signedProofUrl = await this.storageService.getSignedUrl(
+        proofForSign.fileKey,
+        3600,
+        false,
+        proofForSign.bucketType,
+        proofForSign.provider,
+      );
+      proofForSign.url = signedProofUrl;
     }
 
     return {

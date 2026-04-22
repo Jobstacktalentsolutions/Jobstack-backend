@@ -70,7 +70,9 @@ export class ContractEventListener {
       });
 
       if (!employee) {
-        this.logger.warn(`Employee ${payload.employeeId} not found for contract fully-executed event`);
+        this.logger.warn(
+          `Employee ${payload.employeeId} not found for contract fully-executed event`,
+        );
         return;
       }
 

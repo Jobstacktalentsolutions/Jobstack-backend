@@ -8,9 +8,11 @@ import {
   Logger,
   BadRequestException,
 } from '@nestjs/common';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { PaystackService } from '../services/paystack.service';
 import { PaymentService } from '../services/payment.service';
 
+@ApiTags('Payment webhooks')
 @Controller('payment/webhook')
 export class PaymentWebhookController {
   private readonly logger = new Logger(PaymentWebhookController.name);
@@ -23,17 +25,19 @@ export class PaymentWebhookController {
   // Handle Paystack webhook events
   @Post()
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Paystack webhook ingress' })
   async handleWebhook(
     @Body() rawBody: any,
     @Headers('x-paystack-signature') signature: string,
   ) {
     try {
       // Convert body to string if it's not already
-      const payload = typeof rawBody === 'string' ? rawBody : JSON.stringify(rawBody);
-      
+      const payload =
+        typeof rawBody === 'string' ? rawBody : JSON.stringify(rawBody);
+
       // Verify and parse webhook event
       const event = this.paystackService.handleWebhook(payload, signature);
-      
+
       if (!event) {
         this.logger.warn('Invalid webhook signature or payload');
         throw new BadRequestException('Invalid webhook signature');
@@ -43,18 +47,18 @@ export class PaymentWebhookController {
       await this.paymentService.processWebhookEvent(event);
 
       this.logger.log(`Webhook processed successfully: ${event.event}`);
-      
+
       return {
         success: true,
         message: 'Webhook processed successfully',
       };
     } catch (error) {
       this.logger.error(`Webhook processing failed: ${error.message}`, error);
-      
+
       if (error instanceof BadRequestException) {
         throw error;
       }
-      
+
       // Return success to Paystack even if processing fails to avoid retries
       // Log the error for investigation
       return {

@@ -14,6 +14,13 @@ import {
   Param,
   Query,
 } from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiConsumes,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { EmployerJwtGuard, AdminJwtGuard } from 'apps/api/src/guards';
 import { EmployerService } from './employer.service';
@@ -25,6 +32,8 @@ import {
   UuidParamDto,
 } from './dto';
 
+@ApiTags('Users (employer)')
+@ApiBearerAuth()
 @Controller('user/employer')
 export class EmployerController {
   constructor(private readonly employerService: EmployerService) {}
@@ -44,6 +53,8 @@ export class EmployerController {
    */
   @Put('profile')
   @UseGuards(EmployerJwtGuard)
+  @ApiOperation({ summary: 'Update employer profile' })
+  @ApiBody({ type: UpdateEmployerProfileDto })
   async updateProfile(
     @CurrentUser() user: CurrentUserPayload,
     @Body() updateData: UpdateEmployerProfileDto,
@@ -58,6 +69,8 @@ export class EmployerController {
   @UseGuards(EmployerJwtGuard)
   @UseInterceptors(FileInterceptor('file'))
   @HttpCode(HttpStatus.OK)
+  @ApiConsumes('multipart/form-data')
+  @ApiOperation({ summary: 'Upload company logo' })
   async uploadCompanyLogo(
     @CurrentUser() user: CurrentUserPayload,
     @UploadedFile() file: MulterFile,

@@ -4,7 +4,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, SelectQueryBuilder } from 'typeorm';
+import { In, Repository, SelectQueryBuilder } from 'typeorm';
+import { StorageService } from '@app/common/storage/storage.service';
 import {
   Employee,
   EmployerProfile,
@@ -18,10 +19,16 @@ import {
   UpdateEmployeeStatusDto,
 } from '../../dto';
 import {
+  NotificationPriority,
   EmployeeStatus,
-  EmploymentArrangement,
-  EmploymentType,
+  ProbationStatus,
 } from '@app/common/database/entities/schema.enum';
+import { ProbationTrackingProducer } from '../../queue';
+import { buildProbationSchedule } from '../../utils/probation-policy.util';
+import { NotificationService } from 'apps/api/src/modules/notification/notification.service';
+import { UserRole } from '@app/common/shared/enums/user-roles.enum';
+import { EmployeeTerminationHrMeaning } from '@app/common/database/entities/schema.enum';
+import { EmploymentFeedbackService } from '../../services/employment-feedback.service';
 
 @Injectable()
 export class EmployeesService {
@@ -34,9 +41,32 @@ export class EmployeesService {
     private readonly jobseekerRepo: Repository<JobSeekerProfile>,
     @InjectRepository(EmployerProfile)
     private readonly employerRepo: Repository<EmployerProfile>,
+    protected readonly storageService: StorageService,
+    private readonly probationTrackingProducer: ProbationTrackingProducer,
+    private readonly notificationService: NotificationService,
+    private readonly employmentFeedbackService: EmploymentFeedbackService,
   ) {}
 
-  private readonly relations = ['job', 'jobseekerProfile'];
+  private readonly terminationMeaningLabelMap: Record<
+    EmployeeTerminationHrMeaning,
+    string
+  > = {
+    [EmployeeTerminationHrMeaning.EMPLOYEE_RESIGNED]: 'Employee Resigned',
+    [EmployeeTerminationHrMeaning.EMPLOYEE_TERMINATED]: 'Employee Terminated',
+    [EmployeeTerminationHrMeaning.ROLE_REDUNDANT]: 'Role Redundant',
+    [EmployeeTerminationHrMeaning.MUTUAL_SEPARATION]: 'Mutual Separation',
+    [EmployeeTerminationHrMeaning.OTHER]: 'Other',
+  };
+
+  // Relations needed by employer/admin views to render profile data.
+  private readonly relations = [
+    'job',
+    'jobseekerProfile',
+    'jobseekerProfile.userSkills',
+    'jobseekerProfile.userSkills.skill',
+    'jobseekerProfile.profilePicture',
+    'jobseekerProfile.cvDocument',
+  ];
 
   // Creates a new employee record tied to a job and jobseeker
   async createEmployee(employerId: string, dto: CreateEmployeeDto) {
@@ -50,10 +80,20 @@ export class EmployeesService {
 
     if (
       await this.employeeRepo.findOne({
-        where: { jobId: dto.jobId, jobseekerProfileId: dto.jobseekerProfileId },
+        where: {
+          jobId: dto.jobId,
+          jobseekerProfileId: dto.jobseekerProfileId,
+          status: In([
+            EmployeeStatus.ONBOARDING,
+            EmployeeStatus.ACTIVE,
+            EmployeeStatus.SUSPENDED,
+          ]),
+        },
       })
     ) {
-      throw new BadRequestException('Employee already exists for this job');
+      throw new BadRequestException(
+        'An active employee record already exists for this job',
+      );
     }
 
     const profile = await this.jobseekerRepo.findOne({
@@ -103,6 +143,35 @@ export class EmployeesService {
     if (!employee) {
       throw new NotFoundException('Employee not found');
     }
+
+    // Ensure employer-facing document URLs are signed before returning to the frontend.
+    const cvDocument = employee.jobseekerProfile?.cvDocument;
+    if (cvDocument?.fileKey) {
+      const signedUrl = await this.storageService.getSignedUrl(
+        cvDocument.fileKey,
+        3600, // 1 hour expiry
+        false, // view (not forced download)
+        cvDocument.bucketType,
+        cvDocument.provider,
+      );
+      cvDocument.url = signedUrl;
+    }
+
+    return employee;
+  }
+
+  // Retrieves a single employee ensuring jobseeker ownership
+  async getJobseekerEmployeeById(
+    jobseekerProfileId: string,
+    employeeId: string,
+  ) {
+    const employee = await this.employeeRepo.findOne({
+      where: { id: employeeId, jobseekerProfileId },
+      relations: this.relations,
+    });
+    if (!employee) {
+      throw new NotFoundException('Employee not found');
+    }
     return employee;
   }
 
@@ -146,22 +215,201 @@ export class EmployeesService {
     dto: UpdateEmployeeStatusDto,
   ) {
     const employee = await this.getEmployerEmployeeById(employerId, employeeId);
-    
+    const previousStatus = employee.status;
+
+    if (dto.status === EmployeeStatus.ENDED) {
+      throw new BadRequestException(
+        'ENDED is applied only when employer and jobseeker both confirm mutual completion.',
+      );
+    }
+
     // Check payment requirement before allowing activation
-    if (dto.status === EmployeeStatus.ACTIVE && employee.status === EmployeeStatus.ONBOARDING) {
+    if (
+      dto.status === EmployeeStatus.ACTIVE &&
+      employee.status === EmployeeStatus.ONBOARDING
+    ) {
       // Check if employee has salary/contract fee that requires payment
-      const hasPaymentAmount = employee.salaryOffered || employee.contractFeeOffered;
-      
+      const hasPaymentAmount =
+        employee.salaryOffered || employee.contractFeeOffered;
+
       if (hasPaymentAmount && employee.paymentStatus !== 'PAID') {
         throw new BadRequestException(
-          'Payment is required before employee can be activated. Please complete the payment process first.'
+          'Payment is required before employee can be activated. Please complete the payment process first.',
         );
       }
     }
-    
+
     employee.status = dto.status;
+
+    if (dto.status === EmployeeStatus.TERMINATED) {
+      const cleanedReason = dto.reasonForTermination?.trim();
+      if (!cleanedReason) {
+        throw new BadRequestException(
+          'reasonForTermination is required when ending employment',
+        );
+      }
+      if (dto.exitRating == null || dto.exitRating < 1 || dto.exitRating > 5) {
+        throw new BadRequestException(
+          'exitRating between 1 and 5 is required when ending employment',
+        );
+      }
+
+      const meaningLabel = dto.hrMeaning
+        ? this.terminationMeaningLabelMap[dto.hrMeaning]
+        : null;
+
+      const reasonLine = meaningLabel
+        ? `${meaningLabel}: ${cleanedReason}`
+        : cleanedReason;
+
+      const timestamp = new Date();
+      const noteLine = `Employment Ended (${timestamp.toISOString()}) - ${reasonLine}`;
+
+      const employeeIdToEnd = employee.id;
+      await this.employeeRepo.manager.transaction(async (manager) => {
+        const empRepo = manager.getRepository(Employee);
+        const row = await empRepo.findOne({
+          where: { id: employeeIdToEnd, employerId },
+        });
+        if (!row) {
+          throw new NotFoundException('Employee not found');
+        }
+
+        row.status = EmployeeStatus.TERMINATED;
+        row.terminationHrMeaning = dto.hrMeaning ?? null;
+        row.terminationDetail = cleanedReason;
+        row.terminatedAt = timestamp;
+        row.notes = row.notes ? `${row.notes}\n${noteLine}` : noteLine;
+        row.endDate = timestamp;
+        row.probationStatus = ProbationStatus.TERMINATED;
+        row.pulse30SentAt = null;
+        row.pulse60SentAt = null;
+
+        await empRepo.save(row);
+
+        await this.employmentFeedbackService.createEmployerFeedbackWithManager(
+          manager,
+          row.id,
+          dto.exitRating,
+          dto.exitComment ?? null,
+        );
+      });
+
+      const ended = await this.getEmployerEmployeeById(employerId, employeeId);
+      await this.sendEmploymentEndedNotifications(ended, dto);
+
+      return ended;
+    }
+
+    // When activation is finalized, initialize probation fields if missing/outdated.
+    if (dto.status === EmployeeStatus.ACTIVE) {
+      if (!employee.startDate) {
+        throw new BadRequestException(
+          'Employee startDate is required before activation',
+        );
+      }
+
+      const probationSchedule = buildProbationSchedule({
+        employmentArrangement: employee.employmentArrangement,
+        startDate: employee.startDate,
+        endDate: employee.endDate,
+      });
+
+      employee.probationStatus = ProbationStatus.ACTIVE;
+      employee.probationEndDate = probationSchedule.probationEndDate;
+      employee.pulse30SentAt = null;
+      employee.pulse60SentAt = null;
+
+      await this.employeeRepo.save(employee);
+
+      // Queue probation milestones only on transition into ACTIVE.
+      if (previousStatus !== EmployeeStatus.ACTIVE) {
+        await this.probationTrackingProducer.scheduleEmployeeProbationMilestones(
+          {
+            employeeId: employee.id,
+            reminderAt: probationSchedule.reminderAt,
+            confirmAt: probationSchedule.confirmAt,
+          },
+        );
+      }
+
+      return this.getEmployerEmployeeById(employerId, employeeId);
+    }
+
     await this.employeeRepo.save(employee);
+
     return this.getEmployerEmployeeById(employerId, employeeId);
+  }
+
+  private async sendEmploymentEndedNotifications(
+    employee: Employee,
+    dto: UpdateEmployeeStatusDto,
+  ) {
+    try {
+      const employer = await this.employerRepo.findOne({
+        where: { id: employee.employerId },
+      });
+      const hrMeaning = dto.hrMeaning
+        ? this.terminationMeaningLabelMap[dto.hrMeaning]
+        : 'Employment Ended';
+      const jobTitle = employee.job?.title ?? 'your role';
+      const employerName = `${employer?.firstName ?? ''} ${
+        employer?.lastName ?? ''
+      }`.trim();
+
+      if (employee.jobseekerProfile?.email) {
+        await this.notificationService.sendEmail({
+          to: employee.jobseekerProfile.email,
+          subject: `Employment update for ${jobTitle}`,
+          template: 'general-notification',
+          context: {
+            title: 'Employment Ended',
+            message: `Your employment for "${jobTitle}" at ${
+              employerName || 'your employer'
+            } has been ended.`,
+            hrMeaning,
+            reason: dto.reasonForTermination,
+          },
+        });
+      }
+
+      if (employee.jobseekerProfileId) {
+        await this.notificationService.createAppNotification(
+          employee.jobseekerProfileId,
+          UserRole.JOB_SEEKER,
+          {
+            title: 'Employment Ended',
+            message: `Your employment as "${jobTitle}" has ended. Reason: ${dto.reasonForTermination}`,
+            priority: NotificationPriority.HIGH,
+            metadata: {
+              employeeId: employee.id,
+              employerId: employee.employerId,
+              jobId: employee.jobId,
+              hrMeaning,
+            },
+          },
+        );
+      }
+
+      if (employee.employerId) {
+        await this.notificationService.createAppNotification(
+          employee.employerId,
+          UserRole.EMPLOYER,
+          {
+            title: 'Employment Ended',
+            message: `${employee.jobseekerProfile?.firstName ?? 'Employee'} has been marked as Employment Ended.`,
+            priority: NotificationPriority.MEDIUM,
+            metadata: {
+              employeeId: employee.id,
+              jobId: employee.jobId,
+              hrMeaning,
+            },
+          },
+        );
+      }
+    } catch (_) {
+      // Notification failures should not block status changes.
+    }
   }
 
   // Lists employees for admins
@@ -209,6 +457,16 @@ export class EmployeesService {
     }
     if (query.jobId) {
       qb.andWhere('employee.jobId = :jobId', { jobId: query.jobId });
+    }
+    if (query.employerId) {
+      qb.andWhere('employee.employerId = :employerId', {
+        employerId: query.employerId,
+      });
+    }
+    if (query.jobseekerProfileId) {
+      qb.andWhere('employee.jobseekerProfileId = :jobseekerProfileId', {
+        jobseekerProfileId: query.jobseekerProfileId,
+      });
     }
   }
 

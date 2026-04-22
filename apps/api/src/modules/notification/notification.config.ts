@@ -11,12 +11,15 @@ export const NOTIFICATION_PROVIDERS = {
 
 export const EMAIL_CONFIG = 'EMAIL_CONFIG';
 
-// Email providers configuration - Brevo and Resend
+// Email providers: Resend first (default), Brevo fallback (see BaseNotificationService fallback loop)
 export const EMAIL_PROVIDERS_CONFIG: Provider[] = [
   {
     provide: NOTIFICATION_PROVIDERS.EMAIL,
-    useFactory: (resendEmail: ResendEmailProvider) => [resendEmail],
-    inject: [ResendEmailProvider],
+    useFactory: (
+      brevoEmail: BrevoEmailProvider,
+      resendEmail: ResendEmailProvider,
+    ) => [resendEmail, brevoEmail],
+    inject: [BrevoEmailProvider, ResendEmailProvider],
   },
   {
     provide: EMAIL_CONFIG,
@@ -32,7 +35,7 @@ export const EMAIL_PROVIDERS_CONFIG: Provider[] = [
 
 // All notification providers combined
 export const ALL_NOTIFICATION_PROVIDERS: Provider[] = [
-  BrevoEmailProvider,
   ResendEmailProvider,
+  BrevoEmailProvider,
   ...EMAIL_PROVIDERS_CONFIG,
 ];

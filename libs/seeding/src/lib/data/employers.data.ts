@@ -13,7 +13,7 @@ export const EMPLOYERS_DATA = [
     id: CONSTANT_IDS.EMPLOYERS[0],
     firstName: 'Amaka',
     lastName: 'Okoye',
-    email: 'amaka.okoye@lagosbuilds.com',
+    email: 'amaka.okoye@example.com',
     phoneNumber: '+2348011001100',
     address: '12 Admiralty Way, Lekki, Lagos',
     type: EmployerType.ORGANIZATION,
@@ -33,13 +33,13 @@ export const EMPLOYERS_DATA = [
         {
           documentId: CONSTANT_IDS.DOCUMENTS[0],
           documentType:
-            EmployerDocumentType.CERTIFICATE_OF_BUSINESS_REGISTRATION,
+            EmployerDocumentType.CAC_REGISTRATION_CERTIFICATE,
           status: VerificationStatus.APPROVED,
           verified: true,
         },
         {
           documentId: CONSTANT_IDS.DOCUMENTS[1],
-          documentType: EmployerDocumentType.TAX_IDENTIFICATION,
+          documentType: EmployerDocumentType.DIRECTOR_GOVERNMENT_ID,
           status: VerificationStatus.APPROVED,
           verified: true,
         },
@@ -50,7 +50,7 @@ export const EMPLOYERS_DATA = [
     id: CONSTANT_IDS.EMPLOYERS[1],
     firstName: 'Kunle',
     lastName: 'Adebayo',
-    email: 'kunle.adebayo@digitalpulse.ng',
+    email: 'kunle.adebayo@example.com',
     phoneNumber: '+2348012001200',
     address: '3 Saka Tinubu, Victoria Island, Lagos',
     type: EmployerType.SME,
@@ -70,13 +70,13 @@ export const EMPLOYERS_DATA = [
         {
           documentId: CONSTANT_IDS.DOCUMENTS[2],
           documentType:
-            EmployerDocumentType.CERTIFICATE_OF_BUSINESS_REGISTRATION,
+            EmployerDocumentType.CAC_REGISTRATION_CERTIFICATE,
           status: VerificationStatus.APPROVED,
           verified: true,
         },
         {
           documentId: CONSTANT_IDS.DOCUMENTS[3],
-          documentType: EmployerDocumentType.PROOF_OF_ADDRESS,
+          documentType: EmployerDocumentType.UTILITY_BILL,
           status: VerificationStatus.APPROVED,
           verified: true,
         },
@@ -87,7 +87,7 @@ export const EMPLOYERS_DATA = [
     id: CONSTANT_IDS.EMPLOYERS[2],
     firstName: 'Halima',
     lastName: 'Bello',
-    email: 'halima.bello@northstar.com',
+    email: 'halima.bello@example.com',
     phoneNumber: '+2348013001300',
     address: '22 Gana Street, Maitama, Abuja',
     type: EmployerType.ORGANIZATION,
@@ -107,13 +107,13 @@ export const EMPLOYERS_DATA = [
         {
           documentId: CONSTANT_IDS.DOCUMENTS[4],
           documentType:
-            EmployerDocumentType.CERTIFICATE_OF_BUSINESS_REGISTRATION,
+            EmployerDocumentType.CAC_REGISTRATION_CERTIFICATE,
           status: VerificationStatus.APPROVED,
           verified: true,
         },
         {
           documentId: CONSTANT_IDS.DOCUMENTS[5],
-          documentType: EmployerDocumentType.PROOF_OF_ADDRESS,
+          documentType: EmployerDocumentType.UTILITY_BILL,
           status: VerificationStatus.APPROVED,
           verified: true,
         },
@@ -124,7 +124,7 @@ export const EMPLOYERS_DATA = [
     id: CONSTANT_IDS.EMPLOYERS[3],
     firstName: 'Ifeoma',
     lastName: 'Eze',
-    email: 'ifeoma.eze@fintrust.com',
+    email: 'ifeoma.eze@example.com',
     phoneNumber: '+2348014001400',
     address: '7 Ozumba Mbadiwe, Victoria Island, Lagos',
     type: EmployerType.ORGANIZATION,
@@ -144,13 +144,13 @@ export const EMPLOYERS_DATA = [
         {
           documentId: CONSTANT_IDS.DOCUMENTS[6],
           documentType:
-            EmployerDocumentType.CERTIFICATE_OF_BUSINESS_REGISTRATION,
+            EmployerDocumentType.CAC_REGISTRATION_CERTIFICATE,
           status: VerificationStatus.APPROVED,
           verified: true,
         },
         {
           documentId: CONSTANT_IDS.DOCUMENTS[7],
-          documentType: EmployerDocumentType.TAX_IDENTIFICATION,
+          documentType: EmployerDocumentType.DIRECTOR_GOVERNMENT_ID,
           status: VerificationStatus.APPROVED,
           verified: true,
         },
@@ -161,7 +161,7 @@ export const EMPLOYERS_DATA = [
     id: CONSTANT_IDS.EMPLOYERS[4],
     firstName: 'Chidi',
     lastName: 'Nwosu',
-    email: 'chidi.nwosu@greenagro.ng',
+    email: 'chidi.nwosu@example.com',
     phoneNumber: '+2348015001500',
     address: '45 Aba Road, Port Harcourt',
     type: EmployerType.SME,
@@ -175,13 +175,13 @@ export const EMPLOYERS_DATA = [
         {
           documentId: CONSTANT_IDS.DOCUMENTS[8],
           documentType:
-            EmployerDocumentType.CERTIFICATE_OF_BUSINESS_REGISTRATION,
+            EmployerDocumentType.CAC_REGISTRATION_CERTIFICATE,
           status: VerificationStatus.APPROVED,
           verified: true,
         },
         {
           documentId: CONSTANT_IDS.DOCUMENTS[9],
-          documentType: EmployerDocumentType.PROOF_OF_ADDRESS,
+          documentType: EmployerDocumentType.UTILITY_BILL,
           status: VerificationStatus.APPROVED,
           verified: true,
         },
@@ -192,7 +192,7 @@ export const EMPLOYERS_DATA = [
     id: CONSTANT_IDS.EMPLOYERS[5],
     firstName: 'Aisha',
     lastName: 'Yusuf',
-    email: 'aisha.yusuf@healthlink.ng',
+    email: 'aisha.yusuf@example.com',
     phoneNumber: '+2348016001600',
     address: '18 Herbert Macaulay Way, Yaba, Lagos',
     type: EmployerType.ORGANIZATION,
@@ -212,13 +212,13 @@ export const EMPLOYERS_DATA = [
         {
           documentId: CONSTANT_IDS.DOCUMENTS[10],
           documentType:
-            EmployerDocumentType.CERTIFICATE_OF_BUSINESS_REGISTRATION,
+            EmployerDocumentType.CAC_REGISTRATION_CERTIFICATE,
           status: VerificationStatus.APPROVED,
           verified: true,
         },
         {
           documentId: CONSTANT_IDS.DOCUMENTS[11],
-          documentType: EmployerDocumentType.PROOF_OF_ADDRESS,
+          documentType: EmployerDocumentType.UTILITY_BILL,
           status: VerificationStatus.APPROVED,
           verified: true,
         },
@@ -229,7 +229,7 @@ export const EMPLOYERS_DATA = [
     id: CONSTANT_IDS.EMPLOYERS[6],
     firstName: 'Emeka',
     lastName: 'Opara',
-    email: 'emeka.opara@techbridge.africa',
+    email: 'emeka.opara@example.com',
     phoneNumber: '+2348017001700',
     address: '15 Admiralty Road, Lekki Phase 1, Lagos',
     type: EmployerType.ORGANIZATION,
@@ -252,7 +252,7 @@ export const EMPLOYERS_DATA = [
     id: CONSTANT_IDS.EMPLOYERS[7],
     firstName: 'Tosin',
     lastName: 'Adeola',
-    email: 'tosin.adeola@marketverse.com',
+    email: 'tosin.adeola@example.com',
     phoneNumber: '+2348018001800',
     address: '9 Broad Street, Lagos Island',
     type: EmployerType.SME,
@@ -266,13 +266,13 @@ export const EMPLOYERS_DATA = [
         {
           documentId: CONSTANT_IDS.DOCUMENTS[14],
           documentType:
-            EmployerDocumentType.CERTIFICATE_OF_BUSINESS_REGISTRATION,
+            EmployerDocumentType.CAC_REGISTRATION_CERTIFICATE,
           status: VerificationStatus.APPROVED,
           verified: true,
         },
         {
           documentId: CONSTANT_IDS.DOCUMENTS[15],
-          documentType: EmployerDocumentType.PROOF_OF_ADDRESS,
+          documentType: EmployerDocumentType.UTILITY_BILL,
           status: VerificationStatus.APPROVED,
           verified: true,
         },
@@ -283,7 +283,7 @@ export const EMPLOYERS_DATA = [
     id: CONSTANT_IDS.EMPLOYERS[8],
     firstName: 'Sade',
     lastName: 'Balogun',
-    email: 'sade.balogun@creativehub.ng',
+    email: 'sade.balogun@example.com',
     phoneNumber: '+2348019001900',
     address: '14 Tafawa Balewa Way, Abuja',
     type: EmployerType.ORGANIZATION,
@@ -303,13 +303,13 @@ export const EMPLOYERS_DATA = [
         {
           documentId: CONSTANT_IDS.DOCUMENTS[16],
           documentType:
-            EmployerDocumentType.CERTIFICATE_OF_BUSINESS_REGISTRATION,
+            EmployerDocumentType.CAC_REGISTRATION_CERTIFICATE,
           status: VerificationStatus.APPROVED,
           verified: true,
         },
         {
           documentId: CONSTANT_IDS.DOCUMENTS[17],
-          documentType: EmployerDocumentType.TAX_IDENTIFICATION,
+          documentType: EmployerDocumentType.DIRECTOR_GOVERNMENT_ID,
           status: VerificationStatus.APPROVED,
           verified: true,
         },
@@ -320,7 +320,7 @@ export const EMPLOYERS_DATA = [
     id: CONSTANT_IDS.EMPLOYERS[9],
     firstName: 'Musa',
     lastName: 'Danladi',
-    email: 'musa.danladi@logxpress.ng',
+    email: 'musa.danladi@example.com',
     phoneNumber: '+2348020002000',
     address: '88 Kaduna Road, Kano',
     type: EmployerType.SME,
@@ -340,13 +340,13 @@ export const EMPLOYERS_DATA = [
         {
           documentId: CONSTANT_IDS.DOCUMENTS[18],
           documentType:
-            EmployerDocumentType.CERTIFICATE_OF_BUSINESS_REGISTRATION,
+            EmployerDocumentType.CAC_REGISTRATION_CERTIFICATE,
           status: VerificationStatus.APPROVED,
           verified: true,
         },
         {
           documentId: CONSTANT_IDS.DOCUMENTS[19],
-          documentType: EmployerDocumentType.PROOF_OF_ADDRESS,
+          documentType: EmployerDocumentType.UTILITY_BILL,
           status: VerificationStatus.APPROVED,
           verified: true,
         },
@@ -357,7 +357,7 @@ export const EMPLOYERS_DATA = [
     id: CONSTANT_IDS.EMPLOYERS[10],
     firstName: 'Bisi',
     lastName: 'Olawale',
-    email: 'bisi.olawale@homesupport.africa',
+    email: 'bisi.olawale@example.com',
     phoneNumber: '+2348021002100',
     address: '6 Opebi Road, Ikeja, Lagos',
     type: EmployerType.INDIVIDUAL,
@@ -374,13 +374,13 @@ export const EMPLOYERS_DATA = [
       documents: [
         {
           documentId: CONSTANT_IDS.DOCUMENTS[20],
-          documentType: EmployerDocumentType.NATIONAL_ID,
+          documentType: EmployerDocumentType.GOVERNMENT_ISSUED_ID,
           status: VerificationStatus.APPROVED,
           verified: true,
         },
         {
           documentId: CONSTANT_IDS.DOCUMENTS[21],
-          documentType: EmployerDocumentType.PROOF_OF_ADDRESS,
+          documentType: EmployerDocumentType.UTILITY_BILL,
           status: VerificationStatus.APPROVED,
           verified: true,
         },
@@ -391,7 +391,7 @@ export const EMPLOYERS_DATA = [
     id: CONSTANT_IDS.EMPLOYERS[11],
     firstName: 'Zainab',
     lastName: 'Mahmoud',
-    email: 'zainab.mahmoud@sahelsecurity.com',
+    email: 'zainab.mahmoud@example.com',
     phoneNumber: '+2348022002200',
     address: '3 Ahmadu Bello Way, Kaduna',
     type: EmployerType.ORGANIZATION,
@@ -411,13 +411,13 @@ export const EMPLOYERS_DATA = [
         {
           documentId: CONSTANT_IDS.DOCUMENTS[22],
           documentType:
-            EmployerDocumentType.CERTIFICATE_OF_BUSINESS_REGISTRATION,
+            EmployerDocumentType.CAC_REGISTRATION_CERTIFICATE,
           status: VerificationStatus.APPROVED,
           verified: true,
         },
         {
           documentId: CONSTANT_IDS.DOCUMENTS[23],
-          documentType: EmployerDocumentType.TAX_IDENTIFICATION,
+          documentType: EmployerDocumentType.DIRECTOR_GOVERNMENT_ID,
           status: VerificationStatus.APPROVED,
           verified: true,
         },

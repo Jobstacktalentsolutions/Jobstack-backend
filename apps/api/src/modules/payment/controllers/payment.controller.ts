@@ -9,12 +9,15 @@ import {
   HttpStatus,
   HttpCode,
 } from '@nestjs/common';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { PaymentService } from '../services/payment.service';
 import { InitiatePaymentDto, PaymentQueryDto, VerifyPaymentDto } from '../dto';
 import { EmployerJwtGuard } from '../../../guards/employer-jwt.guard';
 import { CurrentUser } from '@app/common/shared/decorators/current-user.decorator';
 import { Payment } from '@app/common/database/entities';
 
+@ApiTags('Payment')
+@ApiBearerAuth()
 @Controller('payment')
 @UseGuards(EmployerJwtGuard)
 export class PaymentController {
@@ -23,6 +26,8 @@ export class PaymentController {
   // Initiate payment for employee activation
   @Post('initiate')
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Start employee activation payment' })
+  @ApiBody({ type: InitiatePaymentDto })
   async initiatePayment(
     @CurrentUser('profileId') employerId: string,
     @Body() dto: InitiatePaymentDto,
@@ -86,6 +91,8 @@ export class PaymentController {
   // Verify payment manually
   @Post('verify')
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Verify Paystack payment by reference' })
+  @ApiBody({ type: VerifyPaymentDto })
   async verifyPayment(@Body() dto: VerifyPaymentDto) {
     const result = await this.paymentService.verifyPayment(dto.reference);
 

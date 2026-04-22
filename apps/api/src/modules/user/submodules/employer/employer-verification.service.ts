@@ -2,52 +2,61 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
-  ForbiddenException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { EmployerVerification } from '@app/common/database/entities/EmployerVerification.entity';
 import { EmployerVerificationDocument } from '@app/common/database/entities/EmployerVerificationDocument.entity';
 import { EmployerProfile } from '@app/common/database/entities/EmployerProfile.entity';
 import { StorageService } from '@app/common/storage/storage.service';
 import { UploadEmployerVerificationDocumentDto } from './dto/upload-employer-verification-document.dto';
 import { UpdateVerificationInfoDto } from './dto/update-verification.dto';
+import { UpdateDocumentVerificationDto } from './dto/admin-verification.dto';
 import { MulterFile } from '@app/common/shared/types';
 import {
   DocumentType,
   EmployerType,
 } from '@app/common/database/entities/schema.enum';
-import { VerificationStatus } from '@app/common/shared/enums/employer-docs.enum';
+import {
+  VerificationStatus,
+  EmployerDocumentType,
+} from '@app/common/shared/enums/employer-docs.enum';
+import { VerificationDocumentStatus } from '@app/common/shared/enums/verification-document-status.enum';
 import {
   getMandatoryDocuments,
   getAllDocuments,
-  isDocumentMandatory,
 } from '@app/common/shared/config/employer-document-requirements';
+import { NotificationService } from 'apps/api/src/modules/notification/notification.service';
+import { ApprovalDecisionEmailService } from '../../approval-decision-email.service';
+import { UserRole } from '@app/common/shared/enums/user-roles.enum';
+import { NotificationPriority } from '@app/common/database/entities/schema.enum';
 
 @Injectable()
 export class EmployerVerificationService {
   constructor(
-    @InjectRepository(EmployerVerification)
-    private readonly verificationRepo: Repository<EmployerVerification>,
     @InjectRepository(EmployerVerificationDocument)
     private readonly verificationDocRepo: Repository<EmployerVerificationDocument>,
     @InjectRepository(EmployerProfile)
     private readonly profileRepo: Repository<EmployerProfile>,
     private readonly storageService: StorageService,
+    private readonly notificationService: NotificationService,
+    private readonly approvalDecisionEmailService: ApprovalDecisionEmailService,
   ) {}
 
   // Get current user's verification with all documents
   async getMyVerification(userId: string) {
     const profile = await this.profileRepo.findOne({
       where: { id: userId },
+      relations: ['verificationDocuments', 'verificationDocuments.document'],
     });
     if (!profile) throw new NotFoundException('Employer profile not found');
 
-    const existing = await this.verificationRepo.findOne({
-      where: { employerId: profile.id },
-      relations: ['documents', 'documents.document'],
-    });
-    return { ...existing, employer: profile };
+    return {
+      ...profile,
+      status: profile.verificationStatus,
+      rejectionReason: profile.verificationRejectionReason,
+      documents: profile.verificationDocuments,
+      employer: profile,
+    };
   }
 
   // Update verification information
@@ -57,33 +66,22 @@ export class EmployerVerificationService {
     });
     if (!profile) throw new NotFoundException('Employer profile not found');
 
-    // Get or create verification record
-    let verification = await this.verificationRepo.findOne({
-      where: { employerId: profile.id },
-    });
+    profile.companyName = dto.companyName;
+    profile.companyAddress = dto.companyAddress;
+    profile.state = dto.state;
+    profile.city = dto.city;
+    profile.companySize = dto.companySize;
+    profile.socialOrWebsiteUrl = dto.socialOrWebsiteUrl;
+    profile.companyWebsite = dto.companyWebsite;
+    profile.companyDescription = dto.companyDescription;
 
-    if (!verification) {
-      verification = this.verificationRepo.create({
-        employerId: profile.id,
-      });
+    if (profile.verificationStatus === VerificationStatus.NOT_STARTED) {
+      profile.verificationStatus = VerificationStatus.PENDING;
     }
 
-    // Update verification fields
-    verification.companyName = dto.companyName;
-    verification.companyAddress = dto.companyAddress;
-    verification.state = dto.state;
-    verification.city = dto.city;
-    verification.companySize = dto.companySize;
-    verification.socialOrWebsiteUrl = dto.socialOrWebsiteUrl;
+    await this.profileRepo.save(profile);
 
-    // Set status to PENDING when user starts onboarding
-    if (verification.status === VerificationStatus.NOT_STARTED) {
-      verification.status = VerificationStatus.PENDING;
-    }
-
-    await this.verificationRepo.save(verification);
-
-    return verification;
+    return profile;
   }
 
   // Upload a single verification document
@@ -97,23 +95,11 @@ export class EmployerVerificationService {
     });
     if (!profile) throw new NotFoundException('Employer profile not found');
 
-    // Get or create verification record
-    let verification = await this.verificationRepo.findOne({
-      where: { employerId: profile.id },
-    });
-
-    if (!verification) {
-      verification = this.verificationRepo.create({
-        employerId: profile.id,
-        status: VerificationStatus.PENDING,
-      });
-      await this.verificationRepo.save(verification);
-    } else if (verification.status === VerificationStatus.NOT_STARTED) {
-      verification.status = VerificationStatus.PENDING;
-      await this.verificationRepo.save(verification);
+    if (profile.verificationStatus === VerificationStatus.NOT_STARTED) {
+      profile.verificationStatus = VerificationStatus.PENDING;
+      await this.profileRepo.save(profile);
     }
 
-    // Upload document file
     const docUpload = await this.storageService.uploadFile(file as any, {
       folder: `employers/${profile.id}/verification`,
       bucketType: 'private',
@@ -121,18 +107,16 @@ export class EmployerVerificationService {
       uploadedBy: userId,
     });
 
-    // Create verification document record
     const verificationDoc = this.verificationDocRepo.create({
-      verificationId: verification.id,
+      employerProfileId: profile.id,
       documentId: docUpload.document.id,
       documentType: dto.documentType,
       documentNumber: dto.documentNumber,
-      verified: true,
+      status: VerificationDocumentStatus.PENDING,
     });
 
     await this.verificationDocRepo.save(verificationDoc);
 
-    // Check if this document upload enables auto-verification
     const autoVerifyResult = await this.performAutoVerification(userId);
 
     return {
@@ -149,14 +133,8 @@ export class EmployerVerificationService {
     });
     if (!profile) throw new NotFoundException('Employer profile not found');
 
-    const verification = await this.verificationRepo.findOne({
-      where: { employerId: profile.id },
-    });
-
-    if (!verification) return [];
-
     return await this.verificationDocRepo.find({
-      where: { verificationId: verification.id },
+      where: { employerProfileId: profile.id },
       relations: ['document'],
       order: { createdAt: 'DESC' },
     });
@@ -172,16 +150,8 @@ export class EmployerVerificationService {
     });
     if (!profile) throw new NotFoundException('Employer profile not found');
 
-    const verification = await this.verificationRepo.findOne({
-      where: { employerId: profile.id },
-    });
-
-    if (!verification) {
-      throw new NotFoundException('Verification not found');
-    }
-
     const verificationDoc = await this.verificationDocRepo.findOne({
-      where: { id: documentId, verificationId: verification.id },
+      where: { id: documentId, employerProfileId: profile.id },
       relations: ['document'],
     });
 
@@ -209,26 +179,15 @@ export class EmployerVerificationService {
     });
     if (!profile) throw new NotFoundException('Employer profile not found');
 
-    const verification = await this.verificationRepo.findOne({
-      where: { employerId: profile.id },
-    });
-
-    if (!verification) {
-      throw new NotFoundException('Verification not found');
-    }
-
     const verificationDoc = await this.verificationDocRepo.findOne({
-      where: { id: documentId, verificationId: verification.id },
+      where: { id: documentId, employerProfileId: profile.id },
     });
 
     if (!verificationDoc) {
       throw new NotFoundException('Document not found');
     }
 
-    // Delete the document from storage
     await this.storageService.deleteDocument(verificationDoc.documentId);
-
-    // Delete the verification document record
     await this.verificationDocRepo.remove(verificationDoc);
 
     return { message: 'Document deleted successfully' };
@@ -236,14 +195,8 @@ export class EmployerVerificationService {
 
   // Admin: Get verification documents for an employer
   async getEmployerVerificationDocuments(employerId: string) {
-    const verification = await this.verificationRepo.findOne({
-      where: { employerId },
-    });
-
-    if (!verification) return [];
-
     return await this.verificationDocRepo.find({
-      where: { verificationId: verification.id },
+      where: { employerProfileId: employerId },
       relations: ['document'],
       order: { createdAt: 'DESC' },
     });
@@ -259,10 +212,7 @@ export class EmployerVerificationService {
       throw new NotFoundException('Document not found');
     }
 
-    // Delete the document from storage
     await this.storageService.deleteDocument(verificationDoc.documentId);
-
-    // Delete the verification document record
     await this.verificationDocRepo.remove(verificationDoc);
 
     return { message: 'Document deleted successfully' };
@@ -281,6 +231,7 @@ export class EmployerVerificationService {
   }> {
     const profile = await this.profileRepo.findOne({
       where: { id: userId },
+      relations: ['verificationDocuments'],
     });
 
     if (!profile || !profile.type) {
@@ -291,27 +242,11 @@ export class EmployerVerificationService {
       };
     }
 
-    const verification = await this.verificationRepo.findOne({
-      where: { employerId: profile.id },
-      relations: ['documents'],
-    });
-
-    if (!verification) {
-      const mandatoryDocs = getMandatoryDocuments(profile.type);
-      return {
-        canAutoVerify: false,
-        missingMandatoryDocuments: mandatoryDocs.map((doc) => doc.description),
-        verificationStatus: VerificationStatus.PENDING,
-      };
-    }
-
-    // Get all mandatory documents for this employer type
     const mandatoryDocuments = getMandatoryDocuments(profile.type);
-    const uploadedDocumentTypes = verification.documents
-      .filter((doc) => doc.verified)
+    const uploadedDocumentTypes = (profile.verificationDocuments ?? [])
+      .filter((doc) => doc.status === VerificationDocumentStatus.APPROVED)
       .map((doc) => doc.documentType);
 
-    // Check for missing mandatory documents
     const missingMandatory = mandatoryDocuments.filter(
       (req) => !uploadedDocumentTypes.includes(req.documentType),
     );
@@ -321,7 +256,7 @@ export class EmployerVerificationService {
     return {
       canAutoVerify,
       missingMandatoryDocuments: missingMandatory.map((doc) => doc.description),
-      verificationStatus: verification.status,
+      verificationStatus: profile.verificationStatus,
     };
   }
 
@@ -341,6 +276,7 @@ export class EmployerVerificationService {
 
     const profile = await this.profileRepo.findOne({
       where: { id: userId },
+      relations: ['auth'],
     });
 
     if (!profile) {
@@ -350,14 +286,38 @@ export class EmployerVerificationService {
       };
     }
 
-    const verification = await this.verificationRepo.findOne({
-      where: { employerId: profile.id },
-    });
+    if (profile.verificationStatus === VerificationStatus.PENDING) {
+      const previousStatus = profile.verificationStatus;
+      profile.verificationStatus = VerificationStatus.APPROVED;
+      profile.reviewedAt = new Date();
+      profile.reviewedByAdminId = undefined;
+      profile.verificationRejectionReason = undefined;
+      await this.profileRepo.save(profile);
 
-    if (verification && verification.status === VerificationStatus.PENDING) {
-      verification.status = VerificationStatus.APPROVED;
-      verification.reviewedAt = new Date();
-      await this.verificationRepo.save(verification);
+      await this.approveAllEmployerDocuments(profile.id, null);
+
+      try {
+        await this.notificationService.createAppNotification(
+          profile.id,
+          UserRole.EMPLOYER,
+          {
+            title: '✅ Account Verified!',
+            message:
+              'Congratulations! Your employer account has been verified. You can now post jobs and hire candidates.',
+            priority: NotificationPriority.HIGH,
+          },
+        );
+      } catch (_) {
+        /* non-blocking */
+      }
+
+      if (profile.auth) {
+        this.approvalDecisionEmailService.queueEmployerVerificationEmail(
+          profile,
+          previousStatus,
+          VerificationStatus.APPROVED,
+        );
+      }
 
       return {
         verified: true,
@@ -378,47 +338,141 @@ export class EmployerVerificationService {
     adminId: string,
     rejectionReason?: string,
   ) {
-    const verification = await this.verificationRepo.findOne({
-      where: { employerId },
+    const profile = await this.profileRepo.findOne({
+      where: { id: employerId },
+      relations: ['auth'],
     });
 
-    if (!verification) {
+    if (!profile) {
       throw new NotFoundException('Verification record not found');
     }
 
-    verification.status = status;
-    verification.reviewedByAdminId = adminId;
-    verification.reviewedAt = new Date();
+    const previousStatus = profile.verificationStatus;
+    profile.verificationStatus = status;
+    profile.reviewedByAdminId = adminId;
+    profile.reviewedAt = new Date();
 
     if (status === VerificationStatus.REJECTED && rejectionReason) {
-      verification.rejectionReason = rejectionReason;
+      profile.verificationRejectionReason = rejectionReason;
+    } else {
+      profile.verificationRejectionReason = undefined;
     }
 
-    await this.verificationRepo.save(verification);
+    await this.profileRepo.save(profile);
 
-    return verification;
+    if (status === VerificationStatus.APPROVED) {
+      await this.approveAllEmployerDocuments(profile.id, adminId);
+    }
+
+    if (profile.auth) {
+      this.approvalDecisionEmailService.queueEmployerVerificationEmail(
+        profile,
+        previousStatus,
+        status,
+        rejectionReason,
+      );
+    }
+
+    try {
+      if (status === VerificationStatus.APPROVED) {
+        await this.notificationService.createAppNotification(
+          employerId,
+          UserRole.EMPLOYER,
+          {
+            title: '✅ Your Account is Verified',
+            message:
+              'Your employer account has been manually reviewed and approved. You can now post jobs and hire candidates.',
+            priority: NotificationPriority.HIGH,
+          },
+        );
+      } else if (status === VerificationStatus.REJECTED) {
+        await this.notificationService.createAppNotification(
+          employerId,
+          UserRole.EMPLOYER,
+          {
+            title: '❌ Verification Rejected',
+            message: `Your employer verification was rejected.${rejectionReason ? ` Reason: ${rejectionReason}` : ''} Please review and resubmit your documents.`,
+            priority: NotificationPriority.HIGH,
+          },
+        );
+      }
+    } catch (_) {
+      /* non-blocking */
+    }
+
+    return profile;
   }
 
-  // Admin: Mark a document as verified/unverified
+  // Marks all employer verification files approved (used on overall approval / auto-verify).
+  private async approveAllEmployerDocuments(
+    employerProfileId: string,
+    adminId: string | null,
+  ): Promise<void> {
+    const docs = await this.verificationDocRepo.find({
+      where: { employerProfileId },
+    });
+    const now = new Date();
+    for (const d of docs) {
+      d.status = VerificationDocumentStatus.APPROVED;
+      d.rejectionReason = undefined;
+      d.reviewedAt = now;
+      d.reviewedByAdminId = adminId ?? undefined;
+    }
+    if (docs.length > 0) {
+      await this.verificationDocRepo.save(docs);
+    }
+  }
+
+  // Human-readable label for employer document rejection emails.
+  private formatEmployerDocumentTypeLabel(
+    documentType: EmployerDocumentType,
+  ): string {
+    return String(documentType)
+      .split('_')
+      .map((w) => w.charAt(0) + w.slice(1).toLowerCase())
+      .join(' ');
+  }
+
+  // Admin: set per-document verification status (pending / approved / rejected).
   async adminUpdateDocumentVerification(
     documentId: string,
-    verified: boolean,
+    dto: UpdateDocumentVerificationDto,
     adminId: string,
   ) {
     const verificationDoc = await this.verificationDocRepo.findOne({
       where: { id: documentId },
-      relations: ['verification', 'verification.employer'],
+      relations: ['employerProfile', 'employerProfile.auth'],
     });
 
     if (!verificationDoc) {
       throw new NotFoundException('Verification document not found');
     }
 
-    verificationDoc.verified = verified;
+    const employer = verificationDoc.employerProfile;
+    const previousStatus = verificationDoc.status;
+
+    verificationDoc.status = dto.status;
+    verificationDoc.rejectionReason =
+      dto.status === VerificationDocumentStatus.REJECTED
+        ? (dto.rejectionReason ?? '').trim() || undefined
+        : undefined;
+    verificationDoc.reviewedAt = new Date();
+    verificationDoc.reviewedByAdminId = adminId;
     await this.verificationDocRepo.save(verificationDoc);
 
-    // Check if this change affects auto-verification eligibility
-    const employerId = verificationDoc.verification.employer.id;
+    if (
+      dto.status === VerificationDocumentStatus.REJECTED &&
+      verificationDoc.rejectionReason &&
+      previousStatus !== VerificationDocumentStatus.REJECTED
+    ) {
+      this.approvalDecisionEmailService.queueEmployerVerificationDocumentRejectedEmail(
+        employer,
+        this.formatEmployerDocumentTypeLabel(verificationDoc.documentType),
+        verificationDoc.rejectionReason,
+      );
+    }
+
+    const employerId = employer.id;
     const autoVerifyResult = await this.performAutoVerification(employerId);
 
     return {

@@ -41,21 +41,12 @@ export const createStorageConfig = (
       'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     ],
     [StorageProviders.IDRIVE]: {
-      endpoint: configService.get<string>(ENV.S3_ENDPOINT) as string,
-      region:
-        (configService.get<string>(ENV.S3_REGION) as string) || 'auto',
-      accessKeyId: configService.get<string>(
-        ENV.S3_ACCESS_KEY_ID,
-      ) as string,
-      secretAccessKey: configService.get<string>(
-        ENV.S3_SECRET_ACCESS_KEY,
-      ) as string,
-      publicBucket: configService.get<string>(
-        ENV.S3_PUBLIC_BUCKET,
-      ) as string,
-      privateBucket: configService.get<string>(
-        ENV.S3_PRIVATE_BUCKET,
-      ) as string,
+      endpoint: configService.get<string>(ENV.S3_ENDPOINT),
+      region: configService.get<string>(ENV.S3_REGION) || 'auto',
+      accessKeyId: configService.get<string>(ENV.S3_ACCESS_KEY_ID),
+      secretAccessKey: configService.get<string>(ENV.S3_SECRET_ACCESS_KEY),
+      publicBucket: configService.get<string>(ENV.S3_PUBLIC_BUCKET),
+      privateBucket: configService.get<string>(ENV.S3_PRIVATE_BUCKET),
     },
   };
 };

@@ -10,6 +10,7 @@ import {
   Post,
   Delete,
 } from '@nestjs/common';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AdminJwtGuard, RequireAdminRole } from 'apps/api/src/guards';
 import { AdminService } from './admin.service';
 import { VerificationStatus } from '@app/common/shared/enums/employer-docs.enum';
@@ -20,7 +21,10 @@ import {
 import { AdminRole } from '@app/common/shared/enums/roles.enum';
 import { CurrentUser, type CurrentUserPayload } from '@app/common/shared';
 import { GetAllAdminsQueryDto } from './dto/get-all-admins-query.dto';
+import { UpdateDocumentVerificationDto } from '../employer/dto/admin-verification.dto';
 
+@ApiTags('Admin')
+@ApiBearerAuth()
 @Controller('admin')
 @UseGuards(AdminJwtGuard)
 export class AdminController {
@@ -38,6 +42,16 @@ export class AdminController {
   }
 
   @Put('profile')
+  @ApiOperation({ summary: 'Update current admin profile' })
+  @ApiBody({
+    schema: {
+      example: {
+        firstName: 'Jane',
+        lastName: 'Doe',
+        phoneNumber: '+2348012345678',
+      },
+    },
+  })
   async updateProfile(
     @CurrentUser() user: CurrentUserPayload,
     @Body() updateData: any,
@@ -47,6 +61,18 @@ export class AdminController {
 
   @Post('admins')
   @RequireAdminRole(AdminRole.SUPER_ADMIN.role)
+  @ApiOperation({ summary: 'Create another admin (super admin)' })
+  @ApiBody({
+    schema: {
+      example: {
+        email: 'ops@jobstack.ng',
+        password: 'Str0ngP@ss',
+        firstName: 'Ops',
+        lastName: 'Lead',
+        role: 'OPERATIONS_SUPPORT',
+      },
+    },
+  })
   async createAdmin(
     @CurrentUser() user: CurrentUserPayload,
     @Body() body: any,
@@ -107,13 +133,29 @@ export class AdminController {
     return this.adminService.getSystemOverview(user.id);
   }
 
+  @Get('dashboard/overview')
+  async getDashboardOverview(@Query('pendingLimit') pendingLimit?: string) {
+    const parsedLimit = Number(pendingLimit);
+    const limit =
+      Number.isFinite(parsedLimit) && parsedLimit > 0
+        ? Math.min(20, Math.floor(parsedLimit))
+        : 5;
+
+    return this.adminService.getDashboardOverview(limit);
+  }
+
   // Approve employer verification (Operations & Support handles new employer accounts)
   @Patch('employers/:id/verification/approve')
   @RequireAdminRole(AdminRole.OPERATIONS_SUPPORT.role)
-  async approveEmployer(@Param('id') employerId: string) {
+  async approveEmployer(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') employerId: string,
+  ) {
     return this.adminService.updateEmployerVerification(
       employerId,
       VerificationStatus.APPROVED,
+      undefined,
+      user.id,
     );
   }
 
@@ -210,23 +252,64 @@ export class AdminController {
     return this.adminService.unsuspendJobseeker(user.id, jobseekerId);
   }
 
+  @Put('jobseekers/:jobseekerId/verification/documents/:documentId')
+  @RequireAdminRole(AdminRole.OPERATIONS_SUPPORT.role)
+  @ApiBody({ type: UpdateDocumentVerificationDto })
+  async updateJobseekerVerificationDocument(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('jobseekerId') jobseekerId: string,
+    @Param('documentId') documentId: string,
+    @Body() dto: UpdateDocumentVerificationDto,
+  ) {
+    return this.adminService.updateJobseekerVerificationDocument(
+      user.id,
+      jobseekerId,
+      documentId,
+      dto,
+    );
+  }
+
   // Approve jobseeker verification
   @Patch('jobseekers/:id/verification/approve')
   @RequireAdminRole(AdminRole.OPERATIONS_SUPPORT.role)
-  async approveJobseeker(@Param('id') jobseekerId: string) {
+  async approveJobseeker(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') jobseekerId: string,
+  ) {
     return this.adminService.updateJobseekerVerification(
+      user.id,
       jobseekerId,
       ApprovalStatus.APPROVED,
+    );
+  }
+
+  // Unapprove jobseeker verification (move back to PENDING)
+  @Patch('jobseekers/:id/verification/unapprove')
+  @RequireAdminRole(AdminRole.OPERATIONS_SUPPORT.role)
+  async unapproveJobseeker(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') jobseekerId: string,
+  ) {
+    return this.adminService.updateJobseekerVerification(
+      user.id,
+      jobseekerId,
+      ApprovalStatus.PENDING,
     );
   }
 
   // Reject jobseeker verification
   @Patch('jobseekers/:id/verification/reject')
   @RequireAdminRole(AdminRole.OPERATIONS_SUPPORT.role)
-  async rejectJobseeker(@Param('id') jobseekerId: string) {
+  async rejectJobseeker(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') jobseekerId: string,
+    @Body('reason') reason: string,
+  ) {
     return this.adminService.updateJobseekerVerification(
+      user.id,
       jobseekerId,
       ApprovalStatus.REJECTED,
+      reason,
     );
   }
 }

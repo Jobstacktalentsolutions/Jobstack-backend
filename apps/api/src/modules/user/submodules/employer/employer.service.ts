@@ -6,12 +6,17 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { EmployerProfile } from '@app/common/database/entities/EmployerProfile.entity';
+import { Job } from '@app/common/database/entities/Job.entity';
 import { EmployerAuth } from '@app/common/database/entities/EmployerAuth.entity';
-import { EmployerVerification } from '@app/common/database/entities/EmployerVerification.entity';
+import { JobApplication } from '@app/common/database/entities/JobApplication.entity';
 import { Document } from '@app/common/database/entities';
 import { StorageService } from '@app/common/storage/storage.service';
 import type { MulterFile } from '@app/common/shared/types';
-import { DocumentType } from '@app/common/database/entities/schema.enum';
+import {
+  DocumentType,
+  JobStatus,
+} from '@app/common/database/entities/schema.enum';
+import { VerificationStatus } from '@app/common/shared/enums/employer-docs.enum';
 import { UpdateEmployerProfileDto, GetAllEmployersQueryDto } from './dto';
 
 @Injectable()
@@ -21,8 +26,10 @@ export class EmployerService {
     protected readonly profileRepo: Repository<EmployerProfile>,
     @InjectRepository(EmployerAuth)
     protected readonly authRepo: Repository<EmployerAuth>,
-    @InjectRepository(EmployerVerification)
-    protected readonly verificationRepo: Repository<EmployerVerification>,
+    @InjectRepository(JobApplication)
+    protected readonly jobApplicationRepo: Repository<JobApplication>,
+    @InjectRepository(Job)
+    protected readonly jobRepo: Repository<Job>,
     protected readonly storageService: StorageService,
   ) {}
 
@@ -124,9 +131,8 @@ export class EmployerService {
       where: { id: userId },
       relations: [
         'profilePicture',
-        'verification',
-        'verification.documents',
-        'verification.documents.document',
+        'verificationDocuments',
+        'verificationDocuments.document',
       ],
     });
     if (!profile) {
@@ -134,6 +140,71 @@ export class EmployerService {
     }
 
     return profile;
+  }
+
+  /**
+   * Get a sanitized employer profile intended for public pages.
+   * This endpoint must NOT expose private fields like email/phone or documents.
+   */
+  async getEmployerPublicProfileBySlug(slug: string): Promise<any | null> {
+    const profile = await this.profileRepo.findOne({
+      where: { slug },
+      relations: ['profilePicture'],
+    });
+
+    if (!profile) return null;
+
+    const companyName =
+      profile.companyName || `${profile.firstName} ${profile.lastName}`.trim();
+
+    const city = profile.city;
+    const state = profile.state;
+    // Public location: verification city/state only (never street-level profile.address)
+    const location =
+      city && state
+        ? `${city}, ${state}`
+        : city || state || 'Location not specified';
+
+    const activeJobCount = await this.jobRepo
+      .createQueryBuilder('job')
+      .where('job.employerId = :employerId', { employerId: profile.id })
+      .andWhere('job.status IN (:...statuses)', {
+        statuses: [JobStatus.PUBLISHED, JobStatus.ACTIVE],
+      })
+      .andWhere(
+        '(job.applicationDeadline IS NULL OR job.applicationDeadline > :now)',
+        { now: new Date() },
+      )
+      .getCount();
+
+    let logoUrl: string | null = null;
+    if (profile.profilePicture) {
+      const signedUrl = await this.storageService.getSignedUrl(
+        profile.profilePicture.fileKey,
+        3600,
+        false,
+        profile.profilePicture.bucketType,
+      );
+      logoUrl = signedUrl;
+    }
+
+    return {
+      slug: profile.slug,
+      companyName,
+      location,
+      companyDescription: profile.companyDescription,
+      companySize: profile.companySize,
+      website: profile.socialOrWebsiteUrl || profile.companyWebsite || null,
+      logoUrl,
+      /** Organization, SME, or Individual when set on the profile */
+      employerType: profile.type ?? null,
+      /** ISO timestamp for "on JobStack since" */
+      memberSince: profile.createdAt ? profile.createdAt.toISOString() : null,
+      /** Live roles visible on the marketplace (not expired by deadline) */
+      activeJobCount,
+      /** True when employer verification is approved (safe public signal) */
+      isVerified: profile.verificationStatus === VerificationStatus.APPROVED,
+    };
   }
 
   /**
@@ -147,9 +218,8 @@ export class EmployerService {
       where: { id: userId },
       relations: [
         'profilePicture',
-        'verification',
-        'verification.documents',
-        'verification.documents.document',
+        'verificationDocuments',
+        'verificationDocuments.document',
       ],
     });
     if (!profile) {
@@ -179,16 +249,18 @@ export class EmployerService {
     const skip = (page - 1) * limit;
     const type = query.type;
     const verificationStatus = query.verificationStatus;
+    const status = query.status;
     const search =
       typeof query.search === 'string' ? query.search.trim() : undefined;
     const sortBy = query.sortBy ?? 'createdAt';
-    const sortOrder = (query.sortOrder ?? 'DESC') as 'ASC' | 'DESC';
+    const sortOrder = query.sortOrder ?? 'DESC';
 
     const queryBuilder = this.profileRepo
       .createQueryBuilder('employer')
       .leftJoinAndSelect('employer.auth', 'auth')
       .leftJoinAndSelect('employer.profilePicture', 'profilePicture')
-      .leftJoinAndSelect('employer.verification', 'verification');
+      .loadRelationCountAndMap('employer.jobsCount', 'employer.jobs')
+      .loadRelationCountAndMap('employer.employeesCount', 'employer.employees');
 
     if (type) {
       queryBuilder.andWhere('employer.type = :employerType', {
@@ -197,14 +269,23 @@ export class EmployerService {
     }
 
     if (verificationStatus) {
-      queryBuilder.andWhere('verification.status = :verificationStatus', {
-        verificationStatus,
+      queryBuilder.andWhere(
+        'employer.verificationStatus = :verificationStatus',
+        {
+          verificationStatus,
+        },
+      );
+    }
+
+    if (status) {
+      queryBuilder.andWhere('employer.status = :status', {
+        status,
       });
     }
 
     if (search) {
       queryBuilder.andWhere(
-        '(employer.firstName ILIKE :search OR employer.lastName ILIKE :search OR employer.email ILIKE :search OR verification.companyName ILIKE :search)',
+        '(employer.firstName ILIKE :search OR employer.lastName ILIKE :search OR employer.email ILIKE :search OR employer.companyName ILIKE :search)',
         { search: `%${search}%` },
       );
     }
@@ -229,7 +310,22 @@ export class EmployerService {
         id: profile.id,
         email: profile.auth?.email,
         profile: profile,
-        verification: profile.verification,
+        verification: {
+          companyName: profile.companyName,
+          companyAddress: profile.companyAddress,
+          companyWebsite: profile.companyWebsite,
+          companyDescription: profile.companyDescription,
+          city: profile.city,
+          state: profile.state,
+          companySize: profile.companySize,
+          socialOrWebsiteUrl: profile.socialOrWebsiteUrl,
+          status: profile.verificationStatus,
+          reviewedAt: profile.reviewedAt,
+          rejectionReason: profile.verificationRejectionReason,
+          documents: profile.verificationDocuments ?? [],
+        },
+        jobsCount: (profile as any).jobsCount ?? 0,
+        employeesCount: (profile as any).employeesCount ?? 0,
         createdAt: profile.createdAt,
         updatedAt: profile.updatedAt,
       })),
@@ -247,9 +343,8 @@ export class EmployerService {
       relations: [
         'auth',
         'profilePicture',
-        'verification',
-        'verification.documents',
-        'verification.documents.document',
+        'verificationDocuments',
+        'verificationDocuments.document',
         'jobs',
         'employees',
       ],
@@ -261,9 +356,11 @@ export class EmployerService {
 
     // Calculate metrics
     const totalJobsPosted = profile.jobs?.length || 0;
-    const totalApplicants =
-      profile.jobs?.reduce((sum, job) => sum + (job.applicantsCount || 0), 0) ||
-      0;
+    const totalApplicants = await this.jobApplicationRepo
+      .createQueryBuilder('application')
+      .innerJoin('application.job', 'job')
+      .where('job.employerId = :employerId', { employerId })
+      .getCount();
     const totalHires = profile.employees?.length || 0;
 
     // Attach to profile or return as separate fields (we will return as separate fields mixed into the response)

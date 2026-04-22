@@ -6,22 +6,24 @@ export enum SkillStatus {
 }
 
 export enum SkillCategory {
-  TECHNICAL = 'TECHNICAL',
-  DATABASE = 'DATABASE',
-  BUSINESS = 'BUSINESS',
+  SOFTWARE_DEVELOPMENT = 'SOFTWARE_DEVELOPMENT',
   DESIGN = 'DESIGN',
-  FINANCE_ACCOUNTING = 'FINANCE_ACCOUNTING',
+  ACCOUNTING_FINANCE = 'ACCOUNTING_FINANCE',
   SALES_MARKETING = 'SALES_MARKETING',
   OPERATIONS = 'OPERATIONS',
-  COMMUNICATION = 'COMMUNICATION',
-  SOCIAL_MEDIA = 'SOCIAL_MEDIA',
-  SOFTWARE_DEVELOPMENT = 'SOFTWARE_DEVELOPMENT',
-  HOME_SUPPORT = 'HOME_SUPPORT',
+  BUSINESS_ADMIN = 'BUSINESS_ADMIN',
+  CUSTOMER_SERVICE = 'CUSTOMER_SERVICE',
+  HEALTHCARE_PHARMA = 'HEALTHCARE_PHARMA',
+  EDUCATION_TRAINING = 'EDUCATION_TRAINING',
+  MEDIA_CREATIVE = 'MEDIA_CREATIVE',
+  HR_ADMIN = 'HR_ADMIN',
+  LEGAL_COMPLIANCE = 'LEGAL_COMPLIANCE',
+  CONSTRUCTION_REAL_ESTATE = 'CONSTRUCTION_REAL_ESTATE',
   MAINTENANCE_TRADES = 'MAINTENANCE_TRADES',
   HOSPITALITY = 'HOSPITALITY',
   SECURITY = 'SECURITY',
   TRANSPORT_LOGISTICS = 'TRANSPORT_LOGISTICS',
-  OTHERS = 'OTHERS',
+  AGRICULTURE = 'AGRICULTURE',
 }
 
 export enum SkillType {
@@ -33,24 +35,26 @@ export enum SkillType {
 // Used to determine which categories are high skill vs low skill
 export const SkillTypeCategory: Record<SkillType, SkillCategory[]> = {
   [SkillType.HIGH_SKILL]: [
-    SkillCategory.TECHNICAL,
-    SkillCategory.DATABASE,
     SkillCategory.SOFTWARE_DEVELOPMENT,
     SkillCategory.DESIGN,
-    SkillCategory.FINANCE_ACCOUNTING,
-    SkillCategory.BUSINESS,
+    SkillCategory.ACCOUNTING_FINANCE,
     SkillCategory.SALES_MARKETING,
     SkillCategory.OPERATIONS,
+    SkillCategory.BUSINESS_ADMIN,
+    SkillCategory.CUSTOMER_SERVICE,
+    SkillCategory.HEALTHCARE_PHARMA,
+    SkillCategory.EDUCATION_TRAINING,
+    SkillCategory.MEDIA_CREATIVE,
+    SkillCategory.HR_ADMIN,
+    SkillCategory.LEGAL_COMPLIANCE,
+    SkillCategory.CONSTRUCTION_REAL_ESTATE,
+    SkillCategory.AGRICULTURE,
   ],
   [SkillType.LOW_SKILL]: [
-    SkillCategory.HOME_SUPPORT,
     SkillCategory.MAINTENANCE_TRADES,
     SkillCategory.HOSPITALITY,
     SkillCategory.SECURITY,
     SkillCategory.TRANSPORT_LOGISTICS,
-    SkillCategory.COMMUNICATION,
-    SkillCategory.SOCIAL_MEDIA,
-    SkillCategory.OTHERS,
   ],
 };
 
@@ -73,6 +77,12 @@ export enum EmployerStatus {
   ACTIVE = 'ACTIVE',
   INACTIVE = 'INACTIVE',
   SUSPENDED = 'SUSPENDED',
+}
+
+export enum EmployerGender {
+  MALE = 'MALE',
+  FEMALE = 'FEMALE',
+  OTHER = 'OTHER',
 }
 
 // Notification related enums
@@ -135,18 +145,30 @@ export enum JobStatus {
   CLOSED = 'CLOSED',
 }
 
+/** True when job seekers can browse and apply (legacy published or admin-activated live). */
+export function isJobOpenOnMarketplace(status: JobStatus): boolean {
+  return status === JobStatus.PUBLISHED || status === JobStatus.ACTIVE;
+}
+
+// It always appears in this order
 export enum JobApplicationStatus {
   APPLIED = 'APPLIED',
+  WITHDRAWN = 'WITHDRAWN',
   VETTED = 'VETTED',
   SELECTED_FOR_SCREENING = 'SELECTED_FOR_SCREENING',
-  SCREENING_COMPLETED = 'SCREENING_COMPLETED',
+  SELECTED_FOR_HIRE = 'SELECTED_FOR_HIRE',
   OFFER_SENT = 'OFFER_SENT',
   APPLICANT_ACCEPTED = 'APPLICANT_ACCEPTED',
   PAYMENT_COMPLETE = 'PAYMENT_COMPLETE',
   CONTRACT_SIGNED = 'CONTRACT_SIGNED',
   HIRED = 'HIRED',
   REJECTED = 'REJECTED',
-  WITHDRAWN = 'WITHDRAWN',
+}
+
+export enum ProbationStatus {
+  ACTIVE = 'ACTIVE',
+  CONFIRMED = 'CONFIRMED',
+  TERMINATED = 'TERMINATED',
 }
 
 export enum EmployeeStatus {
@@ -155,6 +177,41 @@ export enum EmployeeStatus {
   SUSPENDED = 'SUSPENDED',
   COMPLETED = 'COMPLETED',
   TERMINATED = 'TERMINATED',
+  /** Mutual completion confirmed by both employer and jobseeker. */
+  ENDED = 'ENDED',
+}
+
+/** True when employment is no longer active for staffing/placement purposes. */
+export function isEmployeeTerminalStatus(status: EmployeeStatus): boolean {
+  return (
+    status === EmployeeStatus.ENDED ||
+    status === EmployeeStatus.TERMINATED ||
+    status === EmployeeStatus.COMPLETED
+  );
+}
+
+/** Eligible to declare mutual completion (not already ended). */
+export function isEmployeeOpenForMutualCompletion(
+  status: EmployeeStatus,
+): boolean {
+  return (
+    status === EmployeeStatus.ACTIVE || status === EmployeeStatus.ONBOARDING
+  );
+}
+
+/** HR categorization when employment is ended by employer. */
+export enum EmployeeTerminationHrMeaning {
+  EMPLOYEE_RESIGNED = 'EMPLOYEE_RESIGNED',
+  EMPLOYEE_TERMINATED = 'EMPLOYEE_TERMINATED',
+  ROLE_REDUNDANT = 'ROLE_REDUNDANT',
+  MUTUAL_SEPARATION = 'MUTUAL_SEPARATION',
+  OTHER = 'OTHER',
+}
+
+/** Who submitted a row in employment_feedback. */
+export enum EmploymentFeedbackReviewerRole {
+  EMPLOYER = 'EMPLOYER',
+  JOBSEEKER = 'JOBSEEKER',
 }
 
 // Jobseeker related enums
@@ -162,6 +219,16 @@ export enum Proficiency {
   BEGINNER = 'BEGINNER',
   INTERMEDIATE = 'INTERMEDIATE',
   ADVANCED = 'ADVANCED',
+}
+
+export enum JobseekerGender {
+  MALE = 'MALE',
+  FEMALE = 'FEMALE',
+}
+
+export enum JobseekerAvailability {
+  IMMEDIATE = 'IMMEDIATE',
+  NOTICE_PERIOD = 'NOTICE_PERIOD',
 }
 
 export enum ApprovalStatus {

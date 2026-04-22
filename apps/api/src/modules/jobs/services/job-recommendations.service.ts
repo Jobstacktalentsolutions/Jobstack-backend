@@ -44,7 +44,6 @@ export class JobRecommendationsService {
       }
     }
 
-
     // Cache miss - calculate recommendations
     const recommendations =
       await this.recommendationsProcessor.calculateRecommendations(

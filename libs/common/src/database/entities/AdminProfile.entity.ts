@@ -33,7 +33,7 @@ export class AdminProfile {
   @Column()
   email: string;
 
-  @Column()
+  @Column({ nullable: true })
   phoneNumber: string;
 
   @Column({ nullable: true })

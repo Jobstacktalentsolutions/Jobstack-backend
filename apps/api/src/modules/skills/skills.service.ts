@@ -7,13 +7,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, ILike } from 'typeorm';
 import { Skill } from '@app/common/database/entities/Skill.entity';
 import { JobseekerSkill } from '@app/common/database/entities/JobseekerSkill.entity';
-import { NotificationService } from '../notification/notification.service';
 import {
-  NotificationPriority,
-  Proficiency,
+  SkillCategory,
   SkillStatus,
 } from '@app/common/database/entities/schema.enum';
-import { UserRole } from '@app/common/shared/enums/user-roles.enum';
 
 @Injectable()
 export class SkillsService {
@@ -21,7 +18,6 @@ export class SkillsService {
     @InjectRepository(Skill) private skillRepo: Repository<Skill>,
     @InjectRepository(JobseekerSkill)
     protected jsSkillRepo: Repository<JobseekerSkill>,
-    protected notificationService: NotificationService,
   ) {}
 
   // Admin: create skill
@@ -80,70 +76,54 @@ export class SkillsService {
       .getMany();
   }
 
-  // Public: suggest skill creates a SUGGESTED skill and returns it
-  async suggestSkill(name: string): Promise<Skill> {
+  /**
+   * User-initiated skill creation: creates a new skill as ACTIVE immediately.
+   * If a skill with the same name already exists (any status), returns it.
+   */
+  async addSkill(name: string, category: SkillCategory): Promise<Skill> {
     const trimmed = name.trim();
     if (!trimmed) throw new BadRequestException('Name required');
     const existing = await this.skillRepo.findOne({
-      where: [{ name: ILike(trimmed) }],
+      where: { name: ILike(trimmed) },
     });
     if (existing) return existing;
     const skill = this.skillRepo.create({
       name: trimmed,
-      status: SkillStatus.SUGGESTED,
-      synonyms: [],
-    });
-    const saved = await this.skillRepo.save(skill);
-
-    // Notify admins via app notification
-    // Note: In a real implementation, you'd need to get admin user IDs
-    // For now, we'll create a notification without a specific admin ID
-    // This would typically be handled by a background job that finds all admins
-    try {
-      await this.notificationService.createAppNotification(
-        'system', // Placeholder - in real implementation, get actual admin IDs
-        UserRole.JOB_SEEKER,
-        {
-          title: 'New skill suggested',
-          message: `A new skill was suggested: ${saved.name}`,
-          metadata: { skillId: saved.id, name: saved.name },
-          priority: NotificationPriority.MEDIUM,
-        },
-      );
-    } catch (error) {
-      // Log error but don't fail the skill creation
-      console.error(
-        'Failed to create notification for skill suggestion:',
-        error,
-      );
-    }
-
-    return saved;
-  }
-
-  async insertSuggestedSkill(name: string): Promise<Skill> {
-    if (!name) throw new BadRequestException('Name required');
-
-    const existing = await this.skillRepo.findOne({
-      where: { name: name.trim() },
-    });
-    if (existing) return existing;
-
-    const skill = this.skillRepo.create({
-      name: name.trim(),
-      status: SkillStatus.SUGGESTED,
+      category,
+      status: SkillStatus.ACTIVE,
       synonyms: [],
     });
     return await this.skillRepo.save(skill);
   }
 
-  // Attach skills to a profile with metadata
+  /**
+   * Internal helper used when a profile update references a skill name that
+   * doesn't exist yet. Creates it as ACTIVE with a fallback category.
+   */
+  async insertActiveSkill(
+    name: string,
+    category?: SkillCategory,
+  ): Promise<Skill> {
+    const trimmed = name.trim();
+    if (!trimmed) throw new BadRequestException('Name required');
+    const existing = await this.skillRepo.findOne({
+      where: { name: ILike(trimmed) },
+    });
+    if (existing) return existing;
+    const skill = this.skillRepo.create({
+      name: trimmed,
+      category: category ?? SkillCategory.SOFTWARE_DEVELOPMENT,
+      status: SkillStatus.ACTIVE,
+      synonyms: [],
+    });
+    return await this.skillRepo.save(skill);
+  }
+
+  // Attach skills to a profile as simple links
   async attachSkillsToProfile(
     profileId: string,
     items: Array<{
       skillId: string;
-      proficiency?: Proficiency;
-      yearsExperience?: number;
     }>,
   ): Promise<void> {
     if (!items?.length) return;
@@ -151,8 +131,6 @@ export class SkillsService {
       this.jsSkillRepo.create({
         profileId,
         skillId: i.skillId,
-        proficiency: i.proficiency ?? Proficiency.INTERMEDIATE,
-        yearsExperience: i.yearsExperience ?? 0,
       }),
     );
     await this.jsSkillRepo.save(rows);

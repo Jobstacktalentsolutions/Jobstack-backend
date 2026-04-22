@@ -5,7 +5,10 @@ import { Repository } from 'typeorm';
 import type { Job } from 'bull';
 import { QUEUE_NAMES } from '@app/common/queue';
 import { Job as JobEntity } from '@app/common/database/entities';
-import { JobStatus } from '@app/common/database/entities/schema.enum';
+import {
+  JobStatus,
+  isJobOpenOnMarketplace,
+} from '@app/common/database/entities/schema.enum';
 import {
   JOB_VETTING_JOBS,
   type VetJobData,
@@ -51,9 +54,9 @@ export class JobVettingConsumer {
         throw new Error(`Job ${jobId} not found`);
       }
 
-      if (jobEntity.status !== JobStatus.PUBLISHED) {
+      if (!isJobOpenOnMarketplace(jobEntity.status)) {
         this.logger.warn(
-          `Job ${jobId} is not published (status: ${jobEntity.status}), skipping vetting`,
+          `Job ${jobId} is not live on marketplace (status: ${jobEntity.status}), skipping vetting`,
         );
         return {
           success: false,
@@ -63,12 +66,20 @@ export class JobVettingConsumer {
         };
       }
 
-      // Check if job already has vetting completed recently
+      // Debounce repeat vetting within 1h unless new applications arrived after last vetting
       if (jobEntity.vettingCompletedAt) {
         const hoursSinceVetting =
           (Date.now() - jobEntity.vettingCompletedAt.getTime()) /
           (1000 * 60 * 60);
-        if (hoursSinceVetting < 1 && triggeredBy !== 'manual') {
+        const completedAt = jobEntity.vettingCompletedAt.getTime();
+        const hasNewApplicationsSinceVetting = (
+          jobEntity.applications ?? []
+        ).some((app) => new Date(app.createdAt).getTime() > completedAt);
+        if (
+          hoursSinceVetting < 1 &&
+          triggeredBy !== 'manual' &&
+          !hasNewApplicationsSinceVetting
+        ) {
           this.logger.debug(
             `Job ${jobId} was vetted ${hoursSinceVetting.toFixed(1)} hours ago, skipping`,
           );
@@ -88,18 +99,23 @@ export class JobVettingConsumer {
         `Vetting completed for job ${jobId}: ${result.totalApplicants} applicants, ${result.highlightedCount} highlighted`,
       );
 
-      // Try to send notification to admin (don't fail the whole job if this fails)
-      try {
-        await this.jobVettingService.notifyAdminVettingComplete(jobId, result);
-        this.logger.log(
-          `Vetting completion notification sent for job ${jobId}`,
-        );
-      } catch (notificationError) {
-        this.logger.error(
-          `Failed to send vetting completion notification for job ${jobId}`,
-          notificationError.stack,
-        );
-        // Continue with success - the vetting itself was successful
+      // Notify admin only when there were applicants to vet (skip empty noise)
+      if (result.totalApplicants > 0) {
+        try {
+          await this.jobVettingService.notifyAdminVettingComplete(
+            jobId,
+            result,
+          );
+          this.logger.log(
+            `Vetting completion notification sent for job ${jobId}`,
+          );
+        } catch (notificationError) {
+          this.logger.error(
+            `Failed to send vetting completion notification for job ${jobId}`,
+            notificationError.stack,
+          );
+          // Continue with success - the vetting itself was successful
+        }
       }
 
       return {
@@ -141,7 +157,9 @@ export class JobVettingConsumer {
       jobs = await this.jobRepo
         .createQueryBuilder('job')
         .leftJoin('job.applications', 'application')
-        .where('job.status = :status', { status: JobStatus.PUBLISHED })
+        .where('job.status IN (:...liveStatuses)', {
+          liveStatuses: [JobStatus.PUBLISHED, JobStatus.ACTIVE],
+        })
         .andWhere('application.id IS NOT NULL') // Has applications
         .andWhere(
           '(job.vettingCompletedAt IS NULL OR ' +
@@ -165,7 +183,6 @@ export class JobVettingConsumer {
     }
 
     try {
-
       let processed = 0;
       let failed = 0;
       const errors: Array<{ jobId: string; error: string }> = [];

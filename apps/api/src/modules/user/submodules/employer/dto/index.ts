@@ -5,10 +5,10 @@ export * from './employer-verification.dto';
 export * from './upload-employer-verification-document.dto';
 
 // Export legacy recruiter DTOs (for backward compatibility during transition)
-export { UpdateEmployerProfileDto as UpdateRecruiterProfileDto } from './update-recruiter-profile.dto';
-export { GetAllEmployersQueryDto as GetAllRecruitersQueryDto } from './get-all-recruiters-query.dto';
+export { UpdateRecruiterProfileDto } from './update-recruiter-profile.dto';
+export { GetAllRecruitersQueryDto } from './get-all-recruiters-query.dto';
 export { EmployerVerificationDto as RecruiterVerificationDto } from './recruiter-verification.dto';
-export { UploadEmployerVerificationDocumentDto as UploadVerificationDocumentDto } from './upload-verification-document.dto';
+export { UploadEmployerVerificationDocumentDto as UploadVerificationDocumentDto } from './upload-employer-verification-document.dto';
 
 // Export shared DTOs
 export * from './update-verification.dto';

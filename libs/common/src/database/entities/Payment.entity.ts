@@ -37,6 +37,9 @@ export class Payment extends BaseEntity {
   paystackReference?: string;
 
   @Column({ nullable: true })
+  paystackAccessCode?: string;
+
+  @Column({ nullable: true })
   paystackTransactionId?: string;
 
   @Column({ type: 'enum', enum: PaymentType })

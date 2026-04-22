@@ -9,10 +9,12 @@ import {
   HttpStatus,
   HttpException,
 } from '@nestjs/common';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { NotificationService } from '../notification.service';
 import { UserRole } from '@app/common/shared/enums/user-roles.enum';
-import type { AppNotificationQuery } from '../notification.interface';
+import { NotificationListQueryDto } from '../dto/notification-list-query.dto';
 
+@ApiTags('Notifications')
 @Controller('notifications')
 export class NotificationController {
   constructor(private readonly notificationService: NotificationService) {}
@@ -37,10 +39,11 @@ export class NotificationController {
   }
 
   @Get(':userType/:userId')
+  @ApiOperation({ summary: 'List notifications for a user' })
   async getUserNotifications(
     @Param('userId') userId: string,
     @Param('userType') userTypeParam: string,
-    @Query() query: AppNotificationQuery,
+    @Query() query: NotificationListQueryDto,
   ) {
     const userType = this.parseUserType(userTypeParam);
 

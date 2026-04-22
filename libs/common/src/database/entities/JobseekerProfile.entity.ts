@@ -7,6 +7,7 @@ import {
   PrimaryColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  Index,
 } from 'typeorm';
 import { JobseekerSkill } from './JobseekerSkill.entity';
 import { JobseekerAuth } from './JobseekerAuth.entity';
@@ -15,10 +16,14 @@ import {
   ApprovalStatus,
   EmploymentArrangement,
   EmploymentType,
+  JobseekerAvailability,
+  JobseekerGender,
+  SkillCategory,
   WorkMode,
 } from './schema.enum';
 import { JobApplication } from './JobApplication.entity';
 import { Employee } from './Employee.entity';
+import { JobseekerVerificationDocument } from './JobseekerVerificationDocument.entity';
 
 @Entity('jobseeker_profiles')
 export class JobSeekerProfile {
@@ -35,17 +40,35 @@ export class JobSeekerProfile {
   })
   updatedAt: Date;
 
-  @Column()
+  @Column('varchar')
   firstName: string;
 
-  @Column()
+  @Column('varchar')
   lastName: string;
 
-  @Column()
+  @Index({ unique: true })
+  @Column({ type: 'varchar', length: 160, nullable: true })
+  /**
+   * Public URL slug (jobstack.org/public/jobseekers/[slug]).
+   * Generated from `${firstName}_${lastName}` and de-duplicated with random suffix.
+   */
+  slug?: string;
+
+  @Column('varchar')
   email: string;
 
-  @Column()
+  @Column('varchar')
   phoneNumber: string;
+
+  @Column({ type: 'date', nullable: true })
+  dateOfBirth?: Date;
+
+  @Column({
+    type: 'enum',
+    enum: JobseekerGender,
+    nullable: true,
+  })
+  gender?: JobseekerGender;
 
   @Column('uuid', { nullable: true })
   profilePictureId?: string;
@@ -54,7 +77,7 @@ export class JobSeekerProfile {
   @JoinColumn({ name: 'profilePictureId' })
   profilePicture?: Document;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   address?: string;
 
   @OneToMany(() => JobseekerSkill, (js) => js.profile, { cascade: true })
@@ -63,7 +86,7 @@ export class JobSeekerProfile {
   @Column({ type: 'text', nullable: true })
   jobTitle?: string;
 
-  @Column({ type: 'text', nullable: true })
+  @Column({ type: 'varchar', length: 3000, nullable: true })
   brief?: string;
 
   @Column({ type: 'int', nullable: true })
@@ -72,10 +95,17 @@ export class JobSeekerProfile {
   @Column({ type: 'text', nullable: true })
   preferredLocation?: string;
 
-  @Column({ nullable: true })
+  @Column({
+    type: 'enum',
+    enum: JobseekerAvailability,
+    nullable: true,
+  })
+  availability?: JobseekerAvailability;
+
+  @Column({ type: 'varchar', nullable: true })
   state?: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   city?: string;
 
   @Column('uuid', { nullable: true })
@@ -85,12 +115,26 @@ export class JobSeekerProfile {
   @JoinColumn({ name: 'cvDocumentId' })
   cvDocument?: Document;
 
+  @OneToMany(() => JobseekerVerificationDocument, (v) => v.jobseekerProfile, {
+    cascade: true,
+  })
+  verificationDocuments: JobseekerVerificationDocument[];
+
   @Column({
     type: 'enum',
     enum: ApprovalStatus,
     default: ApprovalStatus.NOT_STARTED,
   })
   approvalStatus: ApprovalStatus;
+
+  @Column({ type: 'varchar', nullable: true })
+  approvalRejectionReason?: string;
+
+  @Column('uuid', { nullable: true })
+  approvalReviewedByAdminId?: string;
+
+  @Column({ type: 'timestamp', nullable: true })
+  approvalReviewedAt?: Date;
 
   @Column({ type: 'decimal', precision: 12, scale: 2, nullable: true })
   minExpectedSalary?: number;
@@ -118,6 +162,37 @@ export class JobSeekerProfile {
     nullable: true,
   })
   preferredEmploymentArrangement?: EmploymentArrangement;
+
+  @Column({
+    type: 'enum',
+    enum: SkillCategory,
+    nullable: true,
+  })
+  workSector?: SkillCategory;
+
+  @Column({ type: 'jsonb', nullable: true })
+  /**
+   * Work experience entries stored as JSON array.
+   * Each entry: { company: string, role: string, duration: string, description: string }
+   */
+  workExperience?: Array<{
+    company: string;
+    role: string;
+    duration: string;
+    description: string;
+  }>;
+
+  @Column({ type: 'jsonb', nullable: true })
+  /**
+   * Exactly two onboarding reference contacts.
+   * Each entry: { name, phoneNumber, homeAddress, relationship }
+   */
+  referenceContacts?: Array<{
+    name: string;
+    phoneNumber: string;
+    homeAddress: string;
+    relationship: string;
+  }>;
 
   @OneToOne(() => JobseekerAuth, (auth) => auth.profile)
   @JoinColumn({ name: 'id' })

@@ -7,7 +7,6 @@ type JobApplicationSeed = {
   jobId: string;
   jobseekerProfileId: string;
   status: JobApplicationStatus;
-  expectedSalary?: number;
   note?: string;
   createdAt: Date;
 };
@@ -30,7 +29,7 @@ const BASE_JOB_APPLICATIONS_DATA: JobApplicationSeed[] = [
     jobId: CONSTANT_IDS.JOBS[6], // Frontend Engineer (TypeScript)
     jobseekerProfileId: CONSTANT_IDS.JOBSEEKERS[0], // Adebayo (Senior Full-Stack Developer) - Perfect match
     status: JobApplicationStatus.APPLIED,
-    expectedSalary: 8500000,
+
     note: 'Available for immediate start',
     createdAt: daysAgo(1, 9, 0), // Early application
   },
@@ -38,7 +37,7 @@ const BASE_JOB_APPLICATIONS_DATA: JobApplicationSeed[] = [
     jobId: CONSTANT_IDS.JOBS[6], // Frontend Engineer (TypeScript)
     jobseekerProfileId: CONSTANT_IDS.JOBSEEKERS[2], // Emmanuel (Frontend Developer) - Junior level, good match
     status: JobApplicationStatus.APPLIED,
-    expectedSalary: 4000000,
+
     createdAt: daysAgo(1, 14, 30),
   },
   {
@@ -53,14 +52,14 @@ const BASE_JOB_APPLICATIONS_DATA: JobApplicationSeed[] = [
     jobId: CONSTANT_IDS.JOBS[21], // Data Engineer
     jobseekerProfileId: CONSTANT_IDS.JOBSEEKERS[1], // Chiamaka (Data Analyst) - Good match for data role
     status: JobApplicationStatus.APPLIED,
-    expectedSalary: 6500000,
+
     createdAt: daysAgo(1, 10, 15),
   },
   {
     jobId: CONSTANT_IDS.JOBS[21], // Data Engineer
     jobseekerProfileId: CONSTANT_IDS.JOBSEEKERS[0], // Adebayo (Full-Stack) - Overqualified but relevant
     status: JobApplicationStatus.APPLIED,
-    expectedSalary: 9000000,
+
     createdAt: daysAgo(2, 11, 20),
   },
 
@@ -69,7 +68,7 @@ const BASE_JOB_APPLICATIONS_DATA: JobApplicationSeed[] = [
     jobId: CONSTANT_IDS.JOBS[12], // Financial Analyst
     jobseekerProfileId: CONSTANT_IDS.JOBSEEKERS[3], // Funmilayo (Financial Analyst) - Perfect match
     status: JobApplicationStatus.APPLIED,
-    expectedSalary: 7500000,
+
     createdAt: daysAgo(0, 8, 45), // Very early application
   },
 
@@ -78,14 +77,14 @@ const BASE_JOB_APPLICATIONS_DATA: JobApplicationSeed[] = [
     jobId: CONSTANT_IDS.JOBS[13], // Sales Account Executive
     jobseekerProfileId: CONSTANT_IDS.JOBSEEKERS[4], // Ibrahim (Sales Manager) - Perfect match
     status: JobApplicationStatus.APPLIED,
-    expectedSalary: 8500000,
+
     createdAt: daysAgo(1, 9, 30),
   },
   {
     jobId: CONSTANT_IDS.JOBS[13], // Sales Account Executive
     jobseekerProfileId: CONSTANT_IDS.JOBSEEKERS[5], // Blessing (Customer Service) - Career change, less ideal but possible
     status: JobApplicationStatus.APPLIED,
-    expectedSalary: 4500000,
+
     createdAt: daysAgo(3, 13, 0),
   },
 
@@ -94,7 +93,7 @@ const BASE_JOB_APPLICATIONS_DATA: JobApplicationSeed[] = [
     jobId: CONSTANT_IDS.JOBS[20], // Customer Support Specialist
     jobseekerProfileId: CONSTANT_IDS.JOBSEEKERS[5], // Blessing (Customer Service) - Perfect match
     status: JobApplicationStatus.APPLIED,
-    expectedSalary: 3200000,
+
     createdAt: daysAgo(1, 11, 0),
   },
   {
@@ -109,7 +108,7 @@ const BASE_JOB_APPLICATIONS_DATA: JobApplicationSeed[] = [
     jobId: CONSTANT_IDS.JOBS[10], // Housekeeping Supervisor
     jobseekerProfileId: CONSTANT_IDS.JOBSEEKERS[6], // Kemi (Housekeeper) - Perfect match, experienced
     status: JobApplicationStatus.APPLIED,
-    expectedSalary: 2600000,
+
     createdAt: daysAgo(1, 12, 0),
   },
 
@@ -118,7 +117,7 @@ const BASE_JOB_APPLICATIONS_DATA: JobApplicationSeed[] = [
     jobId: CONSTANT_IDS.JOBS[11], // Security Operations Lead
     jobseekerProfileId: CONSTANT_IDS.JOBSEEKERS[8], // Mohammed (Security Guard) - Excellent match with military background
     status: JobApplicationStatus.APPLIED,
-    expectedSalary: 4000000,
+
     createdAt: daysAgo(0, 7, 30), // Earliest application
   },
 
@@ -129,14 +128,14 @@ const BASE_JOB_APPLICATIONS_DATA: JobApplicationSeed[] = [
     jobId: CONSTANT_IDS.JOBS[3], // Backend Engineer (Node.js)
     jobseekerProfileId: CONSTANT_IDS.JOBSEEKERS[0], // Adebayo
     status: JobApplicationStatus.APPLIED,
-    expectedSalary: 9500000,
+
     createdAt: daysAgo(1, 16, 0),
   },
   {
     jobId: CONSTANT_IDS.JOBS[5], // DevOps Engineer
     jobseekerProfileId: CONSTANT_IDS.JOBSEEKERS[0], // Adebayo
     status: JobApplicationStatus.APPLIED,
-    expectedSalary: 8800000,
+
     createdAt: daysAgo(2, 9, 0),
   },
 
@@ -145,7 +144,7 @@ const BASE_JOB_APPLICATIONS_DATA: JobApplicationSeed[] = [
     jobId: CONSTANT_IDS.JOBS[4], // UI/UX Designer
     jobseekerProfileId: CONSTANT_IDS.JOBSEEKERS[2], // Emmanuel
     status: JobApplicationStatus.APPLIED,
-    expectedSalary: 4200000,
+
     createdAt: daysAgo(2, 14, 0),
   },
 
@@ -154,7 +153,7 @@ const BASE_JOB_APPLICATIONS_DATA: JobApplicationSeed[] = [
     jobId: CONSTANT_IDS.JOBS[15], // Content Marketing Lead
     jobseekerProfileId: CONSTANT_IDS.JOBSEEKERS[4], // Ibrahim
     status: JobApplicationStatus.APPLIED,
-    expectedSalary: 6500000,
+
     createdAt: daysAgo(2, 10, 30),
   },
 
@@ -163,7 +162,7 @@ const BASE_JOB_APPLICATIONS_DATA: JobApplicationSeed[] = [
     jobId: CONSTANT_IDS.JOBS[0], // Senior Software Engineer (Lagos-based)
     jobseekerProfileId: CONSTANT_IDS.JOBSEEKERS[1], // Chiamaka (Abuja-based) - Wrong location
     status: JobApplicationStatus.APPLIED,
-    expectedSalary: 7000000,
+
     createdAt: daysAgo(3, 11, 0),
   },
 
@@ -172,7 +171,7 @@ const BASE_JOB_APPLICATIONS_DATA: JobApplicationSeed[] = [
     jobId: CONSTANT_IDS.JOBS[22], // React Native Engineer
     jobseekerProfileId: CONSTANT_IDS.JOBSEEKERS[2], // Emmanuel
     status: JobApplicationStatus.APPLIED,
-    expectedSalary: 4500000,
+
     createdAt: daysAgo(10, 18, 0), // Very late application
   },
 
@@ -186,11 +185,131 @@ const BASE_JOB_APPLICATIONS_DATA: JobApplicationSeed[] = [
 
   // Transport & Logistics
   {
-    jobId: CONSTANT_IDS.JOBS[45], // Logistics Coordinator (if exists, otherwise use available transport job)
+    jobId: CONSTANT_IDS.JOBS[45], // Logistics Coordinator
     jobseekerProfileId: CONSTANT_IDS.JOBSEEKERS[9], // Olumide (Driver)
     status: JobApplicationStatus.APPLIED,
-    expectedSalary: 3200000,
     createdAt: daysAgo(1, 13, 30),
+  },
+  // --- ADDED 20 NEW APPLICATIONS FOR TESTING ---
+  {
+    jobId: CONSTANT_IDS.JOBS[0], // Senior Software Engineer
+    jobseekerProfileId: CONSTANT_IDS.JOBSEEKERS[18], // Bisi (Backend)
+    status: JobApplicationStatus.APPLIED,
+    createdAt: daysAgo(1, 10, 0),
+  },
+  {
+    jobId: CONSTANT_IDS.JOBS[1], // Product Manager
+    jobseekerProfileId: CONSTANT_IDS.JOBSEEKERS[20], // Dayo (PM)
+    status: JobApplicationStatus.APPLIED,
+    createdAt: daysAgo(1, 11, 0),
+  },
+  {
+    jobId: CONSTANT_IDS.JOBS[2], // Data Analyst
+    jobseekerProfileId: CONSTANT_IDS.JOBSEEKERS[1], // Chiamaka
+    status: JobApplicationStatus.APPLIED,
+    createdAt: daysAgo(1, 12, 0),
+  },
+  {
+    jobId: CONSTANT_IDS.JOBS[3], // Backend Engineer
+    jobseekerProfileId: CONSTANT_IDS.JOBSEEKERS[18], // Bisi
+    status: JobApplicationStatus.APPLIED,
+    createdAt: daysAgo(1, 13, 0),
+  },
+  {
+    jobId: CONSTANT_IDS.JOBS[5], // DevOps Engineer
+    jobseekerProfileId: CONSTANT_IDS.JOBSEEKERS[27], // Kelechi
+    status: JobApplicationStatus.APPLIED,
+    createdAt: daysAgo(1, 14, 0),
+  },
+  {
+    jobId: CONSTANT_IDS.JOBS[6], // Frontend Engineer
+    jobseekerProfileId: CONSTANT_IDS.JOBSEEKERS[19], // Chidi
+    status: JobApplicationStatus.APPLIED,
+    createdAt: daysAgo(1, 15, 0),
+  },
+  {
+    jobId: CONSTANT_IDS.JOBS[12], // Financial Analyst
+    jobseekerProfileId: CONSTANT_IDS.JOBSEEKERS[22], // Fatima
+    status: JobApplicationStatus.APPLIED,
+    createdAt: daysAgo(1, 16, 0),
+  },
+  {
+    jobId: CONSTANT_IDS.JOBS[21], // Data Engineer
+    jobseekerProfileId: CONSTANT_IDS.JOBSEEKERS[21], // Efosa
+    status: JobApplicationStatus.APPLIED,
+    createdAt: daysAgo(1, 17, 0),
+  },
+  {
+    jobId: CONSTANT_IDS.JOBS[0], // Senior Software Engineer
+    jobseekerProfileId: CONSTANT_IDS.JOBSEEKERS[33], // Qudus
+    status: JobApplicationStatus.APPLIED,
+    createdAt: daysAgo(2, 10, 0),
+  },
+  {
+    jobId: CONSTANT_IDS.JOBS[6], // Frontend Engineer
+    jobseekerProfileId: CONSTANT_IDS.JOBSEEKERS[25], // Ifeanyi
+    status: JobApplicationStatus.APPLIED,
+    createdAt: daysAgo(2, 11, 0),
+  },
+  {
+    jobId: CONSTANT_IDS.JOBS[13], // Sales Account Executive
+    jobseekerProfileId: CONSTANT_IDS.JOBSEEKERS[23], // Gideon
+    status: JobApplicationStatus.APPLIED,
+    createdAt: daysAgo(2, 12, 0),
+  },
+  {
+    jobId: CONSTANT_IDS.JOBS[20], // Customer Support Specialist
+    jobseekerProfileId: CONSTANT_IDS.JOBSEEKERS[26], // Joy
+    status: JobApplicationStatus.APPLIED,
+    createdAt: daysAgo(2, 13, 0),
+  },
+  {
+    jobId: CONSTANT_IDS.JOBS[12], // Financial Analyst
+    jobseekerProfileId: CONSTANT_IDS.JOBSEEKERS[31], // Ope
+    status: JobApplicationStatus.APPLIED,
+    createdAt: daysAgo(2, 14, 0),
+  },
+  {
+    jobId: CONSTANT_IDS.JOBS[21], // Data Engineer
+    jobseekerProfileId: CONSTANT_IDS.JOBSEEKERS[35], // Seyi
+    status: JobApplicationStatus.APPLIED,
+    createdAt: daysAgo(2, 15, 0),
+  },
+  {
+    jobId: CONSTANT_IDS.JOBS[6], // Frontend Engineer
+    jobseekerProfileId: CONSTANT_IDS.JOBSEEKERS[33], // Qudus again
+    status: JobApplicationStatus.APPLIED,
+    createdAt: daysAgo(2, 16, 0),
+  },
+  {
+    jobId: CONSTANT_IDS.JOBS[6], // Frontend Engineer
+    jobseekerProfileId: CONSTANT_IDS.JOBSEEKERS[34], // Rita
+    status: JobApplicationStatus.APPLIED,
+    createdAt: daysAgo(2, 17, 0),
+  },
+  {
+    jobId: CONSTANT_IDS.JOBS[15], // Content Marketing Lead
+    jobseekerProfileId: CONSTANT_IDS.JOBSEEKERS[37], // Uche
+    status: JobApplicationStatus.APPLIED,
+    createdAt: daysAgo(3, 10, 0),
+  },
+  {
+    jobId: CONSTANT_IDS.JOBS[20], // Customer Support Specialist
+    jobseekerProfileId: CONSTANT_IDS.JOBSEEKERS[32], // Patience
+    status: JobApplicationStatus.APPLIED,
+    createdAt: daysAgo(3, 11, 0),
+  },
+  {
+    jobId: CONSTANT_IDS.JOBS[13], // Sales Account Executive
+    jobseekerProfileId: CONSTANT_IDS.JOBSEEKERS[37], // Uche
+    status: JobApplicationStatus.APPLIED,
+    createdAt: daysAgo(3, 12, 0),
+  },
+  {
+    jobId: CONSTANT_IDS.JOBS[0], // Senior Software Engineer
+    jobseekerProfileId: CONSTANT_IDS.JOBSEEKERS[36], // Tope
+    status: JobApplicationStatus.APPLIED,
+    createdAt: daysAgo(3, 13, 0),
   },
 ];
 
@@ -218,18 +337,6 @@ function buildCreatedAt(jobIndex: number, orderIndex: number): Date {
   return date;
 }
 
-// Compute a realistic expected salary around the job salary
-function getExpectedSalary(
-  jobSalary: number | undefined,
-  jobIndex: number,
-  rankIndex: number,
-): number | undefined {
-  if (!jobSalary) return undefined;
-  const factors = [0.95, 1, 1.05];
-  const factor = factors[(jobIndex + rankIndex) % factors.length];
-  return Math.round(jobSalary * factor);
-}
-
 // Job indices that get 8 applications each for full screening/vetting tests (5–10 jobs)
 const JOBS_WITH_8_APPLICATIONS = new Set([0, 1, 2, 3, 5, 6, 12, 21]); // Full Stack, Product Manager, Data Analyst, Backend, DevOps, Frontend, Financial Analyst, Data Engineer
 
@@ -248,17 +355,18 @@ JOBS_DATA.forEach((job, jobIndex) => {
     return;
   }
 
-  const jobSkillIds = (job.skills ?? []) as string[];
+  const jobSkillIds = job.skills ?? [];
   const jobSkillSet = new Set<string>(jobSkillIds);
 
   // Primary candidates share at least one skill with the job
-  const matchingCandidates = JOBSEEKERS_DATA.filter((js: any) =>
-    (js.skills ?? []).some((s) => jobSkillSet.has(s.skillId)),
+  const matchingCandidates = JOBSEEKERS_DATA.filter(
+    (js: any, idx: number) =>
+      (js.skills ?? []).some((s) => jobSkillSet.has(s.skillId)) && idx < 38,
   );
 
   // Secondary candidates match primarily on location preference
-  const locationCandidates = JOBSEEKERS_DATA.filter((js: any) => {
-    if (!job.state) return false;
+  const locationCandidates = JOBSEEKERS_DATA.filter((js: any, idx: number) => {
+    if (!job.state || idx >= 38) return false;
     return (
       js.state === job.state ||
       js.city === job.city ||
@@ -267,7 +375,7 @@ JOBS_DATA.forEach((job, jobIndex) => {
   });
 
   // Fallback candidates: everyone, used only if we cannot hit the minimum
-  const allCandidates = JOBSEEKERS_DATA;
+  const allCandidates = JOBSEEKERS_DATA.filter((_, idx) => idx < 38);
 
   // Combine and deduplicate candidates, prioritising skill matches
   const combinedCandidates: any[] = [];
@@ -300,11 +408,6 @@ JOBS_DATA.forEach((job, jobIndex) => {
       jobId: job.id,
       jobseekerProfileId: candidate.id,
       status: JobApplicationStatus.APPLIED,
-      expectedSalary: getExpectedSalary(
-        job.salary,
-        jobIndex,
-        baseCount + generatedForJob,
-      ),
       createdAt: buildCreatedAt(jobIndex, baseCount + generatedForJob),
     };
 

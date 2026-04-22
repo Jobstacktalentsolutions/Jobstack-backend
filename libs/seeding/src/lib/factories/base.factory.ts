@@ -43,9 +43,9 @@ export abstract class BaseFactory<T extends ObjectLiteral> {
     if (existingEntity) {
       // Update existing entity
       await this.repository.update({ id: data.id } as any, attributes);
-      return (await this.repository.findOne({
+      return await this.repository.findOne({
         where: { id: data.id } as any,
-      })) as T;
+      });
     } else {
       // Create new entity
       const entity = this.repository.create(attributes as T);
@@ -91,14 +91,14 @@ export abstract class BaseFactory<T extends ObjectLiteral> {
 
     if (existingEntity) {
       // Update existing entity without changing primary key (avoids FK violations)
-      const { id: _id, ...updatePayload } = attributes as any;
+      const { id: _id, ...updatePayload } = attributes;
       await this.repository.update(
         { id: existingEntity.id } as any,
         updatePayload,
       );
-      return (await this.repository.findOne({
+      return await this.repository.findOne({
         where: { id: existingEntity.id } as any,
-      })) as T;
+      });
     } else {
       // Create new entity
       const entity = this.repository.create(attributes as T);

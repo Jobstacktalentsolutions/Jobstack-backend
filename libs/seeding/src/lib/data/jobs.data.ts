@@ -30,7 +30,7 @@ export const JOBS_DATA = [
     title: 'Full Stack Engineer (React/Node)',
     description:
       'Build customer-facing web experiences, own API integrations, and ensure performance for high-traffic commerce flows.',
-    category: SkillCategory.TECHNICAL,
+    category: SkillCategory.SOFTWARE_DEVELOPMENT,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.HYBRID,
@@ -44,7 +44,7 @@ export const JOBS_DATA = [
     tags: ['react', 'node', 'typescript', 'api'],
     applicationDeadline: new Date('2027-03-15T23:59:59Z'),
     status: JobStatus.PUBLISHED,
-    applicantsCount: 0,
+
     employerId: CONSTANT_IDS.EMPLOYERS[0],
     skills: [
       CONSTANT_IDS.SKILLS[0],
@@ -57,7 +57,7 @@ export const JOBS_DATA = [
     title: 'Product Manager (Payments)',
     description:
       'Drive roadmap for digital payments, gather user feedback, and coordinate launches with engineering and design.',
-    category: SkillCategory.BUSINESS,
+    category: SkillCategory.BUSINESS_ADMIN,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.HYBRID,
@@ -71,7 +71,7 @@ export const JOBS_DATA = [
     tags: ['roadmap', 'agile', 'stakeholders'],
     applicationDeadline: new Date('2027-04-01T23:59:59Z'),
     status: JobStatus.PUBLISHED,
-    applicantsCount: 0,
+
     employerId: CONSTANT_IDS.EMPLOYERS[1],
     skills: [
       CONSTANT_IDS.SKILLS[7],
@@ -84,7 +84,7 @@ export const JOBS_DATA = [
     title: 'Data Analyst (FinTech)',
     description:
       'Analyze product usage, build dashboards, and create data stories that influence lending decisions.',
-    category: SkillCategory.BUSINESS,
+    category: SkillCategory.BUSINESS_ADMIN,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.REMOTE,
@@ -98,7 +98,7 @@ export const JOBS_DATA = [
     tags: ['sql', 'dashboards', 'analytics'],
     applicationDeadline: new Date('2027-03-20T23:59:59Z'),
     status: JobStatus.PUBLISHED,
-    applicantsCount: 0,
+
     employerId: CONSTANT_IDS.EMPLOYERS[2],
     skills: [
       CONSTANT_IDS.SKILLS[6],
@@ -111,7 +111,7 @@ export const JOBS_DATA = [
     title: 'Senior Backend Engineer (Node.js)',
     description:
       'Own microservices, event-driven architecture, and performance tuning for core transaction pipelines.',
-    category: SkillCategory.TECHNICAL,
+    category: SkillCategory.SOFTWARE_DEVELOPMENT,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.REMOTE,
@@ -125,7 +125,7 @@ export const JOBS_DATA = [
     tags: ['node', 'postgres', 'performance'],
     applicationDeadline: new Date('2027-04-10T23:59:59Z'),
     status: JobStatus.PUBLISHED,
-    applicantsCount: 0,
+
     employerId: CONSTANT_IDS.EMPLOYERS[3],
     skills: [
       CONSTANT_IDS.SKILLS[4],
@@ -152,7 +152,7 @@ export const JOBS_DATA = [
     tags: ['design-system', 'figma', 'user-testing'],
     applicationDeadline: new Date('2027-03-30T23:59:59Z'),
     status: JobStatus.PUBLISHED,
-    applicantsCount: 0,
+
     employerId: CONSTANT_IDS.EMPLOYERS[4],
     skills: [CONSTANT_IDS.SKILLS[7], CONSTANT_IDS.SKILLS[11]],
   },
@@ -161,7 +161,7 @@ export const JOBS_DATA = [
     title: 'DevOps Engineer',
     description:
       'Manage CI/CD, container orchestration, and observability for clinical platforms with strict uptime SLAs.',
-    category: SkillCategory.TECHNICAL,
+    category: SkillCategory.SOFTWARE_DEVELOPMENT,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.REMOTE,
@@ -175,7 +175,7 @@ export const JOBS_DATA = [
     tags: ['ci/cd', 'kubernetes', 'observability'],
     applicationDeadline: new Date('2027-04-05T23:59:59Z'),
     status: JobStatus.PUBLISHED,
-    applicantsCount: 0,
+
     employerId: CONSTANT_IDS.EMPLOYERS[5],
     skills: [
       CONSTANT_IDS.SKILLS[4],
@@ -188,7 +188,7 @@ export const JOBS_DATA = [
     title: 'Frontend Engineer (TypeScript)',
     description:
       'Ship performant interfaces, improve design system adoption, and collaborate closely with product designers.',
-    category: SkillCategory.TECHNICAL,
+    category: SkillCategory.SOFTWARE_DEVELOPMENT,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.HYBRID,
@@ -202,7 +202,7 @@ export const JOBS_DATA = [
     tags: ['typescript', 'react', 'accessibility'],
     applicationDeadline: new Date('2027-03-28T23:59:59Z'),
     status: JobStatus.PUBLISHED,
-    applicantsCount: 0,
+
     employerId: CONSTANT_IDS.EMPLOYERS[6],
     skills: [
       CONSTANT_IDS.SKILLS[3],
@@ -229,7 +229,7 @@ export const JOBS_DATA = [
     tags: ['paid-ads', 'analytics', 'copy'],
     applicationDeadline: new Date('2027-03-25T23:59:59Z'),
     status: JobStatus.PUBLISHED,
-    applicantsCount: 0,
+
     employerId: CONSTANT_IDS.EMPLOYERS[7],
     skills: [
       CONSTANT_IDS.SKILLS[9],
@@ -256,7 +256,7 @@ export const JOBS_DATA = [
     tags: ['branding', 'illustration', 'social'],
     applicationDeadline: new Date('2027-03-22T23:59:59Z'),
     status: JobStatus.PUBLISHED,
-    applicantsCount: 0,
+
     employerId: CONSTANT_IDS.EMPLOYERS[8],
     skills: [CONSTANT_IDS.SKILLS[7], CONSTANT_IDS.SKILLS[11]],
   },
@@ -279,7 +279,7 @@ export const JOBS_DATA = [
     tags: ['fleet', 'routing', 'sla'],
     applicationDeadline: new Date('2027-04-12T23:59:59Z'),
     status: JobStatus.PUBLISHED,
-    applicantsCount: 0,
+
     employerId: CONSTANT_IDS.EMPLOYERS[9],
     skills: [
       CONSTANT_IDS.SKILLS[10],
@@ -292,7 +292,7 @@ export const JOBS_DATA = [
     title: 'Housekeeping Supervisor',
     description:
       'Oversee housekeeping team schedules, quality checks, and client satisfaction for premium homes.',
-    category: SkillCategory.HOME_SUPPORT,
+    category: SkillCategory.MAINTENANCE_TRADES,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.ON_SITE,
@@ -306,7 +306,7 @@ export const JOBS_DATA = [
     tags: ['cleaning', 'scheduling', 'quality'],
     applicationDeadline: new Date('2027-03-18T23:59:59Z'),
     status: JobStatus.PUBLISHED,
-    applicantsCount: 0,
+
     employerId: CONSTANT_IDS.EMPLOYERS[10],
     skills: [CONSTANT_IDS.SKILLS[12], CONSTANT_IDS.SKILLS[11]],
   },
@@ -329,7 +329,7 @@ export const JOBS_DATA = [
     tags: ['security', 'guarding', 'training'],
     applicationDeadline: new Date('2027-04-08T23:59:59Z'),
     status: JobStatus.PUBLISHED,
-    applicantsCount: 0,
+
     employerId: CONSTANT_IDS.EMPLOYERS[11],
     skills: [CONSTANT_IDS.SKILLS[15], CONSTANT_IDS.SKILLS[11]],
   },
@@ -338,7 +338,7 @@ export const JOBS_DATA = [
     title: 'Financial Analyst',
     description:
       'Develop financial models, monitor KPIs, and support investor reporting for a growing fintech portfolio.',
-    category: SkillCategory.FINANCE_ACCOUNTING,
+    category: SkillCategory.ACCOUNTING_FINANCE,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.HYBRID,
@@ -352,7 +352,7 @@ export const JOBS_DATA = [
     tags: ['fp&a', 'models', 'reporting'],
     applicationDeadline: new Date('2027-03-26T23:59:59Z'),
     status: JobStatus.PUBLISHED,
-    applicantsCount: 0,
+
     employerId: CONSTANT_IDS.EMPLOYERS[3],
     skills: [
       CONSTANT_IDS.SKILLS[8],
@@ -379,7 +379,7 @@ export const JOBS_DATA = [
     tags: ['b2b', 'crm', 'closing'],
     applicationDeadline: new Date('2027-03-29T23:59:59Z'),
     status: JobStatus.PUBLISHED,
-    applicantsCount: 0,
+
     employerId: CONSTANT_IDS.EMPLOYERS[6],
     skills: [CONSTANT_IDS.SKILLS[9], CONSTANT_IDS.SKILLS[11]],
   },
@@ -402,7 +402,7 @@ export const JOBS_DATA = [
     tags: ['process', 'automation', 'sla'],
     applicationDeadline: new Date('2027-03-27T23:59:59Z'),
     status: JobStatus.PUBLISHED,
-    applicantsCount: 0,
+
     employerId: CONSTANT_IDS.EMPLOYERS[7],
     skills: [CONSTANT_IDS.SKILLS[10], CONSTANT_IDS.SKILLS[6]],
   },
@@ -425,7 +425,7 @@ export const JOBS_DATA = [
     tags: ['seo', 'copywriting', 'campaigns'],
     applicationDeadline: new Date('2027-04-03T23:59:59Z'),
     status: JobStatus.PUBLISHED,
-    applicantsCount: 0,
+
     employerId: CONSTANT_IDS.EMPLOYERS[8],
     skills: [CONSTANT_IDS.SKILLS[9], CONSTANT_IDS.SKILLS[11]],
   },
@@ -448,7 +448,7 @@ export const JOBS_DATA = [
     tags: ['maintenance', 'pipes', 'repairs'],
     applicationDeadline: new Date('2027-03-21T23:59:59Z'),
     status: JobStatus.PUBLISHED,
-    applicantsCount: 0,
+
     employerId: CONSTANT_IDS.EMPLOYERS[10],
     skills: [CONSTANT_IDS.SKILLS[13]],
   },
@@ -471,7 +471,7 @@ export const JOBS_DATA = [
     tags: ['catering', 'menu', 'food-safety'],
     applicationDeadline: new Date('2027-03-24T23:59:59Z'),
     status: JobStatus.PUBLISHED,
-    applicantsCount: 0,
+
     employerId: CONSTANT_IDS.EMPLOYERS[10],
     skills: [CONSTANT_IDS.SKILLS[14], CONSTANT_IDS.SKILLS[11]],
   },
@@ -494,7 +494,7 @@ export const JOBS_DATA = [
     tags: ['access-control', 'patrol', 'incident'],
     applicationDeadline: new Date('2027-03-19T23:59:59Z'),
     status: JobStatus.PUBLISHED,
-    applicantsCount: 0,
+
     employerId: CONSTANT_IDS.EMPLOYERS[11],
     skills: [CONSTANT_IDS.SKILLS[15]],
   },
@@ -517,7 +517,7 @@ export const JOBS_DATA = [
     tags: ['driving', 'executive', 'safety'],
     applicationDeadline: new Date('2027-03-23T23:59:59Z'),
     status: JobStatus.PUBLISHED,
-    applicantsCount: 0,
+
     employerId: CONSTANT_IDS.EMPLOYERS[0],
     skills: [CONSTANT_IDS.SKILLS[10], CONSTANT_IDS.SKILLS[11]],
   },
@@ -526,7 +526,7 @@ export const JOBS_DATA = [
     title: 'Customer Support Specialist',
     description:
       'Handle omnichannel support, troubleshoot product issues, and relay user feedback to product teams.',
-    category: SkillCategory.COMMUNICATION,
+    category: SkillCategory.CUSTOMER_SERVICE,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.REMOTE,
@@ -540,7 +540,7 @@ export const JOBS_DATA = [
     tags: ['support', 'tickets', 'customers'],
     applicationDeadline: new Date('2027-03-31T23:59:59Z'),
     status: JobStatus.PUBLISHED,
-    applicantsCount: 0,
+
     employerId: CONSTANT_IDS.EMPLOYERS[7],
     skills: [CONSTANT_IDS.SKILLS[11]],
   },
@@ -549,7 +549,7 @@ export const JOBS_DATA = [
     title: 'Data Engineer',
     description:
       'Design and maintain data pipelines, ensure data quality, and support analytics workloads.',
-    category: SkillCategory.TECHNICAL,
+    category: SkillCategory.SOFTWARE_DEVELOPMENT,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.HYBRID,
@@ -563,7 +563,7 @@ export const JOBS_DATA = [
     tags: ['pipelines', 'etl', 'postgres'],
     applicationDeadline: new Date('2027-04-07T23:59:59Z'),
     status: JobStatus.PUBLISHED,
-    applicantsCount: 0,
+
     employerId: CONSTANT_IDS.EMPLOYERS[0],
     skills: [
       CONSTANT_IDS.SKILLS[1],
@@ -576,7 +576,7 @@ export const JOBS_DATA = [
     title: 'React Native Engineer',
     description:
       'Ship mobile features, improve performance, and maintain shared component libraries across apps.',
-    category: SkillCategory.TECHNICAL,
+    category: SkillCategory.SOFTWARE_DEVELOPMENT,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.REMOTE,
@@ -590,7 +590,7 @@ export const JOBS_DATA = [
     tags: ['react-native', 'mobile', 'typescript'],
     applicationDeadline: new Date('2027-04-04T23:59:59Z'),
     status: JobStatus.PUBLISHED,
-    applicantsCount: 0,
+
     employerId: CONSTANT_IDS.EMPLOYERS[6],
     skills: [
       CONSTANT_IDS.SKILLS[0],
@@ -617,7 +617,7 @@ export const JOBS_DATA = [
     tags: ['events', 'vendors', 'logistics'],
     applicationDeadline: new Date('2027-03-17T23:59:59Z'),
     status: JobStatus.PUBLISHED,
-    applicantsCount: 0,
+
     employerId: CONSTANT_IDS.EMPLOYERS[8],
     skills: [CONSTANT_IDS.SKILLS[10], CONSTANT_IDS.SKILLS[11]],
   },
@@ -626,7 +626,7 @@ export const JOBS_DATA = [
     title: 'Junior QA Engineer',
     description:
       'Write and execute test plans for web and mobile apps; own regression test suites.',
-    category: SkillCategory.TECHNICAL,
+    category: SkillCategory.SOFTWARE_DEVELOPMENT,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.HYBRID,
@@ -640,7 +640,7 @@ export const JOBS_DATA = [
     tags: ['qa', 'testing', 'automation'],
     applicationDeadline: new Date('2027-04-15T23:59:59Z'),
     status: JobStatus.PUBLISHED,
-    applicantsCount: 0,
+
     employerId: CONSTANT_IDS.EMPLOYERS[5],
     skills: [
       CONSTANT_IDS.SKILLS[3],
@@ -653,7 +653,7 @@ export const JOBS_DATA = [
     title: 'Machine Learning Engineer',
     description:
       'Build and deploy ML models for recommendations; optimize feature pipelines.',
-    category: SkillCategory.TECHNICAL,
+    category: SkillCategory.SOFTWARE_DEVELOPMENT,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.HYBRID,
@@ -667,7 +667,7 @@ export const JOBS_DATA = [
     tags: ['ml', 'python', 'data-pipelines'],
     applicationDeadline: new Date('2027-04-20T23:59:59Z'),
     status: JobStatus.PUBLISHED,
-    applicantsCount: 0,
+
     employerId: CONSTANT_IDS.EMPLOYERS[0],
     skills: [
       CONSTANT_IDS.SKILLS[1],
@@ -694,7 +694,7 @@ export const JOBS_DATA = [
     tags: ['postgres', 'backups', 'replication'],
     applicationDeadline: new Date('2027-04-12T23:59:59Z'),
     status: JobStatus.PUBLISHED,
-    applicantsCount: 0,
+
     employerId: CONSTANT_IDS.EMPLOYERS[3],
     skills: [CONSTANT_IDS.SKILLS[5], CONSTANT_IDS.SKILLS[6]],
   },
@@ -717,7 +717,7 @@ export const JOBS_DATA = [
     tags: ['content', 'seo', 'email'],
     applicationDeadline: new Date('2027-04-05T23:59:59Z'),
     status: JobStatus.PUBLISHED,
-    applicantsCount: 0,
+
     employerId: CONSTANT_IDS.EMPLOYERS[8],
     skills: [
       CONSTANT_IDS.SKILLS[17],
@@ -730,7 +730,7 @@ export const JOBS_DATA = [
     title: 'Customer Success Manager',
     description:
       'Drive adoption, manage renewals, and coordinate success plans for enterprise accounts.',
-    category: SkillCategory.COMMUNICATION,
+    category: SkillCategory.CUSTOMER_SERVICE,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.HYBRID,
@@ -744,7 +744,7 @@ export const JOBS_DATA = [
     tags: ['success', 'renewals', 'accounts'],
     applicationDeadline: new Date('2027-04-18T23:59:59Z'),
     status: JobStatus.PUBLISHED,
-    applicantsCount: 0,
+
     employerId: CONSTANT_IDS.EMPLOYERS[7],
     skills: [CONSTANT_IDS.SKILLS[11], CONSTANT_IDS.SKILLS[10]],
   },
@@ -753,7 +753,7 @@ export const JOBS_DATA = [
     title: 'HR Business Partner',
     description:
       'Partner with leadership on org design, talent management, and performance processes.',
-    category: SkillCategory.BUSINESS,
+    category: SkillCategory.BUSINESS_ADMIN,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.HYBRID,
@@ -767,7 +767,7 @@ export const JOBS_DATA = [
     tags: ['hr', 'talent', 'performance'],
     applicationDeadline: new Date('2027-04-22T23:59:59Z'),
     status: JobStatus.PUBLISHED,
-    applicantsCount: 0,
+
     employerId: CONSTANT_IDS.EMPLOYERS[6],
     skills: [CONSTANT_IDS.SKILLS[11], CONSTANT_IDS.SKILLS[10]],
   },
@@ -790,7 +790,7 @@ export const JOBS_DATA = [
     tags: ['prospecting', 'crm', 'outbound'],
     applicationDeadline: new Date('2027-04-10T23:59:59Z'),
     status: JobStatus.PUBLISHED,
-    applicantsCount: 0,
+
     employerId: CONSTANT_IDS.EMPLOYERS[1],
     skills: [CONSTANT_IDS.SKILLS[9], CONSTANT_IDS.SKILLS[11]],
   },
@@ -813,7 +813,7 @@ export const JOBS_DATA = [
     tags: ['analytics', 'paid-media', 'reporting'],
     applicationDeadline: new Date('2027-04-25T23:59:59Z'),
     status: JobStatus.PUBLISHED,
-    applicantsCount: 0,
+
     employerId: CONSTANT_IDS.EMPLOYERS[0],
     skills: [CONSTANT_IDS.SKILLS[9], CONSTANT_IDS.SKILLS[6]],
   },
@@ -822,7 +822,7 @@ export const JOBS_DATA = [
     title: 'Technical Writer',
     description:
       'Produce developer docs, API references, and release notes for platform teams.',
-    category: SkillCategory.COMMUNICATION,
+    category: SkillCategory.CUSTOMER_SERVICE,
     employmentType: EmploymentType.PART_TIME,
     employmentArrangement: EmploymentArrangement.CONTRACT,
     workMode: WorkMode.REMOTE,
@@ -836,7 +836,7 @@ export const JOBS_DATA = [
     tags: ['docs', 'api', 'release-notes'],
     applicationDeadline: new Date('2027-04-08T23:59:59Z'),
     status: JobStatus.PUBLISHED,
-    applicantsCount: 0,
+
     employerId: CONSTANT_IDS.EMPLOYERS[2],
     skills: [
       CONSTANT_IDS.SKILLS[11],
@@ -863,7 +863,7 @@ export const JOBS_DATA = [
     tags: ['research', 'interviews', 'usability'],
     applicationDeadline: new Date('2027-04-30T23:59:59Z'),
     status: JobStatus.PUBLISHED,
-    applicantsCount: 0,
+
     employerId: CONSTANT_IDS.EMPLOYERS[0],
     skills: [CONSTANT_IDS.SKILLS[7], CONSTANT_IDS.SKILLS[11]],
   },
@@ -872,7 +872,7 @@ export const JOBS_DATA = [
     title: 'Data Visualization Specialist',
     description:
       'Create dashboards and visual stories that communicate insights to executives.',
-    category: SkillCategory.BUSINESS,
+    category: SkillCategory.BUSINESS_ADMIN,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.REMOTE,
@@ -886,7 +886,7 @@ export const JOBS_DATA = [
     tags: ['dashboards', 'storytelling', 'bi'],
     applicationDeadline: new Date('2027-05-02T23:59:59Z'),
     status: JobStatus.PUBLISHED,
-    applicantsCount: 0,
+
     employerId: CONSTANT_IDS.EMPLOYERS[2],
     skills: [
       CONSTANT_IDS.SKILLS[6],
@@ -899,7 +899,7 @@ export const JOBS_DATA = [
     title: 'Cloud Infrastructure Engineer',
     description:
       'Own IaC, networking, and observability for multi-region cloud workloads.',
-    category: SkillCategory.TECHNICAL,
+    category: SkillCategory.SOFTWARE_DEVELOPMENT,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.REMOTE,
@@ -913,7 +913,7 @@ export const JOBS_DATA = [
     tags: ['cloud', 'iac', 'observability'],
     applicationDeadline: new Date('2027-04-28T23:59:59Z'),
     status: JobStatus.PUBLISHED,
-    applicantsCount: 0,
+
     employerId: CONSTANT_IDS.EMPLOYERS[3],
     skills: [
       CONSTANT_IDS.SKILLS[4],
@@ -940,7 +940,7 @@ export const JOBS_DATA = [
     tags: ['mobile', 'figma', 'prototyping'],
     applicationDeadline: new Date('2027-04-18T23:59:59Z'),
     status: JobStatus.PUBLISHED,
-    applicantsCount: 0,
+
     employerId: CONSTANT_IDS.EMPLOYERS[5],
     skills: [CONSTANT_IDS.SKILLS[7], CONSTANT_IDS.SKILLS[11]],
   },
@@ -949,7 +949,7 @@ export const JOBS_DATA = [
     title: 'Finance Operations Analyst',
     description:
       'Reconcile payouts, manage payables/receivables, and improve finance processes.',
-    category: SkillCategory.FINANCE_ACCOUNTING,
+    category: SkillCategory.ACCOUNTING_FINANCE,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.HYBRID,
@@ -963,7 +963,7 @@ export const JOBS_DATA = [
     tags: ['reconciliation', 'payouts', 'process'],
     applicationDeadline: new Date('2027-04-14T23:59:59Z'),
     status: JobStatus.PUBLISHED,
-    applicantsCount: 0,
+
     employerId: CONSTANT_IDS.EMPLOYERS[0],
     skills: [
       CONSTANT_IDS.SKILLS[14],
@@ -990,7 +990,7 @@ export const JOBS_DATA = [
     tags: ['inventory', 'throughput', 'ops'],
     applicationDeadline: new Date('2027-04-26T23:59:59Z'),
     status: JobStatus.PUBLISHED,
-    applicantsCount: 0,
+
     employerId: CONSTANT_IDS.EMPLOYERS[9],
     skills: [
       CONSTANT_IDS.SKILLS[10],
@@ -1017,7 +1017,7 @@ export const JOBS_DATA = [
     tags: ['procurement', 'vendors', 'contracts'],
     applicationDeadline: new Date('2027-04-21T23:59:59Z'),
     status: JobStatus.PUBLISHED,
-    applicantsCount: 0,
+
     employerId: CONSTANT_IDS.EMPLOYERS[3],
     skills: [CONSTANT_IDS.SKILLS[19], CONSTANT_IDS.SKILLS[10]],
   },
@@ -1040,7 +1040,7 @@ export const JOBS_DATA = [
     tags: ['facilities', 'maintenance', 'vendors'],
     applicationDeadline: new Date('2027-04-16T23:59:59Z'),
     status: JobStatus.PUBLISHED,
-    applicantsCount: 0,
+
     employerId: CONSTANT_IDS.EMPLOYERS[10],
     skills: [CONSTANT_IDS.SKILLS[10], CONSTANT_IDS.SKILLS[13]],
   },
@@ -1049,7 +1049,7 @@ export const JOBS_DATA = [
     title: 'Technical Recruiter',
     description:
       'Source and close technical talent; manage pipelines and hiring manager partnerships.',
-    category: SkillCategory.COMMUNICATION,
+    category: SkillCategory.CUSTOMER_SERVICE,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.HYBRID,
@@ -1063,7 +1063,7 @@ export const JOBS_DATA = [
     tags: ['recruiting', 'tech', 'sourcing'],
     applicationDeadline: new Date('2027-04-24T23:59:59Z'),
     status: JobStatus.PUBLISHED,
-    applicantsCount: 0,
+
     employerId: CONSTANT_IDS.EMPLOYERS[0],
     skills: [CONSTANT_IDS.SKILLS[11], CONSTANT_IDS.SKILLS[3]],
   },
@@ -1072,7 +1072,7 @@ export const JOBS_DATA = [
     title: 'Legal Counsel',
     description:
       'Draft and review commercial contracts; advise on compliance and risk.',
-    category: SkillCategory.BUSINESS,
+    category: SkillCategory.BUSINESS_ADMIN,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.HYBRID,
@@ -1086,7 +1086,7 @@ export const JOBS_DATA = [
     tags: ['contracts', 'compliance', 'risk'],
     applicationDeadline: new Date('2027-04-27T23:59:59Z'),
     status: JobStatus.PUBLISHED,
-    applicantsCount: 0,
+
     employerId: CONSTANT_IDS.EMPLOYERS[3],
     skills: [CONSTANT_IDS.SKILLS[11], CONSTANT_IDS.SKILLS[10]],
   },
@@ -1095,7 +1095,7 @@ export const JOBS_DATA = [
     title: 'Corporate Trainer',
     description:
       'Develop and deliver training programs for sales and support teams.',
-    category: SkillCategory.COMMUNICATION,
+    category: SkillCategory.CUSTOMER_SERVICE,
     employmentType: EmploymentType.PART_TIME,
     employmentArrangement: EmploymentArrangement.CONTRACT,
     workMode: WorkMode.HYBRID,
@@ -1109,7 +1109,7 @@ export const JOBS_DATA = [
     tags: ['training', 'enablement', 'workshops'],
     applicationDeadline: new Date('2027-04-19T23:59:59Z'),
     status: JobStatus.PUBLISHED,
-    applicantsCount: 0,
+
     employerId: CONSTANT_IDS.EMPLOYERS[7],
     skills: [CONSTANT_IDS.SKILLS[11]],
   },
@@ -1118,7 +1118,7 @@ export const JOBS_DATA = [
     title: 'Office Administrator',
     description:
       'Manage office supplies, coordinate meetings, and support daily operations.',
-    category: SkillCategory.COMMUNICATION,
+    category: SkillCategory.CUSTOMER_SERVICE,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.ON_SITE,
@@ -1132,7 +1132,7 @@ export const JOBS_DATA = [
     tags: ['admin', 'coordination', 'ops'],
     applicationDeadline: new Date('2027-04-12T23:59:59Z'),
     status: JobStatus.PUBLISHED,
-    applicantsCount: 0,
+
     employerId: CONSTANT_IDS.EMPLOYERS[8],
     skills: [CONSTANT_IDS.SKILLS[11], CONSTANT_IDS.SKILLS[10]],
   },
@@ -1155,7 +1155,7 @@ export const JOBS_DATA = [
     tags: ['plumbing', 'supervision', 'safety'],
     applicationDeadline: new Date('2027-04-18T23:59:59Z'),
     status: JobStatus.PUBLISHED,
-    applicantsCount: 0,
+
     employerId: CONSTANT_IDS.EMPLOYERS[10],
     skills: [CONSTANT_IDS.SKILLS[13]],
   },
@@ -1178,7 +1178,7 @@ export const JOBS_DATA = [
     tags: ['electrical', 'maintenance', 'safety'],
     applicationDeadline: new Date('2027-04-22T23:59:59Z'),
     status: JobStatus.PUBLISHED,
-    applicantsCount: 0,
+
     employerId: CONSTANT_IDS.EMPLOYERS[10],
     skills: [CONSTANT_IDS.SKILLS[26]],
   },
@@ -1201,7 +1201,7 @@ export const JOBS_DATA = [
     tags: ['carpentry', 'repairs', 'fittings'],
     applicationDeadline: new Date('2027-04-20T23:59:59Z'),
     status: JobStatus.PUBLISHED,
-    applicantsCount: 0,
+
     employerId: CONSTANT_IDS.EMPLOYERS[10],
     skills: [CONSTANT_IDS.SKILLS[27]],
   },
@@ -1224,7 +1224,7 @@ export const JOBS_DATA = [
     tags: ['gardening', 'landscaping', 'scheduling'],
     applicationDeadline: new Date('2027-04-23T23:59:59Z'),
     status: JobStatus.PUBLISHED,
-    applicantsCount: 0,
+
     employerId: CONSTANT_IDS.EMPLOYERS[10],
     skills: [CONSTANT_IDS.SKILLS[28]],
   },
@@ -1247,7 +1247,7 @@ export const JOBS_DATA = [
     tags: ['catering', 'ops', 'food-safety'],
     applicationDeadline: new Date('2027-04-29T23:59:59Z'),
     status: JobStatus.PUBLISHED,
-    applicantsCount: 0,
+
     employerId: CONSTANT_IDS.EMPLOYERS[10],
     skills: [CONSTANT_IDS.SKILLS[30], CONSTANT_IDS.SKILLS[14]],
   },
@@ -1270,7 +1270,7 @@ export const JOBS_DATA = [
     tags: ['security', 'supervision', 'incidents'],
     applicationDeadline: new Date('2027-04-17T23:59:59Z'),
     status: JobStatus.PUBLISHED,
-    applicantsCount: 0,
+
     employerId: CONSTANT_IDS.EMPLOYERS[11],
     skills: [CONSTANT_IDS.SKILLS[15]],
   },
@@ -1293,7 +1293,7 @@ export const JOBS_DATA = [
     tags: ['dispatch', 'routing', 'sla'],
     applicationDeadline: new Date('2027-04-20T23:59:59Z'),
     status: JobStatus.PUBLISHED,
-    applicantsCount: 0,
+
     employerId: CONSTANT_IDS.EMPLOYERS[0],
     skills: [CONSTANT_IDS.SKILLS[34], CONSTANT_IDS.SKILLS[11]],
   },
@@ -1316,7 +1316,7 @@ export const JOBS_DATA = [
     tags: ['rider', 'delivery', 'customer'],
     applicationDeadline: new Date('2027-04-18T23:59:59Z'),
     status: JobStatus.PUBLISHED,
-    applicantsCount: 0,
+
     employerId: CONSTANT_IDS.EMPLOYERS[0],
     skills: [CONSTANT_IDS.SKILLS[34]],
   },
@@ -1339,7 +1339,7 @@ export const JOBS_DATA = [
     tags: ['analytics', 'logistics', 'cost'],
     applicationDeadline: new Date('2027-05-01T23:59:59Z'),
     status: JobStatus.PUBLISHED,
-    applicantsCount: 0,
+
     employerId: CONSTANT_IDS.EMPLOYERS[0],
     skills: [
       CONSTANT_IDS.SKILLS[34],

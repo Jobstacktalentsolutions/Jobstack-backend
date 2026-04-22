@@ -48,7 +48,9 @@ export class JobVettingProducer implements OnModuleInit {
       for (const job of existingJobs) {
         if (job.key.includes(this.DAILY_VETTING_JOB_KEY)) {
           await this.vettingQueue.removeRepeatableByKey(job.key);
-          this.logger.log(`Removed existing repeatable vetting job: ${job.key}`);
+          this.logger.log(
+            `Removed existing repeatable vetting job: ${job.key}`,
+          );
         }
       }
 
@@ -71,9 +73,7 @@ export class JobVettingProducer implements OnModuleInit {
         },
       );
 
-      this.logger.log(
-        'Daily job vetting scheduled (2 AM UTC)',
-      );
+      this.logger.log('Daily job vetting scheduled (2 AM UTC)');
     } catch (error) {
       this.logger.error(
         `Failed to setup daily vetting job: ${error.message}`,
@@ -87,8 +87,13 @@ export class JobVettingProducer implements OnModuleInit {
    */
   async queueJobVetting(
     jobId: string,
-    triggeredBy: 'status-change' | 'manual' = 'manual',
+    triggeredBy: VetJobData['triggeredBy'] = 'manual',
+    options?: { bullJobIdSuffix?: string },
   ): Promise<{ jobId: string | number }> {
+    // Per-application suffix avoids Bull dropping a second add while the first job is still queued
+    const bullJobId = options?.bullJobIdSuffix
+      ? `vet-job-${jobId}-${options.bullJobIdSuffix}`
+      : `vet-job-${jobId}`;
     const job = await this.vettingQueue.add(
       JOB_VETTING_JOBS.VET_JOB,
       {
@@ -97,11 +102,13 @@ export class JobVettingProducer implements OnModuleInit {
         triggeredAt: new Date().toISOString(),
       } as VetJobData,
       {
-        priority: triggeredBy === 'status-change' ? 1 : 5, // Higher priority for status changes
+        priority:
+          triggeredBy === 'status-change' || triggeredBy === 'application'
+            ? 1
+            : 5, // Higher priority when vetting is tied to hiring workflow events
         removeOnComplete: true,
         removeOnFail: false,
-        // Deduplicate jobs for the same job ID
-        jobId: `vet-job-${jobId}`,
+        jobId: bullJobId,
       },
     );
 
@@ -193,7 +200,9 @@ export class JobVettingProducer implements OnModuleInit {
       | 'failed' = 'completed',
   ): Promise<Bull.Job[]> {
     const removed = await this.vettingQueue.clean(grace, status);
-    this.logger.log(`Cleaned ${removed.length} ${status} jobs from vetting queue`);
+    this.logger.log(
+      `Cleaned ${removed.length} ${status} jobs from vetting queue`,
+    );
     return removed;
   }
 }

@@ -13,12 +13,14 @@ import {
   EmployeeStatus,
   SkillType,
   getSkillTypeFromCategory,
+  NotificationPriority,
 } from '@app/common/database/entities/schema.enum';
 import {
   VETTING_CONFIG,
   getHighlightedCandidateCount,
 } from '../config/vetting.config';
 import { NotificationService } from '../../notification/notification.service';
+import { UserRole } from '@app/common/shared/enums/user-roles.enum';
 
 export interface VettingResult {
   jobId: string;
@@ -166,7 +168,8 @@ export class JobVettingService {
           application.createdAt > job.vettingCompletedAt);
 
       let score =
-        application.vettingScore !== null && application.vettingScore !== undefined
+        application.vettingScore !== null &&
+        application.vettingScore !== undefined
           ? Number(application.vettingScore)
           : 0;
       let profileCompleteness =
@@ -248,7 +251,9 @@ export class JobVettingService {
       va.isHighlighted = isHighlighted;
 
       // Persist highlight flag alongside scores on corresponding entity
-      const application = applications.find((app) => app.id === va.applicationId);
+      const application = applications.find(
+        (app) => app.id === va.applicationId,
+      );
       if (application) {
         application.vettingIsHighlighted = isHighlighted;
       }
@@ -305,6 +310,47 @@ export class JobVettingService {
     }
 
     return Math.round(totalScore * 100) / 100; // Round to 2 decimal places
+  }
+
+  /**
+   * Vetting-style fit score (0–100) for a profile vs a published job without an application; uses full application-speed weight as neutral 100.
+   */
+  computeMatchScoreForPublishedJob(
+    job: Job,
+    profile: JobSeekerProfile,
+  ): number {
+    if (!job || !profile) {
+      this.logger.warn(
+        'computeMatchScoreForPublishedJob called with missing job or profile',
+      );
+      return 0;
+    }
+
+    const profileCompleteness = this.calculateProfileCompleteness(profile);
+    const proximityScore = this.calculateProximityScore(job, profile);
+    const experienceScore = this.calculateExperienceScore(profile, job);
+    const skillMatchScore = this.calculateSkillMatchScore(profile, job);
+    const applicationSpeedScore = 100;
+
+    const skillType = getSkillTypeFromCategory(job.category);
+    if (skillType === SkillType.HIGH_SKILL) {
+      const weights = VETTING_CONFIG.highSkillWeights;
+      const totalScore =
+        experienceScore * weights.yearsOfExperience +
+        skillMatchScore * weights.skillMatching +
+        profileCompleteness * weights.profileCompleteness +
+        proximityScore * weights.proximity +
+        applicationSpeedScore * weights.applicationSpeed;
+      return Math.round(totalScore * 100) / 100;
+    }
+
+    const weights = VETTING_CONFIG.lowSkillWeights;
+    const totalScore =
+      applicationSpeedScore * weights.applicationSpeed +
+      profileCompleteness * weights.profileCompleteness +
+      experienceScore * weights.experience +
+      proximityScore * weights.proximity;
+    return Math.round(totalScore * 100) / 100;
   }
 
   /**
@@ -610,6 +656,29 @@ export class JobVettingService {
           },
         });
 
+        // Also create in-app notification for the jobseeker
+        try {
+          await this.notificationService.createAppNotification(
+            application.jobseekerProfileId,
+            UserRole.JOB_SEEKER,
+            {
+              title: '🌟 Selected for Screening!',
+              message: `You have been selected for a screening interview for "${application.job.title}" scheduled for ${formattedDate} at ${formattedTime}.`,
+              priority: NotificationPriority.HIGH,
+              metadata: {
+                jobId: application.job.id,
+                applicationId: application.id,
+                meetingLink: application.screeningMeetingLink,
+                scheduledAt: application.screeningScheduledAt,
+              },
+            },
+          );
+        } catch (appNotifErr) {
+          this.logger.warn(
+            `Failed to create in-app screening notification: ${appNotifErr.message}`,
+          );
+        }
+
         this.logger.log(
           `Screening notification sent to candidate ${application.jobseekerProfile.email}`,
         );
@@ -670,6 +739,27 @@ export class JobVettingService {
             jobId: application.job.id,
           },
         });
+
+        // Also create in-app notification
+        try {
+          await this.notificationService.createAppNotification(
+            application.jobseekerProfileId,
+            UserRole.JOB_SEEKER,
+            {
+              title: 'Screening Completed',
+              message: `Your screening for "${application.job.title}" is complete. Stay tuned for next steps from the employer.`,
+              priority: NotificationPriority.MEDIUM,
+              metadata: {
+                jobId: application.job.id,
+                applicationId: application.id,
+              },
+            },
+          );
+        } catch (appNotifErr) {
+          this.logger.warn(
+            `Failed to create in-app screening-complete notification: ${appNotifErr.message}`,
+          );
+        }
 
         this.logger.log(
           `Screening completion notification sent to ${application.jobseekerProfile.email}`,

@@ -66,7 +66,7 @@
                         </tr>
                       </table>
 
-                      <% if (userType === 'jobseeker') { %>
+                      <% if (typeof userType !== 'undefined' && userType === 'jobseeker') { %>
                       <p class="text-primary" style="margin: 0 0 12px 0; font-size: 16px; line-height: 1.5; color: #4a4a4a; font-weight: 600;">
                         As a job seeker, you can now:
                       </p>
@@ -76,7 +76,7 @@
                         <li style="margin-bottom: 8px;">Get matched with top employers in Nigeria</li>
                         <li style="margin-bottom: 0;">Receive personalized job recommendations</li>
                       </ul>
-                      <% } else if (userType === 'recruiter' || userType === 'employer') { %>
+                      <% } else if (typeof userType !== 'undefined' && (userType === 'recruiter' || userType === 'employer')) { %>
                       <p class="text-primary" style="margin: 0 0 12px 0; font-size: 16px; line-height: 1.5; color: #4a4a4a; font-weight: 600;">
                         As a recruiter, you can now:
                       </p>
@@ -89,7 +89,7 @@
                       <% } %>
 
                       <!-- CTA Button -->
-                      <% if (actionUrl) { %>
+                      <% if (typeof actionUrl !== 'undefined' && actionUrl) { %>
                       <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 24px 0;">
                         <tr>
                           <td style="text-align: center;">
@@ -122,7 +122,11 @@
                       </p>
 
                       <p class="text-secondary" style="margin: 0 0 8px 0; font-size: 12px; line-height: 1.5; color: #9ca3af; text-align: center;">
-                        Don't want any more emails from [Company Name]? <a href="<%= websiteUrl %>/unsubscribe" style="color: #2563eb; text-decoration: underline;">Unsubscribe</a>.
+                        Don't want any more emails from JobStack? <a href="<%= websiteUrl %>/unsubscribe" style="color: #2563eb; text-decoration: underline;">Unsubscribe</a>.
+                      </p>
+
+                      <p class="text-secondary" style="margin: 16px 0 0 0; font-size: 11px; line-height: 1.5; color: #9ca3af; text-align: center;">
+                        © <%= currentYear %> <%= companyName %>. All rights reserved.
                       </p>
 
                     </td>
@@ -135,34 +139,5 @@
         </td>
       </tr>
     </table>
-</body>
-</html>
-
-            <div style="text-align: center; margin: 30px 0;">
-                <a href="<%= websiteUrl %>" style="display: inline-block; background-color: #007bff; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold;">Get Started</a>
-            </div>
-        </div>
-
-        <!-- Footer -->
-        <div style="border-top: 1px solid #eee; padding-top: 20px; text-align: center; color: #666; font-size: 14px;">
-            <p style="margin-bottom: 10px;">
-                Best regards,<br>
-                The <%= companyName %> Team
-            </p>
-            
-            <p style="margin-bottom: 10px;">
-                <a href="<%= websiteUrl %>" style="color: #007bff; text-decoration: none;"><%= websiteUrl %></a>
-            </p>
-            
-            <p style="margin-bottom: 0; font-size: 12px;">
-                If you have any questions, please contact us at 
-                <a href="mailto:<%= supportEmail %>" style="color: #007bff; text-decoration: none;"><%= supportEmail %></a>
-            </p>
-            
-            <p style="margin-top: 20px; margin-bottom: 0; font-size: 11px; color: #999;">
-                © <%= currentYear %> <%= companyName %>. All rights reserved.
-            </p>
-        </div>
-    </div>
 </body>
 </html>

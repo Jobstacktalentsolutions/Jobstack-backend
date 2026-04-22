@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light dark" />
+    <meta name="supported-color-schemes" content="light dark" />
+    <title><%= subject %></title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        supported-color-schemes: light dark;
+      }
+      @media (prefers-color-scheme: dark) {
+        .email-container { background-color: #1a1a1a !important; }
+        .email-content { background-color: #2d2d2d !important; color: #e0e0e0 !important; }
+        .text-primary { color: #e0e0e0 !important; }
+        .text-secondary { color: #b0b0b0 !important; }
+        .header-text { color: #ffffff !important; }
+        .info-box { background-color: #1e3a5f !important; }
+        .footer { background-color: #2d2d2d !important; color: #b0b0b0 !important; }
+        .footer a { color: #60a5fa !important; }
+      }
+    </style>
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #e8eef3;">
+    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" class="email-container" style="background-color: #e8eef3;">
+      <tr>
+        <td style="padding: 40px 20px;">
+          <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="max-width: 600px; margin: 0 auto;">
+            <tr>
+              <td class="email-content" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                  <tr>
+                    <td style="padding: 32px 32px 24px 32px; text-align: center;">
+                      <img src="https://jobstack.org/email-assets/logo.svg" alt="Jobstack" width="120" height="58" style="display: block; margin: 0 auto;" />
+                    </td>
+                  </tr>
+                </table>
+
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                  <tr>
+                    <td style="padding: 0 32px 32px 32px;">
+
+                      <h1 class="header-text" style="margin: 0 0 16px 0; font-size: 28px; font-weight: 600; color: #1a1a1a; line-height: 1.3;">New job that fits your profile</h1>
+
+                      <p class="text-primary" style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.5; color: #4a4a4a;">
+                        Hello <%= recipientName %>,
+                      </p>
+
+                      <p class="text-primary" style="margin: 0 0 24px 0; font-size: 16px; line-height: 1.5; color: #4a4a4a;">
+                        A new role was just published on JobStack that lines up with your skills, experience, and preferences. Open the job to read the full description and apply in one place.
+                      </p>
+
+                      <% if (jobTitle) { %>
+                      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 24px 0;">
+                        <tr>
+                          <td class="info-box" style="background-color: #eff6ff; border-radius: 8px; padding: 20px; border-left: 4px solid #2563eb;">
+                            <h3 style="margin: 0 0 12px 0; font-size: 18px; font-weight: 600; color: #1e40af;">Role details</h3>
+                            <p style="margin: 0 0 8px 0; font-size: 14px; color: #1e40af;"><strong>Position:</strong> <%= jobTitle %></p>
+                            <% if (companyName) { %>
+                            <p style="margin: 0 0 8px 0; font-size: 14px; color: #1e40af;"><strong>Company:</strong> <%= companyName %></p>
+                            <% } %>
+                            <% if (location) { %>
+                            <p style="margin: 0 0 8px 0; font-size: 14px; color: #1e40af;"><strong>Location:</strong> <%= location %></p>
+                            <% } %>
+                            <% if (jobType) { %>
+                            <p style="margin: 0 0 8px 0; font-size: 14px; color: #1e40af;"><strong>Employment:</strong> <%= jobType %></p>
+                            <% } %>
+                            <% if (workMode) { %>
+                            <p style="margin: 0 0 8px 0; font-size: 14px; color: #1e40af;"><strong>Work mode:</strong> <%= workMode %></p>
+                            <% } %>
+                            <% if (salary) { %>
+                            <p style="margin: 0 0 8px 0; font-size: 14px; color: #1e40af;"><strong>Compensation:</strong> <%= salary %></p>
+                            <% } %>
+                            <% if (description) { %>
+                            <p style="margin: 12px 0 0 0; font-size: 14px; line-height: 1.5; color: #1e3a8a;"><strong>Summary:</strong> <%= description %></p>
+                            <% } %>
+                          </td>
+                        </tr>
+                      </table>
+                      <% } %>
+
+                      <% if (jobDetailUrl) { %>
+                      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 16px 0;">
+                        <tr>
+                          <td style="text-align: center;">
+                            <a href="<%= jobDetailUrl %>" style="display: inline-block; background-color: #2563eb; color: #ffffff; font-size: 16px; font-weight: 600; text-decoration: none; padding: 14px 40px; border-radius: 6px;">View job &amp; apply</a>
+                          </td>
+                        </tr>
+                      </table>
+                      <p class="text-secondary" style="margin: 0 0 24px 0; font-size: 13px; line-height: 1.5; color: #6b7280; text-align: center; word-break: break-all;">
+                        Or copy this link into your browser:<br />
+                        <a href="<%= jobDetailUrl %>" style="color: #2563eb; text-decoration: underline;"><%= jobDetailUrl %></a>
+                      </p>
+                      <% } %>
+
+                      <p class="text-primary" style="margin: 0; font-size: 16px; line-height: 1.5; color: #4a4a4a;">
+                        You received this because your JobStack profile matched this listing. If it is not a fit, you can ignore this message.
+                      </p>
+
+                    </td>
+                  </tr>
+                </table>
+
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" class="footer" style="background-color: #f9fafb; border-top: 1px solid #e5e7eb;">
+                  <tr>
+                    <td style="padding: 32px 32px 24px 32px;">
+
+                      <p class="text-secondary" style="margin: 0 0 16px 0; font-size: 14px; line-height: 1.5; color: #6b7280; text-align: center;">
+                        Questions or concerns? Get in touch with us at
+                        <a href="mailto:<%= supportEmail %>" style="color: #2563eb; text-decoration: underline;"><%= supportEmail %></a>.<br>
+                        Never miss any updates! Follow us on
+                        <a href="https://twitter.com/jobstack" style="color: #2563eb; text-decoration: none;">Twitter</a>,
+                        <a href="https://facebook.com/jobstack" style="color: #2563eb; text-decoration: none;">Facebook</a> and
+                        <a href="https://instagram.com/jobstack" style="color: #2563eb; text-decoration: none;">Instagram</a>.
+                      </p>
+
+                      <p class="text-secondary" style="margin: 0 0 8px 0; font-size: 12px; line-height: 1.5; color: #9ca3af; text-align: center;">
+                        Don't want any more emails from <%= companyName %>? <a href="<%= websiteUrl %>/unsubscribe" style="color: #2563eb; text-decoration: underline;">Unsubscribe</a>.
+                      </p>
+
+                    </td>
+                  </tr>
+                </table>
+
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+</body>
+</html>

@@ -4,7 +4,7 @@ import { AdminAuth } from './AdminAuth.entity';
 
 @Entity('admin_sessions')
 export class AdminSession extends BaseEntity {
-  @Column({ default: true })
+  @Column({ type: 'boolean', default: true })
   isActive: boolean;
 
   @Column('jsonb', { nullable: true })

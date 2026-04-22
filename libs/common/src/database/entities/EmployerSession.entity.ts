@@ -4,7 +4,7 @@ import { EmployerAuth } from './EmployerAuth.entity';
 
 @Entity('employer_sessions')
 export class EmployerSession extends BaseEntity {
-  @Column({ default: true })
+  @Column('boolean', { default: true })
   isActive: boolean;
 
   @Column('jsonb', { nullable: true })

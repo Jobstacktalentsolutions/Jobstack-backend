@@ -11,7 +11,8 @@ const configService = new ConfigService();
 
 const CORS_OPTIONS: CorsOptions = {
   origin: [
-    /^(http:\/\/localhost:\d+)$/,
+    'http://localhost:3000',
+    'http://localhost:3001',
     configService.get(ENV.FRONTEND_URL, 'http://localhost:3000'),
     'https://jobstack.org',
     'https://admin.jobstack.org',

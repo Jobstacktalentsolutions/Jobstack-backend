@@ -3,6 +3,7 @@ export enum ENV {
   NODE_ENV = 'NODE_ENV',
   DATABASE_URL = 'DATABASE_URL',
   FRONTEND_URL = 'FRONTEND_URL',
+  GOOGLE_CLIENT_ID = 'GOOGLE_CLIENT_ID',
   REDIS_URL = 'REDIS_URL',
   REDIS_KEY_PREFIX = 'REDIS_KEY_PREFIX',
   // JWT Configuration
@@ -12,7 +13,12 @@ export enum ENV {
   JWT_ISSUER = 'JWT_ISSUER',
   JWT_AUDIENCE = 'JWT_AUDIENCE',
 
-  // Brevo Email Configuration
+  // Resend Email Configuration ()
+  RESEND_API_KEY = 'RESEND_API_KEY',
+  RESEND_FROM_EMAIL = 'RESEND_FROM_EMAIL',
+  RESEND_FROM_NAME = 'RESEND_FROM_NAME',
+
+  // Brevo Email Configuration (primary)
   BREVO_API_KEY = 'BREVO_API_KEY',
   BREVO_FROM_EMAIL = 'BREVO_FROM_EMAIL',
   BREVO_FROM_NAME = 'BREVO_FROM_NAME',
@@ -21,11 +27,6 @@ export enum ENV {
   COMPANY_NAME = 'COMPANY_NAME',
   SUPPORT_EMAIL = 'SUPPORT_EMAIL',
   WEBSITE_URL = 'WEBSITE_URL',
-
-  // Resend Email Configuration
-  RESEND_API_KEY = 'RESEND_API_KEY',
-  RESEND_FROM_EMAIL = 'RESEND_FROM_EMAIL',
-  RESEND_FROM_NAME = 'RESEND_FROM_NAME',
 
   // Storage Configuration (S3)
   S3_ENDPOINT = 'S3_ENDPOINT',

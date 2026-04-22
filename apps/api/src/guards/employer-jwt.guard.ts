@@ -56,7 +56,9 @@ export class EmployerJwtGuard implements CanActivate {
       );
 
       if (!sessionValidation.valid) {
-        throw new UnauthorizedException('Session expired or invalid');
+        throw new UnauthorizedException(
+          'You are not authenticated or authorized this page',
+        );
       }
 
       // Check if account is suspended

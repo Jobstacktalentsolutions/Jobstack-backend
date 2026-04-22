@@ -33,19 +33,19 @@ A **two-step mutual agreement** system where both employer and candidate must ex
 
 ## Application States
 
-| Status               | What It Means                          | Next Step                    |
-| -------------------- | -------------------------------------- | ---------------------------- |
-| `APPLIED`            | Application submitted                  | Admin vetting                |
-| `VETTED`             | Vetting score assigned                 | Admin selects for screening  |
-| `SELECTED_FOR_SCREENING` | Invited to screening               | Screening scheduled          |
-| `SCREENING_COMPLETED` | Screening done                        | Employer reviews             |
-| `OFFER_SENT`         | Employer sent offer; awaiting response | Candidate accepts/declines   |
-| `APPLICANT_ACCEPTED` | Candidate agreed                       | Employer pays commission     |
-| `PAYMENT_COMPLETE`   | Payment confirmed, PII unlocked        | Contract generated & signed  |
-| `CONTRACT_SIGNED`    | Both parties signed the contract       | Employer confirms hire       |
-| `HIRED`              | Final hire confirmed by employer       | Process complete             |
-| `REJECTED`           | Someone rejected                       | Process ends                 |
-| `WITHDRAWN`          | Candidate withdrew                     | Process ends                 |
+| Status                   | What It Means                          | Next Step                   |
+| ------------------------ | -------------------------------------- | --------------------------- |
+| `APPLIED`                | Application submitted                  | Admin vetting               |
+| `VETTED`                 | Vetting score assigned                 | Admin selects for screening |
+| `SELECTED_FOR_SCREENING` | Invited to screening                   | Screening scheduled         |
+| `SELECTED_FOR_HIRE`      | Screening done                         | Employer reviews            |
+| `OFFER_SENT`             | Employer sent offer; awaiting response | Candidate accepts/declines  |
+| `APPLICANT_ACCEPTED`     | Candidate agreed                       | Employer pays commission    |
+| `PAYMENT_COMPLETE`       | Payment confirmed, PII unlocked        | Contract generated & signed |
+| `CONTRACT_SIGNED`        | Both parties signed the contract       | Employer confirms hire      |
+| `HIRED`                  | Final hire confirmed by employer       | Process complete            |
+| `REJECTED`               | Someone rejected                       | Process ends                |
+| `WITHDRAWN`              | Candidate withdrew                     | Process ends                |
 
 ---
 

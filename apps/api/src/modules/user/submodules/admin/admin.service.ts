@@ -6,26 +6,36 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Between, Repository } from 'typeorm';
 import { AdminAuth } from '@app/common/database/entities/AdminAuth.entity';
 import { AdminProfile } from '@app/common/database/entities/AdminProfile.entity';
 import {
-  EmployerVerification,
+  Employee,
+  EmployerVerificationDocument,
   EmployerProfile,
   EmployerAuth,
+  Job,
   JobseekerAuth,
   JobSeekerProfile,
+  JobseekerVerificationDocument,
+  Payment,
 } from '@app/common/database/entities';
 import { VerificationStatus } from '@app/common/shared/enums/employer-docs.enum';
+import { VerificationDocumentStatus } from '@app/common/shared/enums/verification-document-status.enum';
+import { JobseekerVerificationDocumentKind } from '@app/common/shared/enums/jobseeker-docs.enum';
 import {
   ApprovalStatus,
+  EmployeeStatus,
   EmployerStatus,
+  PaymentStatus,
 } from '@app/common/database/entities/schema.enum';
 import { AdminRole } from '@app/common/shared/enums/roles.enum';
 import { GetAllAdminsQueryDto } from './dto/get-all-admins-query.dto';
+import { UpdateDocumentVerificationDto } from '../employer/dto/admin-verification.dto';
 import * as bcrypt from 'bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
 import { NotificationService } from 'apps/api/src/modules/notification/notification.service';
+import { ApprovalDecisionEmailService } from '../../approval-decision-email.service';
 
 function generateRandomPassword(length = 12): string {
   const chars =
@@ -44,8 +54,8 @@ export class AdminService {
     private readonly adminAuthRepo: Repository<AdminAuth>,
     @InjectRepository(AdminProfile)
     private readonly adminProfileRepo: Repository<AdminProfile>,
-    @InjectRepository(EmployerVerification)
-    private readonly verificationRepo: Repository<EmployerVerification>,
+    @InjectRepository(EmployerVerificationDocument)
+    private readonly employerVerificationDocRepo: Repository<EmployerVerificationDocument>,
     @InjectRepository(EmployerProfile)
     private readonly profileRepo: Repository<EmployerProfile>,
     @InjectRepository(EmployerAuth)
@@ -54,8 +64,36 @@ export class AdminService {
     private readonly jobseekerAuthRepo: Repository<JobseekerAuth>,
     @InjectRepository(JobSeekerProfile)
     private readonly jobseekerProfileRepo: Repository<JobSeekerProfile>,
+    @InjectRepository(JobseekerVerificationDocument)
+    private readonly jobseekerVerificationDocRepo: Repository<JobseekerVerificationDocument>,
+    @InjectRepository(Job)
+    private readonly jobRepo: Repository<Job>,
+    @InjectRepository(Employee)
+    private readonly employeeRepo: Repository<Employee>,
+    @InjectRepository(Payment)
+    private readonly paymentRepo: Repository<Payment>,
     private readonly notificationService: NotificationService,
+    private readonly approvalDecisionEmailService: ApprovalDecisionEmailService,
   ) {}
+
+  private buildMonthlyTrend(current: number, previous: number) {
+    if (!Number.isFinite(current) || !Number.isFinite(previous)) {
+      return { value: 0, percent: 0 };
+    }
+
+    const value = current - previous;
+    if (previous <= 0) {
+      return {
+        value,
+        percent: current > 0 ? 100 : 0,
+      };
+    }
+
+    return {
+      value,
+      percent: Math.round((value / previous) * 100),
+    };
+  }
 
   async getAdminProfile(userId: string): Promise<any> {
     const profile = await this.adminProfileRepo.findOne({
@@ -185,18 +223,47 @@ export class AdminService {
     employerId: string,
     status: VerificationStatus,
     rejectionReason?: string,
+    adminId?: string,
   ) {
-    const verification = await this.verificationRepo.findOne({
-      where: { employerId },
-      relations: ['documents', 'documents.document'],
+    const employerProfile = await this.profileRepo.findOne({
+      where: { id: employerId },
+      relations: ['auth'],
     });
-    if (!verification) throw new NotFoundException('Verification not found');
+    if (!employerProfile)
+      throw new NotFoundException('Employer verification not found');
 
-    verification.status = status;
-    verification.reviewedAt = new Date();
-    verification.rejectionReason =
+    const previousStatus = employerProfile.verificationStatus;
+    employerProfile.verificationStatus = status;
+    employerProfile.reviewedAt = new Date();
+    employerProfile.reviewedByAdminId = adminId;
+    employerProfile.verificationRejectionReason =
       status === VerificationStatus.REJECTED ? rejectionReason : undefined;
-    await this.verificationRepo.save(verification);
+    await this.profileRepo.save(employerProfile);
+
+    if (status === VerificationStatus.APPROVED) {
+      const docs = await this.employerVerificationDocRepo.find({
+        where: { employerProfileId: employerId },
+      });
+      const now = new Date();
+      for (const d of docs) {
+        d.status = VerificationDocumentStatus.APPROVED;
+        d.rejectionReason = undefined;
+        d.reviewedAt = now;
+        d.reviewedByAdminId = adminId;
+      }
+      if (docs.length > 0) {
+        await this.employerVerificationDocRepo.save(docs);
+      }
+    }
+
+    if (employerProfile) {
+      this.approvalDecisionEmailService.queueEmployerVerificationEmail(
+        employerProfile,
+        previousStatus,
+        status,
+        rejectionReason,
+      );
+    }
 
     return { employerId, status };
   }
@@ -243,7 +310,7 @@ export class AdminService {
     const limit = Math.min(100, Math.max(1, Number(query.limit) || 10));
     const skip = (page - 1) * limit;
     const sortBy = query.sortBy ?? 'createdAt';
-    const sortOrder = (query.sortOrder ?? 'DESC') as 'ASC' | 'DESC';
+    const sortOrder = query.sortOrder ?? 'DESC';
     const search =
       typeof query.query === 'string' ? query.query.trim() : undefined;
 
@@ -308,6 +375,248 @@ export class AdminService {
     };
   }
 
+  async getDashboardOverview(pendingLimit = 5): Promise<any> {
+    const now = new Date();
+    const startOfCurrentMonth = new Date(
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1, 0, 0, 0, 0),
+    );
+    const startOfNextMonth = new Date(
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1, 0, 0, 0, 0),
+    );
+    const startOfPreviousMonth = new Date(
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1, 0, 0, 0, 0),
+    );
+
+    const [
+      totalVettedTalent,
+      vettedThisMonth,
+      vettedLastMonth,
+      totalJobsPosted,
+      jobsThisMonth,
+      jobsLastMonth,
+      totalSuccessfulHires,
+      hiresThisMonth,
+      hiresLastMonth,
+      totalAgencyFeesRaw,
+      feesThisMonthRaw,
+      feesLastMonthRaw,
+      pendingEmployerVerifications,
+      pendingEmployerVerificationsTotal,
+      pendingJobseekerApprovals,
+      pendingJobseekerApprovalsTotal,
+      recentJobPostsRaw,
+      employmentsPendingMutualCompletion,
+      completionAwaitingJobseeker,
+      completionAwaitingEmployer,
+      employmentsEndedMutualThisMonth,
+    ] = await Promise.all([
+      this.jobseekerProfileRepo.count({
+        where: { approvalStatus: ApprovalStatus.APPROVED },
+      }),
+      this.jobseekerProfileRepo.count({
+        where: {
+          approvalStatus: ApprovalStatus.APPROVED,
+          updatedAt: Between(startOfCurrentMonth, startOfNextMonth),
+        },
+      }),
+      this.jobseekerProfileRepo.count({
+        where: {
+          approvalStatus: ApprovalStatus.APPROVED,
+          updatedAt: Between(startOfPreviousMonth, startOfCurrentMonth),
+        },
+      }),
+      this.jobRepo.count(),
+      this.jobRepo.count({
+        where: { createdAt: Between(startOfCurrentMonth, startOfNextMonth) },
+      }),
+      this.jobRepo.count({
+        where: {
+          createdAt: Between(startOfPreviousMonth, startOfCurrentMonth),
+        },
+      }),
+      this.employeeRepo.count(),
+      this.employeeRepo.count({
+        where: { createdAt: Between(startOfCurrentMonth, startOfNextMonth) },
+      }),
+      this.employeeRepo.count({
+        where: {
+          createdAt: Between(startOfPreviousMonth, startOfCurrentMonth),
+        },
+      }),
+      this.paymentRepo
+        .createQueryBuilder('payment')
+        .select('COALESCE(SUM(payment.amount), 0)', 'amount')
+        .where('payment.status = :status', { status: PaymentStatus.SUCCESS })
+        .getRawOne<{ amount: string | number }>(),
+      this.paymentRepo
+        .createQueryBuilder('payment')
+        .select('COALESCE(SUM(payment.amount), 0)', 'amount')
+        .where('payment.status = :status', { status: PaymentStatus.SUCCESS })
+        .andWhere('payment.createdAt >= :start AND payment.createdAt < :end', {
+          start: startOfCurrentMonth,
+          end: startOfNextMonth,
+        })
+        .getRawOne<{ amount: string | number }>(),
+      this.paymentRepo
+        .createQueryBuilder('payment')
+        .select('COALESCE(SUM(payment.amount), 0)', 'amount')
+        .where('payment.status = :status', { status: PaymentStatus.SUCCESS })
+        .andWhere('payment.createdAt >= :start AND payment.createdAt < :end', {
+          start: startOfPreviousMonth,
+          end: startOfCurrentMonth,
+        })
+        .getRawOne<{ amount: string | number }>(),
+      this.profileRepo.find({
+        where: { verificationStatus: VerificationStatus.PENDING },
+        order: { updatedAt: 'DESC' },
+        take: pendingLimit,
+      }),
+      this.profileRepo.count({
+        where: { verificationStatus: VerificationStatus.PENDING },
+      }),
+      this.jobseekerProfileRepo.find({
+        where: { approvalStatus: ApprovalStatus.PENDING },
+        order: { updatedAt: 'DESC' },
+        take: pendingLimit,
+      }),
+      this.jobseekerProfileRepo.count({
+        where: { approvalStatus: ApprovalStatus.PENDING },
+      }),
+      this.jobRepo.find({
+        relations: ['employer'],
+        order: { createdAt: 'DESC' },
+        take: pendingLimit,
+      }),
+      this.employeeRepo
+        .createQueryBuilder('e')
+        .where('e.status IN (:...open)', {
+          open: [EmployeeStatus.ACTIVE, EmployeeStatus.ONBOARDING],
+        })
+        .andWhere(
+          '(e.employerDeclaredCompleteAt IS NOT NULL AND e.jobseekerDeclaredCompleteAt IS NULL) OR (e.employerDeclaredCompleteAt IS NULL AND e.jobseekerDeclaredCompleteAt IS NOT NULL)',
+        )
+        .getCount(),
+      this.employeeRepo
+        .createQueryBuilder('e')
+        .where('e.status IN (:...open)', {
+          open: [EmployeeStatus.ACTIVE, EmployeeStatus.ONBOARDING],
+        })
+        .andWhere('e.employerDeclaredCompleteAt IS NOT NULL')
+        .andWhere('e.jobseekerDeclaredCompleteAt IS NULL')
+        .getCount(),
+      this.employeeRepo
+        .createQueryBuilder('e')
+        .where('e.status IN (:...open)', {
+          open: [EmployeeStatus.ACTIVE, EmployeeStatus.ONBOARDING],
+        })
+        .andWhere('e.jobseekerDeclaredCompleteAt IS NOT NULL')
+        .andWhere('e.employerDeclaredCompleteAt IS NULL')
+        .getCount(),
+      this.employeeRepo
+        .createQueryBuilder('e')
+        .where('e.status = :ended', { ended: EmployeeStatus.ENDED })
+        .andWhere('e.endDate >= :start AND e.endDate < :end', {
+          start: startOfCurrentMonth,
+          end: startOfNextMonth,
+        })
+        .getCount(),
+    ]);
+
+    const totalAgencyFees = Number(totalAgencyFeesRaw?.amount ?? 0);
+    const feesThisMonth = Number(feesThisMonthRaw?.amount ?? 0);
+    const feesLastMonth = Number(feesLastMonthRaw?.amount ?? 0);
+
+    const vettedTrend = this.buildMonthlyTrend(
+      vettedThisMonth,
+      vettedLastMonth,
+    );
+    const jobsTrend = this.buildMonthlyTrend(jobsThisMonth, jobsLastMonth);
+    const hiresTrend = this.buildMonthlyTrend(hiresThisMonth, hiresLastMonth);
+    const agencyFeesTrend = this.buildMonthlyTrend(
+      feesThisMonth,
+      feesLastMonth,
+    );
+
+    return {
+      stats: {
+        totalVettedTalent: {
+          value: totalVettedTalent,
+          changePercent: vettedTrend.percent,
+          changeValue: vettedTrend.value,
+          period: 'month',
+        },
+        jobsPosted: {
+          value: totalJobsPosted,
+          changePercent: jobsTrend.percent,
+          changeValue: jobsTrend.value,
+          period: 'month',
+        },
+        successfulHires: {
+          value: totalSuccessfulHires,
+          changePercent: hiresTrend.percent,
+          changeValue: hiresTrend.value,
+          period: 'month',
+        },
+        totalAgencyFees: {
+          value: Number.isFinite(totalAgencyFees) ? totalAgencyFees : 0,
+          changePercent: agencyFeesTrend.percent,
+          changeValue: Number.isFinite(agencyFeesTrend.value)
+            ? agencyFeesTrend.value
+            : 0,
+          period: 'month',
+        },
+        mutualCompletion: {
+          pendingOneSided: employmentsPendingMutualCompletion,
+          awaitingJobseekerConfirmation: completionAwaitingJobseeker,
+          awaitingEmployerConfirmation: completionAwaitingEmployer,
+          endedThisMonth: employmentsEndedMutualThisMonth,
+        },
+      },
+      pendingApprovals: {
+        employerVerification: {
+          total: pendingEmployerVerificationsTotal,
+          items: pendingEmployerVerifications.map((item) => ({
+            id: item.id,
+            employerId: item.id,
+            companyName:
+              item.companyName ||
+              `${item.firstName ?? ''} ${item.lastName ?? ''}`.trim() ||
+              'Unspecified company',
+            contactName:
+              `${item.firstName ?? ''} ${item.lastName ?? ''}`.trim(),
+            email: item.email,
+            submittedAt: item.updatedAt,
+          })),
+        },
+        jobseekerApproval: {
+          total: pendingJobseekerApprovalsTotal,
+          items: pendingJobseekerApprovals.map((item) => ({
+            id: item.id,
+            fullName: `${item.firstName} ${item.lastName}`.trim(),
+            email: item.email,
+            title: item.jobTitle,
+            submittedAt: item.updatedAt,
+          })),
+        },
+      },
+      recentJobPosts: {
+        total: totalJobsPosted,
+        items: recentJobPostsRaw.map((j) => ({
+          id: j.id,
+          title: j.title,
+          status: j.status,
+          employerId: j.employerId,
+          companyName:
+            j.employer?.companyName?.trim() ||
+            `${j.employer?.firstName ?? ''} ${j.employer?.lastName ?? ''}`.trim() ||
+            j.employer?.email ||
+            'Employer',
+          createdAt: j.createdAt,
+        })),
+      },
+    };
+  }
+
   /**
    * Update employer status (ACTIVE, INACTIVE, SUSPENDED)
    */
@@ -319,7 +628,7 @@ export class AdminService {
   ): Promise<{ success: boolean; employerId: string; status: EmployerStatus }> {
     const employerProfile = await this.profileRepo.findOne({
       where: { id: employerId },
-      relations: ['verification', 'auth'],
+      relations: ['auth'],
     });
 
     if (!employerProfile) {
@@ -328,10 +637,7 @@ export class AdminService {
 
     // Validate: Can only activate if verification is APPROVED
     if (status === EmployerStatus.ACTIVE) {
-      if (
-        !employerProfile.verification ||
-        employerProfile.verification.status !== VerificationStatus.APPROVED
-      ) {
+      if (employerProfile.verificationStatus !== VerificationStatus.APPROVED) {
         throw new BadRequestException(
           'Cannot activate employer: Verification must be APPROVED first',
         );
@@ -547,19 +853,202 @@ export class AdminService {
     return { success: true, jobseekerId };
   }
 
+  // Sets status on a single jobseeker verification document (e.g. ID).
+  async updateJobseekerVerificationDocument(
+    adminId: string,
+    jobseekerId: string,
+    verificationDocumentId: string,
+    dto: UpdateDocumentVerificationDto,
+  ) {
+    const row = await this.jobseekerVerificationDocRepo.findOne({
+      where: {
+        id: verificationDocumentId,
+        jobseekerProfileId: jobseekerId,
+      },
+      relations: ['jobseekerProfile'],
+    });
+
+    if (!row) {
+      throw new NotFoundException('Verification document not found');
+    }
+
+    const previousStatus = row.status;
+    row.status = dto.status;
+    row.rejectionReason =
+      dto.status === VerificationDocumentStatus.REJECTED
+        ? (dto.rejectionReason ?? '').trim() || undefined
+        : undefined;
+    row.reviewedAt = new Date();
+    row.reviewedByAdminId = adminId;
+    await this.jobseekerVerificationDocRepo.save(row);
+
+    if (
+      dto.status === VerificationDocumentStatus.REJECTED &&
+      row.rejectionReason &&
+      previousStatus !== VerificationDocumentStatus.REJECTED
+    ) {
+      const profile = row.jobseekerProfile;
+      this.approvalDecisionEmailService.queueJobseekerVerificationDocumentRejectedEmail(
+        profile,
+        row.documentKind,
+        row.rejectionReason,
+      );
+    }
+
+    return {
+      success: true,
+      jobseekerId,
+      documentId: row.id,
+      status: row.status,
+    };
+  }
+
+  // Marks all jobseeker verification rows approved (used when profile is approved).
+  private async approveAllJobseekerVerificationDocuments(
+    jobseekerProfileId: string,
+    adminId: string,
+  ): Promise<void> {
+    const docs = await this.jobseekerVerificationDocRepo.find({
+      where: { jobseekerProfileId },
+    });
+    const now = new Date();
+    for (const d of docs) {
+      d.status = VerificationDocumentStatus.APPROVED;
+      d.rejectionReason = undefined;
+      d.reviewedAt = now;
+      d.reviewedByAdminId = adminId;
+    }
+    if (docs.length > 0) {
+      await this.jobseekerVerificationDocRepo.save(docs);
+    }
+  }
+
+  // Resets per-document review metadata when unapproving a jobseeker profile.
+  private async resetJobseekerVerificationDocumentsToPending(
+    jobseekerProfileId: string,
+  ): Promise<void> {
+    const docs = await this.jobseekerVerificationDocRepo.find({
+      where: { jobseekerProfileId },
+    });
+    for (const d of docs) {
+      d.status = VerificationDocumentStatus.PENDING;
+      d.rejectionReason = undefined;
+      d.reviewedAt = undefined;
+      d.reviewedByAdminId = undefined;
+    }
+    if (docs.length > 0) {
+      await this.jobseekerVerificationDocRepo.save(docs);
+    }
+  }
+
   async updateJobseekerVerification(
+    adminId: string,
     jobseekerId: string,
     status: ApprovalStatus,
+    reason?: string,
   ) {
     const profile = await this.jobseekerProfileRepo.findOne({
       where: { id: jobseekerId },
     });
     if (!profile) throw new NotFoundException('Jobseeker profile not found');
 
+    const previousApprovalStatus = profile.approvalStatus;
+
+    if (status === ApprovalStatus.APPROVED) {
+      const idRow = await this.jobseekerVerificationDocRepo.findOne({
+        where: {
+          jobseekerProfileId: jobseekerId,
+          documentKind: JobseekerVerificationDocumentKind.ID_DOCUMENT,
+        },
+      });
+      if (!idRow) {
+        throw new BadRequestException(
+          'Cannot approve jobseeker until an ID document is uploaded',
+        );
+      }
+      const proofOfAddressRow = await this.jobseekerVerificationDocRepo.findOne(
+        {
+          where: {
+            jobseekerProfileId: jobseekerId,
+            documentKind: JobseekerVerificationDocumentKind.PROOF_OF_ADDRESS,
+          },
+        },
+      );
+      if (!proofOfAddressRow) {
+        throw new BadRequestException(
+          'Cannot approve jobseeker until proof of address is uploaded',
+        );
+      }
+      if (
+        !Array.isArray(profile.referenceContacts) ||
+        profile.referenceContacts.length !== 2
+      ) {
+        throw new BadRequestException(
+          'Cannot approve jobseeker until two reference contacts are provided',
+        );
+      }
+      if (!profile.dateOfBirth) {
+        throw new BadRequestException(
+          'Cannot approve jobseeker until date of birth is provided',
+        );
+      }
+      if (!profile.gender) {
+        throw new BadRequestException(
+          'Cannot approve jobseeker until gender is provided',
+        );
+      }
+
+      profile.approvalStatus = ApprovalStatus.APPROVED;
+      profile.approvalRejectionReason = undefined;
+      profile.approvalReviewedAt = new Date();
+      profile.approvalReviewedByAdminId = adminId;
+
+      await this.jobseekerProfileRepo.save(profile);
+      await this.approveAllJobseekerVerificationDocuments(jobseekerId, adminId);
+
+      this.approvalDecisionEmailService.queueJobseekerApprovalEmail(
+        profile,
+        previousApprovalStatus,
+        ApprovalStatus.APPROVED,
+      );
+      return { success: true, jobseekerId, status: profile.approvalStatus };
+    }
+
+    if (status === ApprovalStatus.REJECTED) {
+      const rejectionReason = (reason ?? '').trim();
+      if (!rejectionReason) {
+        throw new BadRequestException('Rejection reason is required');
+      }
+
+      profile.approvalStatus = ApprovalStatus.REJECTED;
+      profile.approvalRejectionReason = rejectionReason;
+      profile.approvalReviewedAt = new Date();
+      profile.approvalReviewedByAdminId = adminId;
+
+      await this.jobseekerProfileRepo.save(profile);
+      this.approvalDecisionEmailService.queueJobseekerApprovalEmail(
+        profile,
+        previousApprovalStatus,
+        ApprovalStatus.REJECTED,
+        rejectionReason,
+      );
+      return { success: true, jobseekerId, status: profile.approvalStatus };
+    }
+
     profile.approvalStatus = status;
+    profile.approvalRejectionReason = undefined;
+    profile.approvalReviewedAt = new Date();
+    profile.approvalReviewedByAdminId = adminId;
     await this.jobseekerProfileRepo.save(profile);
 
-    return { jobseekerId, status };
+    if (
+      status === ApprovalStatus.PENDING &&
+      previousApprovalStatus === ApprovalStatus.APPROVED
+    ) {
+      await this.resetJobseekerVerificationDocumentsToPending(jobseekerId);
+    }
+
+    return { success: true, jobseekerId, status: profile.approvalStatus };
   }
 
   /**

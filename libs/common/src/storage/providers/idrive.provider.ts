@@ -21,15 +21,12 @@ export class IDriveProvider implements IStorageProvider {
   private region: string;
 
   constructor(private readonly configService: ConfigService) {
-    this.endpoint = this.configService.get<string>(ENV.S3_ENDPOINT) as string;
-    this.region =
-      (this.configService.get<string>(ENV.S3_REGION) as string) || 'auto';
-    const accessKeyId = this.configService.get<string>(
-      ENV.S3_ACCESS_KEY_ID,
-    ) as string;
+    this.endpoint = this.configService.get<string>(ENV.S3_ENDPOINT);
+    this.region = this.configService.get<string>(ENV.S3_REGION) || 'auto';
+    const accessKeyId = this.configService.get<string>(ENV.S3_ACCESS_KEY_ID);
     const secretAccessKey = this.configService.get<string>(
       ENV.S3_SECRET_ACCESS_KEY,
-    ) as string;
+    );
 
     // Ensure endpoint has proper protocol
     if (
@@ -167,7 +164,10 @@ export class IDriveProvider implements IStorageProvider {
       await this.s3.send(head);
       return true;
     } catch (error) {
-      if (error.name === 'NotFound' || error.$metadata?.httpStatusCode === 404) {
+      if (
+        error.name === 'NotFound' ||
+        error.$metadata?.httpStatusCode === 404
+      ) {
         return false;
       }
       // Re-throw other errors

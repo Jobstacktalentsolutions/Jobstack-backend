@@ -6,13 +6,18 @@ import { AdminService } from './admin.service';
 import { AdminJwtGuard } from 'apps/api/src/guards';
 import { AdminAuthModule } from 'apps/api/src/modules/auth/submodules/admin/admin-auth.module';
 import { NotificationModule } from 'apps/api/src/modules/notification/notification.module';
+import { ApprovalDecisionEmailService } from '../../approval-decision-email.service';
 import {
   AdminProfile,
-  EmployerVerification,
+  Employee,
+  EmployerVerificationDocument,
   EmployerProfile,
   EmployerAuth,
+  Job,
   JobseekerAuth,
   JobSeekerProfile,
+  JobseekerVerificationDocument,
+  Payment,
 } from '@app/common/database/entities';
 
 @Module({
@@ -20,17 +25,21 @@ import {
     TypeOrmModule.forFeature([
       AdminAuth,
       AdminProfile,
-      EmployerVerification,
+      EmployerVerificationDocument,
       EmployerProfile,
       EmployerAuth,
       JobseekerAuth,
       JobSeekerProfile,
+      JobseekerVerificationDocument,
+      Job,
+      Employee,
+      Payment,
     ]),
     AdminAuthModule,
     NotificationModule,
   ],
   controllers: [AdminController],
-  providers: [AdminService, AdminJwtGuard],
+  providers: [AdminService, AdminJwtGuard, ApprovalDecisionEmailService],
   exports: [AdminService],
 })
 export class AdminModule {}

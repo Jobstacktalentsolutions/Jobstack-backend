@@ -83,12 +83,7 @@ export class ContractsService {
     // Load employee with all relations
     const employee = await this.employeeRepo.findOne({
       where: { id: employeeId },
-      relations: [
-        'employer',
-        'jobseekerProfile',
-        'job',
-        'activationPayment',
-      ],
+      relations: ['employer', 'jobseekerProfile', 'job', 'activationPayment'],
     });
 
     if (!employee) {
@@ -182,15 +177,12 @@ export class ContractsService {
     // Upload signature image to private S3 bucket and store the fileKey
     let signatureFileKey: string | undefined;
     if (signatureImageFile) {
-      const upload = await this.storageService.uploadFile(
-        signatureImageFile,
-        {
-          folder: 'contract-signatures',
-          documentType: DocumentType.SIGNATURE,
-          bucketType: 'private',
-          uploadedBy: userId,
-        },
-      );
+      const upload = await this.storageService.uploadFile(signatureImageFile, {
+        folder: 'contract-signatures',
+        documentType: DocumentType.SIGNATURE,
+        bucketType: 'private',
+        uploadedBy: userId,
+      });
       signatureFileKey = upload.fileKey;
     }
 
@@ -262,7 +254,12 @@ export class ContractsService {
   async getContractById(contractId: string): Promise<Contract> {
     const contract = await this.contractRepo.findOne({
       where: { id: contractId },
-      relations: ['employee', 'employee.employer', 'employee.jobseekerProfile', 'template'],
+      relations: [
+        'employee',
+        'employee.employer',
+        'employee.jobseekerProfile',
+        'template',
+      ],
     });
 
     if (!contract) {
@@ -370,6 +367,57 @@ export class ContractsService {
       ...e,
       contract: contractByEmployee.get(e.id) ?? null,
     }));
+  }
+
+  /**
+   * Get all contracts (admin view)
+   */
+  async getAllContracts(): Promise<Contract[]> {
+    return this.contractRepo
+      .createQueryBuilder('contract')
+      .leftJoinAndSelect('contract.template', 'template')
+      .leftJoinAndSelect('contract.employee', 'employee')
+      .leftJoinAndSelect('employee.jobseekerProfile', 'jobseekerProfile')
+      .leftJoinAndSelect('employee.employer', 'employer')
+      .leftJoinAndSelect('employee.job', 'job')
+      .orderBy('contract.createdAt', 'DESC')
+      .getMany();
+  }
+
+  /**
+   * Cancel (void) a contract — admin action
+   */
+  async cancelContract(contractId: string, reason?: string): Promise<Contract> {
+    const contract = await this.contractRepo.findOne({
+      where: { id: contractId },
+      relations: [
+        'employee',
+        'employee.employer',
+        'employee.jobseekerProfile',
+        'template',
+      ],
+    });
+
+    if (!contract) {
+      throw new NotFoundException('Contract not found');
+    }
+
+    if (contract.status === ContractStatus.CANCELLED) {
+      throw new BadRequestException('Contract is already cancelled');
+    }
+
+    contract.status = ContractStatus.CANCELLED;
+    if (reason) {
+      contract.notes = reason;
+    }
+
+    await this.contractRepo.save(contract);
+
+    this.logger.log(
+      `Contract ${contractId} cancelled by admin. Reason: ${reason ?? 'N/A'}`,
+    );
+
+    return contract;
   }
 
   /**

@@ -1,7 +1,6 @@
-import { Entity, Column, OneToOne, JoinColumn, OneToMany } from 'typeorm';
+import { Entity, Column, OneToOne, JoinColumn } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { EmployerProfile } from './EmployerProfile.entity';
-import { EmployerVerificationDocument } from './EmployerVerificationDocument.entity';
 import { VerificationStatus } from '@app/common/shared/enums/employer-docs.enum';
 
 @Entity('employer_verification')
@@ -12,11 +11,6 @@ export class EmployerVerification extends BaseEntity {
   @OneToOne(() => EmployerProfile, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'employerId' })
   employer: EmployerProfile;
-
-  @OneToMany(() => EmployerVerificationDocument, (doc) => doc.verification, {
-    cascade: true,
-  })
-  documents: EmployerVerificationDocument[];
 
   @Column({ nullable: true })
   companyName?: string;

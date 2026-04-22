@@ -9,7 +9,6 @@ const JOB_APPLICATIONS_DATA: Array<{
   jobId: string;
   jobseekerProfileId: string;
   status: JobApplicationStatus;
-  expectedSalary?: number;
   note?: string;
   createdAt: Date;
 }> = require('../data/job-applications.data').JOB_APPLICATIONS_DATA;
@@ -34,12 +33,16 @@ export class JobApplicationFactory extends BaseFactory<JobApplication> {
   }
 
   /** Resolve profile id from seed id or by email when DB profile has a different id (e.g. after upsert by email). */
-  private async resolveProfileId(seedProfileId: string): Promise<string | null> {
+  private async resolveProfileId(
+    seedProfileId: string,
+  ): Promise<string | null> {
     const byId = await this.jobseekerProfileRepository.findOne({
       where: { id: seedProfileId },
     });
     if (byId) return byId.id;
-    const seedJobseeker = JOBSEEKERS_DATA.find((js: any) => js.id === seedProfileId);
+    const seedJobseeker = JOBSEEKERS_DATA.find(
+      (js: any) => js.id === seedProfileId,
+    );
     if (!seedJobseeker?.email) return null;
     const byEmail = await this.jobseekerProfileRepository.findOne({
       where: { email: (seedJobseeker.email as string).toLowerCase() },
@@ -81,13 +84,10 @@ export class JobApplicationFactory extends BaseFactory<JobApplication> {
 
     if (existingApplication) {
       // Update existing application
-      await this.repository.update(
-        { id: existingApplication.id },
-        payload,
-      );
-      return (await this.repository.findOne({
+      await this.repository.update({ id: existingApplication.id }, payload);
+      return await this.repository.findOne({
         where: { id: existingApplication.id },
-      })) as JobApplication;
+      });
     } else {
       // Create new application using resolved profile id
       const application = this.repository.create({
@@ -115,9 +115,6 @@ export class JobApplicationFactory extends BaseFactory<JobApplication> {
       try {
         const application = await this.createOrUpdateJobApplication(appData);
         applications.push(application);
-
-        // Update job applicant count
-        await this.updateJobApplicantCount(appData.jobId);
       } catch (error: any) {
         console.warn(
           `⚠️  Failed to upsert job application for job ${appData.jobId} and jobseeker ${appData.jobseekerProfileId}`,
@@ -128,19 +125,5 @@ export class JobApplicationFactory extends BaseFactory<JobApplication> {
 
     console.log(`✅ Upserted ${applications.length} job application records`);
     return applications;
-  }
-
-  /**
-   * Update the applicant count for a job
-   */
-  private async updateJobApplicantCount(jobId: string): Promise<void> {
-    const applicationCount = await this.repository.count({
-      where: { jobId },
-    });
-
-    await this.jobRepository.update(
-      { id: jobId },
-      { applicantsCount: applicationCount },
-    );
   }
 }

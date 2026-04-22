@@ -54,7 +54,7 @@ The backend logic is organized into several distinct modules (`src/api/`).
 | **`Vetting`**       | Manages the verification process for Job Seekers.              | `Status` (Updates), `Documents` (Approval)                   |
 | **`Payment`**       | Handles financial transactions through the platform.           | `Paystack`, `Transaction` (Recording payments)               |
 | **`Storage`**       | Manages file uploads (CVs, portfolios) securely.               | Integration with **Drive e2** (S3 compatible storage)        |
-| **`Notifications`** | Manages communication triggers (emails, in-app alerts).        | Integration with **Brevo** (Email Provider)                  |
+| **`Notifications`** | Manages communication triggers (emails, in-app alerts).        | Integration with **Resend** (default) + **Brevo** (fallback) |
 
 ---
 
@@ -96,7 +96,7 @@ The backend logic is organized into several distinct modules (`src/api/`).
 
     # External Services
     PAYSTACK_SECRET="sk_live_xxxx"
-    BREVO_API_KEY="xkeysib-xxxx"
+    RESEND_API_KEY="re_xxxx"
     STORAGE_S3_ENDPOINT="s3.endpoint.com"
     STORAGE_ACCESS_KEY="xxxx"
     STORAGE_SECRET_KEY="xxxx"

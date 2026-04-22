@@ -2,7 +2,6 @@ import { Entity, Column, ManyToOne, Unique, JoinColumn } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { JobSeekerProfile } from './JobseekerProfile.entity';
 import { Skill } from './Skill.entity';
-import { Proficiency } from './schema.enum';
 
 @Entity('jobseeker_skills')
 @Unique(['profileId', 'skillId'])
@@ -20,20 +19,4 @@ export class JobseekerSkill extends BaseEntity {
   @ManyToOne(() => Skill, { onDelete: 'CASCADE', eager: true })
   @JoinColumn({ name: 'skillId' })
   skill: Skill;
-
-  @Column({
-    type: 'enum',
-    enum: Proficiency,
-    nullable: true,
-  })
-  proficiency?: Proficiency;
-
-  @Column({ type: 'int', nullable: true })
-  yearsExperience?: number;
-
-  @Column({ default: false })
-  verified: boolean;
-
-  @Column({ type: 'timestamp', nullable: true })
-  verifiedAt?: Date;
 }

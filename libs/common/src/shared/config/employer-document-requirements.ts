@@ -14,83 +14,55 @@ export const EMPLOYER_DOCUMENT_REQUIREMENTS: Record<
 > = {
   [EmployerType.INDIVIDUAL]: [
     {
-      documentType: EmployerDocumentType.NATIONAL_ID,
+      documentType: EmployerDocumentType.GOVERNMENT_ISSUED_ID,
       mandatory: true,
-      description: 'Valid National ID',
-      purpose: 'Confirms identity',
+      description:
+        "Government-issued ID (NIN slip, international passport, or voter's card)",
+      purpose: 'Confirms identity of the hiring individual',
     },
 
     {
-      documentType: EmployerDocumentType.PROOF_OF_ADDRESS,
+      documentType: EmployerDocumentType.UTILITY_BILL,
       mandatory: true,
-      description: 'Utility bill or tenancy agreement',
+      description: 'Utility bill',
       purpose: 'Confirms legitimacy of location',
     },
   ],
 
   [EmployerType.SME]: [
     {
-      documentType: EmployerDocumentType.CERTIFICATE_OF_BUSINESS_REGISTRATION,
+      documentType: EmployerDocumentType.CAC_REGISTRATION_CERTIFICATE,
       mandatory: true,
       description: 'Business registration certificate (CAC)',
       purpose: 'Confirms legal entity',
     },
     {
-      documentType: EmployerDocumentType.COMPANY_ID,
-      mandatory: false,
-      description: 'Company ID or official letterhead',
-      purpose: 'Confirms authority of representative',
-    },
-    {
-      documentType: EmployerDocumentType.TAX_IDENTIFICATION,
-      mandatory: false,
-      description: 'Tax Identification Number (TIN)',
-      purpose: 'Helps for invoicing and compliance',
-    },
-    {
-      documentType: EmployerDocumentType.CORPORATE_PAYMENT_DETAILS,
+      documentType: EmployerDocumentType.OWNER_GOVERNMENT_ID,
       mandatory: true,
-      description: 'Payment details (corporate account)',
-      purpose: 'For transactions',
+      description: "Owner's government-issued ID",
+      purpose: 'Confirms identity of business owner',
     },
     {
-      documentType: EmployerDocumentType.SERVICE_AGREEMENT,
+      documentType: EmployerDocumentType.SIGNED_LEGITIMATE_BUSINESS_DECLARATION,
       mandatory: true,
-      description: 'Signed service agreement',
-      purpose: 'Legally binds employer to T&Cs and fees',
+      description:
+        'Signed declaration confirming legitimate business hiring purpose',
+      purpose: 'Confirms hiring intent and legitimacy',
     },
   ],
 
   [EmployerType.ORGANIZATION]: [
     {
-      documentType: EmployerDocumentType.CERTIFICATE_OF_INCORPORATION,
+      documentType: EmployerDocumentType.CAC_REGISTRATION_CERTIFICATE,
       mandatory: true,
       description: 'Certificate of Incorporation (CAC)',
       purpose: 'Legal entity proof',
     },
     {
-      documentType: EmployerDocumentType.CORPORATE_PROFILE,
-      mandatory: false,
-      description: 'Corporate profile or company website link',
-      purpose: 'Context and credibility',
-    },
-    {
-      documentType: EmployerDocumentType.AUTHORIZATION_LETTER,
+      documentType: EmployerDocumentType.DIRECTOR_GOVERNMENT_ID,
       mandatory: true,
-      description: 'Contact person ID and authorization letter',
-      purpose: 'Ensures the staff setting up the account is authorized',
-    },
-    {
-      documentType: EmployerDocumentType.CORPORATE_ACCOUNT_DETAILS,
-      mandatory: true,
-      description: 'Payment information (corporate account)',
-      purpose: 'For processing salary and fees',
-    },
-    {
-      documentType: EmployerDocumentType.SERVICE_AGREEMENT,
-      mandatory: true,
-      description: 'Signed service agreement',
-      purpose: 'Legally binds employer to T&Cs and fees',
+      description: "One director's government-issued ID",
+      purpose: 'Confirms executive identity',
     },
   ],
 };

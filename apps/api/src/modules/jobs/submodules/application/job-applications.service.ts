@@ -1,10 +1,12 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, SelectQueryBuilder } from 'typeorm';
+import { In, Repository, SelectQueryBuilder } from 'typeorm';
 import {
   Job,
   JobApplication,
@@ -17,15 +19,25 @@ import {
   UpdateApplicationStatusDto,
 } from './dto';
 import {
+  ApprovalStatus,
   JobApplicationStatus,
   JobStatus,
   EmployeeStatus,
   EmploymentArrangement,
+  ProbationStatus,
+  isJobOpenOnMarketplace,
 } from '@app/common/database/entities/schema.enum';
 import { NotificationService } from 'apps/api/src/modules/notification/notification.service';
+import { ProbationTrackingProducer } from '../../queue';
+import { JobVettingProducer } from '../../queue/job-vetting.producer';
+import { JobVettingMilestoneNotifyService } from '../../services/job-vetting-milestone-notify.service';
+import { UserRole } from '@app/common/shared/enums/user-roles.enum';
+import { NotificationPriority } from '@app/common/database/entities/schema.enum';
+import { buildProbationSchedule } from '../../utils/probation-policy.util';
 
 @Injectable()
 export class JobApplicationsService {
+  private readonly logger = new Logger(JobApplicationsService.name);
   constructor(
     @InjectRepository(JobApplication)
     private readonly applicationRepo: Repository<JobApplication>,
@@ -36,6 +48,9 @@ export class JobApplicationsService {
     @InjectRepository(Employee)
     private readonly employeeRepo: Repository<Employee>,
     private readonly notificationService: NotificationService,
+    private readonly probationTrackingProducer: ProbationTrackingProducer,
+    private readonly jobVettingProducer: JobVettingProducer,
+    private readonly jobVettingMilestoneNotifyService: JobVettingMilestoneNotifyService,
   ) {}
 
   private readonly relations = ['job', 'jobseekerProfile'];
@@ -47,7 +62,7 @@ export class JobApplicationsService {
     dto: CreateJobApplicationDto,
   ) {
     const job = await this.jobRepo.findOne({ where: { id: jobId } });
-    if (!job || job.status !== JobStatus.PUBLISHED) {
+    if (!job || !isJobOpenOnMarketplace(job.status)) {
       throw new BadRequestException('Job is not open for applications');
     }
 
@@ -56,6 +71,12 @@ export class JobApplicationsService {
     });
     if (!profile) {
       throw new NotFoundException('Jobseeker profile not found');
+    }
+
+    if (profile.approvalStatus !== ApprovalStatus.APPROVED) {
+      throw new ForbiddenException(
+        'Your profile is not approved yet. You cannot apply for jobs at this time.',
+      );
     }
 
     const exists = await this.applicationRepo.findOne({
@@ -68,12 +89,57 @@ export class JobApplicationsService {
     const application = this.applicationRepo.create({
       jobId,
       jobseekerProfileId: jobseekerId,
-      expectedSalary: dto.expectedSalary,
       note: dto.note,
       status: JobApplicationStatus.APPLIED,
     });
 
     const saved = await this.applicationRepo.save(application);
+
+    // Queue auto-vetting once there is at least one applicant (not on job publish)
+    try {
+      await this.jobVettingProducer.queueJobVetting(jobId, 'application', {
+        bullJobIdSuffix: saved.id,
+      });
+    } catch (err) {
+      this.logger.warn(
+        `Failed to queue vetting after application for job ${jobId}: ${err.message}`,
+      );
+    }
+
+    // Notify jobseeker that their application was received
+    try {
+      await this.notificationService.createAppNotification(
+        jobseekerId,
+        UserRole.JOB_SEEKER,
+        {
+          title: 'Application Submitted',
+          message: `Your application for "${job.title}" has been submitted successfully. We'll keep you updated.`,
+          priority: NotificationPriority.MEDIUM,
+          metadata: { jobId: job.id, applicationId: saved.id },
+        },
+      );
+    } catch (err) {
+      this.logger.warn(
+        `Failed to create app notification for jobseeker application: ${err.message}`,
+      );
+    }
+
+    // Every 5th applicant: non-blocking email nudge to vetting admin (or super admin)
+    void this.applicationRepo
+      .count({ where: { jobId } })
+      .then((applicantCount) =>
+        this.jobVettingMilestoneNotifyService.notifyIfApplicantMilestone(
+          jobId,
+          job.title,
+          applicantCount,
+        ),
+      )
+      .catch((err) =>
+        this.logger.warn(
+          `Vetting milestone notification failed for job ${jobId}: ${err?.message ?? err}`,
+        ),
+      );
+
     return this.getApplicationById(saved.id);
   }
 
@@ -87,7 +153,26 @@ export class JobApplicationsService {
       { jobseekerId },
     );
     this.applyApplicationFilters(qb, query);
-    return this.executePagedApplicationQuery(qb, query);
+    const result = await this.executePagedApplicationQuery(qb, query);
+
+    // Annotate each application with its associated employeeId so the frontend
+    // can fetch probation progress without an extra lookup.
+    if (result.items.length > 0) {
+      const employeeMap = await this.buildEmployeeIdMapForApplicationItems(
+        result.items,
+      );
+
+      return {
+        ...result,
+        items: result.items.map((app) => ({
+          ...app,
+          employeeId:
+            employeeMap.get(`${app.jobId}:${app.jobseekerProfileId}`) ?? null,
+        })),
+      };
+    }
+
+    return result;
   }
 
   // Lists applications for a specific job under an employer
@@ -115,7 +200,7 @@ export class JobApplicationsService {
     // Candidate stages include screening and post-screening states
     const candidateStatuses: JobApplicationStatus[] = [
       JobApplicationStatus.SELECTED_FOR_SCREENING,
-      JobApplicationStatus.SCREENING_COMPLETED,
+      JobApplicationStatus.SELECTED_FOR_HIRE,
       JobApplicationStatus.OFFER_SENT,
       JobApplicationStatus.APPLICANT_ACCEPTED,
       JobApplicationStatus.PAYMENT_COMPLETE,
@@ -138,16 +223,8 @@ export class JobApplicationsService {
     // Annotate each application with its associated employeeId so the
     // frontend can use it directly for payment flows without an extra lookup.
     if (result.items.length > 0) {
-      const employees = await this.employeeRepo.find({
-        where: result.items.map((app) => ({
-          jobId: app.jobId,
-          jobseekerProfileId: app.jobseekerProfileId,
-        })),
-        select: ['id', 'jobId', 'jobseekerProfileId'],
-      });
-
-      const employeeMap = new Map(
-        employees.map((e) => [`${e.jobId}:${e.jobseekerProfileId}`, e.id]),
+      const employeeMap = await this.buildEmployeeIdMapForApplicationItems(
+        result.items,
       );
 
       return {
@@ -191,6 +268,18 @@ export class JobApplicationsService {
     return this.executePagedApplicationQuery(qb, query);
   }
 
+  // Retrieves a single application for the current jobseeker.
+  async getJobseekerApplicationById(
+    jobseekerId: string,
+    applicationId: string,
+  ) {
+    const application = await this.getApplicationById(applicationId);
+    if (application.jobseekerProfileId !== jobseekerId) {
+      throw new NotFoundException('Application not found');
+    }
+    return application;
+  }
+
   // Retrieves single application for admin or internal use
   async getApplicationById(applicationId: string) {
     const application = await this.applicationRepo.findOne({
@@ -200,7 +289,45 @@ export class JobApplicationsService {
     if (!application) {
       throw new NotFoundException('Application not found');
     }
-    return application;
+
+    const employee = await this.employeeRepo.findOne({
+      where: {
+        jobId: application.jobId,
+        jobseekerProfileId: application.jobseekerProfileId,
+      },
+      order: { updatedAt: 'DESC' },
+      select: [
+        'id',
+        'status',
+        'probationStatus',
+        'probationEndDate',
+        'startDate',
+        'endDate',
+        'pulse30SentAt',
+        'employerDeclaredCompleteAt',
+        'jobseekerDeclaredCompleteAt',
+      ],
+    });
+
+    return {
+      ...application,
+      employeeId: employee?.id ?? null,
+      employee: employee
+        ? {
+            id: employee.id,
+            status: employee.status,
+            probationStatus: employee.probationStatus ?? null,
+            probationEndDate: employee.probationEndDate ?? null,
+            startDate: employee.startDate ?? null,
+            endDate: employee.endDate ?? null,
+            reminderSentAt: employee.pulse30SentAt ?? null,
+            employerDeclaredCompleteAt:
+              employee.employerDeclaredCompleteAt ?? null,
+            jobseekerDeclaredCompleteAt:
+              employee.jobseekerDeclaredCompleteAt ?? null,
+          }
+        : null,
+    };
   }
 
   // Base query for applications with joined relations
@@ -248,6 +375,34 @@ export class JobApplicationsService {
     return { items, total, page, limit };
   }
 
+  // Latest employee id per (job, jobseeker) pair for list views (includes ended rows).
+  private async buildEmployeeIdMapForApplicationItems(
+    items: Pick<JobApplication, 'jobId' | 'jobseekerProfileId'>[],
+  ): Promise<Map<string, string>> {
+    if (items.length === 0) {
+      return new Map();
+    }
+    const qb = this.employeeRepo.createQueryBuilder('e');
+    items.forEach((app, i) => {
+      qb.orWhere(`(e.jobId = :jid${i} AND e.jobseekerProfileId = :pid${i})`, {
+        [`jid${i}`]: app.jobId,
+        [`pid${i}`]: app.jobseekerProfileId,
+      });
+    });
+    const rows = await qb.getMany();
+    rows.sort(
+      (a, b) => (b.updatedAt?.getTime() ?? 0) - (a.updatedAt?.getTime() ?? 0),
+    );
+    const map = new Map<string, string>();
+    for (const e of rows) {
+      const key = `${e.jobId}:${e.jobseekerProfileId}`;
+      if (!map.has(key)) {
+        map.set(key, e.id);
+      }
+    }
+    return map;
+  }
+
   // Employer accepts candidate after screening - creates Employee record
   async employerAcceptCandidate(
     employerId: string,
@@ -278,12 +433,17 @@ export class JobApplicationsService {
       where: {
         jobId: application.jobId,
         jobseekerProfileId: application.jobseekerProfileId,
+        status: In([
+          EmployeeStatus.ONBOARDING,
+          EmployeeStatus.ACTIVE,
+          EmployeeStatus.SUSPENDED,
+        ]),
       },
     });
 
     if (existingEmployee) {
       throw new BadRequestException(
-        'Employee record already exists for this candidate',
+        'An active employee record already exists for this candidate',
       );
     }
 
@@ -342,6 +502,22 @@ export class JobApplicationsService {
     application.status = JobApplicationStatus.OFFER_SENT;
     application.statusUpdatedAt = new Date();
     await this.applicationRepo.save(application);
+
+    // Notify jobseeker about the offer
+    try {
+      await this.notificationService.createAppNotification(
+        application.jobseekerProfileId,
+        UserRole.JOB_SEEKER,
+        {
+          title: '🎉 Job Offer Received!',
+          message: `You have received a job offer for "${application.job.title}". Please review and respond within 7 days.`,
+          priority: NotificationPriority.HIGH,
+          metadata: { jobId: application.jobId, applicationId },
+        },
+      );
+    } catch (err) {
+      this.logger.warn(`Failed to notify jobseeker of offer: ${err.message}`);
+    }
 
     return {
       application: await this.getApplicationById(applicationId),
@@ -483,6 +659,38 @@ export class JobApplicationsService {
     application.statusUpdatedAt = new Date();
     await this.applicationRepo.save(application);
 
+    // Notify employer of candidate's decision
+    try {
+      const employerId = application.job.employerId;
+      if (acceptance.accepted) {
+        await this.notificationService.createAppNotification(
+          employerId,
+          UserRole.EMPLOYER,
+          {
+            title: '✅ Candidate Accepted Your Offer',
+            message: `A candidate has accepted your offer for "${application.job.title}". Proceed with payment to unlock their contact details.`,
+            priority: NotificationPriority.HIGH,
+            metadata: { jobId: application.jobId, applicationId },
+          },
+        );
+      } else {
+        await this.notificationService.createAppNotification(
+          employerId,
+          UserRole.EMPLOYER,
+          {
+            title: 'Candidate Declined Offer',
+            message: `A candidate has declined your offer for "${application.job.title}".`,
+            priority: NotificationPriority.MEDIUM,
+            metadata: { jobId: application.jobId, applicationId },
+          },
+        );
+      }
+    } catch (err) {
+      this.logger.warn(
+        `Failed to notify employer of candidate decision: ${err.message}`,
+      );
+    }
+
     return this.getApplicationById(applicationId);
   }
 
@@ -540,6 +748,17 @@ export class JobApplicationsService {
           },
         });
       }
+
+      await this.notificationService.createAppNotification(
+        application.job.employerId,
+        UserRole.EMPLOYER,
+        {
+          title: '🗓️ Screening Proposal Accepted',
+          message: `Your proposed screening time for candidate ${application.jobseekerProfile.firstName} (${application.job.title}) has been approved.`,
+          priority: NotificationPriority.MEDIUM,
+          metadata: { jobId: application.job.id, applicationId },
+        },
+      );
     } catch (error) {
       // Notification failures should not block the core flow
     }
@@ -573,7 +792,7 @@ export class JobApplicationsService {
       );
     }
 
-    // Notify candidate via email
+    // Notify candidate via email + in-app
     try {
       if (application.jobseekerProfile?.email) {
         const websiteUrl = process.env.WEBSITE_URL ?? '';
@@ -597,6 +816,18 @@ export class JobApplicationsService {
           },
         });
       }
+
+      // In-app notification for the reminder
+      await this.notificationService.createAppNotification(
+        application.jobseekerProfileId,
+        UserRole.JOB_SEEKER,
+        {
+          title: '⏰ Reminder: Pending Job Offer',
+          message: `The employer for "${application.job.title}" is still waiting for your response. Don't let the offer expire!`,
+          priority: NotificationPriority.HIGH,
+          metadata: { jobId: application.jobId, applicationId },
+        },
+      );
     } catch (error) {
       // Notification failures should not block the core flow
     }
@@ -616,7 +847,9 @@ export class JobApplicationsService {
     }
 
     if (application.job.employerId !== employerId) {
-      throw new BadRequestException('You do not have access to this application');
+      throw new BadRequestException(
+        'You do not have access to this application',
+      );
     }
 
     if (application.status !== JobApplicationStatus.CONTRACT_SIGNED) {
@@ -625,9 +858,77 @@ export class JobApplicationsService {
       );
     }
 
+    // Employer confirmation means the candidate resumes work immediately.
     application.status = JobApplicationStatus.HIRED;
     application.statusUpdatedAt = new Date();
     await this.applicationRepo.save(application);
+
+    const employee = await this.employeeRepo.findOne({
+      where: {
+        jobId: application.jobId,
+        jobseekerProfileId: application.jobseekerProfileId,
+        employerId,
+      },
+    });
+
+    if (!employee) {
+      throw new NotFoundException('Employee record not found for application');
+    }
+
+    if (!employee.startDate) {
+      throw new BadRequestException(
+        'Employee startDate is missing; cannot start probation',
+      );
+    }
+
+    if (
+      employee.employmentArrangement === EmploymentArrangement.CONTRACT &&
+      !employee.endDate
+    ) {
+      throw new BadRequestException(
+        'Contract endDate is required before confirming hire',
+      );
+    }
+
+    const probationSchedule = buildProbationSchedule({
+      employmentArrangement: employee.employmentArrangement,
+      startDate: employee.startDate,
+      endDate: employee.endDate,
+    });
+
+    // Activate employee and initialize adaptive probation tracking.
+    employee.status = EmployeeStatus.ACTIVE;
+    employee.probationStatus = ProbationStatus.ACTIVE;
+    employee.probationEndDate = probationSchedule.probationEndDate;
+    employee.pulse30SentAt = null;
+    employee.pulse60SentAt = null;
+    await this.employeeRepo.save(employee);
+
+    await this.probationTrackingProducer.scheduleEmployeeProbationMilestones({
+      employeeId: employee.id,
+      reminderAt: probationSchedule.reminderAt,
+      confirmAt: probationSchedule.confirmAt,
+    });
+
+    // Notify jobseeker they are hired
+    try {
+      await this.notificationService.createAppNotification(
+        application.jobseekerProfileId,
+        UserRole.JOB_SEEKER,
+        {
+          title: '🎊 You have been Hired!',
+          message: `Congratulations! Your employment for "${application.job.title}" has been confirmed. Your probation period starts now.`,
+          priority: NotificationPriority.HIGH,
+          metadata: {
+            jobId: application.jobId,
+            applicationId,
+            employeeId: employee.id,
+          },
+        },
+      );
+    } catch (err) {
+      this.logger.warn(`Failed to notify jobseeker of hire: ${err.message}`);
+    }
 
     return this.getApplicationById(applicationId);
   }

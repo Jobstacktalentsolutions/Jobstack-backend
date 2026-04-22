@@ -10,11 +10,13 @@ import {
   Body,
   Post,
 } from '@nestjs/common';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AdminJwtGuard, RequireAdminRole } from 'apps/api/src/guards';
 import { AdminRole } from '@app/common/shared/enums/roles.enum';
 import { JobsService } from '../services/jobs.service';
 import { JobVettingService } from '../services/job-vetting.service';
 import { JobVettingProducer } from '../queue/job-vetting.producer';
+import { AdminReplacementService } from '../services/admin-replacement.service';
 import {
   AdjustHighlightedCountDto,
   CompleteScreeningDto,
@@ -29,12 +31,15 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In, MoreThan } from 'typeorm';
 import { Job, JobApplication } from '@app/common/database/entities';
 
+@ApiTags('Jobs (admin)')
+@ApiBearerAuth()
 @Controller('jobs/admin')
 export class JobsAdminController {
   constructor(
     private readonly jobsService: JobsService,
     private readonly jobVettingService: JobVettingService,
     private readonly jobVettingProducer: JobVettingProducer,
+    private readonly adminReplacementService: AdminReplacementService,
     @InjectRepository(JobApplication)
     private readonly applicationRepo: Repository<JobApplication>,
     @InjectRepository(Job)
@@ -65,6 +70,8 @@ export class JobsAdminController {
   // Allows admins to update job
   @Patch(':jobId')
   @UseGuards(AdminJwtGuard)
+  @ApiOperation({ summary: 'Update a job (admin)' })
+  @ApiBody({ type: UpdateJobDto })
   updateJob(
     @Param('jobId', ParseUUIDPipe) jobId: string,
     @Body() dto: UpdateJobDto,
@@ -76,6 +83,8 @@ export class JobsAdminController {
   @Patch(':jobId/status')
   @UseGuards(AdminJwtGuard)
   @RequireAdminRole(AdminRole.OPERATIONS_SUPPORT.role)
+  @ApiOperation({ summary: 'Update job status (operations)' })
+  @ApiBody({ type: UpdateJobStatusDto })
   updateJobStatus(
     @Param('jobId', ParseUUIDPipe) jobId: string,
     @Body() dto: UpdateJobStatusDto,
@@ -93,6 +102,7 @@ export class JobsAdminController {
   // Manually trigger vetting for a job
   @Post(':jobId/vet')
   @UseGuards(AdminJwtGuard)
+  @ApiOperation({ summary: 'Queue manual vetting for a job' })
   async triggerVetting(@Param('jobId', ParseUUIDPipe) jobId: string) {
     const result = await this.jobVettingProducer.queueJobVetting(
       jobId,
@@ -225,8 +235,6 @@ export class JobsAdminController {
               (us) => ({
                 id: us.skill.id,
                 name: us.skill.name,
-                proficiency: us.proficiency,
-                yearsExperience: us.yearsExperience,
               }),
             ),
           },
@@ -237,6 +245,8 @@ export class JobsAdminController {
   // Adjust number of highlighted candidates
   @Patch(':jobId/highlighted-count')
   @UseGuards(AdminJwtGuard)
+  @ApiOperation({ summary: 'Set highlighted candidate count' })
+  @ApiBody({ type: AdjustHighlightedCountDto })
   async adjustHighlightedCount(
     @Param('jobId', ParseUUIDPipe) jobId: string,
     @Body() dto: AdjustHighlightedCountDto,
@@ -264,6 +274,8 @@ export class JobsAdminController {
   // Select candidates for screening
   @Post(':jobId/select-for-screening')
   @UseGuards(AdminJwtGuard)
+  @ApiOperation({ summary: 'Select candidates for screening' })
+  @ApiBody({ type: SelectCandidatesForScreeningDto })
   async selectCandidatesForScreening(
     @Param('jobId', ParseUUIDPipe) jobId: string,
     @Body() dto: SelectCandidatesForScreeningDto,
@@ -330,6 +342,8 @@ export class JobsAdminController {
   // Mark screening as complete
   @Post(':jobId/complete-screening')
   @UseGuards(AdminJwtGuard)
+  @ApiOperation({ summary: 'Notify candidates after screening' })
+  @ApiBody({ type: CompleteScreeningDto })
   async completeScreening(
     @Param('jobId', ParseUUIDPipe) jobId: string,
     @Body() dto: CompleteScreeningDto,
@@ -356,6 +370,8 @@ export class JobsAdminController {
   // Pick a single application as the screened candidate for a job
   @Post(':jobId/pick-screening-candidate')
   @UseGuards(AdminJwtGuard)
+  @ApiOperation({ summary: 'Pick screened candidate for employer review' })
+  @ApiBody({ type: PickScreeningCandidateDto })
   async pickScreeningCandidate(
     @Param('jobId', ParseUUIDPipe) jobId: string,
     @Body() dto: PickScreeningCandidateDto,
@@ -374,25 +390,36 @@ export class JobsAdminController {
       };
     }
 
-    // Ensure only one application per job is marked as SCREENING_COMPLETED
+    // Ensure only one application per job is marked as SELECTED_FOR_HIRE
     await this.applicationRepo.manager.transaction(async (manager) => {
       // Clear any previously picked applications for this job
-      await manager.update(JobApplication, {
-        jobId,
-        status: JobApplicationStatus.SCREENING_COMPLETED,
-      }, {
-        status: JobApplicationStatus.VETTED,
-        screeningStrengths: null,
-        screeningConcerns: null,
-        screeningInterviewFeedback: null,
-      });
+      await manager.update(
+        JobApplication,
+        {
+          jobId,
+          status: In([
+            JobApplicationStatus.SELECTED_FOR_HIRE,
+            JobApplicationStatus.OFFER_SENT,
+            JobApplicationStatus.APPLICANT_ACCEPTED,
+            JobApplicationStatus.PAYMENT_COMPLETE,
+            JobApplicationStatus.CONTRACT_SIGNED,
+            JobApplicationStatus.HIRED,
+          ]),
+        },
+        {
+          status: JobApplicationStatus.VETTED,
+          screeningStrengths: null,
+          screeningConcerns: null,
+          screeningInterviewFeedback: null,
+        },
+      );
 
       // Mark the chosen application as screening completed
       await manager.update(
         JobApplication,
         { id: applicationId },
         {
-          status: JobApplicationStatus.SCREENING_COMPLETED,
+          status: JobApplicationStatus.SELECTED_FOR_HIRE,
           statusUpdatedAt: new Date(),
           screeningStrengths: strengths ?? null,
           screeningConcerns: concerns ?? null,
@@ -406,5 +433,40 @@ export class JobsAdminController {
       message: 'Candidate picked successfully for employer review',
       applicationId,
     };
+  }
+
+  // Get current active employee assigned to a job (admin view).
+  @Get(':jobId/current-employee')
+  @UseGuards(AdminJwtGuard)
+  async getCurrentEmployee(@Param('jobId', ParseUUIDPipe) jobId: string) {
+    return this.adminReplacementService.getCurrentEmployee(jobId);
+  }
+
+  // Returns replacement candidates ranked: job-vetted first, then platform-vetted.
+  @Get(':jobId/replacement-candidates')
+  @UseGuards(AdminJwtGuard)
+  async getReplacementCandidates(
+    @Param('jobId', ParseUUIDPipe) jobId: string,
+    @Query('search') search?: string,
+    @Query('limit') limit?: string,
+  ) {
+    const parsedLimit = limit
+      ? Math.min(50, Math.max(5, Number(limit)))
+      : undefined;
+    return this.adminReplacementService.getReplacementCandidates({
+      jobId,
+      search,
+      limit: parsedLimit,
+    });
+  }
+
+  // Swaps the active candidate on a job and starts fresh probation for the replacement.
+  @Post(':jobId/replace-candidate')
+  @UseGuards(AdminJwtGuard)
+  async replaceCandidate(
+    @Param('jobId', ParseUUIDPipe) jobId: string,
+    @Body() body: { newJobseekerProfileId: string },
+  ) {
+    return this.adminReplacementService.replaceCandidate(jobId, body);
   }
 }

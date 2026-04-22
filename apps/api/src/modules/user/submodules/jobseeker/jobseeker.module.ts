@@ -4,8 +4,10 @@ import { JobSeekerProfile } from '@app/common/database/entities/JobseekerProfile
 import { JobseekerAuth } from '@app/common/database/entities/JobseekerAuth.entity';
 import { JobseekerSkill } from '@app/common/database/entities/JobseekerSkill.entity';
 import { Document } from '@app/common/database/entities';
+import { JobseekerVerificationDocument } from '@app/common/database/entities/JobseekerVerificationDocument.entity';
 import { JobseekerController } from './jobseeker.controller';
 import { JobseekerService } from './jobseeker.service';
+import { PublicJobseekerController } from './public-jobseeker.controller';
 import { StorageService } from '@app/common/storage/storage.service';
 import { JobSeekerJwtGuard } from 'apps/api/src/guards';
 import { JobSeekerAuthModule } from 'apps/api/src/modules/auth/submodules/jobseeker/jobseeker-auth.module';
@@ -18,13 +20,14 @@ import { AuthModule } from 'apps/api/src/modules/auth/auth.module';
       JobSeekerProfile,
       JobseekerAuth,
       JobseekerSkill,
+      JobseekerVerificationDocument,
       Document,
     ]),
     JobSeekerAuthModule,
     SkillsModule,
     AuthModule,
   ],
-  controllers: [JobseekerController],
+  controllers: [JobseekerController, PublicJobseekerController],
   providers: [JobseekerService, StorageService, JobSeekerJwtGuard],
 })
 export class JobseekerModule {}

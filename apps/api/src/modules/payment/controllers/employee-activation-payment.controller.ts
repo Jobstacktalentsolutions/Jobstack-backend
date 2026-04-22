@@ -9,9 +9,13 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { PaymentService } from '../services/payment.service';
 import { EmployerJwtGuard } from 'apps/api/src/guards';
+import { EmployeeActivationInitiateDto } from '../dto';
 
+@ApiTags('Payment')
+@ApiBearerAuth()
 @Controller('payment/employee-activation')
 @UseGuards(EmployerJwtGuard)
 export class EmployeeActivationPaymentController {
@@ -23,10 +27,12 @@ export class EmployeeActivationPaymentController {
    */
   @Post('initiate/:employeeId')
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Initiate employee activation payment' })
+  @ApiBody({ type: EmployeeActivationInitiateDto, required: false })
   async initiatePayment(
     @Param('employeeId') employeeId: string,
     @Req() req: any,
-    @Body() body?: { callbackUrl?: string },
+    @Body() body?: EmployeeActivationInitiateDto,
   ) {
     const employerId = req.user.profileId;
 
@@ -48,10 +54,7 @@ export class EmployeeActivationPaymentController {
    * GET /payment/employee-activation/breakdown/:employeeId
    */
   @Get('breakdown/:employeeId')
-  async getBreakdown(
-    @Param('employeeId') employeeId: string,
-    @Req() req: any,
-  ) {
+  async getBreakdown(@Param('employeeId') employeeId: string, @Req() req: any) {
     const employerId = req.user.profileId;
 
     const breakdown = await this.paymentService.getActivationBreakdown(

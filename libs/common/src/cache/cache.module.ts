@@ -1,4 +1,4 @@
-import { Module, Global } from '@nestjs/common';
+import { Module, Global, Logger } from '@nestjs/common';
 import { CacheModule as NestCacheModule } from '@nestjs/cache-manager';
 import { ConfigService } from '@nestjs/config';
 import { redisStore } from 'cache-manager-redis-store';
@@ -11,6 +11,7 @@ import type { RedisStore } from 'cache-manager-redis-store';
     NestCacheModule.registerAsync({
       isGlobal: true,
       useFactory: async (configService: ConfigService) => {
+        const logger = new Logger('CacheModule');
         const redisUrl = configService.get<string>(
           ENV.REDIS_URL,
           'redis://localhost:6379',
@@ -20,16 +21,26 @@ import type { RedisStore } from 'cache-manager-redis-store';
           'jobstack:',
         );
 
-        const store = await redisStore({
-          url: redisUrl,
-          keyPrefix: redisKeyPrefix + 'cache:',
-          ttl: 86400, // Default TTL: 24 hours (1 day)
-        });
+        try {
+          const store = await redisStore({
+            url: redisUrl,
+            keyPrefix: redisKeyPrefix + 'cache:',
+            ttl: 86400, // Default TTL: 24 hours (1 day)
+          });
 
-        return {
-          store: store as unknown as RedisStore,
-          ttl: 86400, // Default TTL: 24 hours (1 day)
-        };
+          return {
+            store: store as unknown as RedisStore,
+            ttl: 86400, // Default TTL: 24 hours (1 day)
+          };
+        } catch (error) {
+          logger.warn(
+            'Redis cache unavailable. Falling back to in-memory cache for this process.',
+          );
+
+          return {
+            ttl: 86400, // Default TTL: 24 hours (1 day)
+          };
+        }
       },
       inject: [ConfigService],
     }),
@@ -37,4 +48,3 @@ import type { RedisStore } from 'cache-manager-redis-store';
   exports: [NestCacheModule],
 })
 export class CacheModule {}
-

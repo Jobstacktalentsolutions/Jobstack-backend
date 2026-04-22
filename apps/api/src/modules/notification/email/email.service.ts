@@ -28,6 +28,21 @@ export class EmailService extends BaseNotificationService<EmailPayloadDto> {
   }
 
   async send(payload: EmailPayloadDto): Promise<void> {
+    const recipientDomain = (payload.recipient || '')
+      .trim()
+      .toLowerCase()
+      .split('@')
+      .pop();
+
+    // Test users: never send real emails to example.com
+    if (recipientDomain && recipientDomain.endsWith('example.com')) {
+      this.logger.log('Skipping email send for test user', {
+        recipient: payload.recipient,
+        templateType: payload.templateType,
+      });
+      return;
+    }
+
     let htmlContent = payload.htmlContent;
 
     // Render template if templateType is provided and no htmlContent exists
@@ -87,9 +102,26 @@ export class EmailService extends BaseNotificationService<EmailPayloadDto> {
           defaults.viewApplicationUrl = c.applicationUrl ?? c.actionUrl ?? '';
         }
         break;
+      case EmailTemplateType.JOB_MATCH_RECOMMENDATION:
+        defaults.recipientName =
+          c.firstName ?? c.name ?? (c.recipientName as string) ?? 'there';
+        // Absolute URL to jobseeker job detail (apply flow lives on this page)
+        defaults.jobDetailUrl =
+          (c.jobDetailUrl as string) ?? (c.jobUrl as string) ?? '';
+        break;
+      case EmailTemplateType.JOB_ACTIVATED_EMPLOYER:
+        defaults.firstName =
+          (c.firstName as string) ?? (c.employerFirstName as string) ?? 'there';
+        defaults.jobTitle = (c.jobTitle as string) ?? '';
+        defaults.jobDashboardUrl = (c.jobDashboardUrl as string) ?? '';
+        defaults.actionUrl =
+          (c.actionUrl as string) ?? (defaults.jobDashboardUrl as string) ?? '';
+        defaults.actionText = (c.actionText as string) ?? 'View your job post';
+        break;
       case EmailTemplateType.WELCOME:
         defaults.firstName = c.firstName ?? 'there';
         defaults.userType = c.userType ?? 'jobseeker';
+        defaults.actionUrl = c.actionUrl ?? '';
         break;
       case EmailTemplateType.GENERAL_NOTIFICATION:
         defaults.firstName = c.firstName ?? 'there';
@@ -112,7 +144,7 @@ export class EmailService extends BaseNotificationService<EmailPayloadDto> {
     const templatePath = path.join(this.templatesPath, templateConfig.template);
 
     const templateDefaults = this.getDefaultContextForTemplate(
-      templateType as EmailTemplateType,
+      templateType,
       context,
     );
     const enhancedContext = {
@@ -130,11 +162,12 @@ export class EmailService extends BaseNotificationService<EmailPayloadDto> {
         async: true,
         root: this.templatesPath,
       });
-    } catch (error) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
       this.logger.error(
-        `Failed to render email template ${templateType}: ${error.message}`,
+        `Failed to render email template ${templateType}: ${message}`,
       );
-      throw new Error(`Email template rendering failed: ${error.message}`);
+      throw new Error(`Email template rendering failed: ${message}`);
     }
   }
 }
