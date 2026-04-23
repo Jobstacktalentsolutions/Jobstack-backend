@@ -648,20 +648,32 @@ export class PaymentService {
 
     // Handle new application-based PII unlock flow
     if (payment.applicationId) {
-      await this.jobApplicationRepo.update(payment.applicationId, {
-        piiUnlocked: true,
-        piiUnlockedAt: new Date(),
+      // Find the jobId for this application
+      const app = await this.jobApplicationRepo.findOne({
+        where: { id: payment.applicationId },
+        select: ['id', 'jobId'],
       });
 
-      this.logger.log(
-        `Activation payment successful for application ${payment.applicationId}. PII unlocked.`,
-      );
+      if (app) {
+        // Unlock ALL applications for this job
+        await this.jobApplicationRepo.update(
+          { jobId: app.jobId },
+          {
+            piiUnlocked: true,
+            piiUnlockedAt: new Date(),
+          },
+        );
 
-      this.eventEmitter.emit('application-pii-unlocked', {
-        paymentId,
-        applicationId: payment.applicationId,
-        employerId: payment.employerId,
-      });
+        this.logger.log(
+          `Activation payment successful for job ${app.jobId} (via app ${payment.applicationId}). All PII unlocked.`,
+        );
+
+        this.eventEmitter.emit('job-pii-unlocked', {
+          paymentId,
+          jobId: app.jobId,
+          employerId: payment.employerId,
+        });
+      }
     }
 
     // Handle legacy employee-based flow
