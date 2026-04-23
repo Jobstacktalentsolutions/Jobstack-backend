@@ -32,8 +32,7 @@ export const EMPLOYERS_DATA = [
       documents: [
         {
           documentId: CONSTANT_IDS.DOCUMENTS[0],
-          documentType:
-            EmployerDocumentType.CAC_REGISTRATION_CERTIFICATE,
+          documentType: EmployerDocumentType.CAC_REGISTRATION_CERTIFICATE,
           status: VerificationStatus.APPROVED,
           verified: true,
         },
@@ -69,8 +68,7 @@ export const EMPLOYERS_DATA = [
       documents: [
         {
           documentId: CONSTANT_IDS.DOCUMENTS[2],
-          documentType:
-            EmployerDocumentType.CAC_REGISTRATION_CERTIFICATE,
+          documentType: EmployerDocumentType.CAC_REGISTRATION_CERTIFICATE,
           status: VerificationStatus.APPROVED,
           verified: true,
         },
@@ -106,8 +104,7 @@ export const EMPLOYERS_DATA = [
       documents: [
         {
           documentId: CONSTANT_IDS.DOCUMENTS[4],
-          documentType:
-            EmployerDocumentType.CAC_REGISTRATION_CERTIFICATE,
+          documentType: EmployerDocumentType.CAC_REGISTRATION_CERTIFICATE,
           status: VerificationStatus.APPROVED,
           verified: true,
         },
@@ -143,8 +140,7 @@ export const EMPLOYERS_DATA = [
       documents: [
         {
           documentId: CONSTANT_IDS.DOCUMENTS[6],
-          documentType:
-            EmployerDocumentType.CAC_REGISTRATION_CERTIFICATE,
+          documentType: EmployerDocumentType.CAC_REGISTRATION_CERTIFICATE,
           status: VerificationStatus.APPROVED,
           verified: true,
         },
@@ -174,8 +170,7 @@ export const EMPLOYERS_DATA = [
       documents: [
         {
           documentId: CONSTANT_IDS.DOCUMENTS[8],
-          documentType:
-            EmployerDocumentType.CAC_REGISTRATION_CERTIFICATE,
+          documentType: EmployerDocumentType.CAC_REGISTRATION_CERTIFICATE,
           status: VerificationStatus.APPROVED,
           verified: true,
         },
@@ -211,8 +206,7 @@ export const EMPLOYERS_DATA = [
       documents: [
         {
           documentId: CONSTANT_IDS.DOCUMENTS[10],
-          documentType:
-            EmployerDocumentType.CAC_REGISTRATION_CERTIFICATE,
+          documentType: EmployerDocumentType.CAC_REGISTRATION_CERTIFICATE,
           status: VerificationStatus.APPROVED,
           verified: true,
         },
@@ -265,8 +259,7 @@ export const EMPLOYERS_DATA = [
       documents: [
         {
           documentId: CONSTANT_IDS.DOCUMENTS[14],
-          documentType:
-            EmployerDocumentType.CAC_REGISTRATION_CERTIFICATE,
+          documentType: EmployerDocumentType.CAC_REGISTRATION_CERTIFICATE,
           status: VerificationStatus.APPROVED,
           verified: true,
         },
@@ -302,8 +295,7 @@ export const EMPLOYERS_DATA = [
       documents: [
         {
           documentId: CONSTANT_IDS.DOCUMENTS[16],
-          documentType:
-            EmployerDocumentType.CAC_REGISTRATION_CERTIFICATE,
+          documentType: EmployerDocumentType.CAC_REGISTRATION_CERTIFICATE,
           status: VerificationStatus.APPROVED,
           verified: true,
         },
@@ -339,8 +331,7 @@ export const EMPLOYERS_DATA = [
       documents: [
         {
           documentId: CONSTANT_IDS.DOCUMENTS[18],
-          documentType:
-            EmployerDocumentType.CAC_REGISTRATION_CERTIFICATE,
+          documentType: EmployerDocumentType.CAC_REGISTRATION_CERTIFICATE,
           status: VerificationStatus.APPROVED,
           verified: true,
         },
@@ -410,8 +401,7 @@ export const EMPLOYERS_DATA = [
       documents: [
         {
           documentId: CONSTANT_IDS.DOCUMENTS[22],
-          documentType:
-            EmployerDocumentType.CAC_REGISTRATION_CERTIFICATE,
+          documentType: EmployerDocumentType.CAC_REGISTRATION_CERTIFICATE,
           status: VerificationStatus.APPROVED,
           verified: true,
         },

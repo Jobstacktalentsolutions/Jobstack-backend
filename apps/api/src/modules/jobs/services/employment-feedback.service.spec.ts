@@ -21,7 +21,9 @@ describe('EmploymentFeedbackService', () => {
     feedbackRepo = {
       findOne: jest.fn(),
       save: jest.fn(),
-      create: jest.fn((x) => x as EmploymentFeedback),
+      create: jest.fn((x?: any) =>
+        x ? (x as EmploymentFeedback) : ({} as EmploymentFeedback),
+      ) as any,
     };
     employeeRepo = {
       findOne: jest.fn(),

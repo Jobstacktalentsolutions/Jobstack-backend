@@ -46,7 +46,8 @@ const BASE_JOB_APPLICATIONS_DATA: JobApplicationSeed[] = [
     screeningScheduledAt: daysAgo(-1, 14, 0), // Scheduled for tomorrow
     screeningDurationMinutes: 45,
     screeningMeetingLink: 'https://meet.google.com/abc-defg-hij',
-    screeningPrepInfo: 'Please be ready to discuss your experience with React and TypeScript.',
+    screeningPrepInfo:
+      'Please be ready to discuss your experience with React and TypeScript.',
     vettingScore: 95.5,
     vettingIsHighlighted: true,
     vettedAt: daysAgo(0, 9, 0),
@@ -93,7 +94,8 @@ const BASE_JOB_APPLICATIONS_DATA: JobApplicationSeed[] = [
     vettingScore: 98.0,
     vettingIsHighlighted: true,
     vettedAt: daysAgo(2, 8, 0),
-    screeningStrengths: 'Excellent grasp of financial modeling and local market trends.',
+    screeningStrengths:
+      'Excellent grasp of financial modeling and local market trends.',
     screeningConcerns: 'None identified.',
     screeningInterviewFeedback: 'Highly recommended for this role.',
     createdAt: daysAgo(0, 8, 45), // Very early application

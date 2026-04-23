@@ -135,7 +135,10 @@ export class JobsEmployerController {
     @CurrentUser() user: CurrentUserPayload,
     @Param('jobId', ParseUUIDPipe) jobId: string,
   ) {
-    return this.jobVettingService.getVettedApplicantsForEmployer(jobId, user.id);
+    return this.jobVettingService.getVettedApplicantsForEmployer(
+      jobId,
+      user.id,
+    );
   }
 
   /**
@@ -152,7 +155,10 @@ export class JobsEmployerController {
   ) {
     const { count } = dto;
     if (count < 1 || count > 10) {
-      return { success: false, message: 'Highlighted count must be between 1 and 10' };
+      return {
+        success: false,
+        message: 'Highlighted count must be between 1 and 10',
+      };
     }
     await this.jobsService.updateJob(
       jobId,
@@ -277,7 +283,10 @@ export class JobsEmployerController {
    */
   @Post(':jobId/pick-candidate')
   @UseGuards(EmployerJwtGuard)
-  @ApiOperation({ summary: 'Select candidate for hire (creates offer, no separate accept step)' })
+  @ApiOperation({
+    summary:
+      'Select candidate for hire (creates offer, no separate accept step)',
+  })
   @ApiBody({ type: EmployerPickCandidateDto })
   pickCandidate(
     @CurrentUser() user: CurrentUserPayload,

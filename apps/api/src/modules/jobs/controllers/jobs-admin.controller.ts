@@ -16,11 +16,7 @@ import { AdminRole } from '@app/common/shared/enums/roles.enum';
 import { JobsService } from '../services/jobs.service';
 import { JobVettingService } from '../services/job-vetting.service';
 import { AdminReplacementService } from '../services/admin-replacement.service';
-import {
-  JobQueryDto,
-  UpdateJobDto,
-  UpdateJobStatusDto,
-} from '../dto';
+import { JobQueryDto, UpdateJobDto, UpdateJobStatusDto } from '../dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, MoreThan } from 'typeorm';
 import { Job, JobApplication } from '@app/common/database/entities';

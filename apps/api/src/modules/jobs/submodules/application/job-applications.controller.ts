@@ -156,7 +156,6 @@ export class JobApplicationsController {
     );
   }
 
-
   // Employer confirms final hire after contract is signed
   @Post(':applicationId/confirm-hire')
   @UseGuards(EmployerJwtGuard)

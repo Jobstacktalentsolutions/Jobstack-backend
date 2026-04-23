@@ -338,8 +338,6 @@ export class JobApplicationsService {
       .leftJoinAndSelect('application.jobseekerProfile', 'jobseeker');
   }
 
-
-
   // Applies status filters to application queries
   private applyApplicationFilters(
     qb: SelectQueryBuilder<JobApplication>,

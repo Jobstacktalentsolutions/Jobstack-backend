@@ -102,17 +102,17 @@ export class JobVettingConsumer {
       // Notify admin only when there were applicants to vet (skip empty noise)
       if (result.totalApplicants > 0) {
         try {
-          await this.jobVettingService.notifyAdminVettingComplete(
+          await this.jobVettingService.notifyEmployerVettingComplete(
             jobId,
             result,
           );
           this.logger.log(
             `Vetting completion notification sent for job ${jobId}`,
           );
-        } catch (notificationError) {
+        } catch (notificationError: any) {
           this.logger.error(
             `Failed to send vetting completion notification for job ${jobId}`,
-            notificationError.stack,
+            notificationError?.stack,
           );
           // Continue with success - the vetting itself was successful
         }
@@ -125,12 +125,12 @@ export class JobVettingConsumer {
         result,
         processedAt: new Date().toISOString(),
       };
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(
         `Vetting failed for job ${jobId} (Bull job ${bullJobId})`,
-        error.stack,
+        error?.stack,
       );
-      throw new Error(`Vetting failed for job ${jobId}: ${error.message}`);
+      throw new Error(`Vetting failed for job ${jobId}: ${error?.message}`);
     }
   }
 
@@ -172,13 +172,13 @@ export class JobVettingConsumer {
       this.logger.log(
         `Found ${jobs.length} jobs that need vetting (batchSize: ${batchSize})`,
       );
-    } catch (queryError) {
+    } catch (queryError: any) {
       this.logger.error(
         `Failed to query jobs for vetting (Bull job ${bullJobId})`,
-        queryError.stack,
+        queryError?.stack,
       );
       throw new Error(
-        `Failed to query jobs for vetting: ${queryError.message}`,
+        `Failed to query jobs for vetting: ${queryError?.message}`,
       );
     }
 
@@ -196,14 +196,14 @@ export class JobVettingConsumer {
 
           // Try to send notification to admin (don't fail the job if this fails)
           try {
-            await this.jobVettingService.notifyAdminVettingComplete(
+            await this.jobVettingService.notifyEmployerVettingComplete(
               jobEntity.id,
               result,
             );
-          } catch (notificationError) {
+          } catch (notificationError: any) {
             this.logger.error(
               `Failed to send vetting completion notification for job ${jobEntity.id}`,
-              notificationError.stack,
+              notificationError?.stack,
             );
             // Continue - the vetting itself was successful
           }
@@ -212,13 +212,13 @@ export class JobVettingConsumer {
           this.logger.debug(
             `Vetted job ${jobEntity.id}: ${result.totalApplicants} applicants, ${result.highlightedCount} highlighted`,
           );
-        } catch (error) {
+        } catch (error: any) {
           failed++;
           const errorMessage = error?.message || 'Unknown error';
           errors.push({ jobId: jobEntity.id, error: errorMessage });
           this.logger.error(
             `Failed to vet job ${jobEntity.id}: ${errorMessage}`,
-            error.stack,
+            error?.stack,
           );
         }
       }
@@ -242,12 +242,12 @@ export class JobVettingConsumer {
         errors: errors.length > 0 ? errors : undefined,
         processedAt: new Date().toISOString(),
       };
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(
         `Batch vetting failed (Bull job ${bullJobId})`,
-        error.stack,
+        error?.stack,
       );
-      throw new Error(`Batch vetting failed: ${error.message}`);
+      throw new Error(`Batch vetting failed: ${error?.message}`);
     }
   }
 
@@ -255,7 +255,7 @@ export class JobVettingConsumer {
    * Handle completed jobs
    */
   @Process('completed')
-  async onCompleted(job: Job, result: any) {
+  onCompleted(job: Job, result: any) {
     this.logger.debug(`Vetting job #${job.id} completed`, {
       jobId: job.id,
       result,
@@ -266,10 +266,10 @@ export class JobVettingConsumer {
    * Handle failed jobs
    */
   @Process('failed')
-  async onFailed(job: Job, error: Error) {
+  onFailed(job: Job, error: Error) {
     this.logger.error(
       `Vetting job #${job.id} failed permanently`,
-      error.stack,
+      error?.stack,
       {
         jobId: job.id,
         attempts: job.attemptsMade,

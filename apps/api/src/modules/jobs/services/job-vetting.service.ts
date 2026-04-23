@@ -1,4 +1,9 @@
-import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
 import {
@@ -821,7 +826,10 @@ export class JobVettingService {
           title: '📊 Candidates Ranked',
           message: `Your job "${job.title}" has ${result.totalApplicants} ranked applicants. ${result.highlightedCount} top candidates are highlighted. Review them now.`,
           priority: NotificationPriority.HIGH,
-          metadata: { jobId: job.id, highlightedCount: result.highlightedCount },
+          metadata: {
+            jobId: job.id,
+            highlightedCount: result.highlightedCount,
+          },
         },
       );
 
@@ -845,7 +853,9 @@ export class JobVettingService {
     jobId: string,
     employerId: string,
   ): Promise<object> {
-    const job = await this.jobRepo.findOne({ where: { id: jobId, employerId } });
+    const job = await this.jobRepo.findOne({
+      where: { id: jobId, employerId },
+    });
     if (!job) {
       throw new NotFoundException('Job not found or you do not own this job');
     }
@@ -890,7 +900,9 @@ export class JobVettingService {
       vettingCompletedAt: job.vettingCompletedAt,
       highlightedCandidateCount: job.highlightedCandidateCount,
       applications: applications
-        .filter((app) => app.vettingScore !== null && app.vettingScore !== undefined)
+        .filter(
+          (app) => app.vettingScore !== null && app.vettingScore !== undefined,
+        )
         .map((application) => {
           const profile = application.jobseekerProfile;
           const unlocked = application.piiUnlocked;
@@ -903,7 +915,8 @@ export class JobVettingService {
             proximityScore: application.vettingProximityScore ?? 0,
             experienceScore: application.vettingExperienceScore ?? 0,
             skillMatchScore: application.vettingSkillMatchScore ?? 0,
-            applicationSpeedScore: application.vettingApplicationSpeedScore ?? 0,
+            applicationSpeedScore:
+              application.vettingApplicationSpeedScore ?? 0,
             status: application.status,
             piiUnlocked: unlocked,
             piiUnlockedAt: application.piiUnlockedAt ?? null,
@@ -975,7 +988,7 @@ export class JobVettingService {
     // Must have PII unlocked before hiring
     if (!application.piiUnlocked) {
       throw new BadRequestException(
-        'You must unlock this candidate\'s contact info before hiring them.',
+        "You must unlock this candidate's contact info before hiring them.",
       );
     }
 
@@ -998,7 +1011,10 @@ export class JobVettingService {
         'Job does not have a salary defined. Please update the job posting first.',
       );
     }
-    if (application.job?.employmentArrangement === 'CONTRACT' && !job.contractFee) {
+    if (
+      application.job?.employmentArrangement === 'CONTRACT' &&
+      !job.contractFee
+    ) {
       throw new BadRequestException(
         'Job does not have a contract fee defined. Please update the job posting first.',
       );
@@ -1065,7 +1081,9 @@ export class JobVettingService {
               ? job.salary
               : undefined,
           contractFeeOffered:
-            job.employmentArrangement === 'CONTRACT' ? job.contractFee : undefined,
+            job.employmentArrangement === 'CONTRACT'
+              ? job.contractFee
+              : undefined,
           contractPaymentType:
             job.employmentArrangement === 'CONTRACT'
               ? job.contractPaymentType
@@ -1113,5 +1131,4 @@ export class JobVettingService {
     if (!phone || phone.length < 6) return '****';
     return `${phone.substring(0, 4)} **** ${phone.substring(phone.length - 2)}`;
   }
-
 }

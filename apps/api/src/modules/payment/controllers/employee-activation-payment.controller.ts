@@ -54,7 +54,10 @@ export class EmployeeActivationPaymentController {
    * GET /payment/application-pii-unlock/breakdown/:applicationId
    */
   @Get('breakdown/:applicationId')
-  async getBreakdown(@Param('applicationId') applicationId: string, @Req() req: any) {
+  async getBreakdown(
+    @Param('applicationId') applicationId: string,
+    @Req() req: any,
+  ) {
     const employerId = req.user.profileId;
 
     const breakdown = await this.paymentService.getActivationBreakdown(

@@ -22,7 +22,9 @@ describe('JobBookmarksService', () => {
       find: jest.fn(),
       save: jest.fn(),
       delete: jest.fn(),
-      create: jest.fn((x) => x as JobBookmark),
+      create: jest.fn((x?: any) =>
+        x ? (x as JobBookmark) : ({} as JobBookmark),
+      ) as any,
       createQueryBuilder: jest.fn(),
     };
     jobRepo = {

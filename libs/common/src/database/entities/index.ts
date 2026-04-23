@@ -9,7 +9,6 @@ export * from './JobseekerSkill.entity';
 export * from './EmployerAuth.entity';
 export * from './EmployerProfile.entity';
 export * from './EmployerSession.entity';
-export * from './EmployerVerification.entity';
 export * from './EmployerVerificationDocument.entity';
 export * from './JobseekerVerificationDocument.entity';
 export * from './Skill.entity';

@@ -112,7 +112,6 @@ export class Job extends BaseEntity {
   @OneToMany(() => JobApplication, (application) => application.job)
   applications: JobApplication[];
 
-
   @Column({ type: 'int', nullable: true })
   highlightedCandidateCount?: number;
 
