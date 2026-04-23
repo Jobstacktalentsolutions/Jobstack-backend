@@ -254,12 +254,15 @@ export class PaymentService {
     });
 
     if (employee) {
-      const hasPaymentAmount = employee.salaryOffered || employee.contractFeeOffered;
+      const hasPaymentAmount =
+        employee.salaryOffered || employee.contractFeeOffered;
       if (!hasPaymentAmount) return { required: false, completed: true };
-      
+
       return {
         required: true,
-        completed: employee.paymentStatus === EmployeePaymentStatus.PAID || employee.piiUnlocked,
+        completed:
+          employee.paymentStatus === EmployeePaymentStatus.PAID ||
+          employee.piiUnlocked,
         paymentId: employee.activationPaymentId,
       };
     }
@@ -271,12 +274,17 @@ export class PaymentService {
     });
 
     if (application) {
-      const hasPaymentAmount = application.job.salary || application.job.contractFee;
+      const hasPaymentAmount =
+        application.job.salary || application.job.contractFee;
       if (!hasPaymentAmount) return { required: false, completed: true };
 
       // Look up payment by applicationId to get the paymentId if completed
       const payment = await this.paymentRepo.findOne({
-        where: { applicationId: id, paymentType: PaymentType.EMPLOYEE_ACTIVATION_FEE, status: PaymentStatus.SUCCESS }
+        where: {
+          applicationId: id,
+          paymentType: PaymentType.EMPLOYEE_ACTIVATION_FEE,
+          status: PaymentStatus.SUCCESS,
+        },
       });
 
       return {
@@ -478,7 +486,9 @@ export class PaymentService {
 
     // Validate PII not already unlocked
     if (application.piiUnlocked) {
-      throw new BadRequestException('Candidate contact info is already unlocked');
+      throw new BadRequestException(
+        'Candidate contact info is already unlocked',
+      );
     }
 
     // Check for existing pending payment — reuse it instead of creating a duplicate.
