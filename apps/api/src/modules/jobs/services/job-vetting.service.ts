@@ -1114,14 +1114,4 @@ export class JobVettingService {
     return `${phone.substring(0, 4)} **** ${phone.substring(phone.length - 2)}`;
   }
 
-  /**
-   * @deprecated Use notifyEmployerVettingComplete instead.
-   * Kept temporarily so the vetting consumer doesn't break during transition.
-   */
-  async notifyAdminVettingComplete(
-    jobId: string,
-    result: VettingResult,
-  ): Promise<void> {
-    return this.notifyEmployerVettingComplete(jobId, result);
-  }
 }

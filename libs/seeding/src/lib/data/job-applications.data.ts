@@ -9,6 +9,18 @@ type JobApplicationSeed = {
   status: JobApplicationStatus;
   note?: string;
   createdAt: Date;
+  piiUnlocked?: boolean;
+  piiUnlockedAt?: Date;
+  screeningScheduledAt?: Date;
+  screeningDurationMinutes?: number;
+  screeningMeetingLink?: string;
+  screeningPrepInfo?: string;
+  vettingScore?: number;
+  vettingIsHighlighted?: boolean;
+  vettedAt?: Date;
+  screeningStrengths?: string;
+  screeningConcerns?: string;
+  screeningInterviewFeedback?: string;
 };
 
 // Use current date at seed time; offset by days/weeks so "Applied" shows e.g. "2 days ago", "1 week ago"
@@ -28,8 +40,16 @@ const BASE_JOB_APPLICATIONS_DATA: JobApplicationSeed[] = [
   {
     jobId: CONSTANT_IDS.JOBS[6], // Frontend Engineer (TypeScript)
     jobseekerProfileId: CONSTANT_IDS.JOBSEEKERS[0], // Adebayo (Senior Full-Stack Developer) - Perfect match
-    status: JobApplicationStatus.APPLIED,
-
+    status: JobApplicationStatus.SELECTED_FOR_SCREENING,
+    piiUnlocked: true,
+    piiUnlockedAt: daysAgo(0, 10, 0),
+    screeningScheduledAt: daysAgo(-1, 14, 0), // Scheduled for tomorrow
+    screeningDurationMinutes: 45,
+    screeningMeetingLink: 'https://meet.google.com/abc-defg-hij',
+    screeningPrepInfo: 'Please be ready to discuss your experience with React and TypeScript.',
+    vettingScore: 95.5,
+    vettingIsHighlighted: true,
+    vettedAt: daysAgo(0, 9, 0),
     note: 'Available for immediate start',
     createdAt: daysAgo(1, 9, 0), // Early application
   },
@@ -67,8 +87,15 @@ const BASE_JOB_APPLICATIONS_DATA: JobApplicationSeed[] = [
   {
     jobId: CONSTANT_IDS.JOBS[12], // Financial Analyst
     jobseekerProfileId: CONSTANT_IDS.JOBSEEKERS[3], // Funmilayo (Financial Analyst) - Perfect match
-    status: JobApplicationStatus.APPLIED,
-
+    status: JobApplicationStatus.HIRED,
+    piiUnlocked: true,
+    piiUnlockedAt: daysAgo(2, 9, 0),
+    vettingScore: 98.0,
+    vettingIsHighlighted: true,
+    vettedAt: daysAgo(2, 8, 0),
+    screeningStrengths: 'Excellent grasp of financial modeling and local market trends.',
+    screeningConcerns: 'None identified.',
+    screeningInterviewFeedback: 'Highly recommended for this role.',
     createdAt: daysAgo(0, 8, 45), // Very early application
   },
 

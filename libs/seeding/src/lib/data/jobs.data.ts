@@ -44,6 +44,8 @@ export const JOBS_DATA = [
     tags: ['react', 'node', 'typescript', 'api'],
     applicationDeadline: new Date('2027-03-15T23:59:59Z'),
     status: JobStatus.PUBLISHED,
+    vettingCompletedAt: new Date('2026-04-20T10:00:00Z'),
+    vettingCompletedBy: CONSTANT_IDS.ADMINS[0],
 
     employerId: CONSTANT_IDS.EMPLOYERS[0],
     skills: [
@@ -202,6 +204,8 @@ export const JOBS_DATA = [
     tags: ['typescript', 'react', 'accessibility'],
     applicationDeadline: new Date('2027-03-28T23:59:59Z'),
     status: JobStatus.PUBLISHED,
+    vettingCompletedAt: new Date('2026-04-21T11:00:00Z'),
+    vettingCompletedBy: CONSTANT_IDS.ADMINS[0],
 
     employerId: CONSTANT_IDS.EMPLOYERS[6],
     skills: [
@@ -352,6 +356,8 @@ export const JOBS_DATA = [
     tags: ['fp&a', 'models', 'reporting'],
     applicationDeadline: new Date('2027-03-26T23:59:59Z'),
     status: JobStatus.PUBLISHED,
+    vettingCompletedAt: new Date('2026-04-22T09:00:00Z'),
+    vettingCompletedBy: CONSTANT_IDS.ADMINS[0],
 
     employerId: CONSTANT_IDS.EMPLOYERS[3],
     skills: [

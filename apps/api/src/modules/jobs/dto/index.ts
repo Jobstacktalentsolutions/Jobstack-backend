@@ -11,8 +11,6 @@ export * from '../submodules/application/dto/applicant-accept-offer.dto';
 export * from '../submodules/application/dto/employer-select-for-screening.dto';
 export * from '../submodules/application/dto/employer-complete-screening.dto';
 export * from '../submodules/application/dto/employer-pick-candidate.dto';
-export * from '../submodules/application/dto/select-candidates-for-screening.dto';
-export * from '../submodules/application/dto/complete-screening.dto';
 export * from '../submodules/employees/dto/create-employee.dto';
 export * from '../submodules/employees/dto/update-employee.dto';
 export * from '../submodules/employees/dto/update-employee-status.dto';

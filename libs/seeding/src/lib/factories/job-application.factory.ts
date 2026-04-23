@@ -11,6 +11,18 @@ const JOB_APPLICATIONS_DATA: Array<{
   status: JobApplicationStatus;
   note?: string;
   createdAt: Date;
+  piiUnlocked?: boolean;
+  piiUnlockedAt?: Date;
+  screeningScheduledAt?: Date;
+  screeningDurationMinutes?: number;
+  screeningMeetingLink?: string;
+  screeningPrepInfo?: string;
+  vettingScore?: number;
+  vettingIsHighlighted?: boolean;
+  vettedAt?: Date;
+  screeningStrengths?: string;
+  screeningConcerns?: string;
+  screeningInterviewFeedback?: string;
 }> = require('../data/job-applications.data').JOB_APPLICATIONS_DATA;
 
 export class JobApplicationFactory extends BaseFactory<JobApplication> {
