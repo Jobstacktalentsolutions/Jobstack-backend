@@ -635,11 +635,34 @@ export class AdminService {
       throw new NotFoundException('Employer not found');
     }
 
-    // Validate: Can only activate if verification is APPROVED
+    const previousVerificationStatus = employerProfile.verificationStatus;
+
     if (status === EmployerStatus.ACTIVE) {
-      if (employerProfile.verificationStatus !== VerificationStatus.APPROVED) {
-        throw new BadRequestException(
-          'Cannot activate employer: Verification must be APPROVED first',
+      // Automatically approve verification and all documents on activation
+      employerProfile.verificationStatus = VerificationStatus.APPROVED;
+      employerProfile.reviewedAt = new Date();
+      employerProfile.reviewedByAdminId = adminId;
+      employerProfile.verificationRejectionReason = undefined;
+
+      const docs = await this.employerVerificationDocRepo.find({
+        where: { employerProfileId: employerId },
+      });
+      const now = new Date();
+      for (const d of docs) {
+        d.status = VerificationDocumentStatus.APPROVED;
+        d.rejectionReason = undefined;
+        d.reviewedAt = now;
+        d.reviewedByAdminId = adminId;
+      }
+      if (docs.length > 0) {
+        await this.employerVerificationDocRepo.save(docs);
+      }
+
+      if (previousVerificationStatus !== VerificationStatus.APPROVED) {
+        this.approvalDecisionEmailService.queueEmployerVerificationEmail(
+          employerProfile,
+          previousVerificationStatus,
+          VerificationStatus.APPROVED,
         );
       }
     }

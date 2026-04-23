@@ -59,7 +59,7 @@ export class ApprovalDecisionEmailService {
 
     if (isApproved) {
       subject = 'Your company verification is approved';
-      message = `Hi ${firstName}, good news — your employer verification on JobStack is approved. You can post roles and connect with pre-vetted talent whenever you're ready. Sit back for a moment if you like; your dashboard is ready when you are.`;
+      message = `Hi ${firstName}, good news - your employer verification on JobStack is approved. You can post roles and connect with pre-vetted talent whenever you're ready.`;
       actionText = jobPostsUrl ? 'Open job posts' : undefined;
       actionUrl = jobPostsUrl || undefined;
     } else if (isRejected) {
