@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, In } from 'typeorm';
+import { Repository, In, MoreThan, IsNull } from 'typeorm';
 import {
   Job,
   JobApplication,
@@ -860,18 +860,36 @@ export class JobVettingService {
       throw new NotFoundException('Job not found or you do not own this job');
     }
 
-    // Trigger re-vetting for new/unvetted apps if needed
-    if (job.vettingCompletedAt) {
-      const hasNew = await this.applicationRepo.count({
-        where: { jobId },
-      });
-      const unvetted = await this.applicationRepo
-        .createQueryBuilder('a')
-        .where('a.jobId = :jobId', { jobId })
-        .andWhere('(a.vettingScore IS NULL OR a.vettedAt IS NULL)')
-        .getCount();
-      if (unvetted > 0 || hasNew > 0) {
-        await this.vetJobApplications(jobId);
+    // Trigger re-vetting if needed:
+    // 1. Job was never vetted (vettingCompletedAt is null)
+    // 2. There are applications created after the last vetting
+    // 3. There are applications that haven't been scored yet
+    const unvettedCount = await this.applicationRepo.count({
+      where: [
+        { jobId, vettingScore: IsNull() },
+        { jobId, vettedAt: IsNull() },
+      ],
+    });
+
+    const newAppsCount = job.vettingCompletedAt
+      ? await this.applicationRepo.count({
+          where: {
+            jobId,
+            createdAt: MoreThan(job.vettingCompletedAt),
+          },
+        })
+      : await this.applicationRepo.count({ where: { jobId } });
+
+    if (unvettedCount > 0 || newAppsCount > 0) {
+      this.logger.debug(
+        `Triggering re-vetting for job ${jobId}: ${unvettedCount} unvetted, ${newAppsCount} new apps`,
+      );
+      await this.vetJobApplications(jobId);
+
+      // Refresh job entity to get updated vettingCompletedAt for the response
+      const updatedJob = await this.jobRepo.findOne({ where: { id: jobId } });
+      if (updatedJob) {
+        job.vettingCompletedAt = updatedJob.vettingCompletedAt;
       }
     }
 
