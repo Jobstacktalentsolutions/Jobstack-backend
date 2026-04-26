@@ -5,6 +5,7 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository, SelectQueryBuilder } from 'typeorm';
 import {
@@ -51,6 +52,7 @@ export class JobApplicationsService {
     private readonly probationTrackingProducer: ProbationTrackingProducer,
     private readonly jobVettingProducer: JobVettingProducer,
     private readonly jobVettingMilestoneNotifyService: JobVettingMilestoneNotifyService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   private readonly relations = ['job', 'jobseekerProfile'];
@@ -426,11 +428,29 @@ export class JobApplicationsService {
     }
 
     if (acceptance.accepted) {
-      // Applicant accepts - move to APPLICANT_ACCEPTED
-      application.status = JobApplicationStatus.APPLICANT_ACCEPTED;
-      if (acceptance.note) {
-        application.note = acceptance.note;
-      }
+        application.status = application.piiUnlocked
+          ? JobApplicationStatus.PAYMENT_COMPLETE
+          : JobApplicationStatus.APPLICANT_ACCEPTED;
+        if (acceptance.note) {
+          application.note = acceptance.note;
+        }
+
+        // If status moved to PAYMENT_COMPLETE, trigger automatic contract generation
+        if (application.status === JobApplicationStatus.PAYMENT_COMPLETE) {
+          const employee = await this.employeeRepo.findOne({
+            where: {
+              jobId: application.jobId,
+              jobseekerProfileId: application.jobseekerProfileId,
+            },
+          });
+          if (employee) {
+            this.eventEmitter.emit('employee-activation-payment.confirmed', {
+              paymentId: 'AUTO_GENERATED_ON_ACCEPT', // Placeholder or track activation payment reference
+              employeeId: employee.id,
+              employerId: application.job.employerId,
+            });
+          }
+        }
     } else {
       // Applicant rejects - move to WITHDRAWN
       application.status = JobApplicationStatus.WITHDRAWN;

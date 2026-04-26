@@ -107,9 +107,10 @@ export class ContractsService {
       existingContract &&
       existingContract.status !== ContractStatus.CANCELLED
     ) {
-      throw new BadRequestException(
-        'Contract already exists for this employee',
+      this.logger.log(
+        `Contract already exists for employee ${employeeId}, returning existing.`,
       );
+      return existingContract;
     }
 
     // Prepare template data for rendering

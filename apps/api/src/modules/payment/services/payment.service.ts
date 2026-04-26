@@ -674,6 +674,39 @@ export class PaymentService {
           },
         );
 
+        // Advance any already-accepted applications to PAYMENT_COMPLETE
+        const acceptedApps = await this.jobApplicationRepo.find({
+          where: {
+            jobId: app.jobId,
+            status: JobApplicationStatus.APPLICANT_ACCEPTED,
+          },
+        });
+
+        if (acceptedApps.length > 0) {
+          const appIds = acceptedApps.map((a) => a.id);
+          await this.jobApplicationRepo.update(appIds, {
+            status: JobApplicationStatus.PAYMENT_COMPLETE,
+            statusUpdatedAt: new Date(),
+          });
+
+          // Trigger automatic contract generation for each newly-paid accepted hire
+          for (const acceptedApp of acceptedApps) {
+            const employee = await this.employeeRepo.findOne({
+              where: {
+                jobId: app.jobId,
+                jobseekerProfileId: acceptedApp.jobseekerProfileId,
+              },
+            });
+            if (employee) {
+              this.eventEmitter.emit('employee-activation-payment.confirmed', {
+                paymentId,
+                employeeId: employee.id,
+                employerId: payment.employerId,
+              });
+            }
+          }
+        }
+
         this.logger.log(
           `Activation payment successful for job ${app.jobId} (via app ${payment.applicationId}). All PII unlocked.`,
         );
