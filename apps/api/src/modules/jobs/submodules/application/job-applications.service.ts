@@ -581,7 +581,11 @@ export class JobApplicationsService {
       );
     }
 
-    if (application.status !== JobApplicationStatus.CONTRACT_SIGNED) {
+    if (application.status === JobApplicationStatus.PAYMENT_COMPLETE) {
+      application.status = JobApplicationStatus.CONTRACT_SIGNED;
+      application.statusUpdatedAt = new Date();
+      await this.applicationRepo.save(application);
+    } else if (application.status !== JobApplicationStatus.CONTRACT_SIGNED) {
       throw new BadRequestException(
         'Application must be in CONTRACT_SIGNED status to confirm hire',
       );
