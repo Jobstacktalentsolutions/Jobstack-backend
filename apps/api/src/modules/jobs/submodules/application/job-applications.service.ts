@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import {
   BadRequestException,
   ForbiddenException,
@@ -8,11 +9,13 @@ import {
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository, SelectQueryBuilder } from 'typeorm';
+import { ContractStatus } from '@app/common/database/entities/schema.enum';
 import {
   Job,
   JobApplication,
   JobSeekerProfile,
   Employee,
+  Contract,
 } from '@app/common/database/entities';
 import {
   ApplicationQueryDto,
@@ -22,7 +25,6 @@ import {
 import {
   ApprovalStatus,
   JobApplicationStatus,
-  JobStatus,
   EmployeeStatus,
   EmploymentArrangement,
   ProbationStatus,
@@ -102,7 +104,7 @@ export class JobApplicationsService {
       await this.jobVettingProducer.queueJobVetting(jobId, 'application', {
         bullJobIdSuffix: saved.id,
       });
-    } catch (err) {
+    } catch (err: any) {
       this.logger.warn(
         `Failed to queue vetting after application for job ${jobId}: ${err.message}`,
       );
@@ -120,7 +122,7 @@ export class JobApplicationsService {
           metadata: { jobId: job.id, applicationId: saved.id },
         },
       );
-    } catch (err) {
+    } catch (err: any) {
       this.logger.warn(
         `Failed to create app notification for jobseeker application: ${err.message}`,
       );
@@ -195,6 +197,64 @@ export class JobApplicationsService {
     });
     this.applyApplicationFilters(qb, query);
     return this.executePagedApplicationQuery(qb, query);
+  }
+
+  // Retrieves a single application for the employer, ensuring ownership
+  async getEmployerApplicationById(employerId: string, applicationId: string) {
+    const application = await this.applicationRepo.findOne({
+      where: { id: applicationId },
+      relations: [
+        ...this.relations,
+        'job.employer',
+        'jobseekerProfile.userSkills',
+        'jobseekerProfile.userSkills.skill',
+        'jobseekerProfile.profilePicture',
+        'jobseekerProfile.cvDocument',
+      ],
+    });
+
+    if (!application || application.job?.employerId !== employerId) {
+      throw new NotFoundException('Application not found');
+    }
+
+    const employee = await this.employeeRepo.findOne({
+      where: {
+        jobId: application.jobId,
+        jobseekerProfileId: application.jobseekerProfileId,
+      },
+      order: { updatedAt: 'DESC' },
+      select: [
+        'id',
+        'status',
+        'probationStatus',
+        'probationEndDate',
+        'startDate',
+        'endDate',
+        'pulse30SentAt',
+        'employerDeclaredCompleteAt',
+        'jobseekerDeclaredCompleteAt',
+      ],
+    });
+
+    return {
+      ...application,
+      employeeId: employee?.id ?? null,
+      employee: employee
+        ? {
+            id: employee.id,
+            status: employee.status,
+            probationStatus: employee.probationStatus ?? null,
+            probationEndDate: employee.probationEndDate ?? null,
+            startDate: employee.startDate ?? null,
+            endDate: employee.endDate ?? null,
+            reminderSentAt: employee.pulse30SentAt ?? null,
+            employerDeclaredCompleteAt:
+              employee.employerDeclaredCompleteAt ?? null,
+            jobseekerDeclaredCompleteAt:
+              employee.jobseekerDeclaredCompleteAt ?? null,
+          }
+        : null,
+    };
   }
 
   // Lists all candidate-stage applications across employer jobs
@@ -581,13 +641,13 @@ export class JobApplicationsService {
       );
     }
 
-    if (application.status === JobApplicationStatus.PAYMENT_COMPLETE) {
+    if (application.piiUnlocked) {
       application.status = JobApplicationStatus.CONTRACT_SIGNED;
       application.statusUpdatedAt = new Date();
       await this.applicationRepo.save(application);
-    } else if (application.status !== JobApplicationStatus.CONTRACT_SIGNED) {
+    } else {
       throw new BadRequestException(
-        'Application must be in CONTRACT_SIGNED status to confirm hire',
+        'Payment must be completed before confirming hire',
       );
     }
 
@@ -606,6 +666,30 @@ export class JobApplicationsService {
 
     if (!employee) {
       throw new NotFoundException('Employee record not found for application');
+    }
+
+    // Rewire: Delete uncompleted contracts if they exist when skipping (moving from non-CONTRACT_SIGNED to HIRED)
+    // or if specifically requested by user.
+    const uncompletedContract = await this.applicationRepo.manager
+      .getRepository(Contract)
+      .findOne({
+        where: {
+          employeeId: employee.id,
+          status: In([
+            ContractStatus.PENDING_SIGNATURES,
+            ContractStatus.EMPLOYER_SIGNED,
+            ContractStatus.EMPLOYEE_SIGNED,
+          ]),
+        },
+      });
+
+    if (uncompletedContract) {
+      this.logger.log(
+        `Deleting uncompleted contract ${uncompletedContract.id} for employee ${employee.id} because hiring was confirmed directly.`,
+      );
+      await this.applicationRepo.manager
+        .getRepository(Contract)
+        .remove(uncompletedContract);
     }
 
     if (!employee.startDate) {

@@ -110,6 +110,20 @@ export class JobApplicationsController {
     );
   }
 
+  @Get('employer/:applicationId')
+  @ApiOperation({ summary: 'Retrieves a single application for the employer' })
+  @ApiBearerAuth()
+  @UseGuards(EmployerJwtGuard)
+  getEmployerApplication(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('applicationId', ParseUUIDPipe) applicationId: string,
+  ) {
+    return this.jobApplicationsService.getEmployerApplicationById(
+      user.id,
+      applicationId,
+    );
+  }
+
   // Lists all applications for admin
   @Get('admin')
   @UseGuards(AdminJwtGuard)
