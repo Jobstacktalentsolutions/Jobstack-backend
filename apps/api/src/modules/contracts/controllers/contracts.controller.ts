@@ -135,6 +135,35 @@ export class ContractsController {
   }
 
   /**
+   * Cancel (void) a contract as employer (only if not fully executed)
+   * POST /contracts/:contractId/cancel/employer
+   */
+  @Post(':contractId/cancel/employer')
+  @UseGuards(EmployerJwtGuard)
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Void/cancel a contract (employer)' })
+  @ApiBody({ type: CancelContractDto })
+  async employerCancelContract(
+    @Param('contractId') contractId: string,
+    @Body() dto: CancelContractDto,
+    @Req() req: any,
+  ) {
+    const employerId = req.user.id;
+    const contract = await this.contractsService.cancelContractForEmployer(
+      contractId,
+      employerId,
+      dto.reason,
+    );
+
+    return {
+      success: true,
+      message: 'Contract cancelled successfully',
+      data: contract,
+    };
+  }
+
+  /**
    * Sign contract as employee
    * POST /contracts/:contractId/sign/employee
    */

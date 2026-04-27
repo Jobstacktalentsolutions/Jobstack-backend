@@ -359,6 +359,9 @@ export class ContractsService {
       .createQueryBuilder('contract')
       .leftJoinAndSelect('contract.template', 'template')
       .where('contract.employeeId IN (:...employeeIds)', { employeeIds })
+      .andWhere('contract.status != :cancelled', {
+        cancelled: ContractStatus.CANCELLED,
+      })
       .orderBy('contract.createdAt', 'DESC')
       .getMany();
 
@@ -416,6 +419,56 @@ export class ContractsService {
 
     this.logger.log(
       `Contract ${contractId} cancelled by admin. Reason: ${reason ?? 'N/A'}`,
+    );
+
+    return contract;
+  }
+
+  /**
+   * Cancel (void) a contract — employer action (only if not fully executed)
+   */
+  async cancelContractForEmployer(
+    contractId: string,
+    employerId: string,
+    reason?: string,
+  ): Promise<Contract> {
+    const contract = await this.contractRepo.findOne({
+      where: { id: contractId },
+      relations: [
+        'employee',
+        'employee.employer',
+        'employee.jobseekerProfile',
+        'template',
+      ],
+    });
+
+    if (!contract) {
+      throw new NotFoundException('Contract not found');
+    }
+
+    if (contract.employee?.employerId !== employerId) {
+      throw new BadRequestException('You do not have access to this contract');
+    }
+
+    if (contract.status === ContractStatus.CANCELLED) {
+      throw new BadRequestException('Contract is already cancelled');
+    }
+
+    if (contract.status === ContractStatus.FULLY_EXECUTED) {
+      throw new BadRequestException('Cannot cancel a fully executed contract');
+    }
+
+    contract.status = ContractStatus.CANCELLED;
+    if (reason) {
+      contract.notes = reason;
+    }
+
+    await this.contractRepo.save(contract);
+
+    this.logger.log(
+      `Contract ${contractId} cancelled by employer ${employerId}. Reason: ${
+        reason ?? 'N/A'
+      }`,
     );
 
     return contract;

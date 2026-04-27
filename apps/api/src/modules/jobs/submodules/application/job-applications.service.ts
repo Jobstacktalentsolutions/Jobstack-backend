@@ -428,29 +428,29 @@ export class JobApplicationsService {
     }
 
     if (acceptance.accepted) {
-        application.status = application.piiUnlocked
-          ? JobApplicationStatus.PAYMENT_COMPLETE
-          : JobApplicationStatus.APPLICANT_ACCEPTED;
-        if (acceptance.note) {
-          application.note = acceptance.note;
-        }
+      application.status = application.piiUnlocked
+        ? JobApplicationStatus.PAYMENT_COMPLETE
+        : JobApplicationStatus.APPLICANT_ACCEPTED;
+      if (acceptance.note) {
+        application.note = acceptance.note;
+      }
 
-        // If status moved to PAYMENT_COMPLETE, trigger automatic contract generation
-        if (application.status === JobApplicationStatus.PAYMENT_COMPLETE) {
-          const employee = await this.employeeRepo.findOne({
-            where: {
-              jobId: application.jobId,
-              jobseekerProfileId: application.jobseekerProfileId,
-            },
+      // If status moved to PAYMENT_COMPLETE, trigger automatic contract generation
+      if (application.status === JobApplicationStatus.PAYMENT_COMPLETE) {
+        const employee = await this.employeeRepo.findOne({
+          where: {
+            jobId: application.jobId,
+            jobseekerProfileId: application.jobseekerProfileId,
+          },
+        });
+        if (employee) {
+          this.eventEmitter.emit('employee-activation-payment.confirmed', {
+            paymentId: 'AUTO_GENERATED_ON_ACCEPT', // Placeholder or track activation payment reference
+            employeeId: employee.id,
+            employerId: application.job.employerId,
           });
-          if (employee) {
-            this.eventEmitter.emit('employee-activation-payment.confirmed', {
-              paymentId: 'AUTO_GENERATED_ON_ACCEPT', // Placeholder or track activation payment reference
-              employeeId: employee.id,
-              employerId: application.job.employerId,
-            });
-          }
         }
+      }
     } else {
       // Applicant rejects - move to WITHDRAWN
       application.status = JobApplicationStatus.WITHDRAWN;
