@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="color-scheme" content="light dark" />
     <meta name="supported-color-schemes" content="light dark" />
-    <title><%= subject %></title>
+    <title>Application Update</title>
     <style>
       :root {
         color-scheme: light dark;
@@ -15,22 +15,17 @@
         .email-container { background-color: #1a1a1a !important; }
         .email-content { background-color: #2d2d2d !important; color: #e0e0e0 !important; }
         .text-primary { color: #e0e0e0 !important; }
-        .text-secondary { color: #b0b0b0 !important; }
-        .header-text { color: #ffffff !important; }
         .footer { background-color: #2d2d2d !important; color: #b0b0b0 !important; }
-        .footer a { color: #60a5fa !important; }
-        .info-box { background-color: #374151 !important; }
       }
     </style>
   </head>
-  <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #e8eef3;">
-    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" class="email-container" style="background-color: #e8eef3;">
+  <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f3f4f6;">
+    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" class="email-container" style="background-color: #f3f4f6;">
       <tr>
         <td style="padding: 40px 20px;">
           <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="max-width: 600px; margin: 0 auto;">
-            <!-- Main Content Container -->
             <tr>
-              <td class="email-content" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+              <td class="email-content" style="background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
                 
                 <!-- Logo Header -->
                 <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
@@ -46,93 +41,40 @@
                   <tr>
                     <td style="padding: 0 32px 32px 32px;">
                       
-                      <h1 class="header-text" style="margin: 0 0 16px 0; font-size: 28px; font-weight: 600; color: #1a1a1a; line-height: 1.3;"><%= subject %></h1>
+                      <h1 class="header-text" style="margin: 0 0 16px 0; font-size: 24px; font-weight: 700; color: #111827; line-height: 1.2;">Application Update</h1>
                       
-                      <p class="text-primary" style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.5; color: #4a4a4a;">
+                      <p class="text-primary" style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.5; color: #374151;">
                         Hi <%= recipientName %>,
                       </p>
 
-                      <p class="text-primary" style="margin: 0 0 24px 0; font-size: 16px; line-height: 1.5; color: #4a4a4a;">
-                        We have an update regarding your job application. Please see the details below.
+                      <p class="text-primary" style="margin: 0 0 24px 0; font-size: 16px; line-height: 1.5; color: #374151;">
+                        There is an update regarding your application for "<strong><%= jobTitle %></strong>"<%= typeof companyName !== 'undefined' && companyName ? ' at ' + companyName : '' %>.
                       </p>
 
-                      <% if (jobTitle) { %>
-                      <!-- Application Details -->
-                      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" class="info-box" style="background-color: #f9fafb; border-radius: 8px; margin: 0 0 24px 0;">
-                        <tr>
-                          <td style="padding: 20px;">
-                            <h3 style="margin: 0 0 12px 0; font-size: 18px; font-weight: 600; color: #1a1a1a;">Application Details</h3>
-                            <p class="text-primary" style="margin: 0 0 8px 0; font-size: 15px; color: #4a4a4a;">
-                              <strong>Position:</strong> <%= jobTitle %>
-                            </p>
-                            <% if (companyName) { %>
-                            <p class="text-primary" style="margin: 0; font-size: 15px; color: #4a4a4a;">
-                              <strong>Company:</strong> <%= companyName %>
-                            </p>
-                            <% } %>
-                          </td>
-                        </tr>
-                      </table>
+                      <% if (typeof status !== 'undefined' && status) { %>
+                      <div style="padding: 20px; border-radius: 12px; margin-bottom: 24px; <% if (status === 'accepted' || status === 'approved' || status === 'hired') { %>background-color: #f0fdf4; border: 1px solid #bbf7d0;<% } else if (status === 'rejected' || status === 'declined') { %>background-color: #fef2f2; border: 1px solid #fecaca;<% } else { %>background-color: #f8fafc; border: 1px solid #e2e8f0;<% } %>">
+                        <p style="margin: 0; font-size: 16px; font-weight: 600; <% if (status === 'accepted' || status === 'approved' || status === 'hired') { %>color: #166534;<% } else if (status === 'rejected' || status === 'declined') { %>color: #991b1b;<% } else { %>color: #1e293b;<% } %>">
+                          Status: <%= status.charAt(0).toUpperCase() + status.slice(1) %>
+                        </p>
+                        <% if (typeof statusMessage !== 'undefined' && statusMessage) { %>
+                        <p style="margin: 8px 0 0 0; font-size: 14px; color: #475569; line-height: 1.5;"><%= statusMessage %></p>
+                        <% } %>
+                      </div>
                       <% } %>
 
-                      <% if (status) { %>
-                      <!-- Status Update -->
-                      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 24px 0;">
-                        <tr>
-                          <td style="padding: 20px; border-radius: 8px; <% if (status === 'accepted' || status === 'approved') { %>background-color: #d4edda; border-left: 4px solid #28a745;<% } else if (status === 'rejected' || status === 'declined') { %>background-color: #f8d7da; border-left: 4px solid #dc3545;<% } else { %>background-color: #d1ecf1; border-left: 4px solid #17a2b8;<% } %>">
-                            <h3 style="margin: 0 0 8px 0; font-size: 18px; font-weight: 600; color: <% if (status === 'accepted' || status === 'approved') { %>#155724<% } else if (status === 'rejected' || status === 'declined') { %>#721c24<% } else { %>#0c5460<% } %>;">
-                              Status: <%= status.charAt(0).toUpperCase() + status.slice(1) %>
-                            </h3>
-                            <% if (statusMessage) { %>
-                            <p style="margin: 0; font-size: 15px; color: <% if (status === 'accepted' || status === 'approved') { %>#155724<% } else if (status === 'rejected' || status === 'declined') { %>#721c24<% } else { %>#0c5460<% } %>;"><%= statusMessage %></p>
-                            <% } %>
-                          </td>
-                        </tr>
-                      </table>
+                      <% if (typeof nextSteps !== 'undefined' && nextSteps) { %>
+                      <div style="margin-bottom: 24px;">
+                        <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #111827;">Next Steps</h3>
+                        <p style="margin: 0; font-size: 14px; color: #475569; line-height: 1.5;"><%= nextSteps %></p>
+                      </div>
                       <% } %>
 
-                      <% if (nextSteps) { %>
-                      <!-- Next Steps -->
-                      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 24px 0;">
-                        <tr>
-                          <td style="padding: 20px; background-color: #e3f2fd; border-radius: 8px; border-left: 4px solid #2563eb;">
-                            <h3 style="margin: 0 0 8px 0; font-size: 18px; font-weight: 600; color: #1565c0;">Next Steps</h3>
-                            <p style="margin: 0; font-size: 15px; color: #1565c0;"><%= nextSteps %></p>
-                          </td>
-                        </tr>
-                      </table>
-                      <% } %>
-
-                      <% if (interviewDate) { %>
-                      <!-- Interview Details -->
-                      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 24px 0;">
-                        <tr>
-                          <td style="padding: 20px; background-color: #fff3cd; border-radius: 8px; border-left: 4px solid #ffc107;">
-                            <h3 style="margin: 0 0 12px 0; font-size: 18px; font-weight: 600; color: #856404;">Interview Scheduled</h3>
-                            <p style="margin: 0 0 8px 0; font-size: 15px; color: #856404;">
-                              <strong>Date:</strong> <%= interviewDate %>
-                            </p>
-                            <% if (interviewTime) { %>
-                            <p style="margin: 0 0 8px 0; font-size: 15px; color: #856404;">
-                              <strong>Time:</strong> <%= interviewTime %>
-                            </p>
-                            <% } %>
-                            <% if (interviewLocation) { %>
-                            <p style="margin: 0; font-size: 15px; color: #856404;">
-                              <strong>Location:</strong> <%= interviewLocation %>
-                            </p>
-                            <% } %>
-                          </td>
-                        </tr>
-                      </table>
-                      <% } %>
-
-                      <% if (actionUrl && actionText) { %>
                       <!-- CTA Button -->
+                      <% if (typeof actionUrl !== 'undefined' && typeof actionText !== 'undefined' && actionUrl && actionText) { %>
                       <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 24px 0;">
                         <tr>
                           <td style="text-align: center;">
-                            <a href="<%= actionUrl %>" style="display: inline-block; background-color: #2563eb; color: #ffffff; font-size: 16px; font-weight: 600; text-decoration: none; padding: 14px 40px; border-radius: 6px;"><%= actionText %></a>
+                            <a href="<%= actionUrl %>" style="display: inline-block; background-color: #123A52; color: #ffffff; font-size: 15px; font-weight: 600; text-decoration: none; padding: 12px 32px; border-radius: 8px;"><%= actionText %></a>
                           </td>
                         </tr>
                       </table>
@@ -145,21 +87,13 @@
                 <!-- Footer -->
                 <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" class="footer" style="background-color: #f9fafb; border-top: 1px solid #e5e7eb;">
                   <tr>
-                    <td style="padding: 32px 32px 24px 32px;">
-                      
-                      <p class="text-secondary" style="margin: 0 0 16px 0; font-size: 14px; line-height: 1.5; color: #6b7280; text-align: center;">
-                        Questions or concerns? Get in touch with us at 
-                        <a href="mailto:<%= supportEmail %>" style="color: #2563eb; text-decoration: underline;"><%= supportEmail %></a>.<br>
-                        Follow us on 
-                        <a href="https://twitter.com/jobstack" style="color: #2563eb; text-decoration: none;">Twitter</a>, 
-                        <a href="https://facebook.com/jobstack" style="color: #2563eb; text-decoration: none;">Facebook</a> and 
-                        <a href="https://instagram.com/jobstack" style="color: #2563eb; text-decoration: none;">Instagram</a>.
+                    <td style="padding: 24px 32px; text-align: center;">
+                      <p class="text-secondary" style="margin: 0 0 8px 0; font-size: 13px; color: #6b7280;">
+                        Questions? Contact us at <a href="mailto:<%= supportEmail %>" style="color: #123A52; text-decoration: none; font-weight: 500;"><%= supportEmail %></a>
                       </p>
-
-                      <p class="text-secondary" style="margin: 0; font-size: 12px; line-height: 1.5; color: #9ca3af; text-align: center;">
-                        Don't want any more emails from Jobstack? <a href="<%= websiteUrl %>/unsubscribe" style="color: #2563eb; text-decoration: underline;">Unsubscribe</a>.
+                      <p class="text-secondary" style="margin: 0; font-size: 12px; color: #9ca3af;">
+                        © <%= currentYear %> <%= companyName %>. All rights reserved.
                       </p>
-
                     </td>
                   </tr>
                 </table>

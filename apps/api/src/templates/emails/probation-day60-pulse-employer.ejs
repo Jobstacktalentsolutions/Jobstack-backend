@@ -5,54 +5,84 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="color-scheme" content="light dark" />
     <meta name="supported-color-schemes" content="light dark" />
-    <title><%= subject %></title>
+    <title>60-Day Probation Update</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        supported-color-schemes: light dark;
+      }
+      @media (prefers-color-scheme: dark) {
+        .email-container { background-color: #1a1a1a !important; }
+        .email-content { background-color: #2d2d2d !important; color: #e0e0e0 !important; }
+        .text-primary { color: #e0e0e0 !important; }
+        .footer { background-color: #2d2d2d !important; color: #b0b0b0 !important; }
+      }
+    </style>
   </head>
-  <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #e8eef3;">
-    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color:#e8eef3;">
+  <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f3f4f6;">
+    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" class="email-container" style="background-color: #f3f4f6;">
       <tr>
         <td style="padding: 40px 20px;">
-          <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="max-width:600px; margin:0 auto;">
+          <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="max-width: 600px; margin: 0 auto;">
             <tr>
-              <td style="background-color:#ffffff; border-radius:10px; padding: 28px 26px;">
-                <h1 style="margin:0 0 16px 0; font-size: 22px; font-weight:700; color:#0f172a;">
-                  <%= subject %>
-                </h1>
+              <td class="email-content" style="background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+                
+                <!-- Logo Header -->
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                  <tr>
+                    <td style="padding: 32px 32px 24px 32px; text-align: center;">
+                      <img src="https://jobstack.org/email-assets/logo.svg" alt="Jobstack" width="120" style="display: block; margin: 0 auto;" />
+                    </td>
+                  </tr>
+                </table>
 
-                <p style="margin:0 0 12px 0; font-size: 15px; line-height: 1.6; color:#0f172a;">
-                  Hi <%= employerFirstName %>,
-                </p>
+                <!-- Content -->
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                  <tr>
+                    <td style="padding: 0 32px 32px 32px;">
+                      
+                      <h1 class="header-text" style="margin: 0 0 16px 0; font-size: 24px; font-weight: 700; color: #111827; line-height: 1.2;">60-Day Probation Update</h1>
 
-                <p style="margin:0 0 12px 0; font-size: 15px; line-height: 1.6; color:#0f172a;">
-                  <strong><%= candidateFullName %></strong> is now 60 days into their probation as <strong><%= jobTitle %></strong> at <strong><%= companyName %></strong>.
-                </p>
+                      <p class="text-primary" style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.5; color: #374151;">
+                        Hi <%= employerFirstName %>,
+                      </p>
 
-                <p style="margin:0 0 18px 0; font-size: 15px; line-height: 1.6; color:#0f172a;">
-                  Is the placement still going well?
-                </p>
+                      <p class="text-primary" style="margin: 0 0 24px 0; font-size: 16px; line-height: 1.5; color: #374151;">
+                        <strong><%= candidateFullName %></strong> has completed 60 days of probation as <strong><%= jobTitle %></strong> at <strong><%= companyName %></strong>.
+                      </p>
 
-                <p style="margin:0 0 18px 0; font-size: 15px; line-height: 1.6; color:#0f172a;">
-                  If you have any concerns, please contact us immediately so we can assist before the probation period ends.
-                </p>
+                      <div style="padding: 20px; background-color: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 24px;">
+                        <p style="margin: 0; font-size: 14px; color: #475569; line-height: 1.6;">
+                          If you have any concerns, please contact us immediately. Otherwise, the placement will be automatically confirmed on <strong><%= probationEndDate %></strong>.
+                        </p>
+                      </div>
 
-                <p style="margin:0 0 22px 0;">
-                  <a href="<%= supportMailto %>" style="display:inline-block; background-color:#2563eb; color:#ffffff; text-decoration:none; padding: 12px 18px; border-radius: 8px; font-weight:700; font-size: 14px;">
-                    Contact Jobstack Support
-                  </a>
-                </p>
+                      <!-- CTA Button -->
+                      <% if (typeof supportMailto !== 'undefined') { %>
+                      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 24px 0;">
+                        <tr>
+                          <td style="text-align: center;">
+                            <a href="<%= supportMailto %>" style="display: inline-block; background-color: #123A52; color: #ffffff; font-size: 15px; font-weight: 600; text-decoration: none; padding: 12px 32px; border-radius: 8px;">Contact Support</a>
+                          </td>
+                        </tr>
+                      </table>
+                      <% } %>
 
-                <p style="margin:0 0 18px 0; font-size: 15px; line-height: 1.6; color:#475569;">
-                  Probation ends on <strong><%= probationEndDate %></strong>. If we don&apos;t hear from you, the placement will be automatically confirmed on that date.
-                </p>
+                    </td>
+                  </tr>
+                </table>
 
-                <p style="margin:18px 0 0 0; font-size: 14px; line-height: 1.6; color:#475569;">
-                  — The Jobstack Team
-                </p>
-              </td>
-            </tr>
+                <!-- Footer -->
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" class="footer" style="background-color: #f9fafb; border-top: 1px solid #e5e7eb;">
+                  <tr>
+                    <td style="padding: 24px 32px; text-align: center;">
+                      <p class="text-secondary" style="margin: 0; font-size: 12px; color: #9ca3af;">
+                        Automated notification from JobStack.
+                      </p>
+                    </td>
+                  </tr>
+                </table>
 
-            <tr>
-              <td style="padding: 18px 10px 0 10px; text-align:center; color:#64748b; font-size: 12px;">
-                This is an automated notification from Jobstack.
               </td>
             </tr>
           </table>
@@ -61,4 +91,3 @@
     </table>
   </body>
 </html>
-

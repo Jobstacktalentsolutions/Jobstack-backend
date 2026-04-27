@@ -195,7 +195,7 @@ export class ProbationTrackingService {
         employee.employerId,
         UserRole.EMPLOYER,
         {
-          title: '🎉 Placement Confirmed!',
+          title: 'Placement Confirmed',
           message: `${candidateFirstName} has successfully completed their probation for "${jobTitle}".`,
           priority: NotificationPriority.HIGH,
           metadata: { employeeId: employee.id, jobId: employee.jobId },
@@ -206,8 +206,8 @@ export class ProbationTrackingService {
         employee.jobseekerProfileId,
         UserRole.JOB_SEEKER,
         {
-          title: '🎉 Placement Confirmed!',
-          message: `Congratulations! You have successfully completed your probation for "${jobTitle}" at ${employerName}.`,
+          title: 'Placement Confirmed',
+          message: `You have successfully completed your probation for "${jobTitle}" at ${employerName}.`,
           priority: NotificationPriority.HIGH,
           metadata: { employeeId: employee.id, jobId: employee.jobId },
         },

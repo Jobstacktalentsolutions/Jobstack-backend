@@ -529,7 +529,7 @@ export class JobApplicationsService {
           employerId,
           UserRole.EMPLOYER,
           {
-            title: '✅ Candidate Accepted Your Offer',
+            title: 'Offer Accepted',
             message: `A candidate has accepted your offer for "${application.job.title}". Proceed with payment to unlock their contact details.`,
             priority: NotificationPriority.HIGH,
             metadata: { jobId: application.jobId, applicationId },
@@ -540,7 +540,7 @@ export class JobApplicationsService {
           employerId,
           UserRole.EMPLOYER,
           {
-            title: 'Candidate Declined Offer',
+            title: 'Offer Declined',
             message: `A candidate has declined your offer for "${application.job.title}".`,
             priority: NotificationPriority.MEDIUM,
             metadata: { jobId: application.jobId, applicationId },
@@ -612,8 +612,8 @@ export class JobApplicationsService {
         application.jobseekerProfileId,
         UserRole.JOB_SEEKER,
         {
-          title: '⏰ Reminder: Pending Job Offer',
-          message: `The employer for "${application.job.title}" is still waiting for your response. Don't let the offer expire!`,
+          title: 'Pending Job Offer Reminder',
+          message: `The employer for "${application.job.title}" is waiting for your response. Review the offer before it expires.`,
           priority: NotificationPriority.HIGH,
           metadata: { jobId: application.jobId, applicationId },
         },
@@ -715,8 +715,8 @@ export class JobApplicationsService {
         application.jobseekerProfileId,
         UserRole.JOB_SEEKER,
         {
-          title: '🎊 You have been Hired!',
-          message: `Congratulations! Your employment for "${application.job.title}" has been confirmed. Your probation period starts now.`,
+          title: 'Employment Confirmed',
+          message: `Your employment for "${application.job.title}" has been confirmed. Your probation period starts now.`,
           priority: NotificationPriority.HIGH,
           metadata: {
             jobId: application.jobId,

@@ -301,9 +301,9 @@ export class EmployerVerificationService {
           profile.id,
           UserRole.EMPLOYER,
           {
-            title: '✅ Account Verified!',
+            title: 'Account Verified',
             message:
-              'Congratulations! Your employer account has been verified. You can now post jobs and hire candidates.',
+              'Your employer account has been verified. You can now post jobs and hire candidates.',
             priority: NotificationPriority.HIGH,
           },
         );
@@ -379,9 +379,9 @@ export class EmployerVerificationService {
           employerId,
           UserRole.EMPLOYER,
           {
-            title: '✅ Your Account is Verified',
+            title: 'Account Verified',
             message:
-              'Your employer account has been manually reviewed and approved. You can now post jobs and hire candidates.',
+              'Your employer account has been approved. You can now post jobs and hire candidates.',
             priority: NotificationPriority.HIGH,
           },
         );
@@ -390,8 +390,8 @@ export class EmployerVerificationService {
           employerId,
           UserRole.EMPLOYER,
           {
-            title: '❌ Verification Rejected',
-            message: `Your employer verification was rejected.${rejectionReason ? ` Reason: ${rejectionReason}` : ''} Please review and resubmit your documents.`,
+            title: 'Verification Rejected',
+            message: `Your employer verification was rejected.${rejectionReason ? ` Reason: ${rejectionReason}` : ''}`,
             priority: NotificationPriority.HIGH,
           },
         );

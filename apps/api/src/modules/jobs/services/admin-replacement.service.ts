@@ -433,8 +433,8 @@ export class AdminReplacementService {
         current.jobseekerProfileId,
         UserRole.JOB_SEEKER,
         {
-          title: '🎉 You have been Hired! (Replacement)',
-          message: `Congratulations! You have been assigned to the role of "${job.title}". Check your dashboard to view your new employment details.`,
+          title: 'Employment Confirmed',
+          message: `You have been assigned to the role of "${job.title}". Check your dashboard for details.`,
           priority: NotificationPriority.HIGH,
           metadata: { jobId: job.id, employeeId: current.id },
         },

@@ -17,25 +17,24 @@
         .text-primary { color: #e0e0e0 !important; }
         .text-secondary { color: #b0b0b0 !important; }
         .header-text { color: #ffffff !important; }
-        .success-box { background-color: #1e4620 !important; }
         .footer { background-color: #2d2d2d !important; color: #b0b0b0 !important; }
         .footer a { color: #60a5fa !important; }
       }
     </style>
 </head>
-<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #e8eef3;">
-    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" class="email-container" style="background-color: #e8eef3;">
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f3f4f6;">
+    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" class="email-container" style="background-color: #f3f4f6;">
       <tr>
         <td style="padding: 40px 20px;">
           <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="max-width: 600px; margin: 0 auto;">
             <tr>
-              <td class="email-content" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+              <td class="email-content" style="background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
                 
                 <!-- Logo Header -->
                 <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
                   <tr>
                     <td style="padding: 32px 32px 24px 32px; text-align: center;">
-                      <img src="https://jobstack.org/email-assets/logo.svg" alt="Jobstack" width="120" height="58" style="display: block; margin: 0 auto;" />
+                      <img src="https://jobstack.org/email-assets/logo.svg" alt="Jobstack" width="120" style="display: block; margin: 0 auto;" />
                     </td>
                   </tr>
                 </table>
@@ -45,46 +44,33 @@
                   <tr>
                     <td style="padding: 0 32px 32px 32px;">
                       
-                      <h1 class="header-text" style="margin: 0 0 16px 0; font-size: 28px; font-weight: 600; color: #1a1a1a; line-height: 1.3;">Welcome to JobStack!</h1>
+                      <h1 class="header-text" style="margin: 0 0 16px 0; font-size: 24px; font-weight: 700; color: #111827; line-height: 1.2;">Welcome to JobStack</h1>
                       
-                      <p class="text-primary" style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.5; color: #4a4a4a;">
+                      <p class="text-primary" style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.5; color: #374151;">
                         Hello <%= firstName %>,
                       </p>
 
-                      <p class="text-primary" style="margin: 0 0 24px 0; font-size: 16px; line-height: 1.5; color: #4a4a4a;">
-                        Welcome to JobStack, Nigeria's premier talent marketplace! We're excited to have you join our community.
+                      <p class="text-primary" style="margin: 0 0 24px 0; font-size: 16px; line-height: 1.5; color: #374151;">
+                        Your account has been successfully created. JobStack connects talented Africans with top employers through an automated, vetted marketplace.
                       </p>
-
-                      <!-- Success Box -->
-                      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 24px 0;">
-                        <tr>
-                          <td class="success-box" style="background-color: #d1fae5; border-radius: 8px; padding: 20px;">
-                            <p style="margin: 0; font-weight: 600; color: #065f46; font-size: 16px;">
-                              ✓ Your account has been successfully created!
-                            </p>
-                          </td>
-                        </tr>
-                      </table>
 
                       <% if (typeof userType !== 'undefined' && userType === 'jobseeker') { %>
-                      <p class="text-primary" style="margin: 0 0 12px 0; font-size: 16px; line-height: 1.5; color: #4a4a4a; font-weight: 600;">
-                        As a job seeker, you can now:
+                      <p class="text-primary" style="margin: 0 0 12px 0; font-size: 16px; font-weight: 600; color: #111827;">
+                        Next steps:
                       </p>
-                      <ul style="margin: 0 0 24px 0; padding-left: 20px; color: #4a4a4a;">
-                        <li style="margin-bottom: 8px;">Browse and apply for exciting job opportunities</li>
-                        <li style="margin-bottom: 8px;">Create and manage your professional profile</li>
-                        <li style="margin-bottom: 8px;">Get matched with top employers in Nigeria</li>
-                        <li style="margin-bottom: 0;">Receive personalized job recommendations</li>
+                      <ul style="margin: 0 0 24px 0; padding-left: 20px; color: #374151; line-height: 1.6;">
+                        <li>Complete your professional profile</li>
+                        <li>Apply for verified job opportunities</li>
+                        <li>Get matched with top employers</li>
                       </ul>
                       <% } else if (typeof userType !== 'undefined' && (userType === 'recruiter' || userType === 'employer')) { %>
-                      <p class="text-primary" style="margin: 0 0 12px 0; font-size: 16px; line-height: 1.5; color: #4a4a4a; font-weight: 600;">
-                        As a recruiter, you can now:
+                      <p class="text-primary" style="margin: 0 0 12px 0; font-size: 16px; font-weight: 600; color: #111827;">
+                        Next steps:
                       </p>
-                      <ul style="margin: 0 0 24px 0; padding-left: 20px; color: #4a4a4a;">
-                        <li style="margin-bottom: 8px;">Post job openings and find top talent</li>
-                        <li style="margin-bottom: 8px;">Access our vetted candidate pool</li>
-                        <li style="margin-bottom: 8px;">Streamline your hiring process</li>
-                        <li style="margin-bottom: 0;">Get matched with qualified candidates</li>
+                      <ul style="margin: 0 0 24px 0; padding-left: 20px; color: #374151; line-height: 1.6;">
+                        <li>Post job openings</li>
+                        <li>Access our pool of vetted talent</li>
+                        <li>Automate your hiring workflow</li>
                       </ul>
                       <% } %>
 
@@ -93,15 +79,11 @@
                       <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 24px 0;">
                         <tr>
                           <td style="text-align: center;">
-                            <a href="<%= actionUrl %>" style="display: inline-block; background-color: #2563eb; color: #ffffff; font-size: 16px; font-weight: 600; text-decoration: none; padding: 14px 40px; border-radius: 6px;">Get Started</a>
+                            <a href="<%= actionUrl %>" style="display: inline-block; background-color: #123A52; color: #ffffff; font-size: 15px; font-weight: 600; text-decoration: none; padding: 12px 32px; border-radius: 8px;">Get Started</a>
                           </td>
                         </tr>
                       </table>
                       <% } %>
-
-                      <p class="text-primary" style="margin: 0; font-size: 16px; line-height: 1.5; color: #4a4a4a;">
-                        We're here to support you every step of the way. If you have any questions, don't hesitate to reach out!
-                      </p>
 
                     </td>
                   </tr>
@@ -110,25 +92,13 @@
                 <!-- Footer -->
                 <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" class="footer" style="background-color: #f9fafb; border-top: 1px solid #e5e7eb;">
                   <tr>
-                    <td style="padding: 32px 32px 24px 32px;">
-                      
-                      <p class="text-secondary" style="margin: 0 0 16px 0; font-size: 14px; line-height: 1.5; color: #6b7280; text-align: center;">
-                        Questions or concerns? Get in touch with us at 
-                        <a href="mailto:<%= supportEmail %>" style="color: #2563eb; text-decoration: underline;"><%= supportEmail %></a>.<br>
-                        Never miss any updates! Follow us on 
-                        <a href="https://twitter.com/jobstack" style="color: #2563eb; text-decoration: none;">Twitter</a>, 
-                        <a href="https://facebook.com/jobstack" style="color: #2563eb; text-decoration: none;">Facebook</a> and 
-                        <a href="https://instagram.com/jobstack" style="color: #2563eb; text-decoration: none;">Instagram</a>.
+                    <td style="padding: 24px 32px; text-align: center;">
+                      <p class="text-secondary" style="margin: 0 0 8px 0; font-size: 13px; color: #6b7280;">
+                        Questions? Contact us at <a href="mailto:<%= supportEmail %>" style="color: #123A52; text-decoration: none; font-weight: 500;"><%= supportEmail %></a>
                       </p>
-
-                      <p class="text-secondary" style="margin: 0 0 8px 0; font-size: 12px; line-height: 1.5; color: #9ca3af; text-align: center;">
-                        Don't want any more emails from JobStack? <a href="<%= websiteUrl %>/unsubscribe" style="color: #2563eb; text-decoration: underline;">Unsubscribe</a>.
-                      </p>
-
-                      <p class="text-secondary" style="margin: 16px 0 0 0; font-size: 11px; line-height: 1.5; color: #9ca3af; text-align: center;">
+                      <p class="text-secondary" style="margin: 0; font-size: 12px; color: #9ca3af;">
                         © <%= currentYear %> <%= companyName %>. All rights reserved.
                       </p>
-
                     </td>
                   </tr>
                 </table>

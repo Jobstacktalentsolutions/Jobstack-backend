@@ -80,7 +80,7 @@ export class JobVettingMilestoneNotifyService {
         job.employerId,
         UserRole.EMPLOYER,
         {
-          title: `📬 ${applicantCount} applicants on "${jobTitle}"`,
+          title: `${applicantCount} Applicants on "${jobTitle}"`,
           message,
           priority: NotificationPriority.MEDIUM,
           metadata: { jobId, applicantCount },

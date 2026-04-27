@@ -669,7 +669,7 @@ export class JobVettingService {
             application.jobseekerProfileId,
             UserRole.JOB_SEEKER,
             {
-              title: '🌟 Selected for Screening!',
+              title: 'Selected for Screening',
               message: `You have been selected for a screening interview for "${application.job.title}" scheduled for ${formattedDate} at ${formattedTime}.`,
               priority: NotificationPriority.HIGH,
               metadata: {
@@ -823,7 +823,7 @@ export class JobVettingService {
         job.employerId,
         UserRole.EMPLOYER,
         {
-          title: '📊 Candidates Ranked',
+          title: 'Candidates Ranked',
           message: `Your job "${job.title}" has ${result.totalApplicants} ranked applicants. ${result.highlightedCount} top candidates are highlighted. Review them now.`,
           priority: NotificationPriority.HIGH,
           metadata: {
@@ -1120,7 +1120,7 @@ export class JobVettingService {
         application.jobseekerProfileId,
         UserRole.JOB_SEEKER,
         {
-          title: '🎉 Job Offer Received!',
+          title: 'Job Offer Received',
           message: `You have received a job offer for "${job.title}". Please review and respond within 7 days.`,
           priority: NotificationPriority.HIGH,
           metadata: { jobId, applicationId: dto.applicationId },
