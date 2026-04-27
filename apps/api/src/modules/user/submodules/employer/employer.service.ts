@@ -14,6 +14,7 @@ import { StorageService } from '@app/common/storage/storage.service';
 import type { MulterFile } from '@app/common/shared/types';
 import {
   DocumentType,
+  JobApplicationStatus,
   JobStatus,
 } from '@app/common/database/entities/schema.enum';
 import { VerificationStatus } from '@app/common/shared/enums/employer-docs.enum';
@@ -404,7 +405,7 @@ export class EmployerService {
       where: {
         job: { employerId },
         jobseekerProfileId: jobseekerId,
-        status: JobStatus.HIRED,
+        status: JobApplicationStatus.HIRED,
       },
     });
 
