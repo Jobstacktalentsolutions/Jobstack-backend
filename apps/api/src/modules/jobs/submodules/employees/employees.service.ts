@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -32,6 +33,8 @@ import { EmploymentFeedbackService } from '../../services/employment-feedback.se
 
 @Injectable()
 export class EmployeesService {
+  private readonly logger = new Logger(EmployeesService.name);
+
   constructor(
     @InjectRepository(Employee)
     private readonly employeeRepo: Repository<Employee>,
@@ -216,8 +219,19 @@ export class EmployeesService {
   ) {
     const employee = await this.getEmployerEmployeeById(employerId, employeeId);
     const previousStatus = employee.status;
+    this.logger.log(
+      `Update employee status: ${JSON.stringify({
+        employeeId,
+        employerId,
+        from: previousStatus,
+        to: dto.status,
+      })}`,
+    );
 
     if (dto.status === EmployeeStatus.ENDED) {
+      this.logger.warn(
+        `Rejected status update to ENDED for employee ${employeeId}`,
+      );
       throw new BadRequestException(
         'ENDED is applied only when employer and jobseeker both confirm mutual completion.',
       );
@@ -233,6 +247,9 @@ export class EmployeesService {
         employee.salaryOffered || employee.contractFeeOffered;
 
       if (hasPaymentAmount && employee.paymentStatus !== 'PAID') {
+        this.logger.warn(
+          `Activation blocked for employee ${employeeId}: paymentStatus=${employee.paymentStatus}`,
+        );
         throw new BadRequestException(
           'Payment is required before employee can be activated. Please complete the payment process first.',
         );
@@ -242,13 +259,22 @@ export class EmployeesService {
     employee.status = dto.status;
 
     if (dto.status === EmployeeStatus.TERMINATED) {
+      this.logger.log(
+        `Processing termination for employee ${employeeId} with hrMeaning=${dto.hrMeaning ?? 'none'}`,
+      );
       const cleanedReason = dto.reasonForTermination?.trim();
       if (!cleanedReason) {
+        this.logger.warn(
+          `Termination rejected for employee ${employeeId}: missing reasonForTermination`,
+        );
         throw new BadRequestException(
           'reasonForTermination is required when ending employment',
         );
       }
       if (dto.exitRating == null || dto.exitRating < 1 || dto.exitRating > 5) {
+        this.logger.warn(
+          `Termination rejected for employee ${employeeId}: invalid exitRating=${dto.exitRating}`,
+        );
         throw new BadRequestException(
           'exitRating between 1 and 5 is required when ending employment',
         );
@@ -267,11 +293,17 @@ export class EmployeesService {
 
       const employeeIdToEnd = employee.id;
       await this.employeeRepo.manager.transaction(async (manager) => {
+        this.logger.debug(
+          `Starting termination transaction for employee ${employeeIdToEnd}`,
+        );
         const empRepo = manager.getRepository(Employee);
         const row = await empRepo.findOne({
           where: { id: employeeIdToEnd, employerId },
         });
         if (!row) {
+          this.logger.warn(
+            `Termination failed: employee ${employeeIdToEnd} not found for employer ${employerId}`,
+          );
           throw new NotFoundException('Employee not found');
         }
 
@@ -293,9 +325,15 @@ export class EmployeesService {
           dto.exitRating,
           dto.exitComment ?? null,
         );
+        this.logger.debug(
+          `Termination transaction completed for employee ${employeeIdToEnd}`,
+        );
       });
 
       const ended = await this.getEmployerEmployeeById(employerId, employeeId);
+      this.logger.log(
+        `Termination persisted for employee ${employeeId}: status=${ended.status}`,
+      );
       await this.sendEmploymentEndedNotifications(ended, dto);
 
       return ended;
@@ -304,6 +342,9 @@ export class EmployeesService {
     // When activation is finalized, initialize probation fields if missing/outdated.
     if (dto.status === EmployeeStatus.ACTIVE) {
       if (!employee.startDate) {
+        this.logger.warn(
+          `Activation rejected for employee ${employeeId}: missing startDate`,
+        );
         throw new BadRequestException(
           'Employee startDate is required before activation',
         );
@@ -321,9 +362,15 @@ export class EmployeesService {
       employee.pulse60SentAt = null;
 
       await this.employeeRepo.save(employee);
+      this.logger.log(
+        `Activated employee ${employeeId}; probationEndDate=${probationSchedule.probationEndDate.toISOString()}`,
+      );
 
       // Queue probation milestones only on transition into ACTIVE.
       if (previousStatus !== EmployeeStatus.ACTIVE) {
+        this.logger.debug(
+          `Scheduling probation milestones for employee ${employeeId}`,
+        );
         await this.probationTrackingProducer.scheduleEmployeeProbationMilestones(
           {
             employeeId: employee.id,
@@ -331,12 +378,16 @@ export class EmployeesService {
             confirmAt: probationSchedule.confirmAt,
           },
         );
+        this.logger.debug(
+          `Probation milestones queued for employee ${employeeId}`,
+        );
       }
 
       return this.getEmployerEmployeeById(employerId, employeeId);
     }
 
     await this.employeeRepo.save(employee);
+    this.logger.log(`Updated employee ${employeeId} status to ${dto.status}`);
 
     return this.getEmployerEmployeeById(employerId, employeeId);
   }
@@ -407,7 +458,10 @@ export class EmployeesService {
           },
         );
       }
-    } catch (_) {
+    } catch (error) {
+      this.logger.warn(
+        `Employment-ended notifications failed for employee ${employee.id}: ${error?.message ?? error}`,
+      );
       // Notification failures should not block status changes.
     }
   }

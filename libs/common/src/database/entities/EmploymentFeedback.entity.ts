@@ -1,10 +1,9 @@
-import { Column, Entity, Index, JoinColumn, ManyToOne, Unique } from 'typeorm';
+import { Column, Entity, Index, JoinColumn, ManyToOne } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { Employee } from './Employee.entity';
 import { EmploymentFeedbackReviewerRole } from './schema.enum';
 
 @Entity('employment_feedback')
-@Unique(['employeeId', 'reviewerRole'])
 @Index(['employeeId'])
 export class EmploymentFeedback extends BaseEntity {
   @ManyToOne(() => Employee, { onDelete: 'CASCADE' })

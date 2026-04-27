@@ -381,4 +381,73 @@ export class EmployerService {
       updatedAt: profile.updatedAt,
     };
   }
+
+  /**
+   * Get employer profile for a jobseeker.
+   * If hired, includes contact info.
+   */
+  async getEmployerProfileForJobseeker(
+    employerId: string,
+    jobseekerId: string,
+  ): Promise<any> {
+    const profile = await this.profileRepo.findOne({
+      where: { id: employerId },
+      relations: ['profilePicture', 'auth'],
+    });
+
+    if (!profile) {
+      throw new NotFoundException('Employer not found');
+    }
+
+    // Check if jobseeker is hired by this employer
+    const isHired = await this.jobApplicationRepo.exist({
+      where: {
+        job: { employerId },
+        jobseekerProfileId: jobseekerId,
+        status: JobStatus.HIRED,
+      },
+    });
+
+    const companyName =
+      profile.companyName || `${profile.firstName} ${profile.lastName}`.trim();
+
+    const location =
+      profile.city && profile.state
+        ? `${profile.city}, ${profile.state}`
+        : profile.city || profile.state || 'Location not specified';
+
+    let logoUrl: string | null = null;
+    if (profile.profilePicture) {
+      logoUrl = await this.storageService.getSignedUrl(
+        profile.profilePicture.fileKey,
+        3600,
+        false,
+        profile.profilePicture.bucketType,
+      );
+    }
+
+    const baseInfo = {
+      id: profile.id,
+      companyName,
+      location,
+      companyDescription: profile.companyDescription,
+      companySize: profile.companySize,
+      website: profile.socialOrWebsiteUrl || profile.companyWebsite || null,
+      logoUrl,
+      employerType: profile.type ?? null,
+      memberSince: profile.createdAt ? profile.createdAt.toISOString() : null,
+      isVerified: profile.verificationStatus === VerificationStatus.APPROVED,
+    };
+
+    if (isHired) {
+      return {
+        ...baseInfo,
+        contactEmail: profile.workEmail || profile.email || profile.auth?.email,
+        contactPhone: profile.phoneNumber,
+        contactPerson: profile.contactPersonName,
+      };
+    }
+
+    return baseInfo;
+  }
 }

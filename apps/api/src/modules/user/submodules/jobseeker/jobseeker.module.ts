@@ -13,6 +13,7 @@ import { JobSeekerJwtGuard } from 'apps/api/src/guards';
 import { JobSeekerAuthModule } from 'apps/api/src/modules/auth/submodules/jobseeker/jobseeker-auth.module';
 import { SkillsModule } from 'apps/api/src/modules/skills/skills.module';
 import { AuthModule } from 'apps/api/src/modules/auth/auth.module';
+import { EmployerModule } from '../employer/employer.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { AuthModule } from 'apps/api/src/modules/auth/auth.module';
     JobSeekerAuthModule,
     SkillsModule,
     AuthModule,
+    EmployerModule,
   ],
   controllers: [JobseekerController, PublicJobseekerController],
   providers: [JobseekerService, StorageService, JobSeekerJwtGuard],

@@ -41,7 +41,6 @@ export class EmployerAuthController {
       registrationData,
       deviceInfo,
     );
-    console.log('result', result);
     return result;
   }
 

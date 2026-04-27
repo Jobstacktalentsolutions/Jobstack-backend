@@ -37,7 +37,6 @@ export class JobSeekerJwtGuard implements CanActivate {
       const payload =
         await this.jwtService.verifyAsync<AccessTokenPayload>(token);
 
-      console.log('payload', payload);
       // Validate token type and role
       if (payload.role !== UserRole.JOB_SEEKER) {
         throw new UnauthorizedException('Invalid token');

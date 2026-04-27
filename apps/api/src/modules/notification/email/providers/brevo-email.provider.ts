@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 import { ENV } from 'apps/api/src/modules/config';
@@ -9,6 +9,7 @@ import { EmailPayloadDto } from '../email-notification.dto';
 export class BrevoEmailProvider
   implements INotificationTransporter<EmailPayloadDto>
 {
+  private readonly logger = new Logger(BrevoEmailProvider.name);
   private readonly apiKey: string;
   private readonly fromEmail: string;
   private readonly fromName: string;
@@ -53,13 +54,13 @@ export class BrevoEmailProvider
         },
       );
 
-      console.log('Email sent successfully via Brevo', {
+      this.logger.log('Email sent successfully via Brevo', {
         recipient,
         subject,
         messageId: response.data.messageId,
       });
     } catch (error: any) {
-      console.error('Failed to send email via Brevo', error.message);
+      this.logger.error('Failed to send email via Brevo', error.message);
       throw new Error(
         `Failed to send email via Brevo: ${
           error?.response?.data?.message || error.message

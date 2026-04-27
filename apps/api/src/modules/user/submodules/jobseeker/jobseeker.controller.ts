@@ -29,12 +29,16 @@ import { GetAllJobSeekersQueryDto } from './dto/get-all-jobseekers-query.dto';
 import type { MulterFile } from '@app/common/shared/types';
 import { CurrentUser, type CurrentUserPayload } from '@app/common/shared';
 import { JobseekerDocumentType } from '@app/common/shared/enums/jobseeker-docs.enum';
+import { EmployerService } from '../employer/employer.service';
 
 @ApiTags('Users (jobseeker)')
 @ApiBearerAuth()
 @Controller('/user/jobseeker')
 export class JobseekerController {
-  constructor(protected readonly jobseekerService: JobseekerService) {}
+  constructor(
+    protected readonly jobseekerService: JobseekerService,
+    protected readonly employerService: EmployerService,
+  ) {}
 
   // Upload CV PDF for authenticated jobseeker
   @Post('profile/cv')
@@ -360,5 +364,20 @@ export class JobseekerController {
       admin.id,
     );
     return { success: true, jobSeeker: result };
+  }
+
+  @Get('employers/:id')
+  @UseGuards(JobSeekerJwtGuard)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get employer profile for jobseeker' })
+  async getEmployerProfile(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') employerId: string,
+  ) {
+    const result = await this.employerService.getEmployerProfileForJobseeker(
+      employerId,
+      user.id,
+    );
+    return { success: true, data: result };
   }
 }

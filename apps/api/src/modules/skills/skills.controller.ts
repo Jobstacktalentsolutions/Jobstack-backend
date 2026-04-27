@@ -13,12 +13,7 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { SkillsService } from './skills.service';
-import {
-  AdminJwtGuard,
-  EmployerJwtGuard,
-  JobSeekerJwtGuard,
-  RequireAdminRole,
-} from 'apps/api/src/guards';
+import { AdminJwtGuard, RequireAdminRole } from 'apps/api/src/guards';
 import { AdminRole } from '@app/common/shared/enums/roles.enum';
 import { Skill } from '@app/common/database/entities/Skill.entity';
 import { AddSkillDto, CreateSkillDto, UpdateSkillDto } from './dto';

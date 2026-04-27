@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import {
   BadRequestException,
@@ -641,11 +642,7 @@ export class JobApplicationsService {
       );
     }
 
-    if (application.piiUnlocked) {
-      application.status = JobApplicationStatus.CONTRACT_SIGNED;
-      application.statusUpdatedAt = new Date();
-      await this.applicationRepo.save(application);
-    } else {
+    if (!application.piiUnlocked) {
       throw new BadRequestException(
         'Payment must be completed before confirming hire',
       );
@@ -690,21 +687,6 @@ export class JobApplicationsService {
       await this.applicationRepo.manager
         .getRepository(Contract)
         .remove(uncompletedContract);
-    }
-
-    if (!employee.startDate) {
-      throw new BadRequestException(
-        'Employee startDate is missing; cannot start probation',
-      );
-    }
-
-    if (
-      employee.employmentArrangement === EmploymentArrangement.CONTRACT &&
-      !employee.endDate
-    ) {
-      throw new BadRequestException(
-        'Contract endDate is required before confirming hire',
-      );
     }
 
     const probationSchedule = buildProbationSchedule({
