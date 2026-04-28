@@ -1,5 +1,6 @@
-import { IsOptional, IsString } from 'class-validator';
+import { IsEnum, IsOptional, IsString } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
+import { EmployerType } from '@app/common/database/entities/schema.enum';
 
 export class UpdateVerificationInfoDto {
   @ApiPropertyOptional({ example: 'Acme Technologies Ltd' })
@@ -10,7 +11,7 @@ export class UpdateVerificationInfoDto {
   @ApiPropertyOptional({ example: '12 Admiralty Way, Lekki Phase 1' })
   @IsOptional()
   @IsString()
-  companyAddress?: string;
+  address?: string;
 
   @ApiPropertyOptional({ example: 'Lagos' })
   @IsOptional()
@@ -41,4 +42,9 @@ export class UpdateVerificationInfoDto {
   @IsOptional()
   @IsString()
   companyDescription?: string;
+
+  @ApiPropertyOptional({ enum: EmployerType, example: EmployerType.SME })
+  @IsOptional()
+  @IsEnum(EmployerType)
+  type?: EmployerType;
 }

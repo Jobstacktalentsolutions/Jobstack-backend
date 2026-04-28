@@ -178,13 +178,16 @@ async function bootstrap() {
     response.on('finish', () => {
       const statusCode = response.statusCode;
       const durationMs = Date.now() - start;
-      
+
       const requestIdHeader = response.getHeader('x-request-id');
-      const requestId = typeof requestIdHeader === 'string' ? requestIdHeader : undefined;
-      
+      const requestId =
+        typeof requestIdHeader === 'string' ? requestIdHeader : undefined;
+
       const user = request.user;
       const userInfo = user ? ` [User: ${user.id} (${user.role})]` : '';
-      const context = requestId ? `requestId=${requestId}${userInfo}` : userInfo.trim();
+      const context = requestId
+        ? `requestId=${requestId}${userInfo}`
+        : userInfo.trim();
 
       const message = `${request.method} ${request.originalUrl} -> ${statusCode} (${durationMs}ms)`;
 

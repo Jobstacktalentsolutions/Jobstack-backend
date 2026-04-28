@@ -133,6 +133,20 @@ export const CONSTANT_IDS = {
     'd36d0652-9a6f-4319-b0a0-db614717822c', // Gatekeeping
     'b7bf4250-50b0-4d4a-9b7e-0b99a2cbf79c', // Professional Driving
     'b9e25d01-6471-4f02-8ff3-b1a0d0ab5061', // Dispatch & Delivery
+    '71941d87-4420-4f51-a29f-9bc0d6d875aa', // Dog Walking
+    '0b5aa24c-8998-4eb7-9aab-6000ad73cffe', // Pet Sitting
+    '5d2b0b14-78fe-4671-9b7d-2dab48ddd6fa', // Pet Grooming
+    '8b46ca30-932d-4815-b019-d5b7b550f802', // Hair Styling
+    '6697360a-dba2-402f-a590-6b4868befce7', // Barbering
+    '5144e86f-a119-47be-b533-a4756b3935d7', // Makeup Artistry
+    '589e160f-c60f-4c40-b6fa-63a96a47ed71', // Tailoring & Alterations
+    '885984db-097c-4d80-aa7d-1ac322c021f1', // Cash Handling
+    '7eb866ec-ff04-46f0-bcda-bdabcbab2f97', // POS Operations
+    '7d394895-14c7-440b-8184-9b0a5da7bdd3', // Shelf Stocking
+    '1f6928cd-0471-45e6-9f89-08698598c034', // Retail Sales Assistance
+    'a31b31c1-4b2f-42e8-a230-27227c42e05f', // Event Setup & Breakdown
+    '1f4a151a-12bc-45bb-b3f0-b683e0ed9518', // Ushering & Guest Support
+    'de2232fe-0b69-45b4-9f58-b3c0ea1b9d67', // Chef
   ],
   ADMINS: [
     '0ac5f27e-95b0-48cc-8151-184610ba7dd6',

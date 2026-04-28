@@ -6,10 +6,10 @@ import { EmployerProfile } from '@app/common/database/entities/EmployerProfile.e
 import { EMPLOYERS_DATA } from '../data/employers.data';
 import { DocumentFactory } from './document.factory';
 import { VerificationDocumentStatus } from '@app/common/shared/enums/verification-document-status.enum';
+import { VerificationStatus } from '@app/common/shared/enums/employer-docs.enum';
 
 export class EmployerFactory extends BaseFactory<EmployerAuth> {
   private profileRepository: any;
-  private verificationRepository: any;
   private verificationDocumentRepository: any;
   private documentFactory: DocumentFactory;
   constructor(dataSource: DataSource) {
@@ -17,10 +17,6 @@ export class EmployerFactory extends BaseFactory<EmployerAuth> {
       defaultAttributes: () => ({ emailVerified: true }),
     });
     this.profileRepository = getRepositoryByName(dataSource, 'EmployerProfile');
-    this.verificationRepository = getRepositoryByName(
-      dataSource,
-      'EmployerVerification',
-    );
     this.verificationDocumentRepository = getRepositoryByName(
       dataSource,
       'EmployerVerificationDocument',
@@ -28,14 +24,14 @@ export class EmployerFactory extends BaseFactory<EmployerAuth> {
     this.documentFactory = new DocumentFactory(this.dataSource);
   }
 
-  // createOrUpdateEmployer upserts auth, profile, verification, and documents
+  // createOrUpdateEmployer upserts auth, profile, and documents
   async createOrUpdateEmployer(data: any): Promise<EmployerAuth> {
     const {
       passwordHash,
       firstName,
       lastName,
       phoneNumber,
-      address,
+      homeAddress,
       type,
       profilePictureId,
       verification,
@@ -66,9 +62,17 @@ export class EmployerFactory extends BaseFactory<EmployerAuth> {
       lastName,
       email: data.email.toLowerCase(),
       phoneNumber,
-      address,
+      address: homeAddress,
       type,
       profilePictureId,
+      companyName: verification?.companyName,
+      registeredBusinessAddress: verification?.companyAddress,
+      companyWebsite: verification?.companyWebsite,
+      companyDescription: verification?.companyDescription,
+      companySize: verification?.companySize,
+      city: verification?.city,
+      state: verification?.state,
+      verificationStatus: verification?.status,
     };
 
     if (existingProfile) {
@@ -77,61 +81,30 @@ export class EmployerFactory extends BaseFactory<EmployerAuth> {
       await profileRepo.save(profileRepo.create(profileData));
     }
 
-    // Handle Verification
-    if (verification) {
-      const verificationRepo = this.verificationRepository;
+    // Handle Verification Documents
+    if (verification && verification.documents && verification.documents.length > 0) {
       const verificationDocRepo = this.verificationDocumentRepository;
 
-      let existingVerification = await verificationRepo.findOne({
-        where: { employerId: auth.id },
-      });
+      for (const doc of verification.documents) {
+        const docData = {
+          employerProfileId: auth.id,
+          documentId: doc.documentId,
+          documentType: doc.documentType,
+          status:
+            doc.verified === true
+              ? VerificationDocumentStatus.APPROVED
+              : VerificationDocumentStatus.PENDING,
+        };
 
-      const verificationData = {
-        employerId: auth.id,
-        companyName: verification.companyName,
-        companyAddress: verification.companyAddress,
-        companyWebsite: verification.companyWebsite,
-        companyDescription: verification.companyDescription,
-        companySize: verification.companySize,
-        city: verification.city,
-        state: verification.state,
-        status: verification.status,
-      };
-
-      if (existingVerification) {
-        await verificationRepo.update(
-          { id: existingVerification.id },
-          verificationData,
-        );
-      } else {
-        existingVerification = await verificationRepo.save(
-          verificationRepo.create(verificationData),
-        );
-      }
-
-      // Handle Verification Documents
-      if (verification.documents && verification.documents.length > 0) {
-        for (const doc of verification.documents) {
-          const docData = {
-            verificationId: existingVerification.id,
+        const existingDoc = await verificationDocRepo.findOne({
+          where: {
+            employerProfileId: auth.id,
             documentId: doc.documentId,
-            documentType: doc.documentType,
-            status:
-              doc.verified === true
-                ? VerificationDocumentStatus.APPROVED
-                : VerificationDocumentStatus.PENDING,
-          };
+          },
+        });
 
-          const existingDoc = await verificationDocRepo.findOne({
-            where: {
-              verificationId: existingVerification.id,
-              documentId: doc.documentId,
-            },
-          });
-
-          if (!existingDoc) {
-            await verificationDocRepo.save(verificationDocRepo.create(docData));
-          }
+        if (!existingDoc) {
+          await verificationDocRepo.save(verificationDocRepo.create(docData));
         }
       }
     }

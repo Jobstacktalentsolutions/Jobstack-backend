@@ -67,13 +67,20 @@ export class EmployerVerificationService {
     if (!profile) throw new NotFoundException('Employer profile not found');
 
     profile.companyName = dto.companyName;
-    profile.companyAddress = dto.companyAddress;
+    profile.address = dto.address;
     profile.state = dto.state;
     profile.city = dto.city;
     profile.companySize = dto.companySize;
     profile.socialOrWebsiteUrl = dto.socialOrWebsiteUrl;
     profile.companyWebsite = dto.companyWebsite;
     profile.companyDescription = dto.companyDescription;
+    if (dto.type) profile.type = dto.type;
+
+    // Apply conditional field logic: Individuals don't have company names or sizes
+    if (profile.type === EmployerType.INDIVIDUAL) {
+      profile.companyName = undefined;
+      profile.companySize = undefined;
+    }
 
     if (profile.verificationStatus === VerificationStatus.NOT_STARTED) {
       profile.verificationStatus = VerificationStatus.PENDING;
@@ -97,8 +104,13 @@ export class EmployerVerificationService {
 
     if (profile.verificationStatus === VerificationStatus.NOT_STARTED) {
       profile.verificationStatus = VerificationStatus.PENDING;
-      await this.profileRepo.save(profile);
     }
+
+    if (dto.governmentIdType) {
+      profile.governmentIdType = dto.governmentIdType;
+    }
+
+    await this.profileRepo.save(profile);
 
     const docUpload = await this.storageService.uploadFile(file as any, {
       folder: `employers/${profile.id}/verification`,

@@ -114,7 +114,7 @@ export class EmployerVerificationController {
       user.id,
     );
     if (!employerProfile?.type) {
-      throw new BadRequestException('Employer type not set');
+      return [];
     }
     return this.verificationService.getDocumentRequirements(
       employerProfile.type,

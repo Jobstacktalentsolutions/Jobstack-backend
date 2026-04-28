@@ -82,12 +82,6 @@ export class UpdateEmployerProfileDto {
   @MaxLength(120)
   workEmail?: string;
 
-  @ApiPropertyOptional({ example: '26 Marina, Lagos Island' })
-  @IsOptional()
-  @IsString()
-  @MaxLength(200)
-  businessAddress?: string;
-
   @ApiPropertyOptional({ example: '12 Admiralty Way, Lekki, Lagos' })
   @IsOptional()
   @IsString()
@@ -112,12 +106,6 @@ export class UpdateEmployerProfileDto {
   @IsString()
   @MaxLength(160)
   companyName?: string;
-
-  @ApiPropertyOptional({ example: '12 Admiralty Way, Lekki Phase 1' })
-  @IsOptional()
-  @IsString()
-  @MaxLength(200)
-  companyAddress?: string;
 
   @ApiPropertyOptional({ example: 'Lagos' })
   @IsOptional()

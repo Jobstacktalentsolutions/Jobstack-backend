@@ -25,7 +25,8 @@
     "db:generate": "pnpm typeorm migration:generate -d typeorm.config.ts ./migrations/Migration",
     "db:create": "pnpm typeorm migration:create ./migrations/Migration",
     "db:sync": "pnpm typeorm schema:sync -d typeorm.config.ts",
-    "db:seed": "ts-node -r tsconfig-paths/register scripts/seed.ts"
+    "db:seed": "ts-node -r tsconfig-paths/register scripts/seed.ts",
+    "delete-test-accounts": "tsx scripts/delete-test-accounts.ts --execute"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.908.0",
@@ -105,7 +106,8 @@
     "ts-loader": "^9.5.4",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.9.3",
-    "typescript-eslint": "^8.46.0"
+    "typescript-eslint": "^8.46.0",
+    "tsx": "^3.12.7"
   },
   "jest": {
     "moduleFileExtensions": [

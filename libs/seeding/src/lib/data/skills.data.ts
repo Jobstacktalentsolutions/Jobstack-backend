@@ -314,4 +314,125 @@ export const SYSTEM_SKILLS = [
     status: SkillStatus.ACTIVE,
     category: SkillCategory.TRANSPORT_LOGISTICS,
   },
+  // Pet Care
+  {
+    id: CONSTANT_IDS.SKILLS[35],
+    name: 'Dog Walking',
+    description: 'Walking and caring for dogs',
+    synonyms: ['Dog Walker', 'Pet Walking'],
+    status: SkillStatus.ACTIVE,
+    category: SkillCategory.PET_CARE,
+  },
+  {
+    id: CONSTANT_IDS.SKILLS[36],
+    name: 'Pet Sitting',
+    description: 'In-home care for pets while owners are away',
+    synonyms: ['Pet Care', 'Pet Minder'],
+    status: SkillStatus.ACTIVE,
+    category: SkillCategory.PET_CARE,
+  },
+  {
+    id: CONSTANT_IDS.SKILLS[37],
+    name: 'Pet Grooming',
+    description: 'Bathing, trimming, and grooming pets',
+    synonyms: ['Dog Grooming', 'Animal Grooming'],
+    status: SkillStatus.ACTIVE,
+    category: SkillCategory.PET_CARE,
+  },
+
+  // Personal Services
+  {
+    id: CONSTANT_IDS.SKILLS[38],
+    name: 'Hair Styling',
+    description: 'Styling and maintaining hair for clients',
+    synonyms: ['Hairdressing', 'Hair Styling'],
+    status: SkillStatus.ACTIVE,
+    category: SkillCategory.PERSONAL_SERVICES,
+  },
+  {
+    id: CONSTANT_IDS.SKILLS[39],
+    name: 'Barbering',
+    description: 'Hair cutting and grooming services for clients',
+    synonyms: ['Barber', 'Hair Cutting'],
+    status: SkillStatus.ACTIVE,
+    category: SkillCategory.PERSONAL_SERVICES,
+  },
+  {
+    id: CONSTANT_IDS.SKILLS[40],
+    name: 'Makeup Artistry',
+    description: 'Professional makeup application for clients',
+    synonyms: ['Makeup Artist', 'Cosmetics'],
+    status: SkillStatus.ACTIVE,
+    category: SkillCategory.PERSONAL_SERVICES,
+  },
+  {
+    id: CONSTANT_IDS.SKILLS[41],
+    name: 'Tailoring & Alterations',
+    description: 'Clothing alterations and custom tailoring',
+    synonyms: ['Tailoring', 'Alterations', 'Seamstress'],
+    status: SkillStatus.ACTIVE,
+    category: SkillCategory.PERSONAL_SERVICES,
+  },
+
+  // Retail & Merchandising
+  {
+    id: CONSTANT_IDS.SKILLS[42],
+    name: 'Cash Handling',
+    description: 'Managing cash transactions and daily totals',
+    synonyms: ['Cashier', 'Till Operations'],
+    status: SkillStatus.ACTIVE,
+    category: SkillCategory.RETAIL_MERCHANDISING,
+  },
+  {
+    id: CONSTANT_IDS.SKILLS[43],
+    name: 'POS Operations',
+    description: 'Operating point-of-sale systems and terminals',
+    synonyms: ['Point of Sale', 'POS'],
+    status: SkillStatus.ACTIVE,
+    category: SkillCategory.RETAIL_MERCHANDISING,
+  },
+  {
+    id: CONSTANT_IDS.SKILLS[44],
+    name: 'Shelf Stocking',
+    description: 'Stocking shelves and maintaining product displays',
+    synonyms: ['Stocking', 'Merchandising'],
+    status: SkillStatus.ACTIVE,
+    category: SkillCategory.RETAIL_MERCHANDISING,
+  },
+  {
+    id: CONSTANT_IDS.SKILLS[45],
+    name: 'Retail Sales Assistance',
+    description: 'Assisting customers and supporting sales on the floor',
+    synonyms: ['Sales Associate', 'Shop Assistant'],
+    status: SkillStatus.ACTIVE,
+    category: SkillCategory.RETAIL_MERCHANDISING,
+  },
+
+  // Event Services
+  {
+    id: CONSTANT_IDS.SKILLS[46],
+    name: 'Event Setup & Breakdown',
+    description: 'Setting up and packing down event spaces',
+    synonyms: ['Event Setup', 'Event Crew'],
+    status: SkillStatus.ACTIVE,
+    category: SkillCategory.EVENT_SERVICES,
+  },
+  {
+    id: CONSTANT_IDS.SKILLS[47],
+    name: 'Ushering & Guest Support',
+    description: 'Guiding guests and supporting event operations',
+    synonyms: ['Usher', 'Guest Services'],
+    status: SkillStatus.ACTIVE,
+    category: SkillCategory.EVENT_SERVICES,
+  },
+
+  // Culinary
+  {
+    id: CONSTANT_IDS.SKILLS[48],
+    name: 'Chef',
+    description: 'Menu planning and kitchen leadership',
+    synonyms: ['Head Chef', 'Cook'],
+    status: SkillStatus.ACTIVE,
+    category: SkillCategory.HOSPITALITY,
+  },
 ];

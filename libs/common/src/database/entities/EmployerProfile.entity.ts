@@ -87,9 +87,6 @@ export class EmployerProfile {
   workEmail?: string;
 
   @Column({ nullable: true })
-  businessAddress?: string;
-
-  @Column({ nullable: true })
   registeredBusinessAddress?: string;
 
   @Column({ default: false })
@@ -100,9 +97,6 @@ export class EmployerProfile {
 
   @Column({ nullable: true })
   companyName?: string;
-
-  @Column({ nullable: true })
-  companyAddress?: string;
 
   @Column({ nullable: true })
   companyWebsite?: string;

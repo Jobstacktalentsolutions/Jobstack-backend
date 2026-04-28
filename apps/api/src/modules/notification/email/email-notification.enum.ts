@@ -19,6 +19,7 @@ export enum EmailTemplateType {
   ADMIN_REPLACEMENT_TO_CANDIDATE = 'admin-replacement-to-candidate',
   /** Employer: job reached ACTIVE (admin activation or go-live after publish). */
   JOB_ACTIVATED_EMPLOYER = 'job-activated-employer',
+  CONTACT_FORM_SUBMISSION = 'contact-form-submission',
 }
 
 export const EMAIL_TYPE_CONFIG = {
@@ -93,5 +94,9 @@ export const EMAIL_TYPE_CONFIG = {
   [EmailTemplateType.JOB_ACTIVATED_EMPLOYER]: {
     subject: 'Your job is now active on JobStack',
     template: 'job-activated-employer.ejs',
+  },
+  [EmailTemplateType.CONTACT_FORM_SUBMISSION]: {
+    subject: 'New Contact Form Submission',
+    template: 'contact-form-notification.ejs',
   },
 } as const;

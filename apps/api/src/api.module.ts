@@ -13,6 +13,7 @@ import { JobsModule } from './modules/jobs/jobs.module';
 import { PaymentModule } from './modules/payment/payment.module';
 import { SystemConfigModule } from './modules/system-config/system-config.module';
 import { ContractsModule } from './modules/contracts/contracts.module';
+import { SupportModule } from './modules/support/support.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { ContractsModule } from './modules/contracts/contracts.module';
     PaymentModule,
     SystemConfigModule,
     ContractsModule,
+    SupportModule,
   ],
   controllers: [ApiController],
   providers: [ApiService, ...appProviders('api')],

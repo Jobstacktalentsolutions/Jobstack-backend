@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>New Contact Form Submission</title>
+  </head>
+  <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f3f4f6;">
+    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #f3f4f6;">
+      <tr>
+        <td style="padding: 40px 20px;">
+          <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+            <tr>
+              <td style="padding: 32px 32px 24px 32px; text-align: center;">
+                <img src="https://jobstack.org/email-assets/logo.svg" alt="Jobstack" width="120" style="display: block; margin: 0 auto;" />
+              </td>
+            </tr>
+            <tr>
+              <td style="padding: 0 32px 32px 32px;">
+                <h1 style="margin: 0 0 16px 0; font-size: 20px; font-weight: 700; color: #111827;">New Contact Form Submission</h1>
+                <p style="font-size: 16px; color: #374151;">Hi Admin,</p>
+                <p style="font-size: 16px; color: #374151;">You have received a new message from the contact form:</p>
+                
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 24px 0; border-collapse: collapse;">
+                  <tr>
+                    <td style="padding: 8px 0; font-weight: bold; width: 140px; color: #374151; border-bottom: 1px solid #e5e7eb;">Full Name:</td>
+                    <td style="padding: 8px 0; color: #4b5563; border-bottom: 1px solid #e5e7eb;"><%= fullName %></td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 8px 0; font-weight: bold; color: #374151; border-bottom: 1px solid #e5e7eb;">Email Address:</td>
+                    <td style="padding: 8px 0; color: #4b5563; border-bottom: 1px solid #e5e7eb;"><%= emailAddress %></td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 8px 0; font-weight: bold; color: #374151; border-bottom: 1px solid #e5e7eb;">Phone Number:</td>
+                    <td style="padding: 8px 0; color: #4b5563; border-bottom: 1px solid #e5e7eb;"><%= phoneNumber || 'N/A' %></td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 8px 0; font-weight: bold; color: #374151; border-bottom: 1px solid #e5e7eb;">Company:</td>
+                    <td style="padding: 8px 0; color: #4b5563; border-bottom: 1px solid #e5e7eb;"><%= company || 'N/A' %></td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 12px 0; font-weight: bold; color: #374151; vertical-align: top;">Message:</td>
+                    <td style="padding: 12px 0; color: #4b5563; line-height: 1.5;"><%= message %></td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+            <footer style="background-color: #f9fafb; border-top: 1px solid #e5e7eb; padding: 24px 32px; text-align: center;">
+              <p style="margin: 0; font-size: 12px; color: #9ca3af;">
+                © <%= new Date().getFullYear() %> JobStack. All rights reserved.
+              </p>
+            </footer>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
