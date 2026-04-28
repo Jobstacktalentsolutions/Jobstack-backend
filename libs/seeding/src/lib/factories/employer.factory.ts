@@ -6,7 +6,6 @@ import { EmployerProfile } from '@app/common/database/entities/EmployerProfile.e
 import { EMPLOYERS_DATA } from '../data/employers.data';
 import { DocumentFactory } from './document.factory';
 import { VerificationDocumentStatus } from '@app/common/shared/enums/verification-document-status.enum';
-import { VerificationStatus } from '@app/common/shared/enums/employer-docs.enum';
 
 export class EmployerFactory extends BaseFactory<EmployerAuth> {
   private profileRepository: any;
@@ -35,7 +34,6 @@ export class EmployerFactory extends BaseFactory<EmployerAuth> {
       type,
       profilePictureId,
       verification,
-      ...rest
     } = data;
 
     const auth = await this.smartUpsert(
@@ -82,7 +80,11 @@ export class EmployerFactory extends BaseFactory<EmployerAuth> {
     }
 
     // Handle Verification Documents
-    if (verification && verification.documents && verification.documents.length > 0) {
+    if (
+      verification &&
+      verification.documents &&
+      verification.documents.length > 0
+    ) {
       const verificationDocRepo = this.verificationDocumentRepository;
 
       for (const doc of verification.documents) {
