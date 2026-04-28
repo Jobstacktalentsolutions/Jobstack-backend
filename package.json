@@ -4,6 +4,11 @@
   "description": "",
   "author": "",
   "private": true,
+  "packageManager": "pnpm@9.15.4",
+  "engines": {
+    "node": ">=22.0.0",
+    "pnpm": ">=9.0.0"
+  },
   "license": "UNLICENSED",
   "scripts": {
     "build": "nest build",
