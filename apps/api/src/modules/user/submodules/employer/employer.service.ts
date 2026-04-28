@@ -313,7 +313,7 @@ export class EmployerService {
         profile: profile,
         verification: {
           companyName: profile.companyName,
-          companyAddress: profile.companyAddress,
+          companyAddress: profile.registeredBusinessAddress,
           companyWebsite: profile.companyWebsite,
           companyDescription: profile.companyDescription,
           city: profile.city,
