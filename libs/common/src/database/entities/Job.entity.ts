@@ -81,8 +81,7 @@ export class Job extends BaseEntity {
   @Column({ nullable: true })
   endTime?: string;
 
-  @Column({ type: 'jsonb', default: [] })
-  tags: string[];
+
 
   @Column({ type: 'timestamp', nullable: true })
   applicationDeadline?: Date;

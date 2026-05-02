@@ -144,9 +144,8 @@ export class JobRecommendationsProcessor {
       (profile.jobTitle
         ? this.calcTitleMatch(profile.jobTitle, job.title)
         : 0) * W.titleSimilarity;
-    const tagScore = this.calcTagScore(job.tags, profile.brief) * W.tags;
 
-    const coreScoreSum = skillScore + industryScore + boostScore + titleScore + tagScore;
+    const coreScoreSum = skillScore + industryScore + boostScore + titleScore;
 
     // CORE GATE: If ratio is below threshold, exclude immediately
     const relevancyRatio = coreScoreSum / CORE_FACTORS_WEIGHT;
@@ -203,41 +202,7 @@ export class JobRecommendationsProcessor {
     return union > 0 ? Math.min(1, intersection / union) : 0;
   }
 
-  private calcTagScore(
-    tags: string[] | undefined,
-    brief: string | undefined,
-  ): number {
-    if (!tags || tags.length === 0) return 0;
-    if (!brief) return 0;
 
-    const summary = brief
-      .substring(0, C.MAX_FUZZY_MATCH_TEXT_LENGTH)
-      .toLowerCase();
-    let totalTagMatches = 0;
-
-    for (const tag of tags) {
-      const tagLower = tag.toLowerCase();
-      // Fast check: direct inclusion
-      if (summary.includes(tagLower)) {
-        totalTagMatches += 1.0;
-        continue;
-      }
-
-      // Fuzzy check: Jaro-Winkler across words (performance safety)
-      const words = summary.split(/\s+/).slice(0, 100); // Only fuzzy match first 100 words
-      let bestWordSim = 0;
-      for (const word of words) {
-        if (word.length < 3) continue;
-        const sim = JaroWinklerDistance(tagLower, word);
-        if (sim > bestWordSim) bestWordSim = sim;
-        if (bestWordSim > 0.95) break;
-      }
-      if (bestWordSim >= C.FUZZY_THRESHOLD)
-        totalTagMatches += bestWordSim * C.FUZZY_CREDIT_RATIO;
-    }
-
-    return Math.min(1, totalTagMatches / tags.length);
-  }
 
   private calcTitleMatch(userTitle: string, jobTitle: string): number {
     const a = userTitle.toLowerCase();

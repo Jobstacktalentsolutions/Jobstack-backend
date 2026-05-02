@@ -15,10 +15,10 @@ import {
 } from '@app/common/database/entities';
 import {
   JobApplicationStatus,
-  SkillCategory,
+  Industry,
   EmployeeStatus,
   SkillType,
-  getSkillTypeFromCategory,
+  getSkillTypeFromIndustry,
   NotificationPriority,
 } from '@app/common/database/entities/schema.enum';
 import {
@@ -44,6 +44,7 @@ export interface VettedApplicant {
   proximityScore: number;
   experienceScore: number;
   skillMatchScore: number;
+  industryMatchScore: number;
   applicationSpeedScore: number;
   isEmployed: boolean;
 }
@@ -185,6 +186,8 @@ export class JobVettingService {
       let proximityScore = application.vettingProximityScore ?? undefined;
       let experienceScore = application.vettingExperienceScore ?? undefined;
       let skillMatchScore = application.vettingSkillMatchScore ?? undefined;
+      let industryMatchScore =
+        application.vettingIndustryMatchScore ?? undefined;
       let applicationSpeedScore =
         application.vettingApplicationSpeedScore ?? undefined;
 
@@ -205,6 +208,10 @@ export class JobVettingService {
           application.jobseekerProfile,
           job,
         );
+        industryMatchScore = this.calculateIndustryMatchScore(
+          application.jobseekerProfile,
+          job,
+        );
         applicationSpeedScore = this.calculateApplicationSpeedScore(
           application,
           job,
@@ -217,6 +224,7 @@ export class JobVettingService {
         application.vettingProximityScore = proximityScore;
         application.vettingExperienceScore = experienceScore;
         application.vettingSkillMatchScore = skillMatchScore;
+        application.vettingIndustryMatchScore = industryMatchScore;
         application.vettingApplicationSpeedScore = applicationSpeedScore;
         application.vettedAt = new Date();
       }
@@ -230,6 +238,7 @@ export class JobVettingService {
         proximityScore: proximityScore ?? 0,
         experienceScore: experienceScore ?? 0,
         skillMatchScore: skillMatchScore ?? 0,
+        industryMatchScore: industryMatchScore ?? 0,
         applicationSpeedScore: applicationSpeedScore ?? 0,
         isEmployed,
       });
@@ -289,6 +298,7 @@ export class JobVettingService {
     const proximityScore = this.calculateProximityScore(job, profile);
     const experienceScore = this.calculateExperienceScore(profile, job);
     const skillMatchScore = this.calculateSkillMatchScore(profile, job);
+    const industryMatchScore = this.calculateIndustryMatchScore(profile, job);
     const applicationSpeedScore = this.calculateApplicationSpeedScore(
       application,
       job,
@@ -296,13 +306,14 @@ export class JobVettingService {
 
     let totalScore = 0;
 
-    const skillType = getSkillTypeFromCategory(job.category);
+    const skillType = getSkillTypeFromIndustry(job.industry);
     if (skillType === SkillType.HIGH_SKILL) {
       // High-skill job scoring
       const weights = VETTING_CONFIG.highSkillWeights;
       totalScore =
         experienceScore * weights.yearsOfExperience +
         skillMatchScore * weights.skillMatching +
+        industryMatchScore * weights.industryMatching +
         profileCompleteness * weights.profileCompleteness +
         proximityScore * weights.proximity +
         applicationSpeedScore * weights.applicationSpeed;
@@ -312,6 +323,7 @@ export class JobVettingService {
       totalScore =
         applicationSpeedScore * weights.applicationSpeed +
         profileCompleteness * weights.profileCompleteness +
+        industryMatchScore * weights.industryMatching +
         experienceScore * weights.experience +
         proximityScore * weights.proximity;
     }
@@ -337,14 +349,16 @@ export class JobVettingService {
     const proximityScore = this.calculateProximityScore(job, profile);
     const experienceScore = this.calculateExperienceScore(profile, job);
     const skillMatchScore = this.calculateSkillMatchScore(profile, job);
+    const industryMatchScore = this.calculateIndustryMatchScore(profile, job);
     const applicationSpeedScore = 100;
 
-    const skillType = getSkillTypeFromCategory(job.category);
+    const skillType = getSkillTypeFromIndustry(job.industry);
     if (skillType === SkillType.HIGH_SKILL) {
       const weights = VETTING_CONFIG.highSkillWeights;
       const totalScore =
         experienceScore * weights.yearsOfExperience +
         skillMatchScore * weights.skillMatching +
+        industryMatchScore * weights.industryMatching +
         profileCompleteness * weights.profileCompleteness +
         proximityScore * weights.proximity +
         applicationSpeedScore * weights.applicationSpeed;
@@ -355,6 +369,7 @@ export class JobVettingService {
     const totalScore =
       applicationSpeedScore * weights.applicationSpeed +
       profileCompleteness * weights.profileCompleteness +
+      industryMatchScore * weights.industryMatching +
       experienceScore * weights.experience +
       proximityScore * weights.proximity;
     return Math.round(totalScore * 100) / 100;
@@ -497,7 +512,7 @@ export class JobVettingService {
     }
 
     // For high-skill jobs, more experience is better
-    const skillType = getSkillTypeFromCategory(job.category);
+    const skillType = getSkillTypeFromIndustry(job.industry);
     if (skillType === SkillType.HIGH_SKILL) {
       // Score based on experience level
       if (profile.yearsOfExperience >= 10) return 100;
@@ -539,6 +554,24 @@ export class JobVettingService {
     const matchPercentage = matchingSkills.length / job.skills.length;
 
     return Math.round(matchPercentage * 100);
+  }
+
+  /**
+   * Calculate industry matching score (0-100)
+   */
+  private calculateIndustryMatchScore(
+    profile: JobSeekerProfile,
+    job: Job,
+  ): number {
+    if (!job.industry) {
+      return 50; // Neutral score if no required industry
+    }
+
+    if (profile.industry === job.industry) {
+      return 100;
+    }
+
+    return 0;
   }
 
   /**
@@ -1150,3 +1183,4 @@ export class JobVettingService {
     return `${phone.substring(0, 4)} **** ${phone.substring(phone.length - 2)}`;
   }
 }
+

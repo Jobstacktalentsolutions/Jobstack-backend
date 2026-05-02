@@ -74,6 +74,10 @@ export class JobApplication extends BaseEntity {
   @Column({ type: 'int', nullable: true })
   vettingSkillMatchScore?: number | null;
 
+  // Industry match score used during vetting (0-100)
+  @Column({ type: 'int', nullable: true })
+  vettingIndustryMatchScore?: number | null;
+
   // Application speed score used during vetting (0-100)
   @Column({ type: 'int', nullable: true })
   vettingApplicationSpeedScore?: number | null;

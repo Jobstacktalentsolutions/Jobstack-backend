@@ -1,6 +1,6 @@
 import { CONSTANT_IDS } from './constant.data';
 import {
-  SkillCategory,
+  Industry,
   EmploymentType,
   EmploymentArrangement,
   WorkMode,
@@ -30,7 +30,7 @@ export const JOBS_DATA = [
     title: 'Full Stack Engineer (React/Node)',
     description:
       'Build customer-facing web experiences, own API integrations, and ensure performance for high-traffic commerce flows.',
-    category: SkillCategory.SOFTWARE_DEVELOPMENT,
+    industry: Industry.SOFTWARE_DEVELOPMENT,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.HYBRID,
@@ -41,7 +41,6 @@ export const JOBS_DATA = [
     workDays: WEEKDAYS,
     startTime: '09:00',
     endTime: '17:30',
-    tags: ['react', 'node', 'typescript', 'api'],
     applicationDeadline: new Date('2027-03-15T23:59:59Z'),
     status: JobStatus.PUBLISHED,
     vettingCompletedAt: new Date('2026-04-20T10:00:00Z'),
@@ -59,7 +58,7 @@ export const JOBS_DATA = [
     title: 'Product Manager (Payments)',
     description:
       'Drive roadmap for digital payments, gather user feedback, and coordinate launches with engineering and design.',
-    category: SkillCategory.BUSINESS_ADMIN,
+    industry: Industry.BUSINESS_ADMIN,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.HYBRID,
@@ -70,7 +69,6 @@ export const JOBS_DATA = [
     workDays: WEEKDAYS,
     startTime: '09:00',
     endTime: '18:00',
-    tags: ['roadmap', 'agile', 'stakeholders'],
     applicationDeadline: new Date('2027-04-01T23:59:59Z'),
     status: JobStatus.PUBLISHED,
 
@@ -86,7 +84,7 @@ export const JOBS_DATA = [
     title: 'Data Analyst (FinTech)',
     description:
       'Analyze product usage, build dashboards, and create data stories that influence lending decisions.',
-    category: SkillCategory.BUSINESS_ADMIN,
+    industry: Industry.BUSINESS_ADMIN,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.REMOTE,
@@ -97,7 +95,6 @@ export const JOBS_DATA = [
     workDays: WEEKDAYS,
     startTime: '08:30',
     endTime: '17:00',
-    tags: ['sql', 'dashboards', 'analytics'],
     applicationDeadline: new Date('2027-03-20T23:59:59Z'),
     status: JobStatus.PUBLISHED,
 
@@ -113,7 +110,7 @@ export const JOBS_DATA = [
     title: 'Senior Backend Engineer (Node.js)',
     description:
       'Own microservices, event-driven architecture, and performance tuning for core transaction pipelines.',
-    category: SkillCategory.SOFTWARE_DEVELOPMENT,
+    industry: Industry.SOFTWARE_DEVELOPMENT,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.REMOTE,
@@ -124,7 +121,6 @@ export const JOBS_DATA = [
     workDays: WEEKDAYS,
     startTime: '09:00',
     endTime: '18:00',
-    tags: ['node', 'postgres', 'performance'],
     applicationDeadline: new Date('2027-04-10T23:59:59Z'),
     status: JobStatus.PUBLISHED,
 
@@ -140,7 +136,7 @@ export const JOBS_DATA = [
     title: 'UI/UX Designer',
     description:
       'Design intuitive flows, craft component libraries, and run usability tests for consumer mobile experiences.',
-    category: SkillCategory.DESIGN,
+    industry: Industry.DESIGN,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.HYBRID,
@@ -151,7 +147,6 @@ export const JOBS_DATA = [
     workDays: WEEKDAYS,
     startTime: '09:00',
     endTime: '17:00',
-    tags: ['design-system', 'figma', 'user-testing'],
     applicationDeadline: new Date('2027-03-30T23:59:59Z'),
     status: JobStatus.PUBLISHED,
 
@@ -163,7 +158,7 @@ export const JOBS_DATA = [
     title: 'DevOps Engineer',
     description:
       'Manage CI/CD, container orchestration, and observability for clinical platforms with strict uptime SLAs.',
-    category: SkillCategory.SOFTWARE_DEVELOPMENT,
+    industry: Industry.SOFTWARE_DEVELOPMENT,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.REMOTE,
@@ -174,7 +169,6 @@ export const JOBS_DATA = [
     workDays: WEEKDAYS,
     startTime: '08:30',
     endTime: '17:30',
-    tags: ['ci/cd', 'kubernetes', 'observability'],
     applicationDeadline: new Date('2027-04-05T23:59:59Z'),
     status: JobStatus.PUBLISHED,
 
@@ -190,7 +184,7 @@ export const JOBS_DATA = [
     title: 'Frontend Engineer (TypeScript)',
     description:
       'Ship performant interfaces, improve design system adoption, and collaborate closely with product designers.',
-    category: SkillCategory.SOFTWARE_DEVELOPMENT,
+    industry: Industry.SOFTWARE_DEVELOPMENT,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.HYBRID,
@@ -201,7 +195,6 @@ export const JOBS_DATA = [
     workDays: WEEKDAYS,
     startTime: '09:00',
     endTime: '18:00',
-    tags: ['typescript', 'react', 'accessibility'],
     applicationDeadline: new Date('2027-03-28T23:59:59Z'),
     status: JobStatus.PUBLISHED,
     vettingCompletedAt: new Date('2026-04-21T11:00:00Z'),
@@ -219,7 +212,7 @@ export const JOBS_DATA = [
     title: 'Performance Marketer',
     description:
       'Plan and execute paid campaigns, optimize ROAS, and partner with sales on attribution and lead quality.',
-    category: SkillCategory.SALES_MARKETING,
+    industry: Industry.SALES_MARKETING,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.HYBRID,
@@ -230,7 +223,6 @@ export const JOBS_DATA = [
     workDays: WEEKDAYS,
     startTime: '09:00',
     endTime: '17:00',
-    tags: ['paid-ads', 'analytics', 'copy'],
     applicationDeadline: new Date('2027-03-25T23:59:59Z'),
     status: JobStatus.PUBLISHED,
 
@@ -246,7 +238,7 @@ export const JOBS_DATA = [
     title: 'Graphic Designer',
     description:
       'Create marketing assets, social templates, and event collateral aligned with brand guidelines.',
-    category: SkillCategory.DESIGN,
+    industry: Industry.DESIGN,
     employmentType: EmploymentType.PART_TIME,
     employmentArrangement: EmploymentArrangement.CONTRACT,
     workMode: WorkMode.REMOTE,
@@ -257,7 +249,6 @@ export const JOBS_DATA = [
     workDays: WEEKDAYS,
     startTime: '10:00',
     endTime: '16:00',
-    tags: ['branding', 'illustration', 'social'],
     applicationDeadline: new Date('2027-03-22T23:59:59Z'),
     status: JobStatus.PUBLISHED,
 
@@ -269,7 +260,7 @@ export const JOBS_DATA = [
     title: 'Logistics Operations Manager',
     description:
       'Lead first-mile and last-mile ops, optimize routing, and manage on-time delivery SLAs for nationwide routes.',
-    category: SkillCategory.OPERATIONS,
+    industry: Industry.OPERATIONS,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.HYBRID,
@@ -280,7 +271,6 @@ export const JOBS_DATA = [
     workDays: WEEKDAYS_SATURDAY,
     startTime: '08:00',
     endTime: '17:00',
-    tags: ['fleet', 'routing', 'sla'],
     applicationDeadline: new Date('2027-04-12T23:59:59Z'),
     status: JobStatus.PUBLISHED,
 
@@ -296,7 +286,7 @@ export const JOBS_DATA = [
     title: 'Housekeeping Supervisor',
     description:
       'Oversee housekeeping team schedules, quality checks, and client satisfaction for premium homes.',
-    category: SkillCategory.MAINTENANCE_TRADES,
+    industry: Industry.MAINTENANCE_TRADES,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.ON_SITE,
@@ -307,7 +297,6 @@ export const JOBS_DATA = [
     workDays: WEEKDAYS_SATURDAY,
     startTime: '07:30',
     endTime: '16:30',
-    tags: ['cleaning', 'scheduling', 'quality'],
     applicationDeadline: new Date('2027-03-18T23:59:59Z'),
     status: JobStatus.PUBLISHED,
 
@@ -319,7 +308,7 @@ export const JOBS_DATA = [
     title: 'Security Operations Lead',
     description:
       'Coordinate guard deployments, monitor incident reports, and enforce site security standards across clients.',
-    category: SkillCategory.SECURITY,
+    industry: Industry.SECURITY,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.ON_SITE,
@@ -330,7 +319,6 @@ export const JOBS_DATA = [
     workDays: WEEKDAYS_SATURDAY,
     startTime: '07:00',
     endTime: '16:00',
-    tags: ['security', 'guarding', 'training'],
     applicationDeadline: new Date('2027-04-08T23:59:59Z'),
     status: JobStatus.PUBLISHED,
 
@@ -342,7 +330,7 @@ export const JOBS_DATA = [
     title: 'Financial Analyst',
     description:
       'Develop financial models, monitor KPIs, and support investor reporting for a growing fintech portfolio.',
-    category: SkillCategory.ACCOUNTING_FINANCE,
+    industry: Industry.ACCOUNTING_FINANCE,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.HYBRID,
@@ -353,7 +341,6 @@ export const JOBS_DATA = [
     workDays: WEEKDAYS,
     startTime: '09:00',
     endTime: '17:30',
-    tags: ['fp&a', 'models', 'reporting'],
     applicationDeadline: new Date('2027-03-26T23:59:59Z'),
     status: JobStatus.PUBLISHED,
     vettingCompletedAt: new Date('2026-04-22T09:00:00Z'),
@@ -371,7 +358,7 @@ export const JOBS_DATA = [
     title: 'Sales Account Executive',
     description:
       'Own pipeline generation, manage enterprise demos, and close revenue for SaaS logistics solutions.',
-    category: SkillCategory.SALES_MARKETING,
+    industry: Industry.SALES_MARKETING,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.HYBRID,
@@ -382,7 +369,6 @@ export const JOBS_DATA = [
     workDays: WEEKDAYS,
     startTime: '09:00',
     endTime: '18:00',
-    tags: ['b2b', 'crm', 'closing'],
     applicationDeadline: new Date('2027-03-29T23:59:59Z'),
     status: JobStatus.PUBLISHED,
 
@@ -394,7 +380,7 @@ export const JOBS_DATA = [
     title: 'Operations Analyst',
     description:
       'Map processes, track SLAs, and automate recurring workflows for commerce fulfillment.',
-    category: SkillCategory.OPERATIONS,
+    industry: Industry.OPERATIONS,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.HYBRID,
@@ -405,7 +391,6 @@ export const JOBS_DATA = [
     workDays: WEEKDAYS,
     startTime: '08:30',
     endTime: '17:30',
-    tags: ['process', 'automation', 'sla'],
     applicationDeadline: new Date('2027-03-27T23:59:59Z'),
     status: JobStatus.PUBLISHED,
 
@@ -417,7 +402,7 @@ export const JOBS_DATA = [
     title: 'Content Marketing Lead',
     description:
       'Build editorial calendars, craft high-conversion copy, and manage distribution across channels.',
-    category: SkillCategory.SALES_MARKETING,
+    industry: Industry.SALES_MARKETING,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.REMOTE,
@@ -428,7 +413,6 @@ export const JOBS_DATA = [
     workDays: WEEKDAYS,
     startTime: '10:00',
     endTime: '18:00',
-    tags: ['seo', 'copywriting', 'campaigns'],
     applicationDeadline: new Date('2027-04-03T23:59:59Z'),
     status: JobStatus.PUBLISHED,
 
@@ -440,7 +424,7 @@ export const JOBS_DATA = [
     title: 'Plumbing Technician',
     description:
       'Handle residential plumbing installations, preventive maintenance, and emergency repairs.',
-    category: SkillCategory.MAINTENANCE_TRADES,
+    industry: Industry.MAINTENANCE_TRADES,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.ON_SITE,
@@ -451,7 +435,6 @@ export const JOBS_DATA = [
     workDays: WEEKDAYS_SATURDAY,
     startTime: '08:00',
     endTime: '17:00',
-    tags: ['maintenance', 'pipes', 'repairs'],
     applicationDeadline: new Date('2027-03-21T23:59:59Z'),
     status: JobStatus.PUBLISHED,
 
@@ -463,7 +446,7 @@ export const JOBS_DATA = [
     title: 'Chef / Culinary Lead',
     description:
       'Plan menus, manage kitchen operations, and lead meal prep for corporate catering.',
-    category: SkillCategory.HOSPITALITY,
+    industry: Industry.HOSPITALITY,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.ON_SITE,
@@ -474,7 +457,6 @@ export const JOBS_DATA = [
     workDays: WEEKDAYS_SATURDAY,
     startTime: '07:00',
     endTime: '16:00',
-    tags: ['catering', 'menu', 'food-safety'],
     applicationDeadline: new Date('2027-03-24T23:59:59Z'),
     status: JobStatus.PUBLISHED,
 
@@ -486,7 +468,7 @@ export const JOBS_DATA = [
     title: 'Security Guard',
     description:
       'Provide access control, patrol assigned posts, and respond to incidents following SOPs.',
-    category: SkillCategory.SECURITY,
+    industry: Industry.SECURITY,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.ON_SITE,
@@ -497,7 +479,6 @@ export const JOBS_DATA = [
     workDays: WEEKDAYS_SATURDAY,
     startTime: '06:00',
     endTime: '15:00',
-    tags: ['access-control', 'patrol', 'incident'],
     applicationDeadline: new Date('2027-03-19T23:59:59Z'),
     status: JobStatus.PUBLISHED,
 
@@ -509,7 +490,7 @@ export const JOBS_DATA = [
     title: 'Professional Driver',
     description:
       'Provide executive driving services, vehicle checks, and safe navigation across Lagos routes.',
-    category: SkillCategory.TRANSPORT_LOGISTICS,
+    industry: Industry.TRANSPORT_LOGISTICS,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.ON_SITE,
@@ -520,7 +501,6 @@ export const JOBS_DATA = [
     workDays: WEEKDAYS_SATURDAY,
     startTime: '07:30',
     endTime: '17:30',
-    tags: ['driving', 'executive', 'safety'],
     applicationDeadline: new Date('2027-03-23T23:59:59Z'),
     status: JobStatus.PUBLISHED,
 
@@ -532,7 +512,7 @@ export const JOBS_DATA = [
     title: 'Customer Support Specialist',
     description:
       'Handle omnichannel support, troubleshoot product issues, and relay user feedback to product teams.',
-    category: SkillCategory.CUSTOMER_SERVICE,
+    industry: Industry.CUSTOMER_SERVICE,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.REMOTE,
@@ -543,7 +523,6 @@ export const JOBS_DATA = [
     workDays: WEEKDAYS,
     startTime: '09:00',
     endTime: '17:00',
-    tags: ['support', 'tickets', 'customers'],
     applicationDeadline: new Date('2027-03-31T23:59:59Z'),
     status: JobStatus.PUBLISHED,
 
@@ -555,7 +534,7 @@ export const JOBS_DATA = [
     title: 'Data Engineer',
     description:
       'Design and maintain data pipelines, ensure data quality, and support analytics workloads.',
-    category: SkillCategory.SOFTWARE_DEVELOPMENT,
+    industry: Industry.SOFTWARE_DEVELOPMENT,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.HYBRID,
@@ -566,7 +545,6 @@ export const JOBS_DATA = [
     workDays: WEEKDAYS,
     startTime: '09:00',
     endTime: '18:00',
-    tags: ['pipelines', 'etl', 'postgres'],
     applicationDeadline: new Date('2027-04-07T23:59:59Z'),
     status: JobStatus.PUBLISHED,
 
@@ -582,7 +560,7 @@ export const JOBS_DATA = [
     title: 'React Native Engineer',
     description:
       'Ship mobile features, improve performance, and maintain shared component libraries across apps.',
-    category: SkillCategory.SOFTWARE_DEVELOPMENT,
+    industry: Industry.SOFTWARE_DEVELOPMENT,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.REMOTE,
@@ -593,7 +571,6 @@ export const JOBS_DATA = [
     workDays: WEEKDAYS,
     startTime: '09:00',
     endTime: '17:30',
-    tags: ['react-native', 'mobile', 'typescript'],
     applicationDeadline: new Date('2027-04-04T23:59:59Z'),
     status: JobStatus.PUBLISHED,
 
@@ -609,7 +586,7 @@ export const JOBS_DATA = [
     title: 'Operations Coordinator (Events)',
     description:
       'Coordinate event staffing, manage vendor schedules, and ensure smooth onsite logistics.',
-    category: SkillCategory.OPERATIONS,
+    industry: Industry.OPERATIONS,
     employmentType: EmploymentType.PART_TIME,
     employmentArrangement: EmploymentArrangement.CONTRACT,
     workMode: WorkMode.ON_SITE,
@@ -620,7 +597,6 @@ export const JOBS_DATA = [
     workDays: THURSDAY_TO_SUNDAY,
     startTime: '08:00',
     endTime: '18:00',
-    tags: ['events', 'vendors', 'logistics'],
     applicationDeadline: new Date('2027-03-17T23:59:59Z'),
     status: JobStatus.PUBLISHED,
 
@@ -632,7 +608,7 @@ export const JOBS_DATA = [
     title: 'Junior QA Engineer',
     description:
       'Write and execute test plans for web and mobile apps; own regression test suites.',
-    category: SkillCategory.SOFTWARE_DEVELOPMENT,
+    industry: Industry.SOFTWARE_DEVELOPMENT,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.HYBRID,
@@ -643,7 +619,6 @@ export const JOBS_DATA = [
     workDays: WEEKDAYS,
     startTime: '09:00',
     endTime: '17:00',
-    tags: ['qa', 'testing', 'automation'],
     applicationDeadline: new Date('2027-04-15T23:59:59Z'),
     status: JobStatus.PUBLISHED,
 
@@ -659,7 +634,7 @@ export const JOBS_DATA = [
     title: 'Machine Learning Engineer',
     description:
       'Build and deploy ML models for recommendations; optimize feature pipelines.',
-    category: SkillCategory.SOFTWARE_DEVELOPMENT,
+    industry: Industry.SOFTWARE_DEVELOPMENT,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.HYBRID,
@@ -670,7 +645,6 @@ export const JOBS_DATA = [
     workDays: WEEKDAYS,
     startTime: '09:00',
     endTime: '18:00',
-    tags: ['ml', 'python', 'data-pipelines'],
     applicationDeadline: new Date('2027-04-20T23:59:59Z'),
     status: JobStatus.PUBLISHED,
 
@@ -686,7 +660,7 @@ export const JOBS_DATA = [
     title: 'Database Administrator',
     description:
       'Manage PostgreSQL clusters, backups, and performance tuning for production systems.',
-    category: SkillCategory.SOFTWARE_DEVELOPMENT,
+    industry: Industry.SOFTWARE_DEVELOPMENT,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.HYBRID,
@@ -697,7 +671,6 @@ export const JOBS_DATA = [
     workDays: WEEKDAYS,
     startTime: '09:00',
     endTime: '18:00',
-    tags: ['postgres', 'backups', 'replication'],
     applicationDeadline: new Date('2027-04-12T23:59:59Z'),
     status: JobStatus.PUBLISHED,
 
@@ -709,7 +682,7 @@ export const JOBS_DATA = [
     title: 'Content Strategist',
     description:
       'Plan and execute content calendars across web, email, and social channels.',
-    category: SkillCategory.SALES_MARKETING,
+    industry: Industry.SALES_MARKETING,
     employmentType: EmploymentType.PART_TIME,
     employmentArrangement: EmploymentArrangement.CONTRACT,
     workMode: WorkMode.REMOTE,
@@ -720,7 +693,6 @@ export const JOBS_DATA = [
     workDays: WEEKDAYS,
     startTime: '10:00',
     endTime: '16:00',
-    tags: ['content', 'seo', 'email'],
     applicationDeadline: new Date('2027-04-05T23:59:59Z'),
     status: JobStatus.PUBLISHED,
 
@@ -736,7 +708,7 @@ export const JOBS_DATA = [
     title: 'Customer Success Manager',
     description:
       'Drive adoption, manage renewals, and coordinate success plans for enterprise accounts.',
-    category: SkillCategory.CUSTOMER_SERVICE,
+    industry: Industry.CUSTOMER_SERVICE,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.HYBRID,
@@ -747,7 +719,6 @@ export const JOBS_DATA = [
     workDays: WEEKDAYS,
     startTime: '09:00',
     endTime: '17:30',
-    tags: ['success', 'renewals', 'accounts'],
     applicationDeadline: new Date('2027-04-18T23:59:59Z'),
     status: JobStatus.PUBLISHED,
 
@@ -759,7 +730,7 @@ export const JOBS_DATA = [
     title: 'HR Business Partner',
     description:
       'Partner with leadership on org design, talent management, and performance processes.',
-    category: SkillCategory.BUSINESS_ADMIN,
+    industry: Industry.BUSINESS_ADMIN,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.HYBRID,
@@ -770,7 +741,6 @@ export const JOBS_DATA = [
     workDays: WEEKDAYS,
     startTime: '09:00',
     endTime: '17:30',
-    tags: ['hr', 'talent', 'performance'],
     applicationDeadline: new Date('2027-04-22T23:59:59Z'),
     status: JobStatus.PUBLISHED,
 
@@ -782,7 +752,7 @@ export const JOBS_DATA = [
     title: 'Sales Development Representative',
     description:
       'Generate pipeline through outbound outreach, qualify leads, and hand off to AEs.',
-    category: SkillCategory.SALES_MARKETING,
+    industry: Industry.SALES_MARKETING,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.HYBRID,
@@ -793,7 +763,6 @@ export const JOBS_DATA = [
     workDays: WEEKDAYS,
     startTime: '08:30',
     endTime: '17:00',
-    tags: ['prospecting', 'crm', 'outbound'],
     applicationDeadline: new Date('2027-04-10T23:59:59Z'),
     status: JobStatus.PUBLISHED,
 
@@ -805,7 +774,7 @@ export const JOBS_DATA = [
     title: 'Digital Marketing Analyst',
     description:
       'Measure paid and organic performance, build dashboards, and recommend optimizations.',
-    category: SkillCategory.SALES_MARKETING,
+    industry: Industry.SALES_MARKETING,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.HYBRID,
@@ -816,7 +785,6 @@ export const JOBS_DATA = [
     workDays: WEEKDAYS,
     startTime: '09:00',
     endTime: '17:30',
-    tags: ['analytics', 'paid-media', 'reporting'],
     applicationDeadline: new Date('2027-04-25T23:59:59Z'),
     status: JobStatus.PUBLISHED,
 
@@ -828,7 +796,7 @@ export const JOBS_DATA = [
     title: 'Technical Writer',
     description:
       'Produce developer docs, API references, and release notes for platform teams.',
-    category: SkillCategory.CUSTOMER_SERVICE,
+    industry: Industry.CUSTOMER_SERVICE,
     employmentType: EmploymentType.PART_TIME,
     employmentArrangement: EmploymentArrangement.CONTRACT,
     workMode: WorkMode.REMOTE,
@@ -839,7 +807,6 @@ export const JOBS_DATA = [
     workDays: WEEKDAYS,
     startTime: '10:00',
     endTime: '16:00',
-    tags: ['docs', 'api', 'release-notes'],
     applicationDeadline: new Date('2027-04-08T23:59:59Z'),
     status: JobStatus.PUBLISHED,
 
@@ -855,7 +822,7 @@ export const JOBS_DATA = [
     title: 'UX Researcher',
     description:
       'Plan and run user research, synthesize insights, and guide product decisions.',
-    category: SkillCategory.DESIGN,
+    industry: Industry.DESIGN,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.HYBRID,
@@ -866,7 +833,6 @@ export const JOBS_DATA = [
     workDays: WEEKDAYS,
     startTime: '09:00',
     endTime: '17:30',
-    tags: ['research', 'interviews', 'usability'],
     applicationDeadline: new Date('2027-04-30T23:59:59Z'),
     status: JobStatus.PUBLISHED,
 
@@ -878,7 +844,7 @@ export const JOBS_DATA = [
     title: 'Data Visualization Specialist',
     description:
       'Create dashboards and visual stories that communicate insights to executives.',
-    category: SkillCategory.BUSINESS_ADMIN,
+    industry: Industry.BUSINESS_ADMIN,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.REMOTE,
@@ -889,7 +855,6 @@ export const JOBS_DATA = [
     workDays: WEEKDAYS,
     startTime: '09:00',
     endTime: '17:30',
-    tags: ['dashboards', 'storytelling', 'bi'],
     applicationDeadline: new Date('2027-05-02T23:59:59Z'),
     status: JobStatus.PUBLISHED,
 
@@ -905,7 +870,7 @@ export const JOBS_DATA = [
     title: 'Cloud Infrastructure Engineer',
     description:
       'Own IaC, networking, and observability for multi-region cloud workloads.',
-    category: SkillCategory.SOFTWARE_DEVELOPMENT,
+    industry: Industry.SOFTWARE_DEVELOPMENT,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.REMOTE,
@@ -916,7 +881,6 @@ export const JOBS_DATA = [
     workDays: WEEKDAYS,
     startTime: '09:00',
     endTime: '18:00',
-    tags: ['cloud', 'iac', 'observability'],
     applicationDeadline: new Date('2027-04-28T23:59:59Z'),
     status: JobStatus.PUBLISHED,
 
@@ -932,7 +896,7 @@ export const JOBS_DATA = [
     title: 'Product Designer (Mobile)',
     description:
       'Design native mobile experiences, prototype flows, and partner with eng for delivery.',
-    category: SkillCategory.DESIGN,
+    industry: Industry.DESIGN,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.HYBRID,
@@ -943,7 +907,6 @@ export const JOBS_DATA = [
     workDays: WEEKDAYS,
     startTime: '09:00',
     endTime: '17:30',
-    tags: ['mobile', 'figma', 'prototyping'],
     applicationDeadline: new Date('2027-04-18T23:59:59Z'),
     status: JobStatus.PUBLISHED,
 
@@ -955,7 +918,7 @@ export const JOBS_DATA = [
     title: 'Finance Operations Analyst',
     description:
       'Reconcile payouts, manage payables/receivables, and improve finance processes.',
-    category: SkillCategory.ACCOUNTING_FINANCE,
+    industry: Industry.ACCOUNTING_FINANCE,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.HYBRID,
@@ -966,7 +929,6 @@ export const JOBS_DATA = [
     workDays: WEEKDAYS,
     startTime: '09:00',
     endTime: '17:00',
-    tags: ['reconciliation', 'payouts', 'process'],
     applicationDeadline: new Date('2027-04-14T23:59:59Z'),
     status: JobStatus.PUBLISHED,
 
@@ -982,7 +944,7 @@ export const JOBS_DATA = [
     title: 'Operations Lead (Warehousing)',
     description:
       'Run warehouse operations, manage inventory accuracy, and improve throughput.',
-    category: SkillCategory.OPERATIONS,
+    industry: Industry.OPERATIONS,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.ON_SITE,
@@ -993,7 +955,6 @@ export const JOBS_DATA = [
     workDays: WEEKDAYS_SATURDAY,
     startTime: '08:00',
     endTime: '17:30',
-    tags: ['inventory', 'throughput', 'ops'],
     applicationDeadline: new Date('2027-04-26T23:59:59Z'),
     status: JobStatus.PUBLISHED,
 
@@ -1009,7 +970,7 @@ export const JOBS_DATA = [
     title: 'Procurement Specialist',
     description:
       'Source vendors, negotiate contracts, and manage procurement lifecycle for facilities.',
-    category: SkillCategory.OPERATIONS,
+    industry: Industry.OPERATIONS,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.HYBRID,
@@ -1020,7 +981,6 @@ export const JOBS_DATA = [
     workDays: WEEKDAYS,
     startTime: '09:00',
     endTime: '17:30',
-    tags: ['procurement', 'vendors', 'contracts'],
     applicationDeadline: new Date('2027-04-21T23:59:59Z'),
     status: JobStatus.PUBLISHED,
 
@@ -1032,7 +992,7 @@ export const JOBS_DATA = [
     title: 'Facilities Manager',
     description:
       'Oversee office facilities, maintenance schedules, and vendor coordination.',
-    category: SkillCategory.OPERATIONS,
+    industry: Industry.OPERATIONS,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.ON_SITE,
@@ -1043,7 +1003,6 @@ export const JOBS_DATA = [
     workDays: WEEKDAYS_SATURDAY,
     startTime: '08:00',
     endTime: '17:00',
-    tags: ['facilities', 'maintenance', 'vendors'],
     applicationDeadline: new Date('2027-04-16T23:59:59Z'),
     status: JobStatus.PUBLISHED,
 
@@ -1055,7 +1014,7 @@ export const JOBS_DATA = [
     title: 'Technical Recruiter',
     description:
       'Source and close technical talent; manage pipelines and hiring manager partnerships.',
-    category: SkillCategory.CUSTOMER_SERVICE,
+    industry: Industry.CUSTOMER_SERVICE,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.HYBRID,
@@ -1066,7 +1025,6 @@ export const JOBS_DATA = [
     workDays: WEEKDAYS,
     startTime: '09:00',
     endTime: '17:30',
-    tags: ['recruiting', 'tech', 'sourcing'],
     applicationDeadline: new Date('2027-04-24T23:59:59Z'),
     status: JobStatus.PUBLISHED,
 
@@ -1078,7 +1036,7 @@ export const JOBS_DATA = [
     title: 'Legal Counsel',
     description:
       'Draft and review commercial contracts; advise on compliance and risk.',
-    category: SkillCategory.BUSINESS_ADMIN,
+    industry: Industry.BUSINESS_ADMIN,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.HYBRID,
@@ -1089,7 +1047,6 @@ export const JOBS_DATA = [
     workDays: WEEKDAYS,
     startTime: '09:00',
     endTime: '18:00',
-    tags: ['contracts', 'compliance', 'risk'],
     applicationDeadline: new Date('2027-04-27T23:59:59Z'),
     status: JobStatus.PUBLISHED,
 
@@ -1101,7 +1058,7 @@ export const JOBS_DATA = [
     title: 'Corporate Trainer',
     description:
       'Develop and deliver training programs for sales and support teams.',
-    category: SkillCategory.CUSTOMER_SERVICE,
+    industry: Industry.CUSTOMER_SERVICE,
     employmentType: EmploymentType.PART_TIME,
     employmentArrangement: EmploymentArrangement.CONTRACT,
     workMode: WorkMode.HYBRID,
@@ -1112,7 +1069,6 @@ export const JOBS_DATA = [
     workDays: WEEKDAYS,
     startTime: '10:00',
     endTime: '16:00',
-    tags: ['training', 'enablement', 'workshops'],
     applicationDeadline: new Date('2027-04-19T23:59:59Z'),
     status: JobStatus.PUBLISHED,
 
@@ -1124,7 +1080,7 @@ export const JOBS_DATA = [
     title: 'Office Administrator',
     description:
       'Manage office supplies, coordinate meetings, and support daily operations.',
-    category: SkillCategory.CUSTOMER_SERVICE,
+    industry: Industry.CUSTOMER_SERVICE,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.ON_SITE,
@@ -1135,7 +1091,6 @@ export const JOBS_DATA = [
     workDays: WEEKDAYS,
     startTime: '08:00',
     endTime: '17:00',
-    tags: ['admin', 'coordination', 'ops'],
     applicationDeadline: new Date('2027-04-12T23:59:59Z'),
     status: JobStatus.PUBLISHED,
 
@@ -1147,7 +1102,7 @@ export const JOBS_DATA = [
     title: 'Plumbing Supervisor',
     description:
       'Lead plumbing teams, schedule work orders, and ensure safety compliance.',
-    category: SkillCategory.MAINTENANCE_TRADES,
+    industry: Industry.MAINTENANCE_TRADES,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.ON_SITE,
@@ -1158,7 +1113,6 @@ export const JOBS_DATA = [
     workDays: WEEKDAYS_SATURDAY,
     startTime: '08:00',
     endTime: '17:00',
-    tags: ['plumbing', 'supervision', 'safety'],
     applicationDeadline: new Date('2027-04-18T23:59:59Z'),
     status: JobStatus.PUBLISHED,
 
@@ -1170,7 +1124,7 @@ export const JOBS_DATA = [
     title: 'Electrical Technician',
     description:
       'Diagnose and fix electrical systems; handle preventive maintenance.',
-    category: SkillCategory.MAINTENANCE_TRADES,
+    industry: Industry.MAINTENANCE_TRADES,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.ON_SITE,
@@ -1181,7 +1135,6 @@ export const JOBS_DATA = [
     workDays: WEEKDAYS_SATURDAY,
     startTime: '08:00',
     endTime: '17:00',
-    tags: ['electrical', 'maintenance', 'safety'],
     applicationDeadline: new Date('2027-04-22T23:59:59Z'),
     status: JobStatus.PUBLISHED,
 
@@ -1193,7 +1146,7 @@ export const JOBS_DATA = [
     title: 'Carpentry Specialist',
     description:
       'Handle carpentry repairs, fittings, and custom woodwork for offices.',
-    category: SkillCategory.MAINTENANCE_TRADES,
+    industry: Industry.MAINTENANCE_TRADES,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.ON_SITE,
@@ -1204,7 +1157,6 @@ export const JOBS_DATA = [
     workDays: WEEKDAYS_SATURDAY,
     startTime: '08:00',
     endTime: '17:00',
-    tags: ['carpentry', 'repairs', 'fittings'],
     applicationDeadline: new Date('2027-04-20T23:59:59Z'),
     status: JobStatus.PUBLISHED,
 
@@ -1216,7 +1168,7 @@ export const JOBS_DATA = [
     title: 'Gardening Supervisor',
     description:
       'Lead landscaping crews, manage schedules, and ensure groundskeeping quality.',
-    category: SkillCategory.MAINTENANCE_TRADES,
+    industry: Industry.MAINTENANCE_TRADES,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.ON_SITE,
@@ -1227,7 +1179,6 @@ export const JOBS_DATA = [
     workDays: WEEKDAYS_SATURDAY,
     startTime: '08:00',
     endTime: '17:00',
-    tags: ['gardening', 'landscaping', 'scheduling'],
     applicationDeadline: new Date('2027-04-23T23:59:59Z'),
     status: JobStatus.PUBLISHED,
 
@@ -1239,7 +1190,7 @@ export const JOBS_DATA = [
     title: 'Catering Operations Manager',
     description:
       'Plan event catering, manage kitchen teams, and ensure food safety compliance.',
-    category: SkillCategory.HOSPITALITY,
+    industry: Industry.HOSPITALITY,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.ON_SITE,
@@ -1250,7 +1201,6 @@ export const JOBS_DATA = [
     workDays: WEEKDAYS_SATURDAY,
     startTime: '07:00',
     endTime: '16:00',
-    tags: ['catering', 'ops', 'food-safety'],
     applicationDeadline: new Date('2027-04-29T23:59:59Z'),
     status: JobStatus.PUBLISHED,
 
@@ -1262,7 +1212,7 @@ export const JOBS_DATA = [
     title: 'Security Supervisor',
     description:
       'Supervise guards, handle incident escalation, and ensure post orders are followed.',
-    category: SkillCategory.SECURITY,
+    industry: Industry.SECURITY,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.ON_SITE,
@@ -1273,7 +1223,6 @@ export const JOBS_DATA = [
     workDays: WEEKDAYS_SATURDAY,
     startTime: '07:00',
     endTime: '16:00',
-    tags: ['security', 'supervision', 'incidents'],
     applicationDeadline: new Date('2027-04-17T23:59:59Z'),
     status: JobStatus.PUBLISHED,
 
@@ -1285,7 +1234,7 @@ export const JOBS_DATA = [
     title: 'Dispatch Coordinator',
     description:
       'Schedule dispatch riders, optimize routes, and ensure on-time deliveries.',
-    category: SkillCategory.TRANSPORT_LOGISTICS,
+    industry: Industry.TRANSPORT_LOGISTICS,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.ON_SITE,
@@ -1296,7 +1245,6 @@ export const JOBS_DATA = [
     workDays: WEEKDAYS_SATURDAY,
     startTime: '08:00',
     endTime: '17:00',
-    tags: ['dispatch', 'routing', 'sla'],
     applicationDeadline: new Date('2027-04-20T23:59:59Z'),
     status: JobStatus.PUBLISHED,
 
@@ -1308,7 +1256,7 @@ export const JOBS_DATA = [
     title: 'Professional Rider',
     description:
       'Handle last-mile deliveries, maintain vehicles, and ensure customer satisfaction.',
-    category: SkillCategory.TRANSPORT_LOGISTICS,
+    industry: Industry.TRANSPORT_LOGISTICS,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.ON_SITE,
@@ -1319,7 +1267,6 @@ export const JOBS_DATA = [
     workDays: WEEKDAYS_SATURDAY,
     startTime: '08:00',
     endTime: '17:00',
-    tags: ['rider', 'delivery', 'customer'],
     applicationDeadline: new Date('2027-04-18T23:59:59Z'),
     status: JobStatus.PUBLISHED,
 
@@ -1331,7 +1278,7 @@ export const JOBS_DATA = [
     title: 'Logistics Analyst',
     description:
       'Analyze logistics performance, reduce costs, and recommend process improvements.',
-    category: SkillCategory.TRANSPORT_LOGISTICS,
+    industry: Industry.TRANSPORT_LOGISTICS,
     employmentType: EmploymentType.FULL_TIME,
     employmentArrangement: EmploymentArrangement.PERMANENT_EMPLOYEE,
     workMode: WorkMode.HYBRID,
@@ -1342,7 +1289,6 @@ export const JOBS_DATA = [
     workDays: WEEKDAYS,
     startTime: '09:00',
     endTime: '17:30',
-    tags: ['analytics', 'logistics', 'cost'],
     applicationDeadline: new Date('2027-05-01T23:59:59Z'),
     status: JobStatus.PUBLISHED,
 

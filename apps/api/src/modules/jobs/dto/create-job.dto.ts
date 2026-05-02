@@ -175,16 +175,7 @@ export class CreateJobDto {
   @IsString()
   endTime?: string;
 
-  @ApiPropertyOptional({
-    description: 'Search / filter tags',
-    example: ['nestjs', 'postgresql'],
-    type: [String],
-  })
-  @IsOptional()
-  @IsArray()
-  @ArrayUnique()
-  @IsString({ each: true })
-  tags?: string[];
+
 
   @ApiPropertyOptional({
     description: 'Last date applications are accepted (ISO 8601)',
