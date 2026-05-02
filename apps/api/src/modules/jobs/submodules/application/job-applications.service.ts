@@ -60,6 +60,39 @@ export class JobApplicationsService {
 
   private readonly relations = ['job', 'jobseekerProfile'];
 
+  /**
+   * Masks email and phone number for jobseeker profile if PII is not unlocked.
+   */
+  private maskApplicationPII(application: any) {
+    if (!application) return application;
+
+    if (!application.piiUnlocked && application.jobseekerProfile) {
+      if (application.jobseekerProfile.email) {
+        application.jobseekerProfile.email = this.maskEmail(
+          application.jobseekerProfile.email,
+        );
+      }
+      if (application.jobseekerProfile.phoneNumber) {
+        application.jobseekerProfile.phoneNumber = this.maskPhoneNumber(
+          application.jobseekerProfile.phoneNumber,
+        );
+      }
+    }
+    return application;
+  }
+
+  private maskEmail(email: string): string {
+    const [name, domain] = email.split('@');
+    if (!name || !domain) return '****@****.***';
+    return `${name[0]}****@${domain}`;
+  }
+
+  private maskPhoneNumber(phone: string): string {
+    if (!phone) return '***';
+    if (phone.length <= 4) return '****';
+    return `${phone.slice(0, -4)}****`;
+  }
+
   // Creates a new job application for a job seeker
   async applyToJob(
     jobId: string,
@@ -197,7 +230,11 @@ export class JobApplicationsService {
       jobId,
     });
     this.applyApplicationFilters(qb, query);
-    return this.executePagedApplicationQuery(qb, query);
+    const result = await this.executePagedApplicationQuery(qb, query);
+    return {
+      ...result,
+      items: result.items.map((item) => this.maskApplicationPII(item)),
+    };
   }
 
   // Retrieves a single application for the employer, ensuring ownership
@@ -237,7 +274,7 @@ export class JobApplicationsService {
       ],
     });
 
-    return {
+    return this.maskApplicationPII({
       ...application,
       employeeId: employee?.id ?? null,
       employee: employee
@@ -255,7 +292,7 @@ export class JobApplicationsService {
               employee.jobseekerDeclaredCompleteAt ?? null,
           }
         : null,
-    };
+    });
   }
 
   // Lists all candidate-stage applications across employer jobs
@@ -293,7 +330,7 @@ export class JobApplicationsService {
       return {
         ...result,
         items: result.items.map((app) => ({
-          ...app,
+          ...this.maskApplicationPII(app),
           employeeId:
             employeeMap.get(`${app.jobId}:${app.jobseekerProfileId}`) ?? null,
         })),
@@ -321,7 +358,7 @@ export class JobApplicationsService {
     application.note = dto.note ?? application.note;
     application.statusUpdatedAt = new Date();
     await this.applicationRepo.save(application);
-    return this.getApplicationById(applicationId);
+    return this.getEmployerApplicationById(employerId, applicationId);
   }
 
   // Lists applications for admins
@@ -622,7 +659,7 @@ export class JobApplicationsService {
       // Notification failures should not block the core flow
     }
 
-    return this.getApplicationById(applicationId);
+    return this.getEmployerApplicationById(employerId, applicationId);
   }
 
   // Employer confirms final hire after contract is signed
@@ -729,7 +766,7 @@ export class JobApplicationsService {
       this.logger.warn(`Failed to notify jobseeker of hire: ${err.message}`);
     }
 
-    return this.getApplicationById(applicationId);
+    return this.getEmployerApplicationById(employerId, applicationId);
   }
 
   // Allows jobseeker to withdraw their application
