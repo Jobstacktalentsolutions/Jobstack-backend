@@ -5,7 +5,7 @@ import { JaroWinklerDistance } from 'natural';
 import { Job, JobSeekerProfile } from '@app/common/database/entities';
 import {
   JobStatus,
-  SkillCategory,
+  Industry,
 } from '@app/common/database/entities/schema.enum';
 import { JobRecommendationQueryDto } from '../dto';
 import {
@@ -62,11 +62,7 @@ export class JobRecommendationsProcessor {
         ?.map((us) => us.skill?.name?.toLowerCase())
         .filter(Boolean) ?? [],
     );
-    const userSkillCategories = new Set<SkillCategory>(
-      profile.userSkills
-        ?.map((us) => us.skill?.category)
-        .filter((c): c is SkillCategory => !!c) ?? [],
-    );
+    const userIndustry = profile.industry;
 
     // Initial query for candidate jobs
     const qb = this.baseJobQuery()
@@ -96,7 +92,7 @@ export class JobRecommendationsProcessor {
           job,
           userSkillIds,
           userSkillNames,
-          userSkillCategories,
+          userIndustry,
         ),
       )
       .filter(
@@ -133,21 +129,24 @@ export class JobRecommendationsProcessor {
     job: Job,
     userSkillIds: string[],
     userSkillNames: Set<string>,
-    userSkillCategories: Set<SkillCategory>,
+    userIndustry: Industry | undefined,
   ): { job: Job; score: number } | null {
     // 1. Calculate Core Determinants
-    const skillScore =
-      this.calcSkillScore(job, userSkillIds, userSkillNames) * W.skillMatch;
-    const catScore =
-      (job.category && userSkillCategories.has(job.category) ? 1.0 : 0) *
-      W.categoryMatch;
+    const skillMatchRaw = this.calcSkillScore(job, userSkillIds, userSkillNames);
+    const industryMatchRaw = job.industry && userIndustry === job.industry ? 1.0 : 0;
+    const boostRaw = industryMatchRaw === 1.0 && skillMatchRaw > 0 ? 1.0 : 0;
+
+    const skillScore = skillMatchRaw * W.skillMatch;
+    const industryScore = industryMatchRaw * W.industryMatch;
+    const boostScore = boostRaw * W.industryAndSkillBoost;
+
     const titleScore =
       (profile.jobTitle
         ? this.calcTitleMatch(profile.jobTitle, job.title)
         : 0) * W.titleSimilarity;
     const tagScore = this.calcTagScore(job.tags, profile.brief) * W.tags;
 
-    const coreScoreSum = skillScore + catScore + titleScore + tagScore;
+    const coreScoreSum = skillScore + industryScore + boostScore + titleScore + tagScore;
 
     // CORE GATE: If ratio is below threshold, exclude immediately
     const relevancyRatio = coreScoreSum / CORE_FACTORS_WEIGHT;

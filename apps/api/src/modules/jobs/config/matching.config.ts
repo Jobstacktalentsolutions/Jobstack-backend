@@ -21,8 +21,9 @@ export const JOB_MATCHING_CONFIG = {
    */
   WEIGHTS: {
     // --- CORE DETERMINANTS (74 total) ---
-    skillMatch: 28, // Jaccard + Fuzzy fallback
-    categoryMatch: 18, // Exact SkillCategory alignment
+    skillMatch: 25, // Jaccard + Fuzzy fallback
+    industryMatch: 15, // Exact Industry alignment
+    industryAndSkillBoost: 6, // Bonus if both industry and skills match
     titleSimilarity: 18, // Jaro-Winkler: jobTitle vs title
     tags: 10, // Fuzzy matching tags against user profile brief
 
@@ -45,6 +46,7 @@ export const JOB_MATCHING_CONFIG = {
  */
 export const CORE_FACTORS_WEIGHT =
   JOB_MATCHING_CONFIG.WEIGHTS.skillMatch +
-  JOB_MATCHING_CONFIG.WEIGHTS.categoryMatch +
+  JOB_MATCHING_CONFIG.WEIGHTS.industryMatch +
+  JOB_MATCHING_CONFIG.WEIGHTS.industryAndSkillBoost +
   JOB_MATCHING_CONFIG.WEIGHTS.titleSimilarity +
   JOB_MATCHING_CONFIG.WEIGHTS.tags;

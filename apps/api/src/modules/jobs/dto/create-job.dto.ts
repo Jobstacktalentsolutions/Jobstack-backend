@@ -18,7 +18,7 @@ import {
   DayOfWeek,
   EmploymentArrangement,
   EmploymentType,
-  SkillCategory,
+  Industry,
   WorkMode,
   ContractPaymentType,
 } from '@app/common/database/entities/schema.enum';
@@ -47,12 +47,12 @@ export class CreateJobDto {
   description?: string;
 
   @ApiProperty({
-    description: 'Primary skill category for the role',
-    enum: SkillCategory,
-    example: SkillCategory.SOFTWARE_DEVELOPMENT,
+    description: 'Primary industry for the role',
+    enum: Industry,
+    example: Industry.SOFTWARE_DEVELOPMENT,
   })
-  @IsEnum(SkillCategory)
-  category: SkillCategory;
+  @IsEnum(Industry)
+  industry: Industry;
 
   @ApiProperty({
     description: 'Employment type',

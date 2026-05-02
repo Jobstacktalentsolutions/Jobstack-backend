@@ -18,7 +18,7 @@ import {
   EmploymentType,
   JobseekerAvailability,
   JobseekerGender,
-  SkillCategory,
+  Industry,
   WorkMode,
 } from './schema.enum';
 import { JobApplication } from './JobApplication.entity';
@@ -165,10 +165,10 @@ export class JobSeekerProfile {
 
   @Column({
     type: 'enum',
-    enum: SkillCategory,
+    enum: Industry,
     nullable: true,
   })
-  workSector?: SkillCategory;
+  industry?: Industry;
 
   @Column({ type: 'jsonb', nullable: true })
   /**

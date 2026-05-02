@@ -6,6 +6,7 @@ import {
   Delete,
   UseGuards,
   UploadedFile,
+  UploadedFiles,
   UseInterceptors,
   Body,
   Param,
@@ -20,12 +21,13 @@ import {
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { EmployerJwtGuard, AdminJwtGuard } from 'apps/api/src/guards';
 import { EmployerVerificationService } from './employer-verification.service';
 import { CurrentUser, type CurrentUserPayload } from '@app/common/shared';
 import {
   UploadVerificationDocumentDto,
+  BatchUploadVerificationDocumentDto,
   UpdateVerificationInfoDto,
   UuidParamDto,
   UpdateVerificationStatusDto,
@@ -92,6 +94,41 @@ export class EmployerVerificationController {
       user.id,
       dto,
       file,
+    );
+  }
+
+  // Upload multiple verification documents in batch
+  @Post('documents/batch')
+  @UseInterceptors(FilesInterceptor('files'))
+  @ApiConsumes('multipart/form-data')
+  @ApiOperation({ summary: 'Upload multiple verification documents' })
+  @ApiBody({ type: BatchUploadVerificationDocumentDto })
+  async uploadDocumentsBatch(
+    @CurrentUser() user: CurrentUserPayload,
+    @UploadedFiles() files: MulterFile[],
+    @Body() body: any,
+  ) {
+    let dto: BatchUploadVerificationDocumentDto;
+
+    try {
+      // If metadata is sent as a string (common with multipart/form-data), parse it
+      const metadata =
+        typeof body.metadata === 'string'
+          ? JSON.parse(body.metadata)
+          : body.metadata;
+      dto = { metadata };
+    } catch (e) {
+      throw new BadRequestException('Invalid metadata format. Expected JSON.');
+    }
+
+    if (!files || files.length === 0) {
+      throw new BadRequestException('No files uploaded');
+    }
+
+    return this.verificationService.uploadVerificationDocumentsBatch(
+      user.id,
+      dto,
+      files,
     );
   }
 

@@ -13,7 +13,11 @@ import { JobseekerVerificationDocument } from '@app/common/database/entities/Job
 import { Document } from '@app/common/database/entities';
 import { StorageService } from '@app/common/storage/storage.service';
 import { SkillsService } from 'apps/api/src/modules/skills/skills.service';
-import { UpdateProfileDto } from './dto/update-profile.dto';
+import {
+  UpdateProfileDto,
+  BatchUploadJobseekerDocumentsDto,
+  JobseekerBatchDocumentType,
+} from './dto';
 import { GetAllJobSeekersQueryDto } from './dto/get-all-jobseekers-query.dto';
 import type { MulterFile } from '@app/common/shared/types';
 import {
@@ -551,6 +555,64 @@ export class JobseekerService {
       proofOfAddressVerified:
         row.status === VerificationDocumentStatus.APPROVED,
       proofOfAddressStatus: row.status,
+    };
+  }
+
+  // Upload multiple jobseeker documents in batch
+  async uploadDocumentsBatch(
+    userId: string,
+    dto: BatchUploadJobseekerDocumentsDto,
+    files: MulterFile[],
+  ) {
+    const profile = await this.profileRepo.findOne({
+      where: { id: userId },
+    });
+    if (!profile) throw new NotFoundException('Jobseeker not found');
+
+    const results: any = {};
+
+    for (const metadata of dto.metadata) {
+      const file = files.find((f) => f.originalname === metadata.originalName);
+      if (!file) {
+        continue;
+      }
+
+      switch (metadata.type) {
+        case JobseekerBatchDocumentType.CV:
+          const cvResult = await this.uploadCv(userId, file);
+          results.cv = cvResult;
+          break;
+
+        case JobseekerBatchDocumentType.PROFILE_PICTURE:
+          const picResult = await this.uploadProfilePicture(userId, file);
+          results.profilePicture = picResult;
+          break;
+
+        case JobseekerBatchDocumentType.ID_DOCUMENT:
+          if (!metadata.idDocumentType || !metadata.idDocumentNumber) {
+            throw new BadRequestException(
+              'idDocumentType and idDocumentNumber are required for ID_DOCUMENT',
+            );
+          }
+          const idResult = await this.uploadIdDocument(
+            userId,
+            file,
+            metadata.idDocumentType,
+            metadata.idDocumentNumber,
+          );
+          results.idDocument = idResult;
+          break;
+
+        case JobseekerBatchDocumentType.PROOF_OF_ADDRESS:
+          const proofResult = await this.uploadProofOfAddress(userId, file);
+          results.proofOfAddress = proofResult;
+          break;
+      }
+    }
+
+    return {
+      success: true,
+      results,
     };
   }
 

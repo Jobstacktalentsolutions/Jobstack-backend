@@ -8,7 +8,6 @@ import { Repository, ILike } from 'typeorm';
 import { Skill } from '@app/common/database/entities/Skill.entity';
 import { JobseekerSkill } from '@app/common/database/entities/JobseekerSkill.entity';
 import {
-  SkillCategory,
   SkillStatus,
 } from '@app/common/database/entities/schema.enum';
 
@@ -80,7 +79,7 @@ export class SkillsService {
    * User-initiated skill creation: creates a new skill as ACTIVE immediately.
    * If a skill with the same name already exists (any status), returns it.
    */
-  async addSkill(name: string, category: SkillCategory): Promise<Skill> {
+  async addSkill(name: string): Promise<Skill> {
     const trimmed = name.trim();
     if (!trimmed) throw new BadRequestException('Name required');
     const existing = await this.skillRepo.findOne({
@@ -89,7 +88,6 @@ export class SkillsService {
     if (existing) return existing;
     const skill = this.skillRepo.create({
       name: trimmed,
-      category,
       status: SkillStatus.ACTIVE,
       synonyms: [],
     });
@@ -102,7 +100,6 @@ export class SkillsService {
    */
   async insertActiveSkill(
     name: string,
-    category?: SkillCategory,
   ): Promise<Skill> {
     const trimmed = name.trim();
     if (!trimmed) throw new BadRequestException('Name required');
@@ -112,7 +109,6 @@ export class SkillsService {
     if (existing) return existing;
     const skill = this.skillRepo.create({
       name: trimmed,
-      category: category ?? SkillCategory.SOFTWARE_DEVELOPMENT,
       status: SkillStatus.ACTIVE,
       synonyms: [],
     });

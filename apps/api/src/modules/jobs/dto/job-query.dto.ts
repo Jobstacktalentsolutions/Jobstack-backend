@@ -11,7 +11,7 @@ import {
 import { Type, Transform } from 'class-transformer';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import {
-  SkillCategory,
+  Industry,
   JobStatus,
   EmploymentType,
   EmploymentArrangement,
@@ -47,24 +47,24 @@ export class JobQueryDto {
   status?: JobStatus;
 
   @ApiPropertyOptional({
-    enum: SkillCategory,
-    example: SkillCategory.SOFTWARE_DEVELOPMENT,
+    enum: Industry,
+    example: Industry.SOFTWARE_DEVELOPMENT,
   })
   @IsOptional()
-  @IsEnum(SkillCategory)
-  category?: SkillCategory;
+  @IsEnum(Industry)
+  industry?: Industry;
 
   @ApiPropertyOptional({
-    enum: SkillCategory,
+    enum: Industry,
     isArray: true,
     description:
-      'Multiple categories; takes precedence over single category when set',
+      'Multiple industries; takes precedence over single industry when set',
   })
   @IsOptional()
   @Transform(toOptionalStringArray)
   @IsArray()
-  @IsEnum(SkillCategory, { each: true })
-  categories?: SkillCategory[];
+  @IsEnum(Industry, { each: true })
+  industries?: Industry[];
 
   @ApiPropertyOptional({ description: 'Free-text search', example: 'engineer' })
   @IsOptional()

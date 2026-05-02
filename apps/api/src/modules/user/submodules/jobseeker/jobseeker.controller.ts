@@ -13,6 +13,7 @@ import {
   Body,
   BadRequestException,
   Param,
+  UploadedFiles,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -21,13 +22,19 @@ import {
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { JobSeekerJwtGuard, AdminJwtGuard } from 'apps/api/src/guards';
 import { JobseekerService } from './jobseeker.service';
-import { UpdateProfileDto } from './dto/update-profile.dto';
+import {
+  UpdateProfileDto,
+  BatchUploadJobseekerDocumentsDto,
+} from './dto';
 import { GetAllJobSeekersQueryDto } from './dto/get-all-jobseekers-query.dto';
 import type { MulterFile } from '@app/common/shared/types';
-import { CurrentUser, type CurrentUserPayload } from '@app/common/shared';
+import {
+  CurrentUser,
+  type CurrentUserPayload,
+} from '@app/common/shared';
 import { JobseekerDocumentType } from '@app/common/shared/enums/jobseeker-docs.enum';
 import { EmployerService } from '../employer/employer.service';
 
@@ -309,6 +316,36 @@ export class JobseekerController {
   async deleteProofOfAddress(@CurrentUser() user: CurrentUserPayload) {
     await this.jobseekerService.deleteProofOfAddress(user.id);
     return;
+  }
+
+  @Post('profile/documents/batch')
+  @UseGuards(JobSeekerJwtGuard)
+  @UseInterceptors(FilesInterceptor('files'))
+  @ApiConsumes('multipart/form-data')
+  @ApiOperation({ summary: 'Upload multiple jobseeker documents in batch' })
+  @ApiBody({ type: BatchUploadJobseekerDocumentsDto })
+  async uploadDocumentsBatch(
+    @CurrentUser() user: CurrentUserPayload,
+    @UploadedFiles() files: MulterFile[],
+    @Body() body: any,
+  ) {
+    let dto: BatchUploadJobseekerDocumentsDto;
+
+    try {
+      const metadata =
+        typeof body.metadata === 'string'
+          ? JSON.parse(body.metadata)
+          : body.metadata;
+      dto = { metadata };
+    } catch (e) {
+      throw new BadRequestException('Invalid metadata format. Expected JSON.');
+    }
+
+    if (!files || files.length === 0) {
+      throw new BadRequestException('No files uploaded');
+    }
+
+    return this.jobseekerService.uploadDocumentsBatch(user.id, dto, files);
   }
 
   // Update jobseeker profile

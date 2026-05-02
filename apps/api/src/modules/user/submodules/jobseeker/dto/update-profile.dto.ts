@@ -20,7 +20,7 @@ import {
   EmploymentType,
   JobseekerAvailability,
   JobseekerGender,
-  SkillCategory,
+  Industry,
   WorkMode,
 } from '@app/common/database/entities/schema.enum';
 
@@ -100,12 +100,12 @@ export class UpdateProfileDto {
   preferredEmploymentArrangement?: EmploymentArrangement;
 
   @ApiPropertyOptional({
-    enum: SkillCategory,
-    example: SkillCategory.SOFTWARE_DEVELOPMENT,
+    enum: Industry,
+    example: Industry.SOFTWARE_DEVELOPMENT,
   })
-  @IsEnum(SkillCategory)
+  @IsEnum(Industry)
   @IsOptional()
-  workSector?: SkillCategory;
+  industry?: Industry;
 
   @ApiPropertyOptional({ example: '15 Allen Avenue' })
   @IsString()

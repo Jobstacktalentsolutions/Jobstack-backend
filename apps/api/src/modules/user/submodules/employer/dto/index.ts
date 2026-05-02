@@ -3,6 +3,7 @@ export * from './update-employer-profile.dto';
 export * from './get-all-employers-query.dto';
 export * from './employer-verification.dto';
 export * from './upload-employer-verification-document.dto';
+export * from './batch-upload-employer-verification-documents.dto';
 
 // Export legacy recruiter DTOs (for backward compatibility during transition)
 export { UpdateRecruiterProfileDto } from './update-recruiter-profile.dto';

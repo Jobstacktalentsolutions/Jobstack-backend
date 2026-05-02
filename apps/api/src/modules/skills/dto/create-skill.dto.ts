@@ -6,8 +6,8 @@ import {
   IsEnum,
   MaxLength,
 } from 'class-validator';
+} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { SkillCategory } from '@app/common/database/entities/schema.enum';
 
 export class CreateSkillDto {
   @ApiProperty({ example: 'NestJS', maxLength: 100 })
@@ -42,10 +42,4 @@ export class AddSkillDto {
   @MaxLength(100)
   name: string;
 
-  @ApiProperty({
-    enum: SkillCategory,
-    example: SkillCategory.SOFTWARE_DEVELOPMENT,
-  })
-  @IsEnum(SkillCategory)
-  category: SkillCategory;
 }

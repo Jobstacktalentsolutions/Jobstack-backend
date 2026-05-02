@@ -16,7 +16,7 @@ import {
   DayOfWeek,
   EmploymentArrangement,
   EmploymentType,
-  SkillCategory,
+  Industry,
   JobStatus,
   WorkMode,
   ContractPaymentType,
@@ -30,8 +30,8 @@ export class Job extends BaseEntity {
   @Column({ type: 'varchar', length: 3000, nullable: true })
   description?: string;
 
-  @Column({ type: 'enum', enum: SkillCategory })
-  category: SkillCategory;
+  @Column({ type: 'enum', enum: Industry })
+  industry: Industry;
 
   @Column({ type: 'enum', enum: EmploymentType })
   employmentType: EmploymentType;

@@ -8,7 +8,10 @@ import { Repository } from 'typeorm';
 import { EmployerVerificationDocument } from '@app/common/database/entities/EmployerVerificationDocument.entity';
 import { EmployerProfile } from '@app/common/database/entities/EmployerProfile.entity';
 import { StorageService } from '@app/common/storage/storage.service';
-import { UploadEmployerVerificationDocumentDto } from './dto/upload-employer-verification-document.dto';
+import {
+  UploadEmployerVerificationDocumentDto,
+  BatchUploadVerificationDocumentDto,
+} from './dto';
 import { UpdateVerificationInfoDto } from './dto/update-verification.dto';
 import { UpdateDocumentVerificationDto } from './dto/admin-verification.dto';
 import { MulterFile } from '@app/common/shared/types';
@@ -134,6 +137,65 @@ export class EmployerVerificationService {
     return {
       ...verificationDoc,
       document: docUpload.document,
+      autoVerificationResult: autoVerifyResult,
+    };
+  }
+
+  // Upload multiple verification documents in batch
+  async uploadVerificationDocumentsBatch(
+    userId: string,
+    dto: BatchUploadVerificationDocumentDto,
+    files: MulterFile[],
+  ) {
+    const profile = await this.profileRepo.findOne({
+      where: { id: userId },
+    });
+    if (!profile) throw new NotFoundException('Employer profile not found');
+
+    if (profile.verificationStatus === VerificationStatus.NOT_STARTED) {
+      profile.verificationStatus = VerificationStatus.PENDING;
+    }
+
+    const results = [];
+
+    for (const metadata of dto.metadata) {
+      const file = files.find((f) => f.originalname === metadata.originalName);
+      if (!file) {
+        continue;
+      }
+
+      if (metadata.governmentIdType) {
+        profile.governmentIdType = metadata.governmentIdType;
+      }
+
+      const docUpload = await this.storageService.uploadFile(file as any, {
+        folder: `employers/${profile.id}/verification`,
+        bucketType: 'private',
+        documentType: DocumentType.ID_DOCUMENT,
+        uploadedBy: userId,
+      });
+
+      const verificationDoc = this.verificationDocRepo.create({
+        employerProfileId: profile.id,
+        documentId: docUpload.document.id,
+        documentType: metadata.documentType,
+        documentNumber: metadata.documentNumber,
+        status: VerificationDocumentStatus.PENDING,
+      });
+
+      await this.verificationDocRepo.save(verificationDoc);
+      results.push({
+        ...verificationDoc,
+        document: docUpload.document,
+      });
+    }
+
+    await this.profileRepo.save(profile);
+
+    const autoVerifyResult = await this.performAutoVerification(userId);
+
+    return {
+      documents: results,
       autoVerificationResult: autoVerifyResult,
     };
   }

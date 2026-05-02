@@ -5,7 +5,7 @@ export enum SkillStatus {
   SUGGESTED = 'SUGGESTED',
 }
 
-export enum SkillCategory {
+export enum Industry {
   SOFTWARE_DEVELOPMENT = 'SOFTWARE_DEVELOPMENT',
   DESIGN = 'DESIGN',
   ACCOUNTING_FINANCE = 'ACCOUNTING_FINANCE',
@@ -35,36 +35,36 @@ export enum SkillType {
   LOW_SKILL = 'LOW_SKILL',
 }
 
-// Mapping of skill types to skill categories
-// Used to determine which categories are high skill vs low skill
-export const SkillTypeCategory: Record<SkillType, SkillCategory[]> = {
+// Mapping of skill types to industries
+// Used to determine which industries are high skill vs low skill
+export const SkillTypeIndustry: Record<SkillType, Industry[]> = {
   [SkillType.HIGH_SKILL]: [
-    SkillCategory.SOFTWARE_DEVELOPMENT,
-    SkillCategory.DESIGN,
-    SkillCategory.ACCOUNTING_FINANCE,
-    SkillCategory.SALES_MARKETING,
-    SkillCategory.OPERATIONS,
-    SkillCategory.BUSINESS_ADMIN,
-    SkillCategory.CUSTOMER_SERVICE,
-    SkillCategory.HEALTHCARE_PHARMA,
-    SkillCategory.EDUCATION_TRAINING,
-    SkillCategory.MEDIA_CREATIVE,
-    SkillCategory.HR_ADMIN,
-    SkillCategory.LEGAL_COMPLIANCE,
-    SkillCategory.CONSTRUCTION_REAL_ESTATE,
-    SkillCategory.AGRICULTURE,
+    Industry.SOFTWARE_DEVELOPMENT,
+    Industry.DESIGN,
+    Industry.ACCOUNTING_FINANCE,
+    Industry.SALES_MARKETING,
+    Industry.OPERATIONS,
+    Industry.BUSINESS_ADMIN,
+    Industry.CUSTOMER_SERVICE,
+    Industry.HEALTHCARE_PHARMA,
+    Industry.EDUCATION_TRAINING,
+    Industry.MEDIA_CREATIVE,
+    Industry.HR_ADMIN,
+    Industry.LEGAL_COMPLIANCE,
+    Industry.CONSTRUCTION_REAL_ESTATE,
+    Industry.AGRICULTURE,
   ],
   [SkillType.LOW_SKILL]: [
-    SkillCategory.MAINTENANCE_TRADES,
-    SkillCategory.HOSPITALITY,
-    SkillCategory.SECURITY,
-    SkillCategory.TRANSPORT_LOGISTICS,
+    Industry.MAINTENANCE_TRADES,
+    Industry.HOSPITALITY,
+    Industry.SECURITY,
+    Industry.TRANSPORT_LOGISTICS,
   ],
 };
 
-// Utility function to get skill type from category
-export function getSkillTypeFromCategory(category: SkillCategory): SkillType {
-  if (SkillTypeCategory[SkillType.HIGH_SKILL].includes(category)) {
+// Utility function to get skill type from industry
+export function getSkillTypeFromIndustry(industry: Industry): SkillType {
+  if (SkillTypeIndustry[SkillType.HIGH_SKILL].includes(industry)) {
     return SkillType.HIGH_SKILL;
   }
   return SkillType.LOW_SKILL;

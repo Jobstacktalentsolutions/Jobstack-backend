@@ -10,6 +10,7 @@ export interface VettingConfig {
   highSkillWeights: {
     yearsOfExperience: number;
     skillMatching: number;
+    industryMatching: number;
     profileCompleteness: number;
     proximity: number;
     applicationSpeed: number;
@@ -19,6 +20,7 @@ export interface VettingConfig {
   lowSkillWeights: {
     applicationSpeed: number;
     profileCompleteness: number;
+    industryMatching: number;
     experience: number;
     proximity: number;
   };
@@ -48,18 +50,20 @@ export const VETTING_CONFIG: VettingConfig = {
   defaultHighlightedCandidateCount: 3,
 
   highSkillWeights: {
-    yearsOfExperience: 0.25,
-    skillMatching: 0.35, // Higher than profile completeness so skill fit dominates
+    yearsOfExperience: 0.2,
+    skillMatching: 0.25,
+    industryMatching: 0.2,
     profileCompleteness: 0.1,
     proximity: 0.15,
-    applicationSpeed: 0.15,
+    applicationSpeed: 0.1,
   },
 
   lowSkillWeights: {
-    proximity: 0.35, // Emphasizing local availability for low-skill jobs
-    applicationSpeed: 0.3,
-    profileCompleteness: 0.2,
-    experience: 0.15, // Less critical for low-skill roles
+    proximity: 0.25,
+    applicationSpeed: 0.2,
+    industryMatching: 0.25,
+    profileCompleteness: 0.15,
+    experience: 0.15,
   },
 
   profileCompletenessWeights: {

@@ -15,7 +15,7 @@ import {
   EmployerGender,
   EmployerStatus,
   EmployerType,
-  SkillCategory,
+  Industry,
 } from './schema.enum';
 import { Document } from './Document.entity';
 import { Job } from './Job.entity';
@@ -74,8 +74,8 @@ export class EmployerProfile {
   @Column({ type: 'enum', enum: EmployerGender, nullable: true })
   gender?: EmployerGender;
 
-  @Column({ type: 'enum', enum: SkillCategory, nullable: true })
-  industry?: SkillCategory;
+  @Column({ type: 'enum', enum: Industry, nullable: true })
+  industry?: Industry;
 
   @Column({ nullable: true })
   contactPersonName?: string;

@@ -1,7 +1,7 @@
 import {
   EmployerType,
   EmployerGender,
-  SkillCategory,
+  Industry,
 } from '@app/common/database/entities/schema.enum';
 import { GovernmentIdType } from '@app/common/shared/enums/employer-docs.enum';
 import {
@@ -57,12 +57,12 @@ export class UpdateEmployerProfileDto {
   gender?: EmployerGender;
 
   @ApiPropertyOptional({
-    enum: SkillCategory,
-    example: SkillCategory.BUSINESS_ADMIN,
+    enum: Industry,
+    example: Industry.BUSINESS_ADMIN,
   })
   @IsOptional()
-  @IsEnum(SkillCategory)
-  industry?: SkillCategory;
+  @IsEnum(Industry)
+  industry?: Industry;
 
   @ApiPropertyOptional({ example: 'Aisha Bello' })
   @IsOptional()
