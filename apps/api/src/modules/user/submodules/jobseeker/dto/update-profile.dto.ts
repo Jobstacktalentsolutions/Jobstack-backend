@@ -161,7 +161,8 @@ export class UpdateProfileDto {
       {
         company: 'Fashion Hub Ltd.',
         role: 'Sales Assistant',
-        duration: 'Jan 2022 - Present',
+        startDate: '2022-01-01',
+        isCurrent: true,
         description:
           'Managing customer inquiries, processing sales transactions, and maintaining store inventory. Achieved 95% customer satisfaction rating.',
       },

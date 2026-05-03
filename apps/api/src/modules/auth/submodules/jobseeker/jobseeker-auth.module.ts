@@ -23,7 +23,7 @@ import { GoogleIdentityModule } from '../../google/google-identity.module';
     RedisModule,
     NotificationModule,
     forwardRef(() => SkillsModule),
-    GoogleIdentityModule,
+    forwardRef(() => GoogleIdentityModule),
   ],
   controllers: [JobSeekerAuthController],
   providers: [JobSeekerAuthService, JobSeekerJwtGuard],

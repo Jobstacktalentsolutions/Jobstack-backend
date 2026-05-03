@@ -173,12 +173,14 @@ export class JobSeekerProfile {
   @Column({ type: 'jsonb', nullable: true })
   /**
    * Work experience entries stored as JSON array.
-   * Each entry: { company: string, role: string, duration: string, description: string }
+   * Each entry: { company: string, role: string, startDate: string, endDate?: string, isCurrent?: boolean, description: string }
    */
   workExperience?: Array<{
     company: string;
     role: string;
-    duration: string;
+    startDate: string;
+    endDate?: string;
+    isCurrent?: boolean;
     description: string;
   }>;
 

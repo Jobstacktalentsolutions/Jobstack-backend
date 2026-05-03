@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { EmployerAuth } from '@app/common/database/entities/EmployerAuth.entity';
 import { EmployerProfile } from '@app/common/database/entities/EmployerProfile.entity';
@@ -21,7 +21,7 @@ import { GoogleIdentityModule } from '../../google/google-identity.module';
     ]),
     RedisModule,
     NotificationModule,
-    GoogleIdentityModule,
+    forwardRef(() => GoogleIdentityModule),
   ],
   controllers: [EmployerAuthController],
   providers: [EmployerAuthService, EmployerJwtGuard],

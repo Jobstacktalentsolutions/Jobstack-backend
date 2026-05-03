@@ -1,5 +1,12 @@
-import { IsString, IsNotEmpty, MaxLength } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+import {
+  IsString,
+  IsNotEmpty,
+  MaxLength,
+  IsDateString,
+  IsOptional,
+  IsBoolean,
+} from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 // DTO for a single work experience entry
 export class WorkExperienceDto {
@@ -22,13 +29,28 @@ export class WorkExperienceDto {
   role: string;
 
   @ApiProperty({
-    example: 'Jan 2022 - Present',
-    description: 'Duration of employment (free-form text)',
+    example: '2022-01-01',
+    description: 'Start date of employment',
   })
-  @IsString()
+  @IsDateString()
   @IsNotEmpty()
-  @MaxLength(100)
-  duration: string;
+  startDate: string;
+
+  @ApiPropertyOptional({
+    example: '2024-01-01',
+    description: 'End date of employment (null if current)',
+  })
+  @IsOptional()
+  @IsDateString()
+  endDate?: string;
+
+  @ApiPropertyOptional({
+    example: true,
+    description: 'Whether this is the current job',
+  })
+  @IsOptional()
+  @IsBoolean()
+  isCurrent?: boolean;
 
   @ApiProperty({
     example:
@@ -37,6 +59,6 @@ export class WorkExperienceDto {
   })
   @IsString()
   @IsNotEmpty()
-  @MaxLength(1000)
+  @MaxLength(3000)
   description: string;
 }
