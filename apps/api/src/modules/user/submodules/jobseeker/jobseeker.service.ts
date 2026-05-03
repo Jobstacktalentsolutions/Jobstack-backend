@@ -13,10 +13,13 @@ import { JobseekerVerificationDocument } from '@app/common/database/entities/Job
 import { Document } from '@app/common/database/entities';
 import { StorageService } from '@app/common/storage/storage.service';
 import { SkillsService } from 'apps/api/src/modules/skills/skills.service';
+import { calculateYearsOfExperience } from '@app/common/shared/utils/experience-calculator.util';
 import {
   UpdateProfileDto,
+
   BatchUploadJobseekerDocumentsDto,
   JobseekerBatchDocumentType,
+  WorkExperienceDto,
 } from './dto';
 import { GetAllJobSeekersQueryDto } from './dto/get-all-jobseekers-query.dto';
 import type { MulterFile } from '@app/common/shared/types';
@@ -689,65 +692,13 @@ export class JobseekerService {
       skills: skills.slice(0, 12),
       profilePictureUrl,
       workExperience: profile.workExperience ?? [],
-      yearsOfExperience: profile.yearsOfExperience ?? 0,
+      yearsOfExperience: profile.yearsOfExperience ? Number(profile.yearsOfExperience) : 0,
       cvDocumentUrl,
       cvDocumentName,
       cvDocumentSize,
     };
   }
 
-  private calculateYearsOfExperience(
-    workExperience: WorkExperienceDto[],
-  ): number {
-    if (!workExperience || workExperience.length === 0) return 0;
-
-    // Convert to {start, end} intervals
-    const now = new Date();
-    const intervals = workExperience
-      .map((exp) => ({
-        start: new Date(exp.startDate),
-        end: exp.isCurrent || !exp.endDate ? now : new Date(exp.endDate),
-      }))
-      .filter(
-        (interval) =>
-          !isNaN(interval.start.getTime()) && !isNaN(interval.end.getTime()),
-      )
-      .sort((a, b) => a.start.getTime() - b.start.getTime());
-
-    if (intervals.length === 0) return 0;
-
-    // Merge overlapping intervals
-    const merged: { start: Date; end: Date }[] = [];
-    let current = { ...intervals[0] };
-
-    for (let i = 1; i < intervals.length; i++) {
-      const next = intervals[i];
-      if (next.start <= current.end) {
-        // Overlap, extend current end if next end is further
-        if (next.end > current.end) {
-          current.end = next.end;
-        }
-      } else {
-        // No overlap, push current and move to next
-        merged.push(current);
-        current = { ...next };
-      }
-    }
-    merged.push(current);
-
-    // Sum up durations
-    let totalMonths = 0;
-    for (const interval of merged) {
-      const diffInMonths =
-        (interval.end.getFullYear() - interval.start.getFullYear()) * 12 +
-        (interval.end.getMonth() - interval.start.getMonth());
-      if (diffInMonths > 0) {
-        totalMonths += diffInMonths;
-      }
-    }
-
-    return Math.floor(totalMonths / 12);
-  }
 
   // Update jobseeker profile with smart skills handling
   async updateProfile(
@@ -839,15 +790,30 @@ export class JobseekerService {
           profile.approvalStatus = ApprovalStatus.PENDING;
         }
 
-        // Recalculate years of experience from structured work history
-        profile.yearsOfExperience = this.calculateYearsOfExperience(
-          updateData.workExperience,
+        // Recalculate      if (profile.workExperience && Array.isArray(profile.workExperience)) {
+        profile.yearsOfExperience = calculateYearsOfExperience(
+          profile.workExperience as any,
         );
       }
     }
 
+    if (updateData.workExperience !== undefined) {
+      profile.workExperience = updateData.workExperience;
+
+      // Reset approvalStatus to PENDING if already APPROVED
+      if (profile.approvalStatus === ApprovalStatus.APPROVED) {
+        profile.approvalStatus = ApprovalStatus.PENDING;
+      }
+
+      // Recalculate years of experience from structured work history
+      profile.yearsOfExperience = calculateYearsOfExperience(
+        updateData.workExperience as any,
+      );
+    }
+
     // Update lastChangedFields if any sensitive fields were modified
     if (changedFields.length > 0) {
+
       const existingFields = profile.lastChangedFields
         ? profile.lastChangedFields.split(',')
         : [];

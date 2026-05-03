@@ -10,7 +10,10 @@ import {
   Employee,
   EmployerProfile,
   JobApplication,
+  JobSeekerProfile,
 } from '@app/common/database/entities';
+import { calculateYearsOfExperience } from '@app/common/shared/utils/experience-calculator.util';
+
 import {
   EmployeeStatus,
   isEmployeeOpenForMutualCompletion,
@@ -30,8 +33,11 @@ export class EmploymentCompletionService {
     private readonly applicationRepo: Repository<JobApplication>,
     @InjectRepository(EmployerProfile)
     private readonly employerRepo: Repository<EmployerProfile>,
+    @InjectRepository(JobSeekerProfile)
+    private readonly jobseekerRepo: Repository<JobSeekerProfile>,
     private readonly notificationService: NotificationService,
     private readonly configService: ConfigService,
+
   ) {}
 
   // Builds absolute frontend URL without trailing slash duplication.
@@ -59,7 +65,11 @@ export class EmploymentCompletionService {
   }
 
   // Applies ENDED state and probation cleanup (mirrors termination side-effects).
-  private finalizeToEnded(row: Employee, at: Date): void {
+  private async finalizeToEnded(
+    manager: any,
+    row: Employee,
+    at: Date,
+  ): Promise<void> {
     row.status = EmployeeStatus.ENDED;
     row.endDate = at;
     row.probationStatus = ProbationStatus.TERMINATED;
@@ -67,7 +77,41 @@ export class EmploymentCompletionService {
     row.pulse60SentAt = null;
     const line = `Mutual completion confirmed (${at.toISOString()})`;
     row.notes = row.notes ? `${row.notes}\n${line}` : line;
+
+    // Automatically add to Jobseeker Work History
+    if (row.jobseekerProfile) {
+      const profile = row.jobseekerProfile;
+      const workExperience = Array.isArray(profile.workExperience)
+        ? [...profile.workExperience]
+        : [];
+
+      const employerName =
+        row.employer?.companyName ||
+        `${row.employer?.firstName ?? ''} ${row.employer?.lastName ?? ''}`.trim() ||
+        'Unknown Employer';
+
+      const newEntry = {
+        company: employerName,
+        role: row.job?.title || 'Employee',
+        startDate: row.startDate ? row.startDate.toISOString().slice(0, 7) : '',
+        endDate: at.toISOString().slice(0, 7),
+        isCurrent: false,
+        description: row.job?.description || '',
+        referenceName: `${row.employer?.firstName ?? ''} ${row.employer?.lastName ?? ''}`.trim(),
+        referencePhone: row.employer?.phoneNumber || '',
+      };
+
+      workExperience.push(newEntry);
+      profile.workExperience = workExperience;
+      profile.yearsOfExperience = calculateYearsOfExperience(
+        workExperience as any,
+      );
+
+      // We use the manager from the transaction to save the profile too
+      await manager.getRepository(JobSeekerProfile).save(profile);
+    }
   }
+
 
   // Notifies the other party to confirm completion in the app.
   private async notifyOtherParty(params: {
@@ -181,8 +225,9 @@ export class EmploymentCompletionService {
       const repo = manager.getRepository(Employee);
       const row = await repo.findOne({
         where: { id: employeeId, employerId },
-        relations: ['job', 'jobseekerProfile'],
+        relations: ['job', 'jobseekerProfile', 'employer'],
       });
+
       if (!row || !isEmployeeOpenForMutualCompletion(row.status)) {
         throw new BadRequestException('Employee is no longer eligible.');
       }
@@ -202,7 +247,7 @@ export class EmploymentCompletionService {
         row.jobseekerDeclaredCompleteAt != null &&
         row.employerDeclaredCompleteAt != null;
       if (both) {
-        this.finalizeToEnded(row, now);
+        await this.finalizeToEnded(manager, row, now);
         finalized = true;
       } else {
         shouldNotifyJobseeker = true;
@@ -268,8 +313,9 @@ export class EmploymentCompletionService {
       const repo = manager.getRepository(Employee);
       const row = await repo.findOne({
         where: { id: employeeId, jobseekerProfileId },
-        relations: ['job', 'jobseekerProfile'],
+        relations: ['job', 'jobseekerProfile', 'employer'],
       });
+
       if (!row || !isEmployeeOpenForMutualCompletion(row.status)) {
         throw new BadRequestException('Employee is no longer eligible.');
       }
@@ -289,9 +335,11 @@ export class EmploymentCompletionService {
         row.employerDeclaredCompleteAt != null &&
         row.jobseekerDeclaredCompleteAt != null;
       if (both) {
-        this.finalizeToEnded(row, now);
+
+        await this.finalizeToEnded(manager, row, now);
         finalized = true;
       } else {
+
         shouldNotifyEmployer = true;
       }
 

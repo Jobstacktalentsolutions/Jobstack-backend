@@ -89,8 +89,17 @@ export class JobSeekerProfile {
   @Column({ type: 'varchar', length: 3000, nullable: true })
   brief?: string;
 
-  @Column({ type: 'int', nullable: true })
-  yearsOfExperience?: number;
+  @Column({
+    type: 'decimal',
+    precision: 4,
+    scale: 1,
+    default: 0,
+    transformer: {
+      to: (value: number) => value,
+      from: (value: string) => (value ? parseFloat(value) : 0),
+    },
+  })
+  yearsOfExperience: number;
 
   @Column({ type: 'text', nullable: true })
   preferredLocation?: string;
@@ -192,7 +201,6 @@ export class JobSeekerProfile {
    * requiring re-verification. Stored as comma-separated values.
    */
   lastChangedFields?: string;
-
 
   @Column({ type: 'jsonb', nullable: true })
   /**
