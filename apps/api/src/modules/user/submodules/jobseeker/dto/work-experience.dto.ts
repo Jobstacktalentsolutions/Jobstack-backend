@@ -61,4 +61,23 @@ export class WorkExperienceDto {
   @IsNotEmpty()
   @MaxLength(3000)
   description: string;
+
+  @ApiPropertyOptional({
+    example: 'Adeola Johnson',
+    description: 'Name of a supervisor or HR contact for verification',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  referenceName?: string;
+
+  @ApiPropertyOptional({
+    example: '+2348012345678',
+    description: 'Phone number of the reference contact',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(50)
+  referencePhone?: string;
 }
+

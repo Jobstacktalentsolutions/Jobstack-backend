@@ -173,7 +173,7 @@ export class JobSeekerProfile {
   @Column({ type: 'jsonb', nullable: true })
   /**
    * Work experience entries stored as JSON array.
-   * Each entry: { company: string, role: string, startDate: string, endDate?: string, isCurrent?: boolean, description: string }
+   * Each entry: { company: string, role: string, startDate: string, endDate?: string, isCurrent?: boolean, description: string, referenceName?: string, referencePhone?: string }
    */
   workExperience?: Array<{
     company: string;
@@ -182,7 +182,17 @@ export class JobSeekerProfile {
     endDate?: string;
     isCurrent?: boolean;
     description: string;
+    referenceName?: string;
+    referencePhone?: string;
   }>;
+
+  @Column({ type: 'varchar', nullable: true })
+  /**
+   * Tracks which sensitive fields (brief, workExperience) were changed while the profile was approved,
+   * requiring re-verification. Stored as comma-separated values.
+   */
+  lastChangedFields?: string;
+
 
   @Column({ type: 'jsonb', nullable: true })
   /**

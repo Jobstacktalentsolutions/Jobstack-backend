@@ -689,6 +689,7 @@ export class JobseekerService {
       skills: skills.slice(0, 12),
       profilePictureUrl,
       workExperience: profile.workExperience ?? [],
+      yearsOfExperience: profile.yearsOfExperience ?? 0,
       cvDocumentUrl,
       cvDocumentName,
       cvDocumentSize,
@@ -768,13 +769,17 @@ export class JobseekerService {
     if (updateData.jobTitle !== undefined) {
       profile.jobTitle = updateData.jobTitle;
     }
+    const changedFields: string[] = [];
+
     if (updateData.brief !== undefined && updateData.brief !== profile.brief) {
       profile.brief = updateData.brief;
+      changedFields.push('brief');
       // If brief changes and user was approved, re-verify
       if (profile.approvalStatus === ApprovalStatus.APPROVED) {
         profile.approvalStatus = ApprovalStatus.PENDING;
       }
     }
+
     if (updateData.phoneNumber !== undefined) {
       profile.phoneNumber = updateData.phoneNumber;
     }
@@ -822,12 +827,36 @@ export class JobseekerService {
       profile.yearsOfExperience = updateData.yearsOfExperience;
     }
     if (updateData.workExperience !== undefined) {
-      profile.workExperience = updateData.workExperience;
-      // Recalculate years of experience from structured work history
-      profile.yearsOfExperience = this.calculateYearsOfExperience(
-        updateData.workExperience,
-      );
+      // Check if workExperience actually changed (simple JSON stringify comparison)
+      const oldExp = JSON.stringify(profile.workExperience || []);
+      const newExp = JSON.stringify(updateData.workExperience);
+      if (oldExp !== newExp) {
+        profile.workExperience = updateData.workExperience;
+        changedFields.push('workExperience');
+
+        // If workExperience changes and user was approved, re-verify
+        if (profile.approvalStatus === ApprovalStatus.APPROVED) {
+          profile.approvalStatus = ApprovalStatus.PENDING;
+        }
+
+        // Recalculate years of experience from structured work history
+        profile.yearsOfExperience = this.calculateYearsOfExperience(
+          updateData.workExperience,
+        );
+      }
     }
+
+    // Update lastChangedFields if any sensitive fields were modified
+    if (changedFields.length > 0) {
+      const existingFields = profile.lastChangedFields
+        ? profile.lastChangedFields.split(',')
+        : [];
+      const updatedFields = Array.from(
+        new Set([...existingFields, ...changedFields]),
+      ).join(',');
+      profile.lastChangedFields = updatedFields;
+    }
+
     if (updateData.referenceContacts !== undefined) {
       profile.referenceContacts = updateData.referenceContacts;
     }
