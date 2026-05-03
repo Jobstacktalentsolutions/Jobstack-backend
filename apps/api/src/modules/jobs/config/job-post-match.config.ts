@@ -5,7 +5,7 @@
 export const JOB_POST_MATCH_CONFIG = {
   /** Minimum vetting-style score (0–100) before text bonus */
   MIN_BASE_SCORE: 38,
-  /** Maximum points added from title/tags text matching (0–100 scale mapped to points) */
+  /** Maximum points added from title text matching (0–100 scale mapped to points) */
   MAX_TEXT_SCORE_POINTS: 14,
   /** Exclude profiles below this completeness (same scale as vetting) */
   MIN_PROFILE_COMPLETENESS: 30,

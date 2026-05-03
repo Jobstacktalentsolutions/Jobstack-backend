@@ -715,8 +715,12 @@ export class JobseekerService {
     if (updateData.jobTitle !== undefined) {
       profile.jobTitle = updateData.jobTitle;
     }
-    if (updateData.brief !== undefined) {
+    if (updateData.brief !== undefined && updateData.brief !== profile.brief) {
       profile.brief = updateData.brief;
+      // If brief changes and user was approved, re-verify
+      if (profile.approvalStatus === ApprovalStatus.APPROVED) {
+        profile.approvalStatus = ApprovalStatus.PENDING;
+      }
     }
     if (updateData.phoneNumber !== undefined) {
       profile.phoneNumber = updateData.phoneNumber;
@@ -743,8 +747,8 @@ export class JobseekerService {
       profile.preferredEmploymentArrangement =
         updateData.preferredEmploymentArrangement;
     }
-    if (updateData.workSector !== undefined) {
-      profile.workSector = updateData.workSector;
+    if (updateData.industry !== undefined) {
+      profile.industry = updateData.industry;
     }
     if (updateData.address !== undefined) {
       profile.address = updateData.address;

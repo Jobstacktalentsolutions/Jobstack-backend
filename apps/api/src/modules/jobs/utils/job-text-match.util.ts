@@ -31,45 +31,13 @@ export function computeTitleSimilarity(
   return Math.min(1, jaro + bonus);
 }
 
-/** How well job tags overlap jobseeker brief (0–1), same approach as job recommendations */
-export function computeTagBriefMatch(
-  tags: string[] | undefined,
-  brief: string | undefined,
-): number {
-  if (!tags?.length) return 0;
-  if (!brief) return 0;
-  const summary = brief
-    .substring(0, C.MAX_FUZZY_MATCH_TEXT_LENGTH)
-    .toLowerCase();
-  let totalTagMatches = 0;
 
-  for (const tag of tags) {
-    const tagLower = tag.toLowerCase();
-    if (summary.includes(tagLower)) {
-      totalTagMatches += 1;
-      continue;
-    }
-    const words = summary.split(/\s+/).slice(0, 100);
-    let bestWordSim = 0;
-    for (const word of words) {
-      if (word.length < 3) continue;
-      const sim = JaroWinklerDistance(tagLower, word);
-      if (sim > bestWordSim) bestWordSim = sim;
-      if (bestWordSim > 0.95) break;
-    }
-    if (bestWordSim >= C.FUZZY_THRESHOLD)
-      totalTagMatches += bestWordSim * C.FUZZY_CREDIT_RATIO;
-  }
-
-  return Math.min(1, totalTagMatches / tags.length);
-}
 
 /** Combined text signal 0–100 for job-post notifications */
 export function computeTextMatchScore(
-  job: { title: string; tags?: string[] },
-  profile: { jobTitle?: string; brief?: string },
+  job: { title: string },
+  profile: { jobTitle?: string },
 ): number {
   const titlePart = computeTitleSimilarity(profile.jobTitle, job.title) * 100;
-  const tagPart = computeTagBriefMatch(job.tags, profile.brief) * 100;
-  return Math.round((titlePart * 0.55 + tagPart * 0.45) * 100) / 100;
+  return Math.round(titlePart * 100) / 100;
 }

@@ -192,7 +192,7 @@ export class JobPostMatchNotifyService {
     };
   }
 
-  /** Prefilter: approved profiles with skill overlap or category-aligned skills, excluding existing applicants. */
+  /** Prefilter: approved profiles with skill overlap or industry-aligned skills, excluding existing applicants. */
   private async findCandidateProfileIds(job: Job): Promise<string[]> {
     const qb = this.profileRepo
       .createQueryBuilder('p')
@@ -219,9 +219,7 @@ export class JobPostMatchNotifyService {
         { skillIds },
       );
     } else {
-      qb.innerJoin('p.userSkills', 'us')
-        .innerJoin('us.skill', 'sk')
-        .andWhere('sk.category = :category', { category: job.category });
+      qb.andWhere('p.industry = :industry', { industry: job.industry });
     }
 
     const partial = await qb.getMany();

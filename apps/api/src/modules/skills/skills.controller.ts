@@ -32,8 +32,7 @@ export class SkillsController {
   /**
    * Authenticated users (jobseekers or employers) can add a new skill directly
    * as ACTIVE. If the skill already exists (case-insensitive), it is returned
-   * as-is. The caller must supply the work sector (category) the skill belongs
-   * to so the backend can correctly classify it.
+   * as-is.
    */
   @Post('add')
   @HttpCode(HttpStatus.CREATED)
@@ -41,7 +40,7 @@ export class SkillsController {
   @ApiOperation({ summary: 'Add a new skill (jobseeker or employer)' })
   @ApiBody({ type: AddSkillDto })
   async add(@Body() body: AddSkillDto): Promise<Skill> {
-    return this.skillsService.addSkill(body.name, body.category);
+    return this.skillsService.addSkill(body.name);
   }
 
   // Admin: create (Vetting Specialist manages candidate quality control)

@@ -30,7 +30,7 @@ export class Job extends BaseEntity {
   @Column({ type: 'varchar', length: 3000, nullable: true })
   description?: string;
 
-  @Column({ type: 'enum', enum: Industry })
+  @Column({ type: 'enum', enum: Industry, default: Industry.OTHERS })
   industry: Industry;
 
   @Column({ type: 'enum', enum: EmploymentType })

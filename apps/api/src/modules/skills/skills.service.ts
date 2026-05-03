@@ -96,7 +96,7 @@ export class SkillsService {
 
   /**
    * Internal helper used when a profile update references a skill name that
-   * doesn't exist yet. Creates it as ACTIVE with a fallback category.
+   * doesn't exist yet. Creates it as ACTIVE.
    */
   async insertActiveSkill(
     name: string,

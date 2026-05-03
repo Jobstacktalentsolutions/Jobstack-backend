@@ -166,9 +166,9 @@ export class JobSeekerProfile {
   @Column({
     type: 'enum',
     enum: Industry,
-    nullable: true,
+    default: Industry.OTHERS,
   })
-  industry?: Industry;
+  industry: Industry;
 
   @Column({ type: 'jsonb', nullable: true })
   /**

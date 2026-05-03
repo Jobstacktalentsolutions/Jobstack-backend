@@ -47,7 +47,7 @@ export class JobsService {
     const job = this.jobRepo.create({
       title: dto.title,
       description: dto.description,
-      category: dto.category,
+      industry: dto.industry,
       employmentType: dto.employmentType,
       employmentArrangement: dto.employmentArrangement,
       workMode: dto.workMode,
@@ -63,7 +63,7 @@ export class JobsService {
       workDays: dto.workDays,
       startTime: dto.startTime,
       endTime: dto.endTime,
-      tags: dto.tags ?? [],
+
       applicationDeadline: dto.applicationDeadline
         ? new Date(dto.applicationDeadline)
         : undefined,
@@ -214,7 +214,7 @@ export class JobsService {
     Object.assign(job, {
       title: dto.title ?? job.title,
       description: dto.description ?? job.description,
-      category: dto.category ?? job.category,
+      industry: dto.industry ?? job.industry,
       employmentType: dto.employmentType ?? job.employmentType,
       employmentArrangement:
         dto.employmentArrangement ?? job.employmentArrangement,
@@ -232,7 +232,7 @@ export class JobsService {
       workDays: dto.workDays ?? job.workDays,
       startTime: dto.startTime ?? job.startTime,
       endTime: dto.endTime ?? job.endTime,
-      tags: dto.tags ?? job.tags,
+
       applicationDeadline: dto.applicationDeadline
         ? new Date(dto.applicationDeadline)
         : job.applicationDeadline,
@@ -352,7 +352,7 @@ export class JobsService {
         'job.id',
         'job.title',
         'job.description',
-        'job.category',
+        'job.industry',
         'job.employmentType',
         'job.employmentArrangement',
         'job.workMode',
@@ -364,7 +364,7 @@ export class JobsService {
         'job.workDays',
         'job.startTime',
         'job.endTime',
-        'job.tags',
+
         'job.applicationDeadline',
         'job.status',
         'job.employerId',

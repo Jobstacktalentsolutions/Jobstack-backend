@@ -74,8 +74,8 @@ export class EmployerProfile {
   @Column({ type: 'enum', enum: EmployerGender, nullable: true })
   gender?: EmployerGender;
 
-  @Column({ type: 'enum', enum: Industry, nullable: true })
-  industry?: Industry;
+  @Column({ type: 'enum', enum: Industry, default: Industry.OTHERS })
+  industry: Industry;
 
   @Column({ nullable: true })
   contactPersonName?: string;

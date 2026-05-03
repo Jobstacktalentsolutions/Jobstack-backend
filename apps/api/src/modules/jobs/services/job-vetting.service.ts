@@ -279,7 +279,7 @@ export class JobVettingService {
   }
 
   /**
-   * Calculate overall applicant score based on job category
+   * Calculate overall applicant score based on job industry
    */
   private async calculateApplicantScore(
     application: JobApplication,
@@ -990,6 +990,7 @@ export class JobVettingService {
               yearsOfExperience: profile.yearsOfExperience,
               city: profile.city,
               state: profile.state,
+              brief: profile.brief,
               skills: (profile.userSkills || []).map((us) => ({
                 id: us.skill.id,
                 name: us.skill.name,

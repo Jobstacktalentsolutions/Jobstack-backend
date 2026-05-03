@@ -28,6 +28,7 @@ export enum Industry {
   PERSONAL_SERVICES = 'PERSONAL_SERVICES',
   PET_CARE = 'PET_CARE',
   EVENT_SERVICES = 'EVENT_SERVICES',
+  OTHERS = 'OTHERS',
 }
 
 export enum SkillType {
@@ -59,6 +60,7 @@ export const SkillTypeIndustry: Record<SkillType, Industry[]> = {
     Industry.HOSPITALITY,
     Industry.SECURITY,
     Industry.TRANSPORT_LOGISTICS,
+    Industry.OTHERS,
   ],
 };
 

@@ -15,13 +15,13 @@ export function applyJobListingFilters(
     });
   }
 
-  if (query.categories?.length) {
-    qb.andWhere(`${a}.category IN (:...listingCategories)`, {
-      listingCategories: query.categories,
+  if (query.industries?.length) {
+    qb.andWhere(`${a}.industry IN (:...listingIndustries)`, {
+      listingIndustries: query.industries,
     });
-  } else if (query.category) {
-    qb.andWhere(`${a}.category = :listingCategory`, {
-      listingCategory: query.category,
+  } else if (query.industry) {
+    qb.andWhere(`${a}.industry = :listingIndustry`, {
+      listingIndustry: query.industry,
     });
   }
 
