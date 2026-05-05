@@ -11,8 +11,10 @@ import {
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { PaystackService } from '../services/paystack.service';
 import { PaymentService } from '../services/payment.service';
+import { RateLimit } from 'apps/api/src/guards';
 
 @ApiTags('Payment webhooks')
+@RateLimit({ limit: 600, ttlSeconds: 60 })
 @Controller('payment/webhook')
 export class PaymentWebhookController {
   private readonly logger = new Logger(PaymentWebhookController.name);
@@ -25,6 +27,7 @@ export class PaymentWebhookController {
   // Handle Paystack webhook events
   @Post()
   @HttpCode(HttpStatus.OK)
+  @RateLimit({ limit: 600, ttlSeconds: 60 })
   @ApiOperation({ summary: 'Paystack webhook ingress' })
   async handleWebhook(
     @Body() rawBody: any,
@@ -52,8 +55,9 @@ export class PaymentWebhookController {
         success: true,
         message: 'Webhook processed successfully',
       };
-    } catch (error) {
-      this.logger.error(`Webhook processing failed: ${error.message}`, error);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error(`Webhook processing failed: ${message}`, error);
 
       if (error instanceof BadRequestException) {
         throw error;

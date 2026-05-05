@@ -4,13 +4,13 @@
 
 export const JOB_POST_MATCH_CONFIG = {
   /** Minimum vetting-style score (0–100) before text bonus */
-  MIN_BASE_SCORE: 38,
+  MIN_BASE_SCORE: 30,
   /** Maximum points added from title text matching (0–100 scale mapped to points) */
   MAX_TEXT_SCORE_POINTS: 14,
   /** Exclude profiles below this completeness (same scale as vetting) */
-  MIN_PROFILE_COMPLETENESS: 30,
+  MIN_PROFILE_COMPLETENESS: 20,
   /** Max profiles to load and score per job (performance cap) */
-  MAX_CANDIDATES_TO_SCORE: 800,
+  MAX_CANDIDATES_TO_SCORE: 500,
   /** Max emails actually sent per published job */
-  MAX_EMAILS_PER_JOB: 400,
+  MAX_EMAILS_PER_JOB: 100,
 } as const;

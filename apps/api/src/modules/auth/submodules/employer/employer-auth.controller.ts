@@ -23,14 +23,17 @@ import {
 } from './dto/employer-auth.dto';
 import { ReqDeviceInfo, type RequestDeviceInfo } from 'libs/common/src/shared';
 import { EmployerJwtGuard } from 'apps/api/src/guards';
+import { RateLimit } from 'apps/api/src/guards';
 
 @ApiTags('Auth (employer)')
+@RateLimit({ limit: 20, ttlSeconds: 60 })
 @Controller('auth/employer')
 export class EmployerAuthController {
   constructor(private employerAuthService: EmployerAuthService) {}
 
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
+  @RateLimit({ limit: 10, ttlSeconds: 60 })
   @ApiOperation({ summary: 'Register employer account' })
   @ApiBody({ type: EmployerRegistrationDto })
   async register(
@@ -46,6 +49,7 @@ export class EmployerAuthController {
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
+  @RateLimit({ limit: 10, ttlSeconds: 60 })
   @ApiOperation({ summary: 'Employer login' })
   @ApiBody({ type: LoginDto })
   async login(
@@ -57,6 +61,7 @@ export class EmployerAuthController {
 
   @Post('google')
   @HttpCode(HttpStatus.OK)
+  @RateLimit({ limit: 10, ttlSeconds: 60 })
   @ApiOperation({ summary: 'Employer Google sign-in/sign-up' })
   @ApiBody({ type: GoogleAuthDto })
   async googleAuth(
@@ -71,6 +76,7 @@ export class EmployerAuthController {
 
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
+  @RateLimit({ limit: 10, ttlSeconds: 60 })
   @ApiOperation({ summary: 'Refresh access token' })
   @ApiBody({ type: RefreshTokenDto })
   async refreshToken(
@@ -88,13 +94,19 @@ export class EmployerAuthController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Logout current session' })
-  async logout(@Req() req: any) {
+  async logout(
+    @Req()
+    req: {
+      user: { sessionId: string; jti: string; refreshTokenId?: string };
+    },
+  ) {
     const { sessionId, jti, refreshTokenId } = req.user;
     await this.employerAuthService.logout(sessionId, jti, refreshTokenId);
   }
 
   @Post('send-verification-email')
   @HttpCode(HttpStatus.OK)
+  @RateLimit({ limit: 3, ttlSeconds: 600 })
   @ApiOperation({ summary: 'Send email verification code' })
   @ApiBody({ type: EmailVerificationRequestDto })
   async sendVerificationEmail(
@@ -107,6 +119,7 @@ export class EmployerAuthController {
 
   @Post('verify-email')
   @HttpCode(HttpStatus.OK)
+  @RateLimit({ limit: 5, ttlSeconds: 600 })
   @ApiOperation({ summary: 'Confirm email with code' })
   @ApiBody({ type: EmailVerificationConfirmDto })
   async verifyEmail(
@@ -122,6 +135,7 @@ export class EmployerAuthController {
 
   @Post('send-password-reset-code')
   @HttpCode(HttpStatus.OK)
+  @RateLimit({ limit: 3, ttlSeconds: 900 })
   @ApiOperation({ summary: 'Request password reset code' })
   @ApiBody({ type: PasswordResetRequestDto })
   async sendPasswordResetCode(@Body() requestData: PasswordResetRequestDto) {
@@ -130,6 +144,7 @@ export class EmployerAuthController {
 
   @Post('confirm-password-reset-code')
   @HttpCode(HttpStatus.OK)
+  @RateLimit({ limit: 5, ttlSeconds: 900 })
   @ApiOperation({ summary: 'Confirm reset code from email' })
   @ApiBody({ type: PasswordResetConfirmCodeDto })
   async confirmPasswordResetCode(
@@ -140,6 +155,7 @@ export class EmployerAuthController {
 
   @Post('reset-password')
   @HttpCode(HttpStatus.OK)
+  @RateLimit({ limit: 5, ttlSeconds: 900 })
   @ApiOperation({ summary: 'Set new password with reset token' })
   @ApiBody({ type: PasswordResetDto })
   async resetPassword(@Body() resetData: PasswordResetDto) {

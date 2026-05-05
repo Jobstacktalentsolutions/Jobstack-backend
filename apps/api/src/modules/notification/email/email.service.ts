@@ -53,9 +53,13 @@ export class EmailService extends BaseNotificationService<EmailPayloadDto> {
       );
     }
 
+    const contextSubject =
+      typeof payload.context?.subject === 'string'
+        ? payload.context.subject
+        : undefined;
     const finalSubject =
       payload.subject ||
-      payload.context?.subject ||
+      contextSubject ||
       (payload.templateType
         ? EMAIL_TYPE_CONFIG[payload.templateType as EmailTemplateType]?.subject
         : null) ||
@@ -81,7 +85,7 @@ export class EmailService extends BaseNotificationService<EmailPayloadDto> {
     templateType: EmailTemplateType,
     context: Record<string, unknown>,
   ): Record<string, unknown> {
-    const c = context || {};
+    const c: Record<string, unknown> = context || {};
     const defaults: Record<string, unknown> = {};
     switch (templateType) {
       case EmailTemplateType.PASSWORD_RESET:
@@ -108,6 +112,12 @@ export class EmailService extends BaseNotificationService<EmailPayloadDto> {
         // Absolute URL to jobseeker job detail (apply flow lives on this page)
         defaults.jobDetailUrl =
           (c.jobDetailUrl as string) ?? (c.jobUrl as string) ?? '';
+        break;
+      case EmailTemplateType.URGENT_JOB_MATCH_ALERT:
+        defaults.adminName = c.adminName ?? 'Admin';
+        defaults.jobTitle = c.jobTitle ?? '';
+        defaults.jobUrl = c.jobUrl ?? '';
+        defaults.reason = c.reason ?? 'No matching candidates were found.';
         break;
       case EmailTemplateType.JOB_ACTIVATED_EMPLOYER:
         defaults.firstName =
@@ -163,7 +173,12 @@ export class EmailService extends BaseNotificationService<EmailPayloadDto> {
         root: this.templatesPath,
       });
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : String(error);
+      const message =
+        error instanceof Error
+          ? error.message
+          : typeof error === 'string'
+            ? error
+            : JSON.stringify(error);
       this.logger.error(
         `Failed to render email template ${templateType}: ${message}`,
       );

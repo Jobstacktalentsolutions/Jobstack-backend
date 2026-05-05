@@ -156,9 +156,9 @@ Send an app notification
 }
 ```
 
-### GET /notifications/:userType/:userId
+### GET /notifications/me
 
-Get user notifications with pagination
+Get my notifications with pagination
 
 Query parameters:
 
@@ -167,15 +167,19 @@ Query parameters:
 - `isRead`: Filter by read status (optional)
 - `search`: Search in title/message (optional)
 
-### GET /notifications/:userType/:userId/unread-count
+### GET /notifications/me/unread-count
 
 Get unread notification count
 
-### PATCH /notifications/:userType/:userId/:notificationId/read
+### GET /notifications/me/:notificationId
+
+Get one of my notifications by ID
+
+### PATCH /notifications/me/:notificationId/read
 
 Mark notification as read
 
-### PATCH /notifications/:userType/:userId/read-all
+### PATCH /notifications/me/read-all
 
 Mark all notifications as read
 

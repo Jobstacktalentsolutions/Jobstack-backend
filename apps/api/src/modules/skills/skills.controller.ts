@@ -17,14 +17,17 @@ import { AdminJwtGuard, RequireAdminRole } from 'apps/api/src/guards';
 import { AdminRole } from '@app/common/shared/enums/roles.enum';
 import { Skill } from '@app/common/database/entities/Skill.entity';
 import { AddSkillDto, CreateSkillDto, UpdateSkillDto } from './dto';
+import { RateLimit } from 'apps/api/src/guards';
 
 @ApiTags('Skills')
+@RateLimit({ limit: 120, ttlSeconds: 60 })
 @Controller('skills')
 export class SkillsController {
   constructor(private skillsService: SkillsService) {}
 
   // Public: list/search active skills
   @Get()
+  @RateLimit({ limit: 120, ttlSeconds: 60 })
   async list(@Query('q') q?: string): Promise<Skill[]> {
     return this.skillsService.searchSkills(q);
   }

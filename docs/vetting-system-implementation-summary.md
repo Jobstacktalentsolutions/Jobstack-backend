@@ -2,102 +2,83 @@
 
 ## Changes Implemented
 
-### 1. Custom Screening with Employer Participation
+### 1. Employer-Led Screening and Pipeline Management
 
 **What Changed:**
-- When `performCustomScreening = true`, employer now participates in the screening call
-- Admin acts as invigilator, employer conducts screening
-- Both applicant AND employer receive email notifications
+- Employers now manage the entire candidate pipeline directly after automatic vetting is complete.
+- When vetting is finished, the employer is notified via email and in-app notification.
+- Employer reviews ranked candidates and selects them for screening.
+- Employer schedules the screening (provides meeting link, date, and prep info).
+- Both candidate and employer receive email notifications; no admin invigilation is required in the standard flow.
 
 **Files Modified:**
 - `apps/api/src/modules/jobs/services/job-vetting.service.ts`
-  - Updated `notifyCandidatesForScreening()` to check `performCustomScreening` flag
-  - Sends email to employer when flag is true
-  - Loads employer relation to get email address
+  - Updated `notifyCandidatesForScreening()` to hardcode `employerWillJoin = true`.
+  - Sends email to employer as the meeting host/manager.
+  - Added `notifyEmployerVettingComplete()` to alert employers when rankings are ready.
+  - Updated `getVettedApplicantsForEmployer()` to allow employers to trigger re-vetting and view gated PII.
+- `apps/api/src/modules/jobs/controllers/jobs-employer.controller.ts`
+  - Added endpoints for `select-for-screening`, `complete-screening`, and `pick-candidate`.
+  - Employers now drive the status transitions of applications.
 
 **Files Created:**
 - `apps/api/src/templates/emails/employer-screening-invitation.ejs`
-  - Email template for employer with meeting details
-  - Explains employer's role (conduct screening) and admin's role (invigilator)
-  - Includes candidate information and meeting link
-
-**Files Updated:**
-- `apps/api/src/templates/emails/candidate-selected-for-screening.ejs`
-  - Added `employerWillJoin` indicator
-  - Shows different message based on screening format
+  - Email template for employer with meeting details and candidate info.
+- `apps/api/src/templates/emails/vetting-complete.ejs`
+  - Notifies employer that their job has been vetted and candidates are ranked.
 
 ### 2. Low-Skill Jobs Manual Screening
 
 **What Changed:**
-- Low-skill jobs now undergo full manual screening process (not automatic direct selection)
-- All applicants are ranked and presented to admin
-- Less vigorous ranking criteria with emphasis on proximity
+- Low-skill jobs now undergo full manual screening process by the employer (not automatic direct selection).
+- All applicants are ranked and presented to the employer.
+- Less vigorous ranking criteria with emphasis on proximity.
 
 **Files Modified:**
 - `apps/api/src/modules/jobs/config/vetting.config.ts`
-  - Updated low-skill weights: Proximity 35%, Application speed 30%, Profile completeness 20%, Experience 15%
-  - Previous: Application speed 40%, Profile completeness 30%, Experience 20%, Proximity 10%
+  - Updated low-skill weights: Proximity 35%, Application speed 30%, Profile completeness 20%, Experience 15%.
+  - High-skill weights remain focused on experience (30%) and skills (25%).
 
 ### 3. Enhanced Proximity Scoring (LGA/City Matching)
 
 **What Changed:**
-- Significantly improved proximity algorithm to prioritize local candidates
-- City matching (treated as LGA) gives 100 points (perfect match)
-- State matching gives 50 points
-- Partial matches and preferred location checked as fallback
+- Significantly improved proximity algorithm to prioritize local candidates.
+- City matching (treated as LGA) gives 100 points (perfect match).
+- State matching gives 50 points.
 
 **Files Modified:**
 - `apps/api/src/modules/jobs/services/job-vetting.service.ts`
-  - Completely rewrote `calculateProximityScore()` method
-  - Prioritizes exact city match (100 points)
-  - Falls back to state match (50 points)
-  - Checks preferred location and address for additional locality hints
-  - Uses string normalization (lowercase, trim) for better matching
+  - Rewrote `calculateProximityScore()` to prioritize exact city/LGA match.
+  - Uses string normalization for better matching across different user inputs.
 
-### 4. Database Schema Updates
+### 4. Database Schema and Statuses
 
 **Files Modified:**
 - `libs/common/src/database/entities/JobApplication.entity.ts`
-  - Added `screeningMeetingLink` (text)
-  - Added `screeningScheduledAt` (timestamp)
-  - Added `screeningPrepInfo` (text, optional)
-
-- `libs/common/src/database/entities/Job.entity.ts`
-  - Added `vettingCompletedAt` (timestamp)
-  - Added `vettingCompletedBy` (string)
-  - Added `highlightedCandidateCount` (number)
+  - `screeningMeetingLink` (text)
+  - `screeningScheduledAt` (timestamp)
+  - `screeningPrepInfo` (text)
+  - `screeningDurationMinutes` (int)
+  - `piiUnlocked` (boolean) - Tracks if employer has paid to view contact info.
+  - `screeningStrengths/Concerns/InterviewFeedback` (text) - Captured by employer.
 
 - `libs/common/src/database/entities/schema.enum.ts`
-  - Added `VETTED` status to JobApplicationStatus
-  - Added `SELECTED_FOR_SCREENING` status to JobApplicationStatus
+  - `VETTED`: Candidates have been ranked by the system.
+  - `SELECTED_FOR_SCREENING`: Employer has scheduled a meeting.
+  - `OFFER_SENT`: Employer has selected the candidate for hire.
 
-**Migration Created:**
-- `migrations/1737983456789-AddVettingSystem.ts`
-  - Adds new enum values
-  - Adds vetting fields to jobs table
-  - Adds screening meeting fields to job_applications table
-
-### 5. Queue System
-
-**Files Created:**
-- `apps/api/src/modules/jobs/queue/job-vetting.producer.ts`
-  - Manages vetting job queue
-  - Sets up daily scheduled job (2 AM UTC)
-  - Provides manual trigger capability
+### 5. Automatic Vetting Queue
 
 - `apps/api/src/modules/jobs/queue/job-vetting.consumer.ts`
-  - Processes vetting jobs
-  - Handles batch operations
-  - Error handling and logging
+  - Processes jobs daily or on-demand.
+  - Ranks candidates using the weighted scoring system.
+  - Triggers notifications to employers upon completion.
 
-- `apps/api/src/modules/jobs/types/job-vetting.types.ts`
-  - Type definitions for vetting jobs
+### 6. Core Vetting Logic
 
-**Files Modified:**
-- `libs/common/src/queue/queue.module.ts`
-  - Added `JOB_VETTING` to QUEUE_NAMES
-
-### 6. Core Vetting Service
+- **Weighted Scoring**: Multi-factor scoring (Skills, Industry, Experience, Proximity, Speed, Completeness).
+- **Masked PII**: Candidate contact info is masked in the employer dashboard until payment is confirmed.
+- **Atomic Hiring**: `employerPickCandidate` combines offer generation, hiring, and employee record creation.
 
 **Files Created:**
 - `apps/api/src/modules/jobs/services/job-vetting.service.ts`

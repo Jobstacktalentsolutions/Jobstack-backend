@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
 import { ApiController } from './api.controller';
 import { ApiService } from './api.service';
 import { CommonModule, LoggerModule } from '@app/common';
@@ -14,6 +15,7 @@ import { PaymentModule } from './modules/payment/payment.module';
 import { SystemConfigModule } from './modules/system-config/system-config.module';
 import { ContractsModule } from './modules/contracts/contracts.module';
 import { SupportModule } from './modules/support/support.module';
+import { NotificationJwtGuard, RateLimitGuard } from './guards';
 
 @Module({
   imports: [
@@ -32,6 +34,17 @@ import { SupportModule } from './modules/support/support.module';
     SupportModule,
   ],
   controllers: [ApiController],
-  providers: [ApiService, ...appProviders('api')],
+  providers: [
+    ApiService,
+    ...appProviders('api'),
+    {
+      provide: APP_GUARD,
+      useClass: NotificationJwtGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: RateLimitGuard,
+    },
+  ],
 })
 export class ApiModule {}

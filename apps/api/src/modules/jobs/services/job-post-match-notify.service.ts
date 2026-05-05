@@ -2,12 +2,16 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
-import { Job, JobSeekerProfile } from '@app/common/database/entities';
+import {
+  AdminAuth,
+  Job,
+  JobSeekerProfile,
+} from '@app/common/database/entities';
 import {
   ApprovalStatus,
   isJobOpenOnMarketplace,
-  JobStatus,
 } from '@app/common/database/entities/schema.enum';
+import { AdminRole } from '@app/common/shared/enums/roles.enum';
 import { NotificationService } from '../../notification/notification.service';
 import { JobVettingService } from './job-vetting.service';
 import { JOB_POST_MATCH_CONFIG } from '../config/job-post-match.config';
@@ -30,6 +34,8 @@ export class JobPostMatchNotifyService {
   constructor(
     @InjectRepository(Job)
     private readonly jobRepo: Repository<Job>,
+    @InjectRepository(AdminAuth)
+    private readonly adminAuthRepo: Repository<AdminAuth>,
     @InjectRepository(JobSeekerProfile)
     private readonly profileRepo: Repository<JobSeekerProfile>,
     private readonly jobVettingService: JobVettingService,
@@ -84,6 +90,7 @@ export class JobPostMatchNotifyService {
     const candidateIds = await this.findCandidateProfileIds(job);
     if (candidateIds.length === 0) {
       this.logger.log(`No prefiltered candidates for job ${jobId}`);
+      await this.sendUrgentNoMatchAlert(job, 0, 'no_prefiltered_candidates');
       return { jobId, candidatesConsidered: 0, emailsSent: 0 };
     }
 
@@ -116,13 +123,24 @@ export class JobPostMatchNotifyService {
       scored.push({ profile, combinedScore });
     }
 
+    if (scored.length === 0) {
+      await this.sendUrgentNoMatchAlert(
+        job,
+        profiles.length,
+        'no_profiles_met_matching_threshold',
+      );
+      return {
+        jobId,
+        candidatesConsidered: profiles.length,
+        emailsSent: 0,
+        skippedReason: 'no_matching_candidates',
+      };
+    }
+
     scored.sort((a, b) => b.combinedScore - a.combinedScore);
     const top = scored.slice(0, JOB_POST_MATCH_CONFIG.MAX_EMAILS_PER_JOB);
 
     const websiteUrl = this.configService.get<string>(ENV.WEBSITE_URL) ?? '';
-    const supportEmail =
-      this.configService.get<string>(ENV.SUPPORT_EMAIL) ??
-      'support@jobstack.org';
     const jobDetailUrl = websiteUrl
       ? `${websiteUrl.replace(/\/$/, '')}/jobseeker/dashboard/explore-jobs/${job.id}`
       : '';
@@ -224,5 +242,82 @@ export class JobPostMatchNotifyService {
 
     const partial = await qb.getMany();
     return partial.map((row) => row.id);
+  }
+
+  private async sendUrgentNoMatchAlert(
+    job: Job,
+    candidatesConsidered: number,
+    reason: string,
+  ): Promise<void> {
+    try {
+      const recipient = await this.findUrgentAlertRecipient();
+      if (!recipient?.email) {
+        this.logger.warn(
+          `No vetting or super admin available for urgent job match alert for job ${job.id}`,
+        );
+        return;
+      }
+
+      const websiteUrl = this.configService.get<string>(ENV.WEBSITE_URL) ?? '';
+      const adminDashboardUrl = websiteUrl
+        ? `${websiteUrl.replace(/\/$/, '')}/admin/dashboard/jobsAndApps/${job.id}`
+        : '';
+      const employer = job.employer;
+      const companyName = employer
+        ? `${employer.firstName ?? ''} ${employer.lastName ?? ''}`.trim() ||
+          'Employer'
+        : 'Employer';
+      const location = [job.city, job.state].filter(Boolean).join(', ');
+
+      await this.notificationService.sendEmail({
+        to: recipient.email,
+        subject: `Urgent: no matching candidates for ${job.title}`,
+        template: EmailTemplateType.URGENT_JOB_MATCH_ALERT,
+        context: {
+          adminName: recipient.profile?.firstName ?? 'Admin',
+          jobId: job.id,
+          jobTitle: job.title,
+          companyName,
+          location: location || undefined,
+          candidatesConsidered,
+          reason,
+          jobUrl: adminDashboardUrl,
+        },
+      });
+      this.logger.log(
+        `Urgent no-match alert sent for job ${job.id} to ${recipient.email}`,
+      );
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.warn(
+        `Failed to send urgent no-match alert for job ${job.id}: ${message}`,
+      );
+    }
+  }
+
+  private async findUrgentAlertRecipient(): Promise<
+    (AdminAuth & { profile?: { firstName?: string | null } }) | null
+  > {
+    const vettingAdmin = await this.adminAuthRepo.findOne({
+      where: {
+        roleKey: AdminRole.VETTING_SPECIALIST.role,
+        suspended: false,
+      },
+      relations: ['profile'],
+    });
+
+    if (vettingAdmin) return vettingAdmin;
+
+    const superAdmin = await this.adminAuthRepo.findOne({
+      where: {
+        roleKey: AdminRole.SUPER_ADMIN.role,
+        suspended: false,
+      },
+      relations: ['profile'],
+    });
+
+    if (superAdmin) return superAdmin;
+
+    return null;
   }
 }

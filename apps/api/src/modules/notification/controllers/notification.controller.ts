@@ -1,55 +1,40 @@
 import {
   Controller,
   Get,
-  Post,
   Patch,
   Param,
   Query,
-  Body,
-  HttpStatus,
   HttpException,
+  HttpStatus,
 } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
-import { NotificationService } from '../notification.service';
+import { CurrentUser, type CurrentUserPayload } from '@app/common/shared';
 import { UserRole } from '@app/common/shared/enums/user-roles.enum';
 import { NotificationListQueryDto } from '../dto/notification-list-query.dto';
+import { NotificationService } from '../notification.service';
+import { RateLimit } from 'apps/api/src/guards';
 
 @ApiTags('Notifications')
+@RateLimit({ limit: 60, ttlSeconds: 60 })
 @Controller('notifications')
 export class NotificationController {
   constructor(private readonly notificationService: NotificationService) {}
 
-  // Helper to parse and validate userType from URL parameter
-  private parseUserType(userTypeParam: string): UserRole {
-    const normalized = userTypeParam.toUpperCase();
-    // Map URL parameter to UserRole enum value
-    if (normalized === 'JOBSEEKER' || normalized === 'JOB_SEEKER') {
-      return UserRole.JOB_SEEKER;
-    }
-    if (normalized === 'EMPLOYER' || normalized === 'RECRUITER') {
-      return UserRole.EMPLOYER;
-    }
-    if (normalized === 'ADMIN') {
-      return UserRole.ADMIN;
-    }
-    throw new HttpException(
-      `Invalid userType. Must be one of: JOBSEEKER, EMPLOYER, ADMIN`,
-      HttpStatus.BAD_REQUEST,
-    );
+  private resolveCurrentUserId(user: CurrentUserPayload): string {
+    return user.role === UserRole.ADMIN ? user.id : (user.profileId ?? user.id);
   }
 
-  @Get(':userType/:userId')
-  @ApiOperation({ summary: 'List notifications for a user' })
+  @Get('me')
+  @ApiOperation({ summary: 'List my notifications' })
   async getUserNotifications(
-    @Param('userId') userId: string,
-    @Param('userType') userTypeParam: string,
+    @CurrentUser() user: CurrentUserPayload,
     @Query() query: NotificationListQueryDto,
   ) {
-    const userType = this.parseUserType(userTypeParam);
+    const userId = this.resolveCurrentUserId(user);
 
     const result = await this.notificationService.getUserNotifications(
       userId,
-      userType,
+      user.role,
       query,
     );
 
@@ -59,16 +44,14 @@ export class NotificationController {
     };
   }
 
-  @Get(':userType/:userId/unread-count')
-  async getUnreadCount(
-    @Param('userId') userId: string,
-    @Param('userType') userTypeParam: string,
-  ) {
-    const userType = this.parseUserType(userTypeParam);
+  @Get('me/unread-count')
+  @ApiOperation({ summary: 'Get my unread notification count' })
+  async getUnreadCount(@CurrentUser() user: CurrentUserPayload) {
+    const userId = this.resolveCurrentUserId(user);
 
     const count = await this.notificationService.getUnreadCount(
       userId,
-      userType,
+      user.role,
     );
 
     return {
@@ -77,18 +60,18 @@ export class NotificationController {
     };
   }
 
-  @Get(':userType/:userId/:notificationId')
+  @Get('me/:notificationId')
+  @ApiOperation({ summary: 'Get one of my notifications by ID' })
   async getNotificationById(
+    @CurrentUser() user: CurrentUserPayload,
     @Param('notificationId') notificationId: string,
-    @Param('userId') userId: string,
-    @Param('userType') userTypeParam: string,
   ) {
-    const userType = this.parseUserType(userTypeParam);
+    const userId = this.resolveCurrentUserId(user);
 
     const notification = await this.notificationService.getNotificationById(
       notificationId,
       userId,
-      userType,
+      user.role,
     );
 
     if (!notification) {
@@ -101,18 +84,18 @@ export class NotificationController {
     };
   }
 
-  @Patch(':userType/:userId/:notificationId/read')
+  @Patch('me/:notificationId/read')
+  @ApiOperation({ summary: 'Mark one of my notifications as read' })
   async markNotificationAsRead(
+    @CurrentUser() user: CurrentUserPayload,
     @Param('notificationId') notificationId: string,
-    @Param('userId') userId: string,
-    @Param('userType') userTypeParam: string,
   ) {
-    const userType = this.parseUserType(userTypeParam);
+    const userId = this.resolveCurrentUserId(user);
 
     const success = await this.notificationService.markNotificationAsRead(
       notificationId,
       userId,
-      userType,
+      user.role,
     );
 
     if (!success) {
@@ -128,16 +111,14 @@ export class NotificationController {
     };
   }
 
-  @Patch(':userType/:userId/read-all')
-  async markAllNotificationsAsRead(
-    @Param('userId') userId: string,
-    @Param('userType') userTypeParam: string,
-  ) {
-    const userType = this.parseUserType(userTypeParam);
+  @Patch('me/read-all')
+  @ApiOperation({ summary: 'Mark all of my notifications as read' })
+  async markAllNotificationsAsRead(@CurrentUser() user: CurrentUserPayload) {
+    const userId = this.resolveCurrentUserId(user);
 
     const count = await this.notificationService.markAllNotificationsAsRead(
       userId,
-      userType,
+      user.role,
     );
 
     return {

@@ -7,6 +7,7 @@ import { AppEnum } from 'apps/api/src/modules/config/app.config';
 import helmet from 'helmet';
 import 'dotenv/config';
 
+import type { NestExpressApplication } from '@nestjs/platform-express';
 import type { Request, Response } from 'express';
 import {
   DocumentBuilder,
@@ -71,14 +72,10 @@ function schemaToExample(
   }
 
   if (schema.type === 'object' || schema.properties) {
-    const props = schema.properties ?? {};
+    const props = (schema.properties ?? {}) as Record<string, OpenApiSchema>;
     const out: Record<string, unknown> = {};
     for (const [key, propSchema] of Object.entries(props)) {
-      const value = schemaToExample(
-        propSchema as OpenApiSchema,
-        schemas,
-        new Set(seen),
-      );
+      const value = schemaToExample(propSchema, schemas, new Set(seen));
       if (value !== undefined) out[key] = value;
     }
     return Object.keys(out).length > 0 ? out : undefined;
@@ -167,41 +164,48 @@ function hydrateSwaggerExamples(document: OpenAPIObject): void {
 }
 
 async function bootstrap() {
-  const app = await NestFactory.create(ApiModule, {
+  const app = await NestFactory.create<NestExpressApplication>(ApiModule, {
     // logger: ['error', 'warn'], // Only log errors and warnings
   });
+  app.set('trust proxy', 1);
   const logger = new Logger('HttpRequestLogger');
 
-  app.use((request: any, response: Response, next: () => void) => {
-    const start = Date.now();
+  app.use(
+    (
+      request: Request & { user?: { id?: string; role?: string } },
+      response: Response,
+      next: () => void,
+    ) => {
+      const start = Date.now();
 
-    response.on('finish', () => {
-      const statusCode = response.statusCode;
-      const durationMs = Date.now() - start;
+      response.on('finish', () => {
+        const statusCode = response.statusCode;
+        const durationMs = Date.now() - start;
 
-      const requestIdHeader = response.getHeader('x-request-id');
-      const requestId =
-        typeof requestIdHeader === 'string' ? requestIdHeader : undefined;
+        const requestIdHeader = response.getHeader('x-request-id');
+        const requestId =
+          typeof requestIdHeader === 'string' ? requestIdHeader : undefined;
 
-      const user = request.user;
-      const userInfo = user ? ` [User: ${user.id} (${user.role})]` : '';
-      const context = requestId
-        ? `requestId=${requestId}${userInfo}`
-        : userInfo.trim();
+        const user = request.user;
+        const userInfo = user ? ` [User: ${user.id} (${user.role})]` : '';
+        const context = requestId
+          ? `requestId=${requestId}${userInfo}`
+          : userInfo.trim();
 
-      const message = `${request.method} ${request.originalUrl} -> ${statusCode} (${durationMs}ms)`;
+        const message = `${request.method} ${request.originalUrl} -> ${statusCode} (${durationMs}ms)`;
 
-      if (statusCode >= 500) {
-        logger.error(message, context);
-      } else if (statusCode >= 400) {
-        logger.warn(context ? `${message} ${context}` : message);
-      } else {
-        logger.log(context ? `${message} ${context}` : message);
-      }
-    });
+        if (statusCode >= 500) {
+          logger.error(message, context);
+        } else if (statusCode >= 400) {
+          logger.warn(context ? `${message} ${context}` : message);
+        } else {
+          logger.log(context ? `${message} ${context}` : message);
+        }
+      });
 
-    next();
-  });
+      next();
+    },
+  );
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -229,4 +233,4 @@ async function bootstrap() {
   const port = process.env.PORT || app.get(ConfigService).get(ENV.PORT) || 3000;
   await app.listen(port, '0.0.0.0');
 }
-bootstrap();
+void bootstrap();

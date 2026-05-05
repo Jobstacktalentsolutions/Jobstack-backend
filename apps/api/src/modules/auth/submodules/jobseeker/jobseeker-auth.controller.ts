@@ -27,14 +27,17 @@ import {
   GoogleAuthDto,
 } from './dto/jobseeker-auth.dto';
 import { JobSeekerJwtGuard } from 'apps/api/src/guards';
+import { RateLimit } from 'apps/api/src/guards';
 
 @ApiTags('Auth (jobseeker)')
+@RateLimit({ limit: 20, ttlSeconds: 60 })
 @Controller('auth/jobseeker')
 export class JobSeekerAuthController {
   constructor(private jobseekerAuthService: JobSeekerAuthService) {}
 
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
+  @RateLimit({ limit: 10, ttlSeconds: 60 })
   @ApiOperation({ summary: 'Register jobseeker account' })
   @ApiBody({ type: JobSeekerRegistrationDto })
   async register(
@@ -54,6 +57,7 @@ export class JobSeekerAuthController {
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
+  @RateLimit({ limit: 10, ttlSeconds: 60 })
   @ApiOperation({ summary: 'Jobseeker login' })
   @ApiBody({ type: LoginDto })
   async login(
@@ -65,6 +69,7 @@ export class JobSeekerAuthController {
 
   @Post('google')
   @HttpCode(HttpStatus.OK)
+  @RateLimit({ limit: 10, ttlSeconds: 60 })
   @ApiOperation({ summary: 'Jobseeker Google sign-in/sign-up' })
   @ApiBody({ type: GoogleAuthDto })
   async googleAuth(
@@ -79,6 +84,7 @@ export class JobSeekerAuthController {
 
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
+  @RateLimit({ limit: 10, ttlSeconds: 60 })
   @ApiOperation({ summary: 'Refresh access token' })
   @ApiBody({ type: RefreshTokenDto })
   async refreshToken(
@@ -102,6 +108,7 @@ export class JobSeekerAuthController {
 
   @Post('send-verification-email')
   @HttpCode(HttpStatus.OK)
+  @RateLimit({ limit: 3, ttlSeconds: 600 })
   @ApiOperation({ summary: 'Send email verification code' })
   @ApiBody({ type: EmailVerificationRequestDto })
   async sendVerificationEmail(
@@ -114,6 +121,7 @@ export class JobSeekerAuthController {
 
   @Post('verify-email')
   @HttpCode(HttpStatus.OK)
+  @RateLimit({ limit: 5, ttlSeconds: 600 })
   @ApiOperation({ summary: 'Confirm email with code' })
   @ApiBody({ type: EmailVerificationConfirmDto })
   async verifyEmail(
@@ -129,6 +137,7 @@ export class JobSeekerAuthController {
 
   @Post('send-password-reset-code')
   @HttpCode(HttpStatus.OK)
+  @RateLimit({ limit: 3, ttlSeconds: 900 })
   @ApiOperation({ summary: 'Request password reset code' })
   @ApiBody({ type: PasswordResetRequestDto })
   async sendPasswordResetCode(@Body() requestData: PasswordResetRequestDto) {
@@ -137,6 +146,7 @@ export class JobSeekerAuthController {
 
   @Post('confirm-password-reset-code')
   @HttpCode(HttpStatus.OK)
+  @RateLimit({ limit: 5, ttlSeconds: 900 })
   @ApiOperation({ summary: 'Confirm reset code from email' })
   @ApiBody({ type: PasswordResetConfirmCodeDto })
   async confirmPasswordResetCode(
@@ -149,6 +159,7 @@ export class JobSeekerAuthController {
 
   @Post('reset-password')
   @HttpCode(HttpStatus.OK)
+  @RateLimit({ limit: 5, ttlSeconds: 900 })
   @ApiOperation({ summary: 'Set new password with reset token' })
   @ApiBody({ type: PasswordResetDto })
   async resetPassword(@Body() resetData: PasswordResetDto) {

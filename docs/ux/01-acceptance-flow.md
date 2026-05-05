@@ -35,10 +35,9 @@ A **two-step mutual agreement** system where both employer and candidate must ex
 
 | Status                   | What It Means                          | Next Step                   |
 | ------------------------ | -------------------------------------- | --------------------------- |
-| `APPLIED`                | Application submitted                  | Admin vetting               |
-| `VETTED`                 | Vetting score assigned                 | Admin selects for screening |
-| `SELECTED_FOR_SCREENING` | Invited to screening                   | Screening scheduled         |
-| `SELECTED_FOR_HIRE`      | Screening done                         | Employer reviews            |
+| `APPLIED`                | Application submitted                  | System automatic ranking    |
+| `VETTED`                 | Vetting score assigned                 | Employer selects for screening |
+| `SELECTED_FOR_SCREENING` | Invited to screening                   | Employer conducts screening |
 | `OFFER_SENT`             | Employer sent offer; awaiting response | Candidate accepts/declines  |
 | `APPLICANT_ACCEPTED`     | Candidate agreed                       | Employer pays commission    |
 | `PAYMENT_COMPLETE`       | Payment confirmed, PII unlocked        | Contract generated & signed |

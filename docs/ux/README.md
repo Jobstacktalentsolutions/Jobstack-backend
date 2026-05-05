@@ -9,23 +9,27 @@ This feature protects candidate contact information behind a payment. Employers 
 ## The Complete Flow
 
 ```
-1. ACCEPTANCE
-   Employer accepts candidate → Candidate accepts offer
-   Status: APPLICANT_ACCEPTED
+1. VETTING & SCREENING
+   System ranks candidates → Employer reviews & schedules screening
+   Status: VETTED → SELECTED_FOR_SCREENING
 
-2. PAYMENT
+2. ACCEPTANCE
+   Employer sends offer → Candidate accepts offer
+   Status: OFFER_SENT → APPLICANT_ACCEPTED
+
+3. PAYMENT
    Employer pays commission → Contact details unlock
    Status: PAYMENT_COMPLETE (set by Paystack webhook)
 
-3. CONTRACT
+4. CONTRACT
    System generates employment contract → Both parties sign
    Status: CONTRACT_SIGNED (set when both sign)
 
-4. HIRE
+5. HIRE
    Employer clicks "Confirm Hire" → Hire finalised
    Status: HIRED (set by explicit employer action)
 
-5. CONFIGURATION (Admin)
+6. CONFIGURATION (Admin)
    Admins adjust commission rates dynamically
 ```
 
@@ -35,14 +39,13 @@ This feature protects candidate contact information behind a payment. Employers 
 
 ```
 APPLIED
-  → VETTED
-    → SELECTED_FOR_SCREENING
-      → SELECTED_FOR_HIRE
-        → OFFER_SENT
-          → APPLICANT_ACCEPTED
-            → PAYMENT_COMPLETE      (payment webhook confirmed)
-              → CONTRACT_SIGNED     (both parties signed contract)
-                → HIRED             (employer explicitly confirms hire)
+  → VETTED (Automatic Ranking)
+    → SELECTED_FOR_SCREENING (Employer Scheduled)
+      → OFFER_SENT (Employer Picked Candidate)
+        → APPLICANT_ACCEPTED
+          → PAYMENT_COMPLETE      (payment webhook confirmed)
+            → CONTRACT_SIGNED     (both parties signed contract)
+              → HIRED             (employer explicitly confirms hire)
 ```
 
 Terminal statuses (no further transitions): `HIRED`, `REJECTED`, `WITHDRAWN`

@@ -7,6 +7,7 @@ export enum EmailTemplateType {
   NEW_JOB_POSTED = 'new-job-posted',
   /** Personalized “new published job” for jobseekers matched on publish */
   JOB_MATCH_RECOMMENDATION = 'job-match-recommendation',
+  URGENT_JOB_MATCH_ALERT = 'urgent-job-match-alert',
   INTERVIEW_SCHEDULED = 'interview-scheduled',
   GENERAL_NOTIFICATION = 'general-notification',
   VETTING_COMPLETE = 'vetting-complete',
@@ -50,6 +51,10 @@ export const EMAIL_TYPE_CONFIG = {
   [EmailTemplateType.JOB_MATCH_RECOMMENDATION]: {
     subject: 'A new job matches your profile',
     template: 'job-match-recommendation.ejs',
+  },
+  [EmailTemplateType.URGENT_JOB_MATCH_ALERT]: {
+    subject: 'Urgent: no matching candidates found for published job',
+    template: 'urgent-job-match-alert.ejs',
   },
   [EmailTemplateType.INTERVIEW_SCHEDULED]: {
     subject: 'Interview Scheduled',
