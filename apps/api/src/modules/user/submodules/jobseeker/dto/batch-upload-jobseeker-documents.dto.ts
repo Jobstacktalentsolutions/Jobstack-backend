@@ -1,4 +1,10 @@
-import { IsEnum, IsOptional, IsString, IsArray, ValidateNested } from 'class-validator';
+import {
+  IsEnum,
+  IsOptional,
+  IsString,
+  IsArray,
+  ValidateNested,
+} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { JobseekerDocumentType } from '@app/common/shared/enums/jobseeker-docs.enum';
@@ -25,12 +31,16 @@ export class JobseekerDocumentMetadataDto {
   @IsEnum(JobseekerDocumentType)
   idDocumentType?: JobseekerDocumentType;
 
-  @ApiPropertyOptional({ description: 'ID document number (only for ID_DOCUMENT)' })
+  @ApiPropertyOptional({
+    description: 'ID document number (only for ID_DOCUMENT)',
+  })
   @IsOptional()
   @IsString()
   idDocumentNumber?: string;
 
-  @ApiProperty({ description: 'Original filename to match with uploaded files' })
+  @ApiProperty({
+    description: 'Original filename to match with uploaded files',
+  })
   @IsString()
   originalName: string;
 }

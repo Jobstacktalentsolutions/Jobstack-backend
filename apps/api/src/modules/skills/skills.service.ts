@@ -7,9 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, ILike } from 'typeorm';
 import { Skill } from '@app/common/database/entities/Skill.entity';
 import { JobseekerSkill } from '@app/common/database/entities/JobseekerSkill.entity';
-import {
-  SkillStatus,
-} from '@app/common/database/entities/schema.enum';
+import { SkillStatus } from '@app/common/database/entities/schema.enum';
 
 @Injectable()
 export class SkillsService {
@@ -98,9 +96,7 @@ export class SkillsService {
    * Internal helper used when a profile update references a skill name that
    * doesn't exist yet. Creates it as ACTIVE.
    */
-  async insertActiveSkill(
-    name: string,
-  ): Promise<Skill> {
+  async insertActiveSkill(name: string): Promise<Skill> {
     const trimmed = name.trim();
     if (!trimmed) throw new BadRequestException('Name required');
     const existing = await this.skillRepo.findOne({

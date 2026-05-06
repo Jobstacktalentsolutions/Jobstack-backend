@@ -4,7 +4,6 @@ import { EmployerAuth } from '@app/common/database/entities/EmployerAuth.entity'
 import { EmployerProfile } from '@app/common/database/entities/EmployerProfile.entity';
 import { EmployerSession } from '@app/common/database/entities/EmployerSession.entity';
 import { JobseekerAuth } from '@app/common/database/entities/JobseekerAuth.entity';
-import { RedisModule } from '@app/common/redis/redis.module';
 import { EmployerAuthService } from './employer-auth.service';
 import { EmployerAuthController } from './employer-auth.controller';
 import { EmployerJwtGuard } from 'apps/api/src/guards';
@@ -19,7 +18,6 @@ import { GoogleIdentityModule } from '../../google/google-identity.module';
       EmployerProfile,
       EmployerSession,
     ]),
-    RedisModule,
     NotificationModule,
     forwardRef(() => GoogleIdentityModule),
   ],

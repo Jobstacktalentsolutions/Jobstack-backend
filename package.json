@@ -21,6 +21,7 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
+    "test:core": "jest \"(recommendations|notification|auth|job-vetting)\"",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./apps/api/test/jest-e2e.json",
     "typeorm": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js",
@@ -130,13 +131,18 @@
     ],
     "coverageDirectory": "./coverage",
     "testEnvironment": "node",
+    "transformIgnorePatterns": [
+      "/node_modules/(?!(uuid|afinn-165|natural)/)"
+    ],
     "roots": [
       "<rootDir>/libs/",
       "<rootDir>/apps/"
     ],
     "moduleNameMapper": {
       "^@app/common(|/.*)$": "<rootDir>/libs/common/src/$1",
-      "^@app/seeding(|/.*)$": "<rootDir>/libs/seeding/src/$1"
+      "^@app/seeding(|/.*)$": "<rootDir>/libs/seeding/src/$1",
+      "^libs/common/src/(.*)$": "<rootDir>/libs/common/src/$1",
+      "^apps/api/src/(.*)$": "<rootDir>/apps/api/src/$1"
     }
   }
 }

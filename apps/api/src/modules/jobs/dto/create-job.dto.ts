@@ -175,8 +175,6 @@ export class CreateJobDto {
   @IsString()
   endTime?: string;
 
-
-
   @ApiPropertyOptional({
     description: 'Last date applications are accepted (ISO 8601)',
     example: '2026-03-31T23:59:59.000Z',

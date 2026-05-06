@@ -7,11 +7,8 @@ import { Redis } from 'ioredis';
 @Injectable()
 export class RedisService {
   private readonly logger = new Logger(RedisService.name);
-  subscriber: Redis;
 
-  constructor(@Inject('REDIS_CLIENT') private readonly client: Redis) {
-    this.subscriber = this.client.duplicate();
-  }
+  constructor(@Inject('REDIS_CLIENT') private readonly client: Redis) {}
 
   /**
    * Set a key-value pair with expiration

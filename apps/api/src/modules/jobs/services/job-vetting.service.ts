@@ -1184,4 +1184,3 @@ export class JobVettingService {
     return `${phone.substring(0, 4)} **** ${phone.substring(phone.length - 2)}`;
   }
 }
-

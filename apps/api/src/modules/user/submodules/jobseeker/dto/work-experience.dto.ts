@@ -80,4 +80,3 @@ export class WorkExperienceDto {
   @MaxLength(50)
   referencePhone?: string;
 }
-

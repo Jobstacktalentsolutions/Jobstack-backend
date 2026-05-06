@@ -4,7 +4,6 @@ import { JobseekerAuth } from '@app/common/database/entities/JobseekerAuth.entit
 import { JobSeekerProfile } from '@app/common/database/entities/JobseekerProfile.entity';
 import { JobseekerSession } from '@app/common/database/entities/JobseekerSession.entity';
 import { EmployerAuth } from '@app/common/database/entities/EmployerAuth.entity';
-import { RedisModule } from '@app/common/redis/redis.module';
 import { JobSeekerAuthService } from './jobseeker-auth.service';
 import { JobSeekerAuthController } from './jobseeker-auth.controller';
 import { JobSeekerJwtGuard } from 'apps/api/src/guards';
@@ -20,7 +19,6 @@ import { GoogleIdentityModule } from '../../google/google-identity.module';
       JobSeekerProfile,
       JobseekerSession,
     ]),
-    RedisModule,
     NotificationModule,
     forwardRef(() => SkillsModule),
     forwardRef(() => GoogleIdentityModule),

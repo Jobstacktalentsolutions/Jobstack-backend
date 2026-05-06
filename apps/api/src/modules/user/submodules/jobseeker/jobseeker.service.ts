@@ -16,7 +16,6 @@ import { SkillsService } from 'apps/api/src/modules/skills/skills.service';
 import { calculateYearsOfExperience } from '@app/common/shared/utils/experience-calculator.util';
 import {
   UpdateProfileDto,
-
   BatchUploadJobseekerDocumentsDto,
   JobseekerBatchDocumentType,
   WorkExperienceDto,
@@ -692,13 +691,14 @@ export class JobseekerService {
       skills: skills.slice(0, 12),
       profilePictureUrl,
       workExperience: profile.workExperience ?? [],
-      yearsOfExperience: profile.yearsOfExperience ? Number(profile.yearsOfExperience) : 0,
+      yearsOfExperience: profile.yearsOfExperience
+        ? Number(profile.yearsOfExperience)
+        : 0,
       cvDocumentUrl,
       cvDocumentName,
       cvDocumentSize,
     };
   }
-
 
   // Update jobseeker profile with smart skills handling
   async updateProfile(
@@ -813,7 +813,6 @@ export class JobseekerService {
 
     // Update lastChangedFields if any sensitive fields were modified
     if (changedFields.length > 0) {
-
       const existingFields = profile.lastChangedFields
         ? profile.lastChangedFields.split(',')
         : [];

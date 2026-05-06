@@ -31,8 +31,6 @@ export function computeTitleSimilarity(
   return Math.min(1, jaro + bonus);
 }
 
-
-
 /** Combined text signal 0–100 for job-post notifications */
 export function computeTextMatchScore(
   job: { title: string },

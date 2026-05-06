@@ -3,10 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, SelectQueryBuilder } from 'typeorm';
 import { JaroWinklerDistance } from 'natural';
 import { Job, JobSeekerProfile } from '@app/common/database/entities';
-import {
-  JobStatus,
-  Industry,
-} from '@app/common/database/entities/schema.enum';
+import { JobStatus, Industry } from '@app/common/database/entities/schema.enum';
 import { JobRecommendationQueryDto } from '../dto';
 import {
   JOB_MATCHING_CONFIG,
@@ -87,13 +84,7 @@ export class JobRecommendationsProcessor {
     // Score jobs and filter by CORE gate
     const scoredJobs = allJobs
       .map((job) =>
-        this.scoreJob(
-          profile,
-          job,
-          userSkillIds,
-          userSkillNames,
-          userIndustry,
-        ),
+        this.scoreJob(profile, job, userSkillIds, userSkillNames, userIndustry),
       )
       .filter(
         (result): result is { job: Job; score: number } => result !== null,
@@ -132,8 +123,13 @@ export class JobRecommendationsProcessor {
     userIndustry: Industry | undefined,
   ): { job: Job; score: number } | null {
     // 1. Calculate Core Determinants
-    const skillMatchRaw = this.calcSkillScore(job, userSkillIds, userSkillNames);
-    const industryMatchRaw = job.industry && userIndustry === job.industry ? 1.0 : 0;
+    const skillMatchRaw = this.calcSkillScore(
+      job,
+      userSkillIds,
+      userSkillNames,
+    );
+    const industryMatchRaw =
+      job.industry && userIndustry === job.industry ? 1.0 : 0;
     const boostRaw = industryMatchRaw === 1.0 && skillMatchRaw > 0 ? 1.0 : 0;
 
     const skillScore = skillMatchRaw * W.skillMatch;
@@ -201,8 +197,6 @@ export class JobRecommendationsProcessor {
     const union = userSkillIds.length + job.skills.length - intersection;
     return union > 0 ? Math.min(1, intersection / union) : 0;
   }
-
-
 
   private calcTitleMatch(userTitle: string, jobTitle: string): number {
     const a = userTitle.toLowerCase();

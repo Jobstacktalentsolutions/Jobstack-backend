@@ -37,7 +37,6 @@ export class EmploymentCompletionService {
     private readonly jobseekerRepo: Repository<JobSeekerProfile>,
     private readonly notificationService: NotificationService,
     private readonly configService: ConfigService,
-
   ) {}
 
   // Builds absolute frontend URL without trailing slash duplication.
@@ -97,7 +96,8 @@ export class EmploymentCompletionService {
         endDate: at.toISOString().slice(0, 7),
         isCurrent: false,
         description: row.job?.description || '',
-        referenceName: `${row.employer?.firstName ?? ''} ${row.employer?.lastName ?? ''}`.trim(),
+        referenceName:
+          `${row.employer?.firstName ?? ''} ${row.employer?.lastName ?? ''}`.trim(),
         referencePhone: row.employer?.phoneNumber || '',
       };
 
@@ -111,7 +111,6 @@ export class EmploymentCompletionService {
       await manager.getRepository(JobSeekerProfile).save(profile);
     }
   }
-
 
   // Notifies the other party to confirm completion in the app.
   private async notifyOtherParty(params: {
@@ -335,11 +334,9 @@ export class EmploymentCompletionService {
         row.employerDeclaredCompleteAt != null &&
         row.jobseekerDeclaredCompleteAt != null;
       if (both) {
-
         await this.finalizeToEnded(manager, row, now);
         finalized = true;
       } else {
-
         shouldNotifyEmployer = true;
       }
 

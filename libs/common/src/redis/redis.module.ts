@@ -20,10 +20,15 @@ export const REDIS_CLIENT = 'REDIS_CLIENT';
           ENV.REDIS_KEY_PREFIX,
           'jobstack:',
         );
+        const redisUrl = new URL(REDIS_URL);
+        const isTls = redisUrl.protocol === 'rediss:';
         const client = new Redis(REDIS_URL, {
           keyPrefix: REDIS_KEY_PREFIX,
           maxRetriesPerRequest: 3,
           lazyConnect: true,
+          connectTimeout: 15000,
+          keepAlive: 10000,
+          tls: isTls ? {} : undefined,
           retryStrategy: (times: number) => {
             const delay = Math.min(times * 50, 2000);
             return delay;
@@ -44,6 +49,10 @@ export const REDIS_CLIENT = 'REDIS_CLIENT';
 
         client.on('close', () => {
           console.log('🔌 Redis connection closed for JobStack API');
+        });
+
+        client.on('reconnecting', (delay) => {
+          console.warn(`🔁 Redis reconnecting for JobStack API in ${delay}ms`);
         });
 
         // Connect asynchronously

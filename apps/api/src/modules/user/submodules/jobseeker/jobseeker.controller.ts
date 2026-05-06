@@ -25,16 +25,10 @@ import {
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { JobSeekerJwtGuard, AdminJwtGuard } from 'apps/api/src/guards';
 import { JobseekerService } from './jobseeker.service';
-import {
-  UpdateProfileDto,
-  BatchUploadJobseekerDocumentsDto,
-} from './dto';
+import { UpdateProfileDto, BatchUploadJobseekerDocumentsDto } from './dto';
 import { GetAllJobSeekersQueryDto } from './dto/get-all-jobseekers-query.dto';
 import type { MulterFile } from '@app/common/shared/types';
-import {
-  CurrentUser,
-  type CurrentUserPayload,
-} from '@app/common/shared';
+import { CurrentUser, type CurrentUserPayload } from '@app/common/shared';
 import { JobseekerDocumentType } from '@app/common/shared/enums/jobseeker-docs.enum';
 import { EmployerService } from '../employer/employer.service';
 
