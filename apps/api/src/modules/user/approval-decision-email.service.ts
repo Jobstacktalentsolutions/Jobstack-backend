@@ -9,6 +9,9 @@ import { VerificationStatus } from '@app/common/shared/enums/employer-docs.enum'
 import { JobseekerVerificationDocumentKind } from '@app/common/shared/enums/jobseeker-docs.enum';
 import { NotificationService } from '../notification/notification.service';
 import { ENV } from '../config';
+import { EmailTemplateType } from '../notification/email/email-notification.enum';
+import { UserRole } from '@app/common/shared/enums/user-roles.enum';
+import { NotificationPriority } from '@app/common/database/entities/schema.enum';
 
 /**
  * Queues transactional emails when employer verification or jobseeker approval decisions change.
@@ -21,6 +24,16 @@ export class ApprovalDecisionEmailService {
     private readonly notificationService: NotificationService,
     private readonly configService: ConfigService,
   ) {}
+
+  private describeError(error: unknown): string {
+    if (error instanceof Error) {
+      return error.message;
+    }
+    if (typeof error === 'string') {
+      return error;
+    }
+    return JSON.stringify(error);
+  }
 
   /**
    * Employer: email when verification becomes APPROVED or REJECTED (both paths;
@@ -87,7 +100,7 @@ export class ApprovalDecisionEmailService {
       })
       .catch((err) =>
         this.logger.warn(
-          `Employer verification email failed for ${to}: ${err?.message ?? err}`,
+          `Employer verification email failed for ${to}: ${this.describeError(err)}`,
         ),
       );
   }
@@ -157,9 +170,117 @@ export class ApprovalDecisionEmailService {
       })
       .catch((err) =>
         this.logger.warn(
-          `Jobseeker approval email failed for ${to}: ${err?.message ?? err}`,
+          `Jobseeker approval email failed for ${to}: ${this.describeError(err)}`,
         ),
       );
+  }
+
+  queueJobseekerOnboardingReviewEmail(profile: JobSeekerProfile): void {
+    const to = profile.email;
+    if (!to?.trim()) {
+      return;
+    }
+
+    const base = this.configService
+      .getOrThrow<string>(ENV.WEBSITE_URL)
+      .replace(/\/$/, '');
+    const exploreUrl = `${base}/jobseeker/dashboard/explore-jobs`;
+    const dashboardUrl = `${base}/jobseeker/dashboard`;
+    const firstName = profile.firstName?.trim() || 'there';
+
+    const subject = 'Your profile is in review';
+    const message =
+      'Thanks for completing your onboarding. We are reviewing your profile now and should approve it shortly. For now, you can explore jobs, bookmark anything that stands out, and come back when you are ready to apply.';
+
+    void this.notificationService
+      .sendEmail({
+        to: to.trim(),
+        subject,
+        template: EmailTemplateType.JOBSEEKER_ONBOARDING_REVIEW,
+        context: {
+          subject,
+          firstName,
+          message,
+          actionText: 'Explore jobs',
+          actionUrl: exploreUrl,
+          dashboardUrl,
+        },
+      })
+      .catch((err) =>
+        this.logger.warn(
+          `Jobseeker onboarding review email failed for ${to}: ${this.describeError(err)}`,
+        ),
+      );
+
+    void this.notificationService.createAppNotification(
+      profile.id,
+      UserRole.JOB_SEEKER,
+      {
+        title: 'Profile in review',
+        message:
+          'We are reviewing your profile now. You can explore and bookmark jobs while you wait.',
+        priority: NotificationPriority.HIGH,
+        templateType: EmailTemplateType.JOBSEEKER_ONBOARDING_REVIEW,
+        templateContext: {
+          dashboardUrl,
+          exploreJobsUrl: exploreUrl,
+        },
+      },
+    );
+  }
+
+  queueEmployerOnboardingReviewEmail(employer: EmployerProfile): void {
+    const to = employer.auth?.email ?? employer.email;
+    if (!to?.trim()) {
+      return;
+    }
+
+    const base = this.configService
+      .getOrThrow<string>(ENV.WEBSITE_URL)
+      .replace(/\/$/, '');
+    const dashboardUrl = `${base}/employer/dashboard`;
+    const draftJobUrl = `${base}/employer/dashboard/jobs/post-job`;
+    const firstName = employer.firstName?.trim() || 'there';
+
+    const subject = 'Your employer profile is in review';
+    const message =
+      'Thanks for completing your onboarding. We are reviewing your employer profile now and should approve it shortly. In the meantime, you can draft job posts and prepare them for publishing once approval comes through.';
+
+    void this.notificationService
+      .sendEmail({
+        to: to.trim(),
+        subject,
+        template: EmailTemplateType.EMPLOYER_ONBOARDING_REVIEW,
+        context: {
+          subject,
+          firstName,
+          message,
+          actionText: 'Draft a job post',
+          actionUrl: draftJobUrl,
+          dashboardUrl,
+        },
+      })
+      .catch((err) =>
+        this.logger.warn(
+          `Employer onboarding review email failed for ${to}: ${this.describeError(err)}`,
+        ),
+      );
+
+    void this.notificationService.createAppNotification(
+      employer.id,
+      UserRole.EMPLOYER,
+      {
+        title: 'Profile in review',
+        message:
+          'We are reviewing your employer profile now. You can draft job posts while you wait.',
+        priority: NotificationPriority.HIGH,
+        templateType: EmailTemplateType.EMPLOYER_ONBOARDING_REVIEW,
+        templateContext: {
+          dashboardUrl,
+          draftJobUrl,
+        },
+      },
+    );
   }
 
   /** Notify employer when a specific verification document is rejected. */
@@ -196,7 +317,7 @@ export class ApprovalDecisionEmailService {
       })
       .catch((err) =>
         this.logger.warn(
-          `Employer document rejection email failed for ${to}: ${err?.message ?? err}`,
+          `Employer document rejection email failed for ${to}: ${this.describeError(err)}`,
         ),
       );
   }
@@ -239,7 +360,7 @@ export class ApprovalDecisionEmailService {
       })
       .catch((err) =>
         this.logger.warn(
-          `Jobseeker document rejection email failed for ${to}: ${err?.message ?? err}`,
+          `Jobseeker document rejection email failed for ${to}: ${this.describeError(err)}`,
         ),
       );
   }

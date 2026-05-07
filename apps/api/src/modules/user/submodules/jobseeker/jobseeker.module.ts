@@ -14,6 +14,8 @@ import { JobSeekerAuthModule } from 'apps/api/src/modules/auth/submodules/jobsee
 import { SkillsModule } from 'apps/api/src/modules/skills/skills.module';
 import { AuthModule } from 'apps/api/src/modules/auth/auth.module';
 import { EmployerModule } from '../employer/employer.module';
+import { NotificationModule } from 'apps/api/src/modules/notification/notification.module';
+import { ApprovalDecisionEmailService } from '../../approval-decision-email.service';
 
 @Module({
   imports: [
@@ -28,8 +30,14 @@ import { EmployerModule } from '../employer/employer.module';
     SkillsModule,
     AuthModule,
     EmployerModule,
+    NotificationModule,
   ],
   controllers: [JobseekerController, PublicJobseekerController],
-  providers: [JobseekerService, StorageService, JobSeekerJwtGuard],
+  providers: [
+    JobseekerService,
+    StorageService,
+    JobSeekerJwtGuard,
+    ApprovalDecisionEmailService,
+  ],
 })
 export class JobseekerModule {}

@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title><%= typeof subject !== 'undefined' ? subject : 'Urgent Alert' %></title>
+    <title><%= subject %></title>
   </head>
   <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f3f4f6;">
     <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #f3f4f6;">
@@ -19,37 +19,36 @@
               <td style="padding: 32px;">
                 <img src="https://jobstack.org/email-assets/logo.svg" alt="Jobstack" width="120" style="display: block; margin: 0 0 24px 0;" />
                 <h1 style="margin: 0 0 16px 0; font-size: 22px; font-weight: 700; color: #111827;">No matching candidates were found</h1>
-                <p style="margin: 0 0 16px 0; font-size: 16px; color: #374151;">Hi <%= adminName || 'Admin' %>,</p>
+                <p style="margin: 0 0 16px 0; font-size: 16px; color: #374151;">Hi <%= adminName %>,</p>
                 <p style="margin: 0 0 20px 0; font-size: 16px; color: #374151;">
                   A job was published, but the current matching rules returned no eligible candidates. Please review the job and consider whether the filters should be widened or the profile data should be completed.
                 </p>
                 <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="border-collapse: collapse; margin: 0 0 24px 0;">
                   <tr>
                     <td style="padding: 8px 0; width: 150px; font-weight: 700; color: #374151; border-bottom: 1px solid #e5e7eb;">Job Title</td>
-                    <td style="padding: 8px 0; color: #4b5563; border-bottom: 1px solid #e5e7eb;"><%= jobTitle || 'N/A' %></td>
+                    <td style="padding: 8px 0; color: #4b5563; border-bottom: 1px solid #e5e7eb;"><%= jobTitle %></td>
                   </tr>
                   <tr>
                     <td style="padding: 8px 0; font-weight: 700; color: #374151; border-bottom: 1px solid #e5e7eb;">Job ID</td>
-                    <td style="padding: 8px 0; color: #4b5563; border-bottom: 1px solid #e5e7eb;"><%= jobId || 'N/A' %></td>
+                    <td style="padding: 8px 0; color: #4b5563; border-bottom: 1px solid #e5e7eb;"><%= jobId %></td>
                   </tr>
                   <tr>
                     <td style="padding: 8px 0; font-weight: 700; color: #374151; border-bottom: 1px solid #e5e7eb;">Company</td>
-                    <td style="padding: 8px 0; color: #4b5563; border-bottom: 1px solid #e5e7eb;"><%= companyName || 'N/A' %></td>
+                    <td style="padding: 8px 0; color: #4b5563; border-bottom: 1px solid #e5e7eb;"><%= companyName %></td>
                   </tr>
                   <tr>
                     <td style="padding: 8px 0; font-weight: 700; color: #374151; border-bottom: 1px solid #e5e7eb;">Location</td>
-                    <td style="padding: 8px 0; color: #4b5563; border-bottom: 1px solid #e5e7eb;"><%= location || 'N/A' %></td>
+                    <td style="padding: 8px 0; color: #4b5563; border-bottom: 1px solid #e5e7eb;"><%= location %></td>
                   </tr>
                   <tr>
                     <td style="padding: 8px 0; font-weight: 700; color: #374151; border-bottom: 1px solid #e5e7eb;">Candidates Considered</td>
-                    <td style="padding: 8px 0; color: #4b5563; border-bottom: 1px solid #e5e7eb;"><%= candidatesConsidered ?? 0 %></td>
+                    <td style="padding: 8px 0; color: #4b5563; border-bottom: 1px solid #e5e7eb;"><%= candidatesConsidered %></td>
                   </tr>
                   <tr>
                     <td style="padding: 8px 0; font-weight: 700; color: #374151;">Reason</td>
-                    <td style="padding: 8px 0; color: #4b5563;"><%= reason || 'No matching candidates were found.' %></td>
-                  </tr>
-                </table>
-                <% if (jobUrl) { %>
+                    <td style="padding: 8px 0; color: #4b5563;"><%= reason %></td>
+                </tr>
+              </table>
                 <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 8px 0;">
                   <tr>
                     <td>
@@ -57,7 +56,6 @@
                     </td>
                   </tr>
                 </table>
-                <% } %>
                 <p style="margin: 0; font-size: 13px; color: #6b7280;">
                   This alert was sent automatically by JobStack.
                 </p>

@@ -621,10 +621,9 @@ export class EmployerAuthService {
     await this.notificationService.sendEmail({
       to: email.toLowerCase(),
       subject: 'Welcome to JobStack',
-      template: EmailTemplateType.WELCOME,
+      template: EmailTemplateType.EMPLOYER_WELCOME,
       context: {
         firstName: auth.profile.firstName,
-        userType: UserRole.EMPLOYER,
       },
     });
 

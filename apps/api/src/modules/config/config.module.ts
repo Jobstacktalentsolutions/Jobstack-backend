@@ -31,6 +31,7 @@ import { ENV } from './env.config';
         [ENV.BREVO_FROM_NAME]: Joi.string().required(),
         [ENV.COMPANY_NAME]: Joi.string().required(),
         [ENV.SUPPORT_EMAIL]: Joi.string().required(),
+        [ENV.SUPPORT_PHONE_NUMBER]: Joi.string().required(),
         [ENV.WEBSITE_URL]: Joi.string().required(),
         [ENV.DISABLE_JOBS]: Joi.boolean().default(false),
         [ENV.FRONTEND_URL]: Joi.string().required(),

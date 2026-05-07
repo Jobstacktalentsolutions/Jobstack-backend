@@ -56,47 +56,30 @@
                         Great news! We have a new job opportunity that matches your profile and interests. Don't miss out on this exciting opportunity!
                       </p>
 
-                      <% if (jobTitle) { %>
                       <!-- Job Details -->
                       <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" class="info-box" style="background-color: #f9fafb; border-radius: 8px; border-left: 4px solid #2563eb; margin: 0 0 24px 0;">
                         <tr>
                           <td style="padding: 20px;">
                             <h3 style="margin: 0 0 16px 0; font-size: 20px; font-weight: 600; color: #1a1a1a;"><%= jobTitle %></h3>
-                            
-                            <% if (companyName) { %>
                             <p class="text-primary" style="margin: 0 0 8px 0; font-size: 15px; color: #4a4a4a;">
                               <strong>Company:</strong> <%= companyName %>
                             </p>
-                            <% } %>
-                            
-                            <% if (location) { %>
                             <p class="text-primary" style="margin: 0 0 8px 0; font-size: 15px; color: #4a4a4a;">
                               <strong>Location:</strong> <%= location %>
                             </p>
-                            <% } %>
-                            
-                            <% if (jobType) { %>
                             <p class="text-primary" style="margin: 0 0 8px 0; font-size: 15px; color: #4a4a4a;">
                               <strong>Type:</strong> <%= jobType %>
                             </p>
-                            <% } %>
-                            
-                            <% if (salary) { %>
                             <p class="text-primary" style="margin: 0 0 8px 0; font-size: 15px; color: #4a4a4a;">
                               <strong>Salary:</strong> <%= salary %>
                             </p>
-                            <% } %>
-                            
-                            <% if (description) { %>
                             <div style="margin-top: 16px;">
                               <h4 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #1a1a1a;">Job Description</h4>
                               <p class="text-primary" style="margin: 0; font-size: 15px; line-height: 1.5; color: #4a4a4a;"><%= description %></p>
                             </div>
-                            <% } %>
                           </td>
                         </tr>
                       </table>
-                      <% } %>
 
                       <!-- Why Perfect Section -->
                       <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 24px 0;">
@@ -115,7 +98,6 @@
                         </tr>
                       </table>
 
-                      <% if (jobUrl) { %>
                       <!-- CTA Button -->
                       <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 24px 0;">
                         <tr>
@@ -124,7 +106,6 @@
                           </td>
                         </tr>
                       </table>
-                      <% } %>
 
                       <!-- Urgency Note -->
                       <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 24px 0;">

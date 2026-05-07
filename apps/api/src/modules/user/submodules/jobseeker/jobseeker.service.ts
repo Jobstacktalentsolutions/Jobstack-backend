@@ -31,6 +31,7 @@ import {
   JobseekerVerificationDocumentKind,
 } from '@app/common/shared/enums/jobseeker-docs.enum';
 import { VerificationDocumentStatus } from '@app/common/shared/enums/verification-document-status.enum';
+import { ApprovalDecisionEmailService } from '../../approval-decision-email.service';
 
 @Injectable()
 export class JobseekerService {
@@ -47,6 +48,7 @@ export class JobseekerService {
     protected readonly jobseekerVerificationDocRepo: Repository<JobseekerVerificationDocument>,
     protected readonly storageService: StorageService,
     protected readonly skillsService: SkillsService,
+    protected readonly approvalDecisionEmailService: ApprovalDecisionEmailService,
   ) {}
 
   // Maps verification rows onto profile for API consumers (legacy field names).
@@ -101,6 +103,22 @@ export class JobseekerService {
     }
   }
 
+  private notifyOnboardingReviewIfNeeded(
+    profile: JobSeekerProfile,
+    previousStatus: ApprovalStatus,
+  ): void {
+    if (
+      previousStatus !== ApprovalStatus.NOT_STARTED ||
+      profile.approvalStatus !== ApprovalStatus.PENDING
+    ) {
+      return;
+    }
+
+    this.approvalDecisionEmailService.queueJobseekerOnboardingReviewEmail(
+      profile,
+    );
+  }
+
   // Upload and set CV document (PDF-only)
   async uploadCv(
     userId: string,
@@ -110,6 +128,7 @@ export class JobseekerService {
       where: { id: userId },
     });
     if (!profile) throw new NotFoundException('Jobseeker not found');
+    const previousApprovalStatus = profile.approvalStatus;
 
     // Enforce PDF mimetype
     const mime = (file.mimetype || '').toLowerCase();
@@ -138,6 +157,7 @@ export class JobseekerService {
     }
 
     await this.profileRepo.save(profile);
+    this.notifyOnboardingReviewIfNeeded(profile, previousApprovalStatus);
 
     return {
       cvUrl: upload.url,
@@ -288,6 +308,7 @@ export class JobseekerService {
       where: { id: userId },
     });
     if (!profile) throw new NotFoundException('Jobseeker not found');
+    const previousApprovalStatus = profile.approvalStatus;
 
     if (profile.approvalStatus === ApprovalStatus.APPROVED) {
       throw new ForbiddenException(
@@ -349,6 +370,7 @@ export class JobseekerService {
     }
 
     await this.profileRepo.save(profile);
+    this.notifyOnboardingReviewIfNeeded(profile, previousApprovalStatus);
 
     const signedUrl = await this.storageService.getSignedUrl(
       upload.document.fileKey,
@@ -435,6 +457,7 @@ export class JobseekerService {
       where: { id: userId },
     });
     if (!profile) throw new NotFoundException('Jobseeker not found');
+    const previousApprovalStatus = profile.approvalStatus;
 
     if (profile.approvalStatus === ApprovalStatus.APPROVED) {
       throw new ForbiddenException(
@@ -485,6 +508,7 @@ export class JobseekerService {
     }
 
     await this.profileRepo.save(profile);
+    this.notifyOnboardingReviewIfNeeded(profile, previousApprovalStatus);
 
     const signedUrl = await this.storageService.getSignedUrl(
       upload.document.fileKey,
@@ -709,6 +733,7 @@ export class JobseekerService {
       where: { id: userId },
     });
     if (!profile) throw new NotFoundException('Jobseeker not found');
+    const previousApprovalStatus = profile.approvalStatus;
 
     // Update basic profile fields
     if (updateData.firstName !== undefined) {
@@ -857,6 +882,7 @@ export class JobseekerService {
 
     // Save the updated profile
     const updatedProfile = await this.profileRepo.save(profile);
+    this.notifyOnboardingReviewIfNeeded(updatedProfile, previousApprovalStatus);
 
     // Return profile with relations
     const profileWithRelations = await this.profileRepo.findOne({

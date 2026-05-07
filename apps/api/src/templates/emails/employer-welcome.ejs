@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="color-scheme" content="light dark" />
     <meta name="supported-color-schemes" content="light dark" />
-    <title>Welcome to <%= companyName %></title>
+    <title><%= subject %></title>
     <style>
       :root {
         color-scheme: light dark;
@@ -16,21 +16,17 @@
         .email-content { background-color: #2d2d2d !important; color: #e0e0e0 !important; }
         .text-primary { color: #e0e0e0 !important; }
         .text-secondary { color: #b0b0b0 !important; }
-        .header-text { color: #ffffff !important; }
         .footer { background-color: #2d2d2d !important; color: #b0b0b0 !important; }
-        .footer a { color: #60a5fa !important; }
       }
     </style>
-</head>
-<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f3f4f6;">
+  </head>
+  <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f3f4f6;">
     <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" class="email-container" style="background-color: #f3f4f6;">
       <tr>
         <td style="padding: 40px 20px;">
           <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="max-width: 600px; margin: 0 auto;">
             <tr>
               <td class="email-content" style="background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
-                
-                <!-- Logo Header -->
                 <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
                   <tr>
                     <td style="padding: 32px 32px 24px 32px; text-align: center;">
@@ -39,31 +35,19 @@
                   </tr>
                 </table>
 
-                <!-- Content -->
                 <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
                   <tr>
                     <td style="padding: 0 32px 32px 32px;">
-                      
                       <h1 class="header-text" style="margin: 0 0 16px 0; font-size: 24px; font-weight: 700; color: #111827; line-height: 1.2;">Welcome to JobStack</h1>
-                      
+
                       <p class="text-primary" style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.5; color: #374151;">
                         Hello <%= firstName %>,
                       </p>
 
-                      <p class="text-primary" style="margin: 0 0 24px 0; font-size: 16px; line-height: 1.5; color: #374151;">
-                        We're thrilled to have you here. JobStack connects vetted African talent with great employers so you can move from signup to real outcomes, fast.
+                      <p class="text-primary" style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.5; color: #374151;">
+                        We’re glad to have you here. JobStack helps you move from posting to hiring with less friction.
                       </p>
 
-                      <% if (typeof userType !== 'undefined' && userType === 'jobseeker') { %>
-                      <p class="text-primary" style="margin: 0 0 12px 0; font-size: 16px; font-weight: 600; color: #111827;">
-                        Your first moves as a jobseeker:
-                      </p>
-                      <ul style="margin: 0 0 24px 0; padding-left: 20px; color: #374151; line-height: 1.6;">
-                        <li>Complete your profile so employers can find you</li>
-                        <li>Add your top skills and recent experience</li>
-                        <li>Start applying to verified roles that fit your goals</li>
-                      </ul>
-                      <% } else if (typeof userType !== 'undefined' && (userType === 'recruiter' || userType === 'employer')) { %>
                       <p class="text-primary" style="margin: 0 0 12px 0; font-size: 16px; font-weight: 600; color: #111827;">
                         Your first moves as an employer:
                       </p>
@@ -72,9 +56,7 @@
                         <li>Review vetted candidates and shortlist quickly</li>
                         <li>Schedule interviews and track applications in one place</li>
                       </ul>
-                      <% } %>
 
-                      <!-- CTA Button -->
                       <% if (typeof actionUrl !== 'undefined' && actionUrl) { %>
                       <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 24px 0;">
                         <tr>
@@ -84,12 +66,10 @@
                         </tr>
                       </table>
                       <% } %>
-
                     </td>
                   </tr>
                 </table>
 
-                <!-- Footer -->
                 <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" class="footer" style="background-color: #f9fafb; border-top: 1px solid #e5e7eb;">
                   <tr>
                     <td style="padding: 24px 32px; text-align: center;">
@@ -102,12 +82,11 @@
                     </td>
                   </tr>
                 </table>
-
               </td>
             </tr>
           </table>
         </td>
       </tr>
     </table>
-</body>
+  </body>
 </html>

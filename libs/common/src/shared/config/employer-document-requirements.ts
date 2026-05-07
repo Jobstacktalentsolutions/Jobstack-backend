@@ -42,13 +42,6 @@ export const EMPLOYER_DOCUMENT_REQUIREMENTS: Record<
       description: "Owner's government-issued ID",
       purpose: 'Confirms identity of business owner',
     },
-    {
-      documentType: EmployerDocumentType.SIGNED_LEGITIMATE_BUSINESS_DECLARATION,
-      mandatory: true,
-      description:
-        'Signed declaration confirming legitimate business hiring purpose',
-      purpose: 'Confirms hiring intent and legitimacy',
-    },
   ],
 
   [EmployerType.ORGANIZATION]: [

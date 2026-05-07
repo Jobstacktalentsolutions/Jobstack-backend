@@ -10,10 +10,7 @@ import {
   NotificationType,
 } from '@app/common/database/entities/schema.enum';
 import { UserRole } from '@app/common/shared/enums/user-roles.enum';
-import {
-  NotificationResponse,
-  AppNotificationQuery,
-} from './notification.interface';
+import { AppNotificationQuery } from './notification.interface';
 
 @Injectable()
 export class NotificationService {
@@ -37,7 +34,7 @@ export class NotificationService {
       case UserRole.ADMIN:
         return 'adminId';
       default:
-        throw new Error(`Invalid user role: ${role}`);
+        throw new Error('Invalid user role');
     }
   }
 
@@ -207,6 +204,8 @@ export class NotificationService {
       message: string;
       metadata?: Record<string, any>;
       priority?: NotificationPriority;
+      templateType?: string;
+      templateContext?: Record<string, any>;
     },
   ): Promise<Notification> {
     const fieldName = this.getUserRoleFieldName(userType);
@@ -217,6 +216,8 @@ export class NotificationService {
       status: NotificationStatus.PENDING,
       priority: data.priority ?? NotificationPriority.MEDIUM,
       metadata: data.metadata,
+      templateType: data.templateType,
+      templateContext: data.templateContext,
       [fieldName]: userId,
     });
 

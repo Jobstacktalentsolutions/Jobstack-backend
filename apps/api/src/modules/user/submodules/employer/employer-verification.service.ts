@@ -45,6 +45,22 @@ export class EmployerVerificationService {
     private readonly approvalDecisionEmailService: ApprovalDecisionEmailService,
   ) {}
 
+  private notifyOnboardingReviewIfNeeded(
+    profile: EmployerProfile,
+    previousStatus: VerificationStatus,
+  ): void {
+    if (
+      previousStatus !== VerificationStatus.NOT_STARTED ||
+      profile.verificationStatus !== VerificationStatus.PENDING
+    ) {
+      return;
+    }
+
+    this.approvalDecisionEmailService.queueEmployerOnboardingReviewEmail(
+      profile,
+    );
+  }
+
   // Get current user's verification with all documents
   async getMyVerification(userId: string) {
     const profile = await this.profileRepo.findOne({
@@ -68,6 +84,7 @@ export class EmployerVerificationService {
       where: { id: userId },
     });
     if (!profile) throw new NotFoundException('Employer profile not found');
+    const previousStatus = profile.verificationStatus;
 
     profile.companyName = dto.companyName;
     profile.address = dto.address;
@@ -90,6 +107,7 @@ export class EmployerVerificationService {
     }
 
     await this.profileRepo.save(profile);
+    this.notifyOnboardingReviewIfNeeded(profile, previousStatus);
 
     return profile;
   }
@@ -104,6 +122,7 @@ export class EmployerVerificationService {
       where: { id: userId },
     });
     if (!profile) throw new NotFoundException('Employer profile not found');
+    const previousStatus = profile.verificationStatus;
 
     if (profile.verificationStatus === VerificationStatus.NOT_STARTED) {
       profile.verificationStatus = VerificationStatus.PENDING;
@@ -133,6 +152,12 @@ export class EmployerVerificationService {
     await this.verificationDocRepo.save(verificationDoc);
 
     const autoVerifyResult = await this.performAutoVerification(userId);
+    const refreshedProfile = await this.profileRepo.findOne({
+      where: { id: userId },
+    });
+    if (refreshedProfile) {
+      this.notifyOnboardingReviewIfNeeded(refreshedProfile, previousStatus);
+    }
 
     return {
       ...verificationDoc,
@@ -151,6 +176,7 @@ export class EmployerVerificationService {
       where: { id: userId },
     });
     if (!profile) throw new NotFoundException('Employer profile not found');
+    const previousStatus = profile.verificationStatus;
 
     if (profile.verificationStatus === VerificationStatus.NOT_STARTED) {
       profile.verificationStatus = VerificationStatus.PENDING;
@@ -193,6 +219,12 @@ export class EmployerVerificationService {
     await this.profileRepo.save(profile);
 
     const autoVerifyResult = await this.performAutoVerification(userId);
+    const refreshedProfile = await this.profileRepo.findOne({
+      where: { id: userId },
+    });
+    if (refreshedProfile) {
+      this.notifyOnboardingReviewIfNeeded(refreshedProfile, previousStatus);
+    }
 
     return {
       documents: results,

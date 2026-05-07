@@ -21,7 +21,6 @@ The system now supports three types of employers:
 
 - Business registration certificate (CAC) - Confirms legal entity
 - Owner's government-issued ID - Confirms business owner identity
-- Signed declaration confirming legitimate business hiring purpose - Confirms hiring legitimacy
 
 ### 3. Large Organizations / Companies
 
@@ -77,7 +76,6 @@ The migration and refactor adds:
 - `CAC_REGISTRATION_CERTIFICATE` - CAC registration certificate
 - `OWNER_GOVERNMENT_ID` - Owner government-issued ID for SME employers
 - `DIRECTOR_GOVERNMENT_ID` - Director government-issued ID for registered companies
-- `SIGNED_LEGITIMATE_BUSINESS_DECLARATION` - Signed legitimate hiring declaration
 
 ## Configuration
 

@@ -639,10 +639,9 @@ export class JobSeekerAuthService {
     await this.notificationService.sendEmail({
       to: normalizedEmail,
       subject: 'Welcome to JobStack',
-      template: EmailTemplateType.WELCOME,
+      template: EmailTemplateType.JOBSEEKER_WELCOME,
       context: {
         firstName: auth.profile.firstName,
-        userType: UserRole.JOB_SEEKER,
       },
     });
 

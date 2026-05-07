@@ -26,6 +26,7 @@ export enum ENV {
   // Company Information
   COMPANY_NAME = 'COMPANY_NAME',
   SUPPORT_EMAIL = 'SUPPORT_EMAIL',
+  SUPPORT_PHONE_NUMBER = 'SUPPORT_PHONE_NUMBER',
   WEBSITE_URL = 'WEBSITE_URL',
 
   // Storage Configuration (S3)

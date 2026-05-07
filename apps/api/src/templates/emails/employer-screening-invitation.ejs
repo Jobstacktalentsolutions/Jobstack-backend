@@ -51,9 +51,7 @@
                         <h3 style="margin: 0 0 12px 0; font-size: 16px; font-weight: 600; color: #1e293b;">Details</h3>
                         <p style="margin: 0 0 8px 0; font-size: 14px; color: #475569;"><strong>Candidate:</strong> <%= candidateName %></p>
                         <p style="margin: 0 0 8px 0; font-size: 14px; color: #475569;"><strong>Date & Time:</strong> <%= scheduledDateTime %></p>
-                        <% if (typeof prepInfo !== 'undefined' && prepInfo) { %>
                         <p style="margin: 12px 0 0 0; font-size: 14px; color: #475569; white-space: pre-wrap;"><strong>Preparation:</strong> <%= prepInfo %></p>
-                        <% } %>
                       </div>
 
                       <div style="padding: 20px; background-color: #f1f5f9; border-radius: 12px; margin-bottom: 24px;">
@@ -64,7 +62,6 @@
                       </div>
 
                       <!-- CTA Button -->
-                      <% if (typeof meetingLink !== 'undefined' && meetingLink) { %>
                       <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 24px 0;">
                         <tr>
                           <td style="text-align: center;">
@@ -72,7 +69,6 @@
                           </td>
                         </tr>
                       </table>
-                      <% } %>
 
                     </td>
                   </tr>

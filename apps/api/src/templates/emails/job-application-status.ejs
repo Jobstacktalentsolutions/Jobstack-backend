@@ -48,29 +48,22 @@
                       </p>
 
                       <p class="text-primary" style="margin: 0 0 24px 0; font-size: 16px; line-height: 1.5; color: #374151;">
-                        There is an update regarding your application for "<strong><%= jobTitle %></strong>"<%= typeof companyName !== 'undefined' && companyName ? ' at ' + companyName : '' %>.
+                        There is an update regarding your application for "<strong><%= jobTitle %></strong>" at <strong><%= companyName %></strong>.
                       </p>
 
-                      <% if (typeof status !== 'undefined' && status) { %>
-                      <div style="padding: 20px; border-radius: 12px; margin-bottom: 24px; <% if (status === 'accepted' || status === 'approved' || status === 'hired') { %>background-color: #f0fdf4; border: 1px solid #bbf7d0;<% } else if (status === 'rejected' || status === 'declined') { %>background-color: #fef2f2; border: 1px solid #fecaca;<% } else { %>background-color: #f8fafc; border: 1px solid #e2e8f0;<% } %>">
-                        <p style="margin: 0; font-size: 16px; font-weight: 600; <% if (status === 'accepted' || status === 'approved' || status === 'hired') { %>color: #166534;<% } else if (status === 'rejected' || status === 'declined') { %>color: #991b1b;<% } else { %>color: #1e293b;<% } %>">
+                      <div style="padding: 20px; border-radius: 12px; margin-bottom: 24px; background-color: <%= status === 'accepted' || status === 'approved' || status === 'hired' ? '#f0fdf4' : status === 'rejected' || status === 'declined' ? '#fef2f2' : '#f8fafc' %>; border: 1px solid <%= status === 'accepted' || status === 'approved' || status === 'hired' ? '#bbf7d0' : status === 'rejected' || status === 'declined' ? '#fecaca' : '#e2e8f0' %>;">
+                        <p style="margin: 0; font-size: 16px; font-weight: 600; color: <%= status === 'accepted' || status === 'approved' || status === 'hired' ? '#166534' : status === 'rejected' || status === 'declined' ? '#991b1b' : '#1e293b' %>">
                           Status: <%= status.charAt(0).toUpperCase() + status.slice(1) %>
                         </p>
-                        <% if (typeof statusMessage !== 'undefined' && statusMessage) { %>
                         <p style="margin: 8px 0 0 0; font-size: 14px; color: #475569; line-height: 1.5;"><%= statusMessage %></p>
-                        <% } %>
                       </div>
-                      <% } %>
 
-                      <% if (typeof nextSteps !== 'undefined' && nextSteps) { %>
                       <div style="margin-bottom: 24px;">
                         <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #111827;">Next Steps</h3>
                         <p style="margin: 0; font-size: 14px; color: #475569; line-height: 1.5;"><%= nextSteps %></p>
                       </div>
-                      <% } %>
 
                       <!-- CTA Button -->
-                      <% if (typeof actionUrl !== 'undefined' && typeof actionText !== 'undefined' && actionUrl && actionText) { %>
                       <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 24px 0;">
                         <tr>
                           <td style="text-align: center;">
@@ -78,7 +71,6 @@
                           </td>
                         </tr>
                       </table>
-                      <% } %>
 
                     </td>
                   </tr>

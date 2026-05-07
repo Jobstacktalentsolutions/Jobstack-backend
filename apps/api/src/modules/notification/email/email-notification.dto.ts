@@ -9,5 +9,6 @@ export interface EmailPayloadDto {
 export interface EmailConfig {
   companyName: string;
   supportEmail: string;
+  supportPhoneNumber: string;
   websiteUrl: string;
 }

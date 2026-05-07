@@ -81,10 +81,12 @@ export class UserService {
   ) {
     await this.notificationService.sendEmailNotification(userId, userType, {
       recipient: email,
-      templateType: EmailTemplateType.WELCOME,
+      templateType:
+        userType === 'jobseeker'
+          ? EmailTemplateType.JOBSEEKER_WELCOME
+          : EmailTemplateType.EMPLOYER_WELCOME,
       context: {
         firstName,
-        userType,
       },
     });
   }
@@ -130,10 +132,9 @@ Send an email notification
   "userType": "jobseeker",
   "emailData": {
     "recipient": "user@example.com",
-    "templateType": "welcome",
+    "templateType": "jobseeker-welcome",
     "context": {
-      "firstName": "John",
-      "userType": "jobseeker"
+      "firstName": "John"
     }
   },
   "priority": 3
@@ -198,7 +199,8 @@ Available template variables:
 
 ### Available Templates
 
-- `welcome.ejs`: Welcome new users
+- `jobseeker-welcome.ejs`: Welcome new jobseekers
+- `employer-welcome.ejs`: Welcome new employers
 - `general-notification.ejs`: Generic notification template
 - Add more templates as needed in the `EmailTemplateType` enum
 

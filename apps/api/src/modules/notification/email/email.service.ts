@@ -89,11 +89,9 @@ export class EmailService extends BaseNotificationService<EmailPayloadDto> {
     const defaults: Record<string, unknown> = {};
     switch (templateType) {
       case EmailTemplateType.PASSWORD_RESET:
-        defaults.firstName = c.firstName ?? 'there';
         defaults.expiryMinutes = c.expiryMinutes ?? 15;
         break;
       case EmailTemplateType.EMAIL_VERIFICATION:
-        defaults.firstName = c.firstName ?? 'there';
         defaults.expiryMinutes = c.expiryMinutes ?? 10;
         break;
       case EmailTemplateType.JOB_APPLICATION_RECEIVED:
@@ -128,18 +126,114 @@ export class EmailService extends BaseNotificationService<EmailPayloadDto> {
           (c.actionUrl as string) ?? (defaults.jobDashboardUrl as string) ?? '';
         defaults.actionText = (c.actionText as string) ?? 'View your job post';
         break;
-      case EmailTemplateType.WELCOME:
+      case EmailTemplateType.JOBSEEKER_WELCOME:
+      case EmailTemplateType.EMPLOYER_WELCOME:
         defaults.firstName = c.firstName ?? 'there';
-        defaults.userType = c.userType ?? 'jobseeker';
         defaults.actionUrl = c.actionUrl ?? '';
         break;
       case EmailTemplateType.GENERAL_NOTIFICATION:
         defaults.firstName = c.firstName ?? 'there';
+        defaults.title = c.title ?? c.subject ?? '';
+        defaults.supportPhoneNumber =
+          c.supportPhoneNumber ?? this.emailConfig.supportPhoneNumber;
+        break;
+      case EmailTemplateType.CANDIDATE_SELECTED_FOR_SCREENING:
+      case EmailTemplateType.INTERVIEW_SCHEDULED:
+      case 'employer-screening-invitation':
+        defaults.interviewLocation = this.inferInterviewLocation(
+          (c.meetingLink as string) ??
+            (c.screeningMeetingLink as string) ??
+            '',
+        );
+        break;
+      case EmailTemplateType.JOBSEEKER_ONBOARDING_REVIEW:
+        defaults.firstName = c.firstName ?? 'there';
+        defaults.actionText = c.actionText ?? 'Explore jobs';
+        break;
+      case EmailTemplateType.EMPLOYER_ONBOARDING_REVIEW:
+        defaults.firstName = c.firstName ?? 'there';
+        defaults.actionText = c.actionText ?? 'Draft a job post';
         break;
       default:
         break;
     }
     return defaults;
+  }
+
+  private inferInterviewLocation(meetingLink: string): string {
+    if (!meetingLink?.trim()) {
+      return 'Virtual meeting';
+    }
+
+    try {
+      const hostname = new URL(meetingLink).hostname
+        .toLowerCase()
+        .replace(/^www\./, '');
+
+      if (hostname.includes('meet.google')) return 'Google Meet';
+      if (hostname.includes('zoom')) return 'Zoom';
+      if (hostname.includes('teams.microsoft')) return 'Microsoft Teams';
+      if (hostname.includes('meet.jit') || hostname.includes('jitsi'))
+        return 'Jitsi Meet';
+      if (hostname.includes('webex')) return 'Cisco Webex';
+
+      const titleCased = hostname
+        .split('.')
+        .slice(0, -1)
+        .filter(Boolean)
+        .map((segment) =>
+          segment
+            .split('-')
+            .map(
+              (part) => part.charAt(0).toUpperCase() + part.slice(1),
+            )
+            .join(' '),
+        )
+        .join(' ');
+
+      return titleCased || 'Virtual meeting';
+    } catch {
+      return 'Virtual meeting';
+    }
+  }
+
+  private assertRequiredContext(
+    templateType: EmailTemplateType,
+    context: Record<string, unknown>,
+  ): void {
+    const requiredKeysByTemplate: Partial<Record<EmailTemplateType, string[]>> =
+      {
+        [EmailTemplateType.JOBSEEKER_ONBOARDING_REVIEW]: [
+          'firstName',
+          'message',
+          'actionText',
+          'actionUrl',
+          'dashboardUrl',
+        ],
+        [EmailTemplateType.EMPLOYER_ONBOARDING_REVIEW]: [
+          'firstName',
+          'message',
+          'actionText',
+          'actionUrl',
+          'dashboardUrl',
+        ],
+      };
+
+    const requiredKeys = requiredKeysByTemplate[templateType] ?? [];
+    const missingKeys = requiredKeys.filter((key) => {
+      const value = context[key];
+      return (
+        value === undefined ||
+        value === null ||
+        (typeof value === 'string' && value.trim().length === 0)
+      );
+    });
+
+    if (missingKeys.length > 0) {
+      throw new Error(
+        `Missing required email context for ${templateType}: ${missingKeys.join(', ')}`,
+      );
+    }
   }
 
   async renderTemplate<T extends EmailTemplateType>(
@@ -166,6 +260,8 @@ export class EmailService extends BaseNotificationService<EmailPayloadDto> {
       websiteUrl: this.emailConfig.websiteUrl,
       currentYear: new Date().getFullYear(),
     };
+
+    this.assertRequiredContext(templateType, enhancedContext);
 
     try {
       return await ejs.renderFile(templatePath, enhancedContext, {
