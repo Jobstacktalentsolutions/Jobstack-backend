@@ -55,8 +55,6 @@
                         <h3 style="margin: 0 0 12px 0; font-size: 16px; font-weight: 600; color: #1e293b;">Details</h3>
                         <p style="margin: 0 0 8px 0; font-size: 14px; color: #475569;"><strong>Date & Time:</strong> <%= interviewDate %> <%= interviewTime %></p>
                         <p style="margin: 0 0 8px 0; font-size: 14px; color: #475569;"><strong>Location:</strong> <%= interviewLocation %></p>
-                        <p style="margin: 0 0 8px 0; font-size: 14px; color: #475569;"><strong>Type:</strong> <%= interviewType %></p>
-                        <p style="margin: 0 0 8px 0; font-size: 14px; color: #475569;"><strong>Interviewer:</strong> <%= interviewerName %></p>
                         <p style="margin: 12px 0 0 0; font-size: 14px; color: #475569; white-space: pre-wrap;"><strong>Tips:</strong> <%= preparationTips %></p>
                       </div>
 
@@ -79,6 +77,9 @@
                     <td style="padding: 24px 32px; text-align: center;">
                       <p class="text-secondary" style="margin: 0 0 8px 0; font-size: 13px; color: #6b7280;">
                         If you need to reschedule, please contact support as soon as possible.
+                      </p>
+                      <p class="text-secondary" style="margin: 0 0 8px 0; font-size: 13px; color: #6b7280;">
+                        Or call <a href="tel:<%= supportPhoneNumber %>" style="color: #123A52; text-decoration: none; font-weight: 500;"><%= supportPhoneNumber %></a>
                       </p>
                       <p class="text-secondary" style="margin: 0; font-size: 12px; color: #9ca3af;">
                         © <%= currentYear %> <%= companyName %>. All rights reserved.

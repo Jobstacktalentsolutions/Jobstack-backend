@@ -20,6 +20,44 @@
     </style>
   </head>
   <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f3f4f6;">
+    <%
+      const normalizedStatus = status.toLowerCase();
+      const isPositiveStatus =
+        normalizedStatus === 'accepted' ||
+        normalizedStatus === 'approved' ||
+        normalizedStatus === 'hired';
+      const isNegativeStatus =
+        normalizedStatus === 'rejected' || normalizedStatus === 'declined';
+      const statusLabel = status.charAt(0).toUpperCase() + status.slice(1);
+      let computedStatusMessage = '';
+      let computedNextSteps = '';
+      if (isPositiveStatus) {
+        computedStatusMessage =
+          'Good news. Your application is moving forward and the team will contact you with the next step.';
+        computedNextSteps =
+          'Keep an eye on your inbox and the app for the next update.';
+      } else if (isNegativeStatus) {
+        computedStatusMessage =
+          'We reviewed your application and will not move forward at this time.';
+        computedNextSteps =
+          'You can continue exploring other jobs and apply when you find a better fit.';
+      } else if (normalizedStatus === 'vetted') {
+        computedStatusMessage =
+          'Your application passed the initial review and is now under closer consideration.';
+        computedNextSteps =
+          'No action is required yet. We will update you if the hiring team wants to proceed.';
+      } else if (normalizedStatus === 'screening') {
+        computedStatusMessage =
+          'Your application is in screening. The team is checking your profile and scheduling the next step.';
+        computedNextSteps =
+          'Prepare any requested documents and monitor your inbox for the interview details.';
+      } else {
+        computedStatusMessage =
+          'Your application status has been updated in JobStack.';
+        computedNextSteps =
+          'Check the app for the latest information about this role.';
+      }
+    %>
     <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" class="email-container" style="background-color: #f3f4f6;">
       <tr>
         <td style="padding: 40px 20px;">
@@ -53,14 +91,14 @@
 
                       <div style="padding: 20px; border-radius: 12px; margin-bottom: 24px; background-color: <%= status === 'accepted' || status === 'approved' || status === 'hired' ? '#f0fdf4' : status === 'rejected' || status === 'declined' ? '#fef2f2' : '#f8fafc' %>; border: 1px solid <%= status === 'accepted' || status === 'approved' || status === 'hired' ? '#bbf7d0' : status === 'rejected' || status === 'declined' ? '#fecaca' : '#e2e8f0' %>;">
                         <p style="margin: 0; font-size: 16px; font-weight: 600; color: <%= status === 'accepted' || status === 'approved' || status === 'hired' ? '#166534' : status === 'rejected' || status === 'declined' ? '#991b1b' : '#1e293b' %>">
-                          Status: <%= status.charAt(0).toUpperCase() + status.slice(1) %>
+                          Status: <%= statusLabel %>
                         </p>
-                        <p style="margin: 8px 0 0 0; font-size: 14px; color: #475569; line-height: 1.5;"><%= statusMessage %></p>
+                        <p style="margin: 8px 0 0 0; font-size: 14px; color: #475569; line-height: 1.5;"><%= computedStatusMessage %></p>
                       </div>
 
                       <div style="margin-bottom: 24px;">
                         <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #111827;">Next Steps</h3>
-                        <p style="margin: 0; font-size: 14px; color: #475569; line-height: 1.5;"><%= nextSteps %></p>
+                        <p style="margin: 0; font-size: 14px; color: #475569; line-height: 1.5;"><%= computedNextSteps %></p>
                       </div>
 
                       <!-- CTA Button -->
@@ -82,6 +120,9 @@
                     <td style="padding: 24px 32px; text-align: center;">
                       <p class="text-secondary" style="margin: 0 0 8px 0; font-size: 13px; color: #6b7280;">
                         Questions? Contact us at <a href="mailto:<%= supportEmail %>" style="color: #123A52; text-decoration: none; font-weight: 500;"><%= supportEmail %></a>
+                      </p>
+                      <p class="text-secondary" style="margin: 0 0 8px 0; font-size: 13px; color: #6b7280;">
+                        Or call <a href="tel:<%= supportPhoneNumber %>" style="color: #123A52; text-decoration: none; font-weight: 500;"><%= supportPhoneNumber %></a>
                       </p>
                       <p class="text-secondary" style="margin: 0; font-size: 12px; color: #9ca3af;">
                         © <%= currentYear %> <%= companyName %>. All rights reserved.

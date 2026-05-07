@@ -11,8 +11,6 @@ export enum EmailTemplateType {
   URGENT_JOB_MATCH_ALERT = 'urgent-job-match-alert',
   INTERVIEW_SCHEDULED = 'interview-scheduled',
   GENERAL_NOTIFICATION = 'general-notification',
-  JOBSEEKER_WELCOME = 'jobseeker-welcome',
-  EMPLOYER_WELCOME = 'employer-welcome',
   VETTING_COMPLETE = 'vetting-complete',
   CANDIDATE_SELECTED_FOR_SCREENING = 'candidate-selected-for-screening',
   CANDIDATE_SCREENING_COMPLETED = 'candidate-screening-completed',
@@ -77,14 +75,6 @@ export const EMAIL_TYPE_CONFIG = {
   [EmailTemplateType.GENERAL_NOTIFICATION]: {
     subject: 'Notification from JobStack',
     template: 'general-notification.ejs',
-  },
-  [EmailTemplateType.JOBSEEKER_WELCOME]: {
-    subject: 'Welcome to JobStack',
-    template: 'welcome.ejs',
-  },
-  [EmailTemplateType.EMPLOYER_WELCOME]: {
-    subject: 'Welcome to JobStack',
-    template: 'welcome.ejs',
   },
   [EmailTemplateType.VETTING_COMPLETE]: {
     subject: 'Vetting completed',

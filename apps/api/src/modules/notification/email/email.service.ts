@@ -129,7 +129,11 @@ export class EmailService extends BaseNotificationService<EmailPayloadDto> {
       case EmailTemplateType.JOBSEEKER_WELCOME:
       case EmailTemplateType.EMPLOYER_WELCOME:
         defaults.firstName = c.firstName ?? 'there';
-        defaults.actionUrl = c.actionUrl ?? '';
+        defaults.actionUrl =
+          (c.actionUrl as string) ??
+          (templateType === EmailTemplateType.JOBSEEKER_WELCOME
+            ? `${this.emailConfig.websiteUrl.replace(/\/$/, '')}/jobseeker/dashboard/explore-jobs`
+            : `${this.emailConfig.websiteUrl.replace(/\/$/, '')}/employer/dashboard/jobposts`);
         break;
       case EmailTemplateType.GENERAL_NOTIFICATION:
         defaults.firstName = c.firstName ?? 'there';
@@ -139,7 +143,7 @@ export class EmailService extends BaseNotificationService<EmailPayloadDto> {
         break;
       case EmailTemplateType.CANDIDATE_SELECTED_FOR_SCREENING:
       case EmailTemplateType.INTERVIEW_SCHEDULED:
-      case 'employer-screening-invitation':
+      case EmailTemplateType.EMPLOYER_SCREENING_INVITATION:
         defaults.interviewLocation = this.inferInterviewLocation(
           (c.meetingLink as string) ??
             (c.screeningMeetingLink as string) ??
@@ -258,6 +262,9 @@ export class EmailService extends BaseNotificationService<EmailPayloadDto> {
       companyName: this.emailConfig.companyName,
       supportEmail: this.emailConfig.supportEmail,
       websiteUrl: this.emailConfig.websiteUrl,
+      supportPhoneNumber:
+        (context.supportPhoneNumber as string) ??
+        this.emailConfig.supportPhoneNumber,
       currentYear: new Date().getFullYear(),
     };
 
