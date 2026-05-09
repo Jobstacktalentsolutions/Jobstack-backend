@@ -23,9 +23,7 @@ export const EMAIL_PROVIDERS_CONFIG: Provider[] = [
       companyName: configService.get(ENV.COMPANY_NAME) || 'Jobstack Org',
       supportEmail:
         configService.get(ENV.SUPPORT_EMAIL) || 'support@jobstack.ng',
-      supportPhoneNumber:
-        configService.get(ENV.SUPPORT_PHONE_NUMBER) || '+2348000000000',
-      websiteUrl: configService.get(ENV.WEBSITE_URL) || 'https://jobstack.ng',
+      websiteUrl: configService.get(ENV.WEBSITE_URL),
     }),
     inject: [ConfigService],
   },

@@ -138,8 +138,6 @@ export class EmailService extends BaseNotificationService<EmailPayloadDto> {
       case EmailTemplateType.GENERAL_NOTIFICATION:
         defaults.firstName = c.firstName ?? 'there';
         defaults.title = c.title ?? c.subject ?? '';
-        defaults.supportPhoneNumber =
-          c.supportPhoneNumber ?? this.emailConfig.supportPhoneNumber;
         break;
       case EmailTemplateType.CANDIDATE_SELECTED_FOR_SCREENING:
       case EmailTemplateType.INTERVIEW_SCHEDULED:
@@ -262,9 +260,6 @@ export class EmailService extends BaseNotificationService<EmailPayloadDto> {
       companyName: this.emailConfig.companyName,
       supportEmail: this.emailConfig.supportEmail,
       websiteUrl: this.emailConfig.websiteUrl,
-      supportPhoneNumber:
-        (context.supportPhoneNumber as string) ??
-        this.emailConfig.supportPhoneNumber,
       currentYear: new Date().getFullYear(),
     };
 

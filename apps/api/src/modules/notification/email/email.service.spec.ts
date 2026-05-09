@@ -19,7 +19,6 @@ describe('EmailService', () => {
           useValue: {
             companyName: 'JobStack',
             supportEmail: 'support@jobstack.ng',
-            supportPhoneNumber: '+2348000000000',
             websiteUrl: 'https://jobstack.ng',
           },
         },
